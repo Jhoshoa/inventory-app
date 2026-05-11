@@ -1,0 +1,26 @@
+{
+  "expo": {
+    "name": "Inventory App",
+    "slug": "inventory-app",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "scheme": "inventory-app",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.inventory.app"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#ffffff"
+      },
+      "package": "com.inventory.app"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-camera",
+      "expo-barcode-scanner"
+    ]
+  }
+}

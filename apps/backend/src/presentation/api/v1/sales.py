@@ -1,0 +1,46 @@
+from fastapi import APIRouter, Depends
+from src.application.dto.sale_dto import CreateSaleDTO, SaleResponseDTO
+from src.application.use_cases.sales.create_sale import CreateSaleUseCase, CreateSaleInput, SaleItemInput
+from src.application.use_cases.sales.list_sales import ListSalesUseCase
+from src.application.use_cases.sales.get_sale import GetSaleUseCase
+from src.presentation.dependencies import get_current_user, get_product_repo, get_sale_repo
+from src.infrastructure.database.repositories.product_repository import ProductRepository
+from src.infrastructure.database.repositories.sale_repository import SaleRepository
+
+router = APIRouter(prefix="/sales", tags=["sales"])
+
+
+@router.get("", response_model=list[SaleResponseDTO])
+async def list_sales(
+    user: dict = Depends(get_current_user),
+    repo: SaleRepository = Depends(get_sale_repo),
+):
+    use_case = ListSalesUseCase(repo)
+    return await use_case.execute(user["store_id"])
+
+
+@router.post("", response_model=SaleResponseDTO, status_code=201)
+async def create_sale(
+    dto: CreateSaleDTO,
+    user: dict = Depends(get_current_user),
+    sale_repo: SaleRepository = Depends(get_sale_repo),
+    product_repo: ProductRepository = Depends(get_product_repo),
+):
+    use_case = CreateSaleUseCase(sale_repo, product_repo)
+    items = [SaleItemInput(product_id=i.product_id, quantity=i.quantity) for i in dto.items]
+    sale = await use_case.execute(CreateSaleInput(
+        store_id=user["store_id"],
+        items=items,
+        payment_method=dto.payment_method,
+    ))
+    return sale
+
+
+@router.get("/{sale_id}", response_model=SaleResponseDTO)
+async def get_sale(
+    sale_id: str,
+    user: dict = Depends(get_current_user),
+    repo: SaleRepository = Depends(get_sale_repo),
+):
+    use_case = GetSaleUseCase(repo)
+    return await use_case.execute(sale_id)

@@ -1,0 +1,30 @@
+name: CI Backend
+
+on:
+  push:
+    branches: [main]
+    paths: ["apps/backend/**"]
+  pull_request:
+    paths: ["apps/backend/**"]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install Poetry
+        run: pip install poetry
+      - name: Install dependencies
+        run: poetry install
+      - name: Lint
+        run: poetry run ruff check src/
+      - name: Type check
+        run: poetry run mypy src/
+      - name: Test
+        run: poetry run pytest tests/
