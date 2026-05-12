@@ -1,0 +1,107 @@
+@startuml
+title Inventory Backend - Current Database ERD
+
+hide circle
+skinparam linetype ortho
+skinparam classAttributeIconSize 0
+
+entity "stores" as stores {
+  * id : UUID <<PK>>
+  --
+  name : varchar(100)
+  address : varchar(255)
+  phone : varchar(20)
+  is_active : boolean
+  created_at : timestamptz
+  updated_at : timestamptz
+}
+
+entity "users" as users {
+  * id : UUID <<PK>>
+  --
+  email : varchar(255) <<unique>>
+  store_id : UUID <<FK>>
+  full_name : varchar(100)
+  role : varchar(20)
+  is_active : boolean
+  created_at : timestamptz
+}
+
+entity "products" as products {
+  * id : UUID <<PK>>
+  --
+  store_id : UUID <<FK>>
+  name : varchar(100)
+  category : varchar(50)
+  sku : varchar(50)
+  price : numeric(10,2)
+  cost_price : numeric(10,2)
+  stock : integer
+  min_stock : integer
+  unit : varchar(20)
+  photo_url : varchar(500)
+  qr_code : varchar(100) <<unique>>
+  is_active : boolean
+  extra_data : json
+  version : integer
+  deleted_at : timestamptz
+  created_at : timestamptz
+  updated_at : timestamptz
+}
+
+entity "sales" as sales {
+  * id : UUID <<PK>>
+  --
+  store_id : UUID <<FK>>
+  device_id : varchar(100)
+  customer_name : varchar(100)
+  subtotal : numeric(12,2)
+  discount : numeric(12,2)
+  total : numeric(12,2)
+  items_count : integer
+  payment_method : varchar(20)
+  status : varchar(20)
+  synced : boolean
+  version : integer
+  deleted_at : timestamptz
+  created_at : timestamptz
+  updated_at : timestamptz
+}
+
+entity "sale_items" as sale_items {
+  * id : UUID <<PK>>
+  --
+  sale_id : UUID <<FK>>
+  product_id : UUID <<FK>>
+  product_name : varchar(100)
+  quantity : integer
+  unit_price : numeric(10,2)
+  subtotal : numeric(12,2)
+}
+
+entity "exchange_rates" as exchange_rates {
+  * date : date <<PK>>
+  * source : varchar(20) <<PK>>
+  --
+  buy_price : numeric(10,4)
+  sell_price : numeric(10,4)
+  created_at : timestamptz
+}
+
+stores ||--o{ users : owns
+stores ||--o{ products : has
+stores ||--o{ sales : records
+sales ||--|{ sale_items : contains
+products ||--o{ sale_items : sold_as
+
+note right of exchange_rates
+  Independent reference table.
+  No FK to stores in the current schema.
+end note
+
+note bottom of products
+  Soft delete uses deleted_at.
+  Active products have deleted_at = null.
+end note
+
+@enduml

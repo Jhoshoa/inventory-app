@@ -1,0 +1,13 @@
+{
+  "name": "arroz 1kg",
+  "price": "12.50",
+  "stock": 50,
+  "category": "Abarrotes",
+  "min_stock": 5,
+  "unit": "unidad",
+  "cost_price": "10.00",
+  "extra_data": {
+    "brand": "Favorito",
+    "supplier": "Distribuidora Central"
+  }
+}

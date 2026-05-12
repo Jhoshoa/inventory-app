@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "entity": "product",
+      "operation": "delete",
+      "data": {
+        "id": "33333333-3333-3333-3333-333333333333"
+      }
+    }
+  ]
+}

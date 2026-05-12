@@ -1,0 +1,19 @@
+{
+  "changes": [
+    {
+      "entity": "product",
+      "operation": "upsert",
+      "data": {
+        "id": "33333333-3333-3333-3333-333333333333",
+        "name": "Fideo 400g",
+        "price": "8.50",
+        "stock": 20,
+        "category": "Abarrotes",
+        "min_stock": 5,
+        "unit": "unidad",
+        "photo_url": null,
+        "qr_code": "PROD-33333333"
+      }
+    }
+  ]
+}
