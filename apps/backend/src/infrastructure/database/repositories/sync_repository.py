@@ -1,8 +1,13 @@
+from datetime import datetime, timezone
 from uuid import UUID
-from datetime import datetime
-from sqlalchemy import text
+
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
+
 from src.domain.repositories.sync_repository import ISyncRepository
+from src.infrastructure.database.models.product_model import ProductModel
+from src.infrastructure.database.models.sale_model import SaleModel
 
 
 class SyncRepository(ISyncRepository):
@@ -10,43 +15,108 @@ class SyncRepository(ISyncRepository):
         self._session = session
 
     async def get_updates_since(self, store_id: UUID, since: datetime) -> list[dict]:
-        result = await self._session.execute(
-            text("""
-                SELECT 'product' as entity, id, updated_at, version
-                FROM products
-                WHERE store_id = :store_id AND updated_at > :since
-                UNION ALL
-                SELECT 'sale' as entity, id, created_at, 1 as version
-                FROM sales
-                WHERE store_id = :store_id AND created_at > :since
-                ORDER BY updated_at ASC
-            """),
-            {"store_id": store_id, "since": since},
+        updates: list[dict] = []
+
+        product_result = await self._session.execute(
+            select(ProductModel).where(
+                ProductModel.store_id == store_id,
+                ProductModel.updated_at > since,
+            )
         )
-        return [dict(row._mapping) for row in result.all()]
+        for product in product_result.scalars().all():
+            updates.append(
+                {
+                    "entity": "product",
+                    "id": str(product.id),
+                    "operation": "delete" if product.deleted_at else "upsert",
+                    "version": product.version,
+                    "updated_at": product.updated_at,
+                    "data": {
+                        "id": str(product.id),
+                        "name": product.name,
+                        "price": str(product.price),
+                        "stock": product.stock,
+                        "category": product.category,
+                        "min_stock": product.min_stock,
+                        "unit": product.unit,
+                        "photo_url": product.photo_url,
+                        "qr_code": product.qr_code,
+                        "deleted_at": product.deleted_at,
+                    },
+                }
+            )
+
+        sale_result = await self._session.execute(
+            select(SaleModel)
+            .where(SaleModel.store_id == store_id, SaleModel.created_at > since)
+            .options(selectinload(SaleModel.items))
+        )
+        for sale in sale_result.scalars().all():
+            updates.append(
+                {
+                    "entity": "sale",
+                    "id": str(sale.id),
+                    "operation": "upsert",
+                    "version": sale.version,
+                    "updated_at": sale.updated_at,
+                    "data": {
+                        "id": str(sale.id),
+                        "total": str(sale.total),
+                        "payment_method": sale.payment_method,
+                        "status": sale.status,
+                        "created_at": sale.created_at,
+                        "items": [
+                            {
+                                "product_id": str(item.product_id),
+                                "product_name": item.product_name,
+                                "quantity": item.quantity,
+                                "unit_price": str(item.unit_price),
+                                "subtotal": str(item.subtotal),
+                            }
+                            for item in sale.items
+                        ],
+                    },
+                }
+            )
+
+        return sorted(updates, key=lambda item: item["updated_at"])
 
     async def push_changes(self, store_id: UUID, changes: list[dict]) -> None:
         for change in changes:
             entity = change.get("entity")
-            action = change.get("action", "upsert")
+            action = change.get("action") or change.get("operation", "upsert")
             data = change.get("data", {})
-            if entity == "product" and action == "upsert":
-                await self._session.execute(
-                    text("""
-                        INSERT INTO products (id, store_id, name, price, stock, version, updated_at)
-                        VALUES (:id, :store_id, :name, :price, :stock, 1, NOW())
-                        ON CONFLICT (id) DO UPDATE SET
-                            name = EXCLUDED.name,
-                            price = EXCLUDED.price,
-                            stock = EXCLUDED.stock,
-                            version = products.version + 1,
-                            updated_at = NOW()
-                    """),
-                    {"id": data["id"], "store_id": store_id, "name": data.get("name"), "price": data.get("price"), "stock": data.get("stock")},
-                )
-            elif entity == "product" and action == "delete":
-                await self._session.execute(
-                    text("UPDATE products SET deleted_at = NOW() WHERE id = :id"),
-                    {"id": data["id"]},
-                )
-        await self._session.commit()
+
+            if entity != "product":
+                continue
+
+            product_id = UUID(str(data["id"]))
+            model = await self._session.get(ProductModel, product_id)
+
+            if action == "delete":
+                if model is not None and model.store_id == store_id:
+                    model.deleted_at = datetime.now(timezone.utc)
+                    model.is_active = False
+                    model.updated_at = datetime.now(timezone.utc)
+                continue
+
+            if model is None:
+                model = ProductModel(id=product_id, store_id=store_id)
+                self._session.add(model)
+            elif model.store_id != store_id:
+                continue
+
+            model.name = data["name"]
+            model.price = data["price"]
+            model.stock = data.get("stock", 0)
+            model.category = data.get("category")
+            model.min_stock = data.get("min_stock", 5)
+            model.unit = data.get("unit", "unidad")
+            model.photo_url = data.get("photo_url")
+            model.qr_code = data.get("qr_code")
+            model.version = (model.version or 0) + 1
+            model.deleted_at = None
+            model.is_active = True
+            model.updated_at = datetime.now(timezone.utc)
+
+        await self._session.flush()

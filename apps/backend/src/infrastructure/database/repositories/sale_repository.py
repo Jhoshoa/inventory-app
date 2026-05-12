@@ -15,7 +15,10 @@ class SaleRepository(ISaleRepository):
         model = SaleModel(
             id=sale.id,
             store_id=sale.store_id,
+            subtotal=sale.total,
+            discount=0,
             total=sale.total,
+            items_count=len(sale.items),
             payment_method=sale.payment_method,
             status=sale.status,
         )
@@ -31,12 +34,14 @@ class SaleRepository(ISaleRepository):
             )
             model.items.append(item_model)
         self._session.add(model)
-        await self._session.commit()
+        await self._session.flush()
         return sale
 
     async def get_by_id(self, sale_id: UUID) -> Sale | None:
         result = await self._session.execute(
-            select(SaleModel).where(SaleModel.id == sale_id).options(selectinload(SaleModel.items))
+            select(SaleModel)
+            .where(SaleModel.id == sale_id, SaleModel.deleted_at.is_(None))
+            .options(selectinload(SaleModel.items))
         )
         model = result.scalar_one_or_none()
         if not model:
@@ -49,7 +54,10 @@ class SaleRepository(ISaleRepository):
 
     async def list_by_store(self, store_id: UUID) -> list[Sale]:
         result = await self._session.execute(
-            select(SaleModel).where(SaleModel.store_id == store_id).options(selectinload(SaleModel.items))
+            select(SaleModel)
+            .where(SaleModel.store_id == store_id, SaleModel.deleted_at.is_(None))
+            .options(selectinload(SaleModel.items))
+            .order_by(SaleModel.created_at.desc())
         )
         sales = []
         for model in result.scalars().all():

@@ -5,6 +5,7 @@ from src.application.use_cases.sync.sync_pull import SyncPullUseCase, SyncPullIn
 from src.presentation.dependencies import get_current_user, get_sync_repo
 from src.infrastructure.database.repositories.sync_repository import SyncRepository
 from datetime import datetime, timezone
+from uuid import UUID
 
 router = APIRouter(prefix="/sync", tags=["sync"])
 
@@ -16,7 +17,7 @@ async def sync_push(
     repo: SyncRepository = Depends(get_sync_repo),
 ):
     use_case = SyncPushUseCase(repo)
-    await use_case.execute(SyncPushInput(store_id=user["store_id"], changes=dto.changes))
+    await use_case.execute(SyncPushInput(store_id=UUID(str(user["store_id"])), changes=dto.changes))
     return {"status": "ok"}
 
 
@@ -27,5 +28,5 @@ async def sync_pull(
     repo: SyncRepository = Depends(get_sync_repo),
 ):
     use_case = SyncPullUseCase(repo)
-    updates = await use_case.execute(SyncPullInput(store_id=user["store_id"], since=dto.since))
+    updates = await use_case.execute(SyncPullInput(store_id=UUID(str(user["store_id"])), since=dto.since))
     return SyncResponseDTO(updates=updates, server_time=datetime.now(timezone.utc))

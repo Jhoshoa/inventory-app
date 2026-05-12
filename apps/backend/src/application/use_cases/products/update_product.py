@@ -3,6 +3,8 @@ from decimal import Decimal
 from uuid import UUID
 from src.domain.entities.product import Product
 from src.domain.repositories.product_repository import IProductRepository
+from src.application.exceptions import NotFoundError
+from src.application.use_cases.products.name_normalizer import normalize_product_name
 
 
 @dataclass
@@ -21,9 +23,9 @@ class UpdateProductUseCase:
     async def execute(self, input: UpdateProductInput) -> Product:
         product = await self._repo.get_by_id(input.product_id)
         if not product:
-            raise ValueError("Producto no encontrado")
+            raise NotFoundError("Producto no encontrado")
         if input.name is not None:
-            product.name = input.name.strip().title()
+            product.name = normalize_product_name(input.name)
         if input.price is not None:
             product.price = input.price
         if input.category is not None:

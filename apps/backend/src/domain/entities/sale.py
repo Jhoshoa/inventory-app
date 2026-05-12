@@ -15,6 +15,10 @@ class SaleItem:
 
     @staticmethod
     def create(product_id: UUID, product_name: str, quantity: int, unit_price: Decimal) -> "SaleItem":
+        if quantity <= 0:
+            raise ValueError("La cantidad debe ser mayor a cero")
+        if unit_price < 0:
+            raise ValueError("El precio unitario no puede ser negativo")
         return SaleItem(
             id=uuid4(),
             product_id=product_id,
@@ -37,6 +41,8 @@ class Sale:
 
     @staticmethod
     def create(store_id: UUID, items: list[SaleItem], payment_method: str = "efectivo") -> "Sale":
+        if not items:
+            raise ValueError("La venta debe tener al menos un producto")
         total = sum(item.subtotal for item in items)
         return Sale(
             id=uuid4(),

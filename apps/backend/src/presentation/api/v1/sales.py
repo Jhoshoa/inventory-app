@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from fastapi import APIRouter, Depends
 from src.application.dto.sale_dto import CreateSaleDTO, SaleResponseDTO
 from src.application.use_cases.sales.create_sale import CreateSaleUseCase, CreateSaleInput, SaleItemInput
@@ -29,7 +31,7 @@ async def create_sale(
     use_case = CreateSaleUseCase(sale_repo, product_repo)
     items = [SaleItemInput(product_id=i.product_id, quantity=i.quantity) for i in dto.items]
     sale = await use_case.execute(CreateSaleInput(
-        store_id=user["store_id"],
+        store_id=UUID(str(user["store_id"])),
         items=items,
         payment_method=dto.payment_method,
     ))
@@ -38,9 +40,14 @@ async def create_sale(
 
 @router.get("/{sale_id}", response_model=SaleResponseDTO)
 async def get_sale(
-    sale_id: str,
+    sale_id: UUID,
     user: dict = Depends(get_current_user),
     repo: SaleRepository = Depends(get_sale_repo),
 ):
     use_case = GetSaleUseCase(repo)
-    return await use_case.execute(sale_id)
+    sale = await use_case.execute(sale_id)
+    if sale.store_id != UUID(str(user["store_id"])):
+        from src.application.exceptions import NotFoundError
+
+        raise NotFoundError("Venta no encontrada")
+    return sale

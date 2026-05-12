@@ -1,30 +1,31 @@
 from decimal import Decimal
+from uuid import UUID
 from pydantic import BaseModel, Field
 from datetime import datetime
 
 
 class SaleItemDTO(BaseModel):
-    product_id: str
+    product_id: UUID
     quantity: int = Field(..., gt=0)
 
 
 class CreateSaleDTO(BaseModel):
-    items: list[SaleItemDTO]
+    items: list[SaleItemDTO] = Field(..., min_length=1)
     payment_method: str = "efectivo"
 
 
 class SaleItemResponseDTO(BaseModel):
-    product_id: str
+    product_id: UUID
     product_name: str
     quantity: int
-    unit_price: float
-    subtotal: float
+    unit_price: Decimal
+    subtotal: Decimal
 
 
 class SaleResponseDTO(BaseModel):
-    id: str
+    id: UUID
     items: list[SaleItemResponseDTO]
-    total: float
+    total: Decimal
     payment_method: str
     status: str
     created_at: datetime

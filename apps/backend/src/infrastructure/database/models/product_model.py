@@ -1,8 +1,8 @@
 import uuid
-from sqlalchemy import Column, String, Integer, Numeric, Boolean, DateTime, JSON
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy import Column, String, Integer, Numeric, Boolean, DateTime, JSON, ForeignKey, Index
 from sqlalchemy.orm import DeclarativeBase
 from datetime import datetime, timezone
+from src.infrastructure.database.types import GUID
 
 
 class Base(DeclarativeBase):
@@ -12,8 +12,8 @@ class Base(DeclarativeBase):
 class ProductModel(Base):
     __tablename__ = "products"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    store_id = Column(UUID(as_uuid=True), nullable=False)
+    id = Column(GUID(), primary_key=True, default=uuid.uuid4)
+    store_id = Column(GUID(), ForeignKey("stores.id"), nullable=False)
     name = Column(String(100), nullable=False)
     category = Column(String(50))
     sku = Column(String(50))
@@ -30,3 +30,8 @@ class ProductModel(Base):
     deleted_at = Column(DateTime(timezone=True))
     created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
     updated_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
+
+    __table_args__ = (
+        Index("ix_products_store_id", "store_id"),
+        Index("ix_products_updated_at", "updated_at"),
+    )

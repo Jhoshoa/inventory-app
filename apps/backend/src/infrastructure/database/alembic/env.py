@@ -10,15 +10,10 @@ from sqlalchemy.ext.asyncio import create_async_engine
 sys.path.insert(0, str(Path(__file__).resolve().parents[4]))
 
 from src.config.settings import settings
+from src.infrastructure.database import models as _models
 from src.infrastructure.database.models.product_model import Base
-from src.infrastructure.database.models import (
-    ProductModel,
-    SaleModel,
-    SaleItemModel,
-    StoreModel,
-    UserModel,
-    ExchangeRateModel,
-)
+
+_ = _models
 
 config = context.config
 if config.config_file_name is not None:

@@ -1,6 +1,7 @@
 from uuid import UUID
 from src.domain.entities.sale import Sale
 from src.domain.repositories.sale_repository import ISaleRepository
+from src.application.exceptions import NotFoundError
 
 
 class GetSaleUseCase:
@@ -10,5 +11,5 @@ class GetSaleUseCase:
     async def execute(self, sale_id: UUID) -> Sale:
         sale = await self._repo.get_by_id(sale_id)
         if not sale:
-            raise ValueError("Venta no encontrada")
+            raise NotFoundError("Venta no encontrada")
         return sale

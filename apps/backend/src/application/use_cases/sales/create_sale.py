@@ -1,9 +1,9 @@
 from dataclasses import dataclass
-from decimal import Decimal
 from uuid import UUID
 from src.domain.entities.sale import Sale, SaleItem
 from src.domain.repositories.sale_repository import ISaleRepository
 from src.domain.repositories.product_repository import IProductRepository
+from src.application.exceptions import NotFoundError
 
 
 @dataclass
@@ -29,7 +29,7 @@ class CreateSaleUseCase:
         for item in input.items:
             product = await self._product_repo.get_by_id(item.product_id)
             if not product:
-                raise ValueError(f"Producto no encontrado: {item.product_id}")
+                raise NotFoundError(f"Producto no encontrado: {item.product_id}")
             if not product.can_sell(item.quantity):
                 raise ValueError(f"Stock insuficiente para {product.name}: {product.stock} < {item.quantity}")
             sale_item = SaleItem.create(

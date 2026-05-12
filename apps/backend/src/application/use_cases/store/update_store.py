@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from uuid import UUID
 from src.domain.entities.store import Store
 from src.domain.repositories.store_repository import IStoreRepository
+from src.application.exceptions import NotFoundError
 
 
 @dataclass
@@ -19,7 +20,7 @@ class UpdateStoreUseCase:
     async def execute(self, input: UpdateStoreInput) -> Store:
         store = await self._repo.get_by_id(input.store_id)
         if not store:
-            raise ValueError("Tienda no encontrada")
+            raise NotFoundError("Tienda no encontrada")
         if input.name is not None:
             store.name = input.name
         if input.address is not None:

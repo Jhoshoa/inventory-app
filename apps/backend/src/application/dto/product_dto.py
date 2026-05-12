@@ -1,4 +1,5 @@
 from decimal import Decimal
+from uuid import UUID
 from pydantic import BaseModel, Field
 
 
@@ -18,16 +19,27 @@ class UpdateProductDTO(BaseModel):
     price: Decimal | None = Field(default=None, gt=0)
     category: str | None = None
     min_stock: int | None = Field(default=None, ge=0)
+    stock: int | None = Field(default=None, ge=0)
+
+
+class StockAdjustmentDTO(BaseModel):
+    quantity: int = Field(..., description="Positive to add stock, negative to subtract stock")
+    reason: str | None = Field(default=None, max_length=120)
 
 
 class ProductResponseDTO(BaseModel):
-    id: str
+    id: UUID
     name: str
-    price: float
+    price: Decimal
     stock: int
     category: str | None
     qr_code: str | None
     photo_url: str | None
     min_stock: int
+    unit: str
+    sku: str | None = None
+    cost_price: Decimal | None = None
+    is_active: bool
+    version: int
 
     model_config = {"from_attributes": True}
