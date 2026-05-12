@@ -101,6 +101,27 @@ py -m alembic revision --autogenerate -m "description"
 
 The initial migration creates stores, products, sales, sale_items, users, and exchange_rates with the MVP foreign keys and indexes.
 
+## Seed Data
+
+For local/manual testing, run migrations first and then seed deterministic demo data:
+
+```bash
+py -m alembic upgrade head
+py -m src.infrastructure.database.seed.dev_seed
+```
+
+The seed creates:
+
+- Store: `00000000-0000-0000-0000-000000000101`
+- User: `dev@local.dev`
+- Products:
+  - `11111111-1111-1111-1111-111111111111` - Arroz 1kg
+  - `22222222-2222-2222-2222-222222222222` - Aceite 1l
+  - `33333333-3333-3333-3333-333333333333` - Fideo 400g
+- Exchange rates for `bcb` and `paralelo`
+
+The script is idempotent, so it is safe to run more than once in local development.
+
 ## Workers
 
 ```bash

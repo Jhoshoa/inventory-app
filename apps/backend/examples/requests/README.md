@@ -26,6 +26,8 @@ Authorization: Bearer <access_token>
 | `products-adjust-stock-add.json` | `PATCH` | `/products/{product_id}/stock` |
 | `products-adjust-stock-subtract.json` | `PATCH` | `/products/{product_id}/stock` |
 | `sales-create.json` | `POST` | `/sales` |
+| `seeded-sales-create.json` | `POST` | `/sales` |
+| `seeded-products-adjust-stock.json` | `PATCH` | `/products/11111111-1111-1111-1111-111111111111/stock` |
 | `store-update.json` | `PATCH` | `/store` |
 | `exchange-rates-upsert.json` | `POST` | `/exchange-rates` |
 | `sync-push-product-upsert.json` | `POST` | `/sync/push` |
@@ -56,6 +58,40 @@ Some endpoints depend on records created by previous endpoints. Use this order w
 8. Test sync with `sync-push-product-upsert.json` and `sync-pull.json`.
 9. Insert exchange rates any time with `exchange-rates-upsert.json`.
    - Exchange rates are independent from stores/products/sales in the current DB.
+
+## Optional Seed Data
+
+For faster manual testing, seed deterministic demo data before calling the API:
+
+```powershell
+cd apps/backend
+python -m alembic upgrade head
+python -m src.infrastructure.database.seed.dev_seed
+```
+
+Seeded IDs:
+
+| Record | ID |
+|---|---|
+| Store | `00000000-0000-0000-0000-000000000101` |
+| User | `00000000-0000-0000-0000-000000000001` |
+| Arroz 1kg | `11111111-1111-1111-1111-111111111111` |
+| Aceite 1l | `22222222-2222-2222-2222-222222222222` |
+| Fideo 400g | `33333333-3333-3333-3333-333333333333` |
+
+After seeding, you can test sales immediately with:
+
+```text
+POST /api/v1/sales
+Body: seeded-sales-create.json
+```
+
+And test stock adjustment immediately with:
+
+```text
+PATCH /api/v1/products/11111111-1111-1111-1111-111111111111/stock
+Body: seeded-products-adjust-stock.json
+```
 
 ## DB Relationship Summary
 
