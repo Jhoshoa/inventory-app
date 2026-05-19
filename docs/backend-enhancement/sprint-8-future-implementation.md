@@ -1,0 +1,7 @@
+- Sync de anulaciones de venta para mobile offline completo.
+  - Invitaciones de usuarios por email.
+  - Procesamiento OCR real en background con Celery.
+  - Devoluciones parciales.
+  - Reportes avanzados o PDF.
+  - Rate limiting.
+  - Backup/infra final.

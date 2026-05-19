@@ -3,13 +3,13 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Inventory App",
-  description: "Administración de inventario",
+  description: "Administracion de inventario",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="es">
-      <body>{children}</body>
+      <body className="bg-slate-50 text-slate-950 antialiased">{children}</body>
     </html>
   );
 }

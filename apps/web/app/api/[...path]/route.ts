@@ -1,17 +1,25 @@
-import { NextRequest, NextResponse } from "next/server";
+import { proxyRequest } from "@/lib/api/proxy";
 
-export async function GET(request: NextRequest) {
-  return NextResponse.json({ message: "API proxy" });
+type RouteContext = {
+  params: Promise<{ path: string[] }>;
+};
+
+export async function GET(request: Request, context: RouteContext) {
+  return proxyRequest(request, await context.params);
 }
 
-export async function POST(request: NextRequest) {
-  return NextResponse.json({ message: "API proxy" });
+export async function POST(request: Request, context: RouteContext) {
+  return proxyRequest(request, await context.params);
 }
 
-export async function PATCH(request: NextRequest) {
-  return NextResponse.json({ message: "API proxy" });
+export async function PUT(request: Request, context: RouteContext) {
+  return proxyRequest(request, await context.params);
 }
 
-export async function DELETE(request: NextRequest) {
-  return NextResponse.json({ message: "API proxy" });
+export async function PATCH(request: Request, context: RouteContext) {
+  return proxyRequest(request, await context.params);
+}
+
+export async function DELETE(request: Request, context: RouteContext) {
+  return proxyRequest(request, await context.params);
 }

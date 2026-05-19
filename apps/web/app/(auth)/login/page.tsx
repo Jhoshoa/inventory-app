@@ -1,22 +1,26 @@
+import Link from "next/link";
+import { LoginForm } from "@/features/auth/components/LoginForm";
+
 export default function LoginPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
-        <h1 className="text-2xl font-bold text-center mb-8">Inventory App</h1>
-        <form className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium mb-1">Email</label>
-            <input type="email" className="w-full border border-gray-300 rounded-lg p-2" />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">Contraseña</label>
-            <input type="password" className="w-full border border-gray-300 rounded-lg p-2" />
-          </div>
-          <button type="submit" className="w-full bg-blue-600 text-white rounded-lg p-2 font-semibold">
-            Iniciar Sesión
-          </button>
-        </form>
-      </div>
-    </div>
+    <main className="flex min-h-screen items-center justify-center bg-slate-50 px-4 py-10">
+      <section className="w-full max-w-md rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
+        <div className="mb-6 text-center">
+          <h1 className="text-2xl font-semibold text-slate-950">
+            Inventory App
+          </h1>
+          <p className="mt-1 text-sm text-slate-600">
+            Ingresa para administrar tu tienda.
+          </p>
+        </div>
+        <LoginForm />
+        <p className="mt-5 text-center text-sm text-slate-600">
+          No tienes cuenta?{" "}
+          <Link className="font-medium text-slate-950 underline" href="/register">
+            Crea una tienda
+          </Link>
+        </p>
+      </section>
+    </main>
   );
 }
