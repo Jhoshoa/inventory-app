@@ -1,8 +1,24 @@
+import Link from "next/link";
 import { PackagePlus } from "lucide-react";
+import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { Pagination } from "@/components/ui/Pagination";
+import { listProducts } from "@/features/products/api";
+import { ProductFilters } from "@/features/products/components/ProductFilters";
+import { ProductTable } from "@/features/products/components/ProductTable";
+import { parseProductSearchParams, buildProductQueryString } from "@/features/products/schemas";
 
-export default function ProductsPage() {
+export default async function ProductsPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const rawParams = await searchParams;
+  const params = parseProductSearchParams(rawParams);
+  const products = await listProducts(params);
+  const urlParams = new URLSearchParams(buildProductQueryString(params));
+
   return (
     <section className="space-y-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -11,20 +27,41 @@ export default function ProductsPage() {
             Productos
           </h1>
           <p className="mt-1 text-sm text-slate-600">
-            Gestiona busqueda, stock y codigos QR de tu catalogo.
+            Busca, filtra y administra el inventario de la tienda.
           </p>
         </div>
-        <Button>
-          <PackagePlus className="h-4 w-4" aria-hidden="true" />
-          Nuevo producto
+        <Button asChild>
+          <Link href="/dashboard/products/new">
+            <PackagePlus className="h-4 w-4" aria-hidden="true" />
+            Nuevo producto
+          </Link>
         </Button>
       </div>
 
-      <EmptyState
-        title="Todavia no hay productos"
-        description="Cuando implementemos el CRUD, esta vista mostrara una tabla paginada con filtros y acciones de stock."
-        actionLabel="Preparado para Sprint 2"
-      />
+      <ProductFilters params={params} />
+
+      {!products.ok ? (
+        <Alert variant="error">
+          No se pudieron cargar los productos: {products.error.message}
+        </Alert>
+      ) : products.data.total === 0 && !params.q && !params.category && params.stock === "all" ? (
+        <EmptyState
+          title="Todavia no hay productos"
+          description="Crea el primer producto para empezar a vender y controlar stock."
+          actionLabel="Usa Nuevo producto"
+        />
+      ) : (
+        <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
+          <ProductTable products={products.data.items} />
+          <Pagination
+            basePath="/dashboard/products"
+            searchParams={urlParams}
+            total={products.data.total}
+            limit={products.data.limit}
+            offset={products.data.offset}
+          />
+        </div>
+      )}
     </section>
   );
 }
