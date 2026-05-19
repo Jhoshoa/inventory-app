@@ -17,6 +17,8 @@ class CreateSaleInput:
     store_id: UUID
     items: list[SaleItemInput]
     payment_method: str = "efectivo"
+    device_id: str | None = None
+    customer_name: str | None = None
 
 
 class CreateSaleUseCase:
@@ -27,7 +29,7 @@ class CreateSaleUseCase:
     async def execute(self, input: CreateSaleInput) -> Sale:
         sale_items: list[SaleItem] = []
         for item in input.items:
-            product = await self._product_repo.get_by_id(item.product_id)
+            product = await self._product_repo.get_by_id(input.store_id, item.product_id)
             if not product:
                 raise NotFoundError(f"Producto no encontrado: {item.product_id}")
             if not product.can_sell(item.quantity):
@@ -39,12 +41,24 @@ class CreateSaleUseCase:
                 unit_price=product.price,
             )
             sale_items.append(sale_item)
-            product.reduce_stock(item.quantity)
-            await self._product_repo.save(product)
 
         sale = Sale.create(
             store_id=input.store_id,
             items=sale_items,
             payment_method=input.payment_method,
+            device_id=input.device_id,
+            customer_name=input.customer_name,
         )
-        return await self._sale_repo.save(sale)
+        sale = await self._sale_repo.save(sale)
+
+        for item in input.items:
+            await self._product_repo.update_stock(
+                input.store_id,
+                item.product_id,
+                -item.quantity,
+                movement_type="sale",
+                sale_id=sale.id,
+                device_id=input.device_id,
+            )
+
+        return sale

@@ -29,6 +29,7 @@ class SaleModel(Base):
 
     __table_args__ = (
         Index("ix_sales_store_id", "store_id"),
+        Index("ix_sales_store_id_id", "store_id", "id"),
         Index("ix_sales_created_at", "created_at"),
     )
 

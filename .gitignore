@@ -36,3 +36,7 @@ Thumbs.db
 
 # Docker
 pgdata/
+
+# Skills
+.agents/
+skills-lock.json

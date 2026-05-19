@@ -12,6 +12,8 @@ class SaleItemDTO(BaseModel):
 class CreateSaleDTO(BaseModel):
     items: list[SaleItemDTO] = Field(..., min_length=1)
     payment_method: str = "efectivo"
+    device_id: str | None = Field(default=None, max_length=100)
+    customer_name: str | None = Field(default=None, max_length=100)
 
 
 class SaleItemResponseDTO(BaseModel):

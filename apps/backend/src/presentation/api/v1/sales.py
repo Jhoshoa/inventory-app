@@ -34,6 +34,8 @@ async def create_sale(
         store_id=UUID(str(user["store_id"])),
         items=items,
         payment_method=dto.payment_method,
+        device_id=dto.device_id,
+        customer_name=dto.customer_name,
     ))
     return sale
 
@@ -45,9 +47,4 @@ async def get_sale(
     repo: SaleRepository = Depends(get_sale_repo),
 ):
     use_case = GetSaleUseCase(repo)
-    sale = await use_case.execute(sale_id)
-    if sale.store_id != UUID(str(user["store_id"])):
-        from src.application.exceptions import NotFoundError
-
-        raise NotFoundError("Venta no encontrada")
-    return sale
+    return await use_case.execute(UUID(str(user["store_id"])), sale_id)

@@ -9,6 +9,7 @@ from src.application.use_cases.products.name_normalizer import normalize_product
 
 @dataclass
 class UpdateProductInput:
+    store_id: UUID
     product_id: UUID
     name: str | None = None
     price: Decimal | None = None
@@ -21,7 +22,7 @@ class UpdateProductUseCase:
         self._repo = repo
 
     async def execute(self, input: UpdateProductInput) -> Product:
-        product = await self._repo.get_by_id(input.product_id)
+        product = await self._repo.get_by_id(input.store_id, input.product_id)
         if not product:
             raise NotFoundError("Producto no encontrado")
         if input.name is not None:

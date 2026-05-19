@@ -15,6 +15,8 @@ class SaleRepository(ISaleRepository):
         model = SaleModel(
             id=sale.id,
             store_id=sale.store_id,
+            device_id=sale.device_id,
+            customer_name=sale.customer_name,
             subtotal=sale.total,
             discount=0,
             total=sale.total,
@@ -37,10 +39,10 @@ class SaleRepository(ISaleRepository):
         await self._session.flush()
         return sale
 
-    async def get_by_id(self, sale_id: UUID) -> Sale | None:
+    async def get_by_id(self, store_id: UUID, sale_id: UUID) -> Sale | None:
         result = await self._session.execute(
             select(SaleModel)
-            .where(SaleModel.id == sale_id, SaleModel.deleted_at.is_(None))
+            .where(SaleModel.store_id == store_id, SaleModel.id == sale_id, SaleModel.deleted_at.is_(None))
             .options(selectinload(SaleModel.items))
         )
         model = result.scalar_one_or_none()
@@ -50,7 +52,17 @@ class SaleRepository(ISaleRepository):
             SaleItem(id=i.id, product_id=i.product_id, product_name=i.product_name, quantity=i.quantity, unit_price=i.unit_price, subtotal=i.subtotal)
             for i in model.items
         ]
-        return Sale(id=model.id, store_id=model.store_id, items=items, total=model.total, payment_method=model.payment_method, status=model.status, created_at=model.created_at)
+        return Sale(
+            id=model.id,
+            store_id=model.store_id,
+            items=items,
+            total=model.total,
+            payment_method=model.payment_method,
+            status=model.status,
+            device_id=model.device_id,
+            customer_name=model.customer_name,
+            created_at=model.created_at,
+        )
 
     async def list_by_store(self, store_id: UUID) -> list[Sale]:
         result = await self._session.execute(
@@ -65,5 +77,17 @@ class SaleRepository(ISaleRepository):
                 SaleItem(id=i.id, product_id=i.product_id, product_name=i.product_name, quantity=i.quantity, unit_price=i.unit_price, subtotal=i.subtotal)
                 for i in model.items
             ]
-            sales.append(Sale(id=model.id, store_id=model.store_id, items=items, total=model.total, payment_method=model.payment_method, status=model.status, created_at=model.created_at))
+            sales.append(
+                Sale(
+                    id=model.id,
+                    store_id=model.store_id,
+                    items=items,
+                    total=model.total,
+                    payment_method=model.payment_method,
+                    status=model.status,
+                    device_id=model.device_id,
+                    customer_name=model.customer_name,
+                    created_at=model.created_at,
+                )
+            )
         return sales

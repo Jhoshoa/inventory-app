@@ -20,6 +20,11 @@ class Settings(BaseSettings):
     JWT_SECRET: str = "local-jwt-secret"
 
     SENTRY_DSN: str | None = None
+    CORS_ALLOWED_ORIGINS: str = "http://localhost:3000,http://localhost:8081"
+
+    @property
+    def cors_allowed_origins(self) -> list[str]:
+        return [origin.strip() for origin in self.CORS_ALLOWED_ORIGINS.split(",") if origin.strip()]
 
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}
 

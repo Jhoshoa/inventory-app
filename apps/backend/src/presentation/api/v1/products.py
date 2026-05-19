@@ -8,7 +8,6 @@ from src.application.use_cases.products.get_product import GetProductUseCase
 from src.application.use_cases.products.update_product import UpdateProductUseCase, UpdateProductInput
 from src.application.use_cases.products.delete_product import DeleteProductUseCase
 from src.application.use_cases.products.update_stock import UpdateStockUseCase
-from src.application.exceptions import NotFoundError
 from src.presentation.dependencies import get_current_user, get_product_repo
 from src.infrastructure.database.repositories.product_repository import ProductRepository
 
@@ -50,10 +49,7 @@ async def get_product(
     repo: ProductRepository = Depends(get_product_repo),
 ):
     use_case = GetProductUseCase(repo)
-    product = await use_case.execute(product_id)
-    if product.store_id != UUID(str(user["store_id"])):
-        raise NotFoundError("Producto no encontrado")
-    return product
+    return await use_case.execute(UUID(str(user["store_id"])), product_id)
 
 
 @router.patch("/{product_id}", response_model=ProductResponseDTO)
@@ -64,10 +60,8 @@ async def update_product(
     repo: ProductRepository = Depends(get_product_repo),
 ):
     use_case = UpdateProductUseCase(repo)
-    existing = await GetProductUseCase(repo).execute(product_id)
-    if existing.store_id != UUID(str(user["store_id"])):
-        raise NotFoundError("Producto no encontrado")
     product = await use_case.execute(UpdateProductInput(
+        store_id=UUID(str(user["store_id"])),
         product_id=product_id,
         name=dto.name,
         price=dto.price,
@@ -75,8 +69,14 @@ async def update_product(
         min_stock=dto.min_stock,
     ))
     if dto.stock is not None:
-        product.stock = dto.stock
-        product = await repo.save(product)
+        delta = dto.stock - product.stock
+        if delta:
+            product = await UpdateStockUseCase(repo).execute(
+                UUID(str(user["store_id"])),
+                product_id,
+                delta,
+                "stock set from product update",
+            )
     return product
 
 
@@ -87,11 +87,8 @@ async def adjust_stock(
     user: dict = Depends(get_current_user),
     repo: ProductRepository = Depends(get_product_repo),
 ):
-    existing = await GetProductUseCase(repo).execute(product_id)
-    if existing.store_id != UUID(str(user["store_id"])):
-        raise NotFoundError("Producto no encontrado")
     use_case = UpdateStockUseCase(repo)
-    return await use_case.execute(product_id, dto.quantity)
+    return await use_case.execute(UUID(str(user["store_id"])), product_id, dto.quantity, dto.reason)
 
 
 @router.delete("/{product_id}", status_code=204)
@@ -100,8 +97,5 @@ async def delete_product(
     user: dict = Depends(get_current_user),
     repo: ProductRepository = Depends(get_product_repo),
 ):
-    existing = await GetProductUseCase(repo).execute(product_id)
-    if existing.store_id != UUID(str(user["store_id"])):
-        raise NotFoundError("Producto no encontrado")
     use_case = DeleteProductUseCase(repo)
-    await use_case.execute(product_id)
+    await use_case.execute(UUID(str(user["store_id"])), product_id)

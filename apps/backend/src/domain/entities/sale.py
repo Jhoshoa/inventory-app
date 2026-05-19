@@ -37,10 +37,18 @@ class Sale:
     total: Decimal = Decimal("0")
     payment_method: str = "efectivo"
     status: str = "completed"
+    device_id: str | None = None
+    customer_name: str | None = None
     created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
 
     @staticmethod
-    def create(store_id: UUID, items: list[SaleItem], payment_method: str = "efectivo") -> "Sale":
+    def create(
+        store_id: UUID,
+        items: list[SaleItem],
+        payment_method: str = "efectivo",
+        device_id: str | None = None,
+        customer_name: str | None = None,
+    ) -> "Sale":
         if not items:
             raise ValueError("La venta debe tener al menos un producto")
         total = sum(item.subtotal for item in items)
@@ -50,4 +58,6 @@ class Sale:
             items=items,
             total=total,
             payment_method=payment_method,
+            device_id=device_id,
+            customer_name=customer_name,
         )
