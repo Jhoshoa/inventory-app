@@ -5,6 +5,7 @@ from src.infrastructure.database.models.user_model import UserModel
 from src.infrastructure.database.models.exchange_rate_model import ExchangeRateModel
 from src.infrastructure.database.models.stock_movement_model import StockMovementModel
 from src.infrastructure.database.models.sync_change_model import SyncChangeModel
+from src.infrastructure.database.models.inventory_import_model import InventoryImportModel, InventoryImportItemModel
 
 __all__ = [
     "ProductModel",
@@ -15,4 +16,6 @@ __all__ = [
     "ExchangeRateModel",
     "StockMovementModel",
     "SyncChangeModel",
+    "InventoryImportModel",
+    "InventoryImportItemModel",
 ]
