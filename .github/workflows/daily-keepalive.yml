@@ -1,8 +1,10 @@
 name: Daily Keepalive + Exchange Rates
 
 on:
-  schedule:
-    - cron: "0 12 * * *"
+  # Daily cron disabled for now. Keep workflow_dispatch so the keepalive can
+  # still be tested manually when the Supabase keepalive/rates flow is resumed.
+  # schedule:
+  #   - cron: "0 12 * * *"
   workflow_dispatch:
 
 jobs:
