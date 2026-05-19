@@ -1,5 +1,5 @@
 from uuid import UUID
-from datetime import datetime
+from datetime import datetime, timezone
 from decimal import Decimal
 
 from sqlalchemy import func, select
@@ -65,6 +65,8 @@ class SaleRepository(ISaleRepository):
             device_id=model.device_id,
             customer_name=model.customer_name,
             created_at=model.created_at,
+            voided_at=model.voided_at,
+            void_reason=model.void_reason,
         )
 
     async def list_by_store(self, store_id: UUID) -> list[Sale]:
@@ -91,6 +93,8 @@ class SaleRepository(ISaleRepository):
                     device_id=model.device_id,
                     customer_name=model.customer_name,
                     created_at=model.created_at,
+                    voided_at=model.voided_at,
+                    void_reason=model.void_reason,
                 )
             )
         return sales
@@ -147,9 +151,53 @@ class SaleRepository(ISaleRepository):
                     device_id=model.device_id,
                     customer_name=model.customer_name,
                     created_at=model.created_at,
+                    voided_at=model.voided_at,
+                    void_reason=model.void_reason,
                 )
             )
         return sales
+
+    async def mark_voided(self, store_id: UUID, sale_id: UUID, reason: str) -> Sale | None:
+        result = await self._session.execute(
+            select(SaleModel)
+            .where(SaleModel.store_id == store_id, SaleModel.id == sale_id, SaleModel.deleted_at.is_(None))
+            .options(selectinload(SaleModel.items))
+        )
+        model = result.scalar_one_or_none()
+        if model is None:
+            return None
+        model.status = "voided"
+        model.voided_at = datetime.now(timezone.utc)
+        model.void_reason = reason
+        model.version = (model.version or 0) + 1
+        model.updated_at = datetime.now(timezone.utc)
+        await self._session.flush()
+        return await self.get_by_id(store_id, sale_id)
+
+    async def list_for_export(self, store_id: UUID, start: datetime, end: datetime) -> list[dict]:
+        result = await self._session.execute(
+            select(SaleModel)
+            .where(
+                SaleModel.store_id == store_id,
+                SaleModel.deleted_at.is_(None),
+                SaleModel.created_at >= start,
+                SaleModel.created_at <= end,
+            )
+            .order_by(SaleModel.created_at.desc(), SaleModel.id.asc())
+        )
+        return [
+            {
+                "id": model.id,
+                "created_at": model.created_at,
+                "status": model.status,
+                "payment_method": model.payment_method,
+                "total": model.total,
+                "items_count": model.items_count,
+                "customer_name": model.customer_name,
+                "device_id": model.device_id,
+            }
+            for model in result.scalars().all()
+        ]
 
     async def totals_by_payment_method(self, store_id: UUID, start: datetime, end: datetime) -> list[dict]:
         result = await self._session.execute(

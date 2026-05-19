@@ -46,6 +46,9 @@ class IProductRepository(ABC):
     async def count_out_of_stock(self, store_id: UUID) -> int: ...
 
     @abstractmethod
+    async def list_for_export(self, store_id: UUID) -> list[Product]: ...
+
+    @abstractmethod
     async def delete(self, store_id: UUID, product_id: UUID) -> None: ...
 
     @abstractmethod

@@ -182,6 +182,14 @@ class ProductRepository(IProductRepository):
         )
         return int(result.scalar_one())
 
+    async def list_for_export(self, store_id: UUID) -> list[Product]:
+        result = await self._session.execute(
+            select(ProductModel)
+            .where(ProductModel.store_id == store_id, ProductModel.deleted_at.is_(None))
+            .order_by(ProductModel.name.asc(), ProductModel.id.asc())
+        )
+        return [self._to_entity(model) for model in result.scalars().all()]
+
     async def delete(self, store_id: UUID, product_id: UUID) -> None:
         result = await self._session.execute(
             select(ProductModel).where(ProductModel.store_id == store_id, ProductModel.id == product_id)

@@ -40,6 +40,8 @@ class Sale:
     device_id: str | None = None
     customer_name: str | None = None
     created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    voided_at: datetime | None = None
+    void_reason: str | None = None
 
     @staticmethod
     def create(

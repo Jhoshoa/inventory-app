@@ -16,6 +16,10 @@ class CreateSaleDTO(BaseModel):
     customer_name: str | None = Field(default=None, max_length=100)
 
 
+class VoidSaleDTO(BaseModel):
+    reason: str = Field(..., min_length=1, max_length=200)
+
+
 class SaleItemResponseDTO(BaseModel):
     product_id: UUID
     product_name: str
@@ -33,5 +37,7 @@ class SaleResponseDTO(BaseModel):
     payment_method: str
     status: str
     created_at: datetime
+    voided_at: datetime | None = None
+    void_reason: str | None = None
 
     model_config = {"from_attributes": True}

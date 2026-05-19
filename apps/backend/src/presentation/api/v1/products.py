@@ -14,6 +14,7 @@ from src.application.dto.product_dto import (
     StockAdjustmentDTO,
     UpdateProductDTO,
 )
+from src.application.dto.stock_movement_dto import StockMovementListResponseDTO
 from src.application.use_cases.products.create_product import CreateProductInput, CreateProductUseCase
 from src.application.use_cases.products.delete_product import DeleteProductUseCase
 from src.application.use_cases.products.get_product import GetProductUseCase
@@ -22,8 +23,13 @@ from src.application.use_cases.products.list_low_stock_products import ListLowSt
 from src.application.use_cases.products.search_products import SearchProductsInput, SearchProductsUseCase
 from src.application.use_cases.products.update_product import UpdateProductInput, UpdateProductUseCase
 from src.application.use_cases.products.update_stock import UpdateStockUseCase
+from src.application.use_cases.stock_movements.list_product_stock_movements import (
+    ListProductStockMovementsInput,
+    ListProductStockMovementsUseCase,
+)
 from src.infrastructure.database.repositories.product_repository import ProductRepository
-from src.presentation.dependencies import get_current_user, get_product_repo, require_owner
+from src.infrastructure.database.repositories.stock_movement_repository import StockMovementRepository
+from src.presentation.dependencies import get_current_user, get_product_repo, get_stock_movement_repo, require_active_user, require_owner
 
 router = APIRouter(prefix="/products", tags=["products"])
 
@@ -107,6 +113,26 @@ async def get_product_by_qr(
     repo: ProductRepository = Depends(get_product_repo),
 ):
     return await GetProductByQRUseCase(repo).execute(UUID(str(user["store_id"])), qr_code)
+
+
+@router.get("/{product_id}/stock-movements", response_model=StockMovementListResponseDTO)
+async def list_product_stock_movements(
+    product_id: UUID,
+    limit: int = Query(default=50, ge=1, le=100),
+    offset: int = Query(default=0, ge=0),
+    user=Depends(require_active_user),
+    product_repo: ProductRepository = Depends(get_product_repo),
+    movement_repo: StockMovementRepository = Depends(get_stock_movement_repo),
+):
+    movements, total = await ListProductStockMovementsUseCase(movement_repo, product_repo).execute(
+        ListProductStockMovementsInput(
+            store_id=user.store_id,
+            product_id=product_id,
+            limit=limit,
+            offset=offset,
+        )
+    )
+    return StockMovementListResponseDTO(items=movements, total=total, limit=limit, offset=offset)
 
 
 @router.post("", response_model=ProductResponseDTO, status_code=201)

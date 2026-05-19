@@ -26,3 +26,9 @@ class ISaleRepository(ABC):
 
     @abstractmethod
     async def top_products(self, store_id: UUID, start: datetime, end: datetime, limit: int = 5) -> list[dict[str, Any]]: ...
+
+    @abstractmethod
+    async def mark_voided(self, store_id: UUID, sale_id: UUID, reason: str) -> Sale | None: ...
+
+    @abstractmethod
+    async def list_for_export(self, store_id: UUID, start: datetime, end: datetime) -> list[dict[str, Any]]: ...

@@ -23,5 +23,6 @@ class StockMovementModel(Base):
 
     __table_args__ = (
         Index("ix_stock_movements_store_id_created_at", "store_id", "created_at"),
+        Index("ix_stock_movements_store_product_created_at", "store_id", "product_id", "created_at"),
         Index("ix_stock_movements_product_id", "product_id"),
     )
