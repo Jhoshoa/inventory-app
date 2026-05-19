@@ -23,7 +23,7 @@ from src.application.use_cases.products.search_products import SearchProductsInp
 from src.application.use_cases.products.update_product import UpdateProductInput, UpdateProductUseCase
 from src.application.use_cases.products.update_stock import UpdateStockUseCase
 from src.infrastructure.database.repositories.product_repository import ProductRepository
-from src.presentation.dependencies import get_current_user, get_product_repo
+from src.presentation.dependencies import get_current_user, get_product_repo, require_owner
 
 router = APIRouter(prefix="/products", tags=["products"])
 
@@ -190,6 +190,7 @@ async def adjust_stock(
 async def delete_product(
     product_id: UUID,
     user: dict = Depends(get_current_user),
+    _owner=Depends(require_owner),
     repo: ProductRepository = Depends(get_product_repo),
 ):
     await DeleteProductUseCase(repo).execute(UUID(str(user["store_id"])), product_id)

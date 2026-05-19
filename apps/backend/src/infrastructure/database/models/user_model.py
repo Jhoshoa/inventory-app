@@ -14,5 +14,10 @@ class UserModel(Base):
     role = Column(String(20), default="cashier")
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    updated_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
+    last_login_at = Column(DateTime(timezone=True))
 
-    __table_args__ = (Index("ix_users_store_id", "store_id"),)
+    __table_args__ = (
+        Index("ix_users_store_id", "store_id"),
+        Index("ix_users_store_role", "store_id", "role"),
+    )

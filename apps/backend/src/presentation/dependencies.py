@@ -2,7 +2,11 @@ from uuid import UUID
 from fastapi import Depends, HTTPException
 from fastapi.security import HTTPBearer
 from sqlalchemy.ext.asyncio import AsyncSession
+from src.application.exceptions import ForbiddenError, UnauthorizedError
+from src.application.use_cases.auth.ensure_local_user import EnsureLocalUserInput, EnsureLocalUserUseCase
+from src.application.use_cases.auth.get_current_user_context import CurrentUserContext, GetCurrentUserContextUseCase
 from src.config.settings import settings
+from src.domain.entities.store import Store
 from src.infrastructure.database.session import get_session
 from src.infrastructure.database.repositories.product_repository import ProductRepository
 from src.infrastructure.database.repositories.sale_repository import SaleRepository
@@ -10,6 +14,7 @@ from src.infrastructure.database.repositories.sync_repository import SyncReposit
 from src.infrastructure.database.repositories.store_repository import StoreRepository
 from src.infrastructure.database.repositories.exchange_rate_repository import ExchangeRateRepository
 from src.infrastructure.database.repositories.inventory_import_repository import InventoryImportRepository
+from src.infrastructure.database.repositories.user_repository import UserRepository
 from src.infrastructure.auth.supabase_auth import verify_jwt
 
 security_scheme = HTTPBearer(auto_error=False)
@@ -54,6 +59,10 @@ def get_store_repo(session: AsyncSession = Depends(get_db_session)) -> StoreRepo
     return StoreRepository(session)
 
 
+def get_user_repo(session: AsyncSession = Depends(get_db_session)) -> UserRepository:
+    return UserRepository(session)
+
+
 def get_exchange_rate_repo(session: AsyncSession = Depends(get_db_session)) -> ExchangeRateRepository:
     return ExchangeRateRepository(session)
 
@@ -83,3 +92,47 @@ def get_photo_storage():
     from src.infrastructure.services.cloudinary.photo_storage import CloudinaryPhotoStorage
 
     return CloudinaryPhotoStorage()
+
+
+async def get_current_user_context(
+    raw_user: dict = Depends(get_current_user),
+    user_repo: UserRepository = Depends(get_user_repo),
+    store_repo: StoreRepository = Depends(get_store_repo),
+) -> CurrentUserContext:
+    try:
+        return await GetCurrentUserContextUseCase(user_repo).execute(raw_user)
+    except UnauthorizedError as exc:
+        if not settings.DEBUG or exc.detail != "Usuario local no encontrado":
+            raise
+        store = await store_repo.get_by_id(UUID(str(raw_user["store_id"])))
+        if store is None:
+            await store_repo.save(Store(id=UUID(str(raw_user["store_id"])), name="Dev Store"))
+        user = await EnsureLocalUserUseCase(user_repo, store_repo).execute(
+            EnsureLocalUserInput(
+                user_id=UUID(str(raw_user["id"])),
+                email=str(raw_user.get("email") or "dev@local.dev"),
+                store_id=UUID(str(raw_user["store_id"])),
+                full_name=raw_user.get("full_name"),
+                role=str(raw_user.get("role") or "owner"),
+            )
+        )
+        return CurrentUserContext(
+            id=user.id,
+            email=user.email,
+            store_id=user.store_id,
+            full_name=user.full_name,
+            role=user.role,
+            is_active=user.is_active,
+        )
+
+
+async def require_active_user(user: CurrentUserContext = Depends(get_current_user_context)) -> CurrentUserContext:
+    if not user.is_active:
+        raise UnauthorizedError("Usuario inactivo")
+    return user
+
+
+async def require_owner(user: CurrentUserContext = Depends(require_active_user)) -> CurrentUserContext:
+    if user.role != "owner":
+        raise ForbiddenError("Permiso requerido: owner")
+    return user

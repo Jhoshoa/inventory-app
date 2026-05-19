@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from pydantic import BaseModel, Field
 
 
@@ -17,3 +19,14 @@ class AuthResponseDTO(BaseModel):
     access_token: str
     refresh_token: str
     user: dict
+
+
+class CurrentUserDTO(BaseModel):
+    id: UUID
+    email: str
+    store_id: UUID
+    full_name: str | None = None
+    role: str
+    is_active: bool
+
+    model_config = {"from_attributes": True}

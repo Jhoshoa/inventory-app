@@ -20,3 +20,8 @@ class ConflictError(ApplicationError):
 class UnauthorizedError(ApplicationError):
     status_code = 401
     error = "unauthorized"
+
+
+class ForbiddenError(ApplicationError):
+    status_code = 403
+    error = "forbidden"

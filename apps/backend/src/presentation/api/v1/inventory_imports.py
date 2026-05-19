@@ -31,6 +31,7 @@ from src.presentation.dependencies import (
     get_ocr_service,
     get_photo_storage,
     get_product_repo,
+    require_owner,
 )
 
 router = APIRouter(prefix="/inventory-imports", tags=["inventory-imports"])
@@ -116,6 +117,7 @@ async def update_inventory_import_item(
 async def confirm_inventory_import(
     import_id: UUID,
     user: dict = Depends(get_current_user),
+    _owner=Depends(require_owner),
     import_repo: InventoryImportRepository = Depends(get_inventory_import_repo),
     product_repo: ProductRepository = Depends(get_product_repo),
 ):

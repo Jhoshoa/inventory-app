@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_asyn
 from sqlalchemy.pool import StaticPool
 
 from src.infrastructure.database import models as _models
-from src.infrastructure.database.models import StoreModel
+from src.infrastructure.database.models import StoreModel, UserModel
 from src.infrastructure.database.models.product_model import Base
 from src.main import app
 from src.presentation import dependencies
@@ -34,6 +34,16 @@ async def db_session() -> AsyncGenerator[AsyncSession, None]:
                 name="Dev Store",
                 address="Av. Siempre Viva",
                 phone="70000000",
+            )
+        )
+        session.add(
+            UserModel(
+                id=dependencies.DEV_USER_ID,
+                email="dev@local.dev",
+                store_id=dependencies.DEV_STORE_ID,
+                full_name="Dev User",
+                role="owner",
+                is_active=True,
             )
         )
         await session.commit()

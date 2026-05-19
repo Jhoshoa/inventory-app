@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends
 from src.application.dto.store_dto import StoreResponseDTO, StoreUpdateDTO
 from src.application.use_cases.store.get_store import GetStoreUseCase
 from src.application.use_cases.store.update_store import UpdateStoreUseCase, UpdateStoreInput
-from src.presentation.dependencies import get_current_user, get_store_repo
+from src.presentation.dependencies import get_current_user, get_store_repo, require_owner
 from src.infrastructure.database.repositories.store_repository import StoreRepository
 
 router = APIRouter(prefix="/store", tags=["store"])
@@ -22,6 +22,7 @@ async def get_store(
 async def update_store(
     dto: StoreUpdateDTO,
     user: dict = Depends(get_current_user),
+    _owner=Depends(require_owner),
     repo: StoreRepository = Depends(get_store_repo),
 ):
     return await UpdateStoreUseCase(repo).execute(
