@@ -228,26 +228,26 @@ async def test_sync_push_and_pull_products(client):
     push_response = await client.post(
         "/api/v1/sync/push",
         json={
+            "device_id": "test-device",
             "changes": [
                 {
+                    "client_change_id": "change-product-1",
                     "entity": "product",
                     "operation": "upsert",
-                    "data": {
-                        "id": product_id,
-                        "name": "Fideo",
-                        "price": "8.50",
-                        "stock": 7,
-                    },
+                    "entity_id": product_id,
+                    "client_created_at": datetime.now(UTC).isoformat(),
+                    "payload": {"name": "Fideo", "price": "8.50", "stock": 7},
                 }
             ]
         },
     )
     assert push_response.status_code == 200
+    assert push_response.json()["results"][0]["status"] == "accepted"
 
     pull_response = await client.post(
         "/api/v1/sync/pull",
-        json={"since": datetime(2020, 1, 1, tzinfo=UTC).isoformat()},
+        json={"device_id": "test-device", "since": datetime(2020, 1, 1, tzinfo=UTC).isoformat()},
     )
     assert pull_response.status_code == 200
-    updates = pull_response.json()["updates"]
-    assert any(update["entity"] == "product" and update["id"] == product_id for update in updates)
+    changes = pull_response.json()["changes"]
+    assert any(change["entity"] == "product" and change["entity_id"] == product_id for change in changes)

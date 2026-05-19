@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends
-from src.application.dto.sync_dto import SyncPushDTO, SyncPullDTO, SyncResponseDTO
+from src.application.dto.sync_dto import SyncPullDTO, SyncPullResponseDTO, SyncPushDTO, SyncPushResponseDTO
 from src.application.use_cases.sync.sync_push import SyncPushUseCase, SyncPushInput
 from src.application.use_cases.sync.sync_pull import SyncPullUseCase, SyncPullInput
 from src.presentation.dependencies import get_current_user, get_sync_repo
@@ -10,23 +10,36 @@ from uuid import UUID
 router = APIRouter(prefix="/sync", tags=["sync"])
 
 
-@router.post("/push")
+@router.post("/push", response_model=SyncPushResponseDTO)
 async def sync_push(
     dto: SyncPushDTO,
     user: dict = Depends(get_current_user),
     repo: SyncRepository = Depends(get_sync_repo),
 ):
     use_case = SyncPushUseCase(repo)
-    await use_case.execute(SyncPushInput(store_id=UUID(str(user["store_id"])), changes=dto.changes))
-    return {"status": "ok"}
+    server_time = datetime.now(timezone.utc)
+    results = await use_case.execute(
+        SyncPushInput(
+            store_id=UUID(str(user["store_id"])),
+            device_id=dto.device_id,
+            changes=dto.changes,
+        )
+    )
+    return SyncPushResponseDTO(results=results, server_time=server_time)
 
 
-@router.post("/pull", response_model=SyncResponseDTO)
+@router.post("/pull", response_model=SyncPullResponseDTO)
 async def sync_pull(
     dto: SyncPullDTO,
     user: dict = Depends(get_current_user),
     repo: SyncRepository = Depends(get_sync_repo),
 ):
     use_case = SyncPullUseCase(repo)
-    updates = await use_case.execute(SyncPullInput(store_id=UUID(str(user["store_id"])), since=dto.since))
-    return SyncResponseDTO(updates=updates, server_time=datetime.now(timezone.utc))
+    changes = await use_case.execute(
+        SyncPullInput(
+            store_id=UUID(str(user["store_id"])),
+            device_id=dto.device_id,
+            since=dto.since,
+        )
+    )
+    return SyncPullResponseDTO(changes=changes, server_time=datetime.now(timezone.utc))
