@@ -34,5 +34,10 @@ class ProductModel(Base):
     __table_args__ = (
         Index("ix_products_store_id", "store_id"),
         Index("ix_products_store_id_id", "store_id", "id"),
+        Index("ix_products_store_name", "store_id", "name"),
+        Index("ix_products_store_category", "store_id", "category"),
+        Index("ix_products_store_sku", "store_id", "sku"),
+        Index("ix_products_store_qr_code", "store_id", "qr_code"),
+        Index("ix_products_store_stock", "store_id", "stock"),
         Index("ix_products_updated_at", "updated_at"),
     )

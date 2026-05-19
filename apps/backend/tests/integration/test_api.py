@@ -22,7 +22,8 @@ async def test_products_crud_and_stock_adjustment(client):
     product_id = product["id"]
     list_response = await client.get("/api/v1/products")
     assert list_response.status_code == 200
-    assert len(list_response.json()) == 1
+    assert list_response.json()["total"] == 1
+    assert len(list_response.json()["items"]) == 1
 
     update_response = await client.patch(
         f"/api/v1/products/{product_id}",

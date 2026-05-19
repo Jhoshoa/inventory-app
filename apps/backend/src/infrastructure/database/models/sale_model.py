@@ -46,3 +46,5 @@ class SaleItemModel(Base):
     subtotal = Column(Numeric(12, 2), nullable=False)
 
     sale = relationship("SaleModel", back_populates="items")
+
+    __table_args__ = (Index("ix_sale_items_product_id", "product_id"),)

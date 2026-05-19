@@ -23,6 +23,8 @@ class SaleItemResponseDTO(BaseModel):
     unit_price: Decimal
     subtotal: Decimal
 
+    model_config = {"from_attributes": True}
+
 
 class SaleResponseDTO(BaseModel):
     id: UUID

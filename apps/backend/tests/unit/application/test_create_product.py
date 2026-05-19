@@ -4,6 +4,9 @@ from src.application.use_cases.products.create_product import CreateProductUseCa
 
 
 class MockProductRepo:
+    async def qr_code_exists(self, qr_code, exclude_product_id=None):
+        return False
+
     async def save(self, product):
         return product
 

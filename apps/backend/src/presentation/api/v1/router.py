@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from src.presentation.api.v1 import products, sales, photos, sync, auth, store, exchange_rates
+from src.presentation.api.v1 import auth, dashboard, exchange_rates, photos, products, reports, sales, store, sync
 
 api_v1_router = APIRouter()
 api_v1_router.include_router(products.router)
@@ -9,3 +9,5 @@ api_v1_router.include_router(sync.router)
 api_v1_router.include_router(auth.router)
 api_v1_router.include_router(store.router)
 api_v1_router.include_router(exchange_rates.router)
+api_v1_router.include_router(dashboard.router)
+api_v1_router.include_router(reports.router)
