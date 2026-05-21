@@ -24,7 +24,7 @@ export default async function ImportDetailPage({
     return (
       <section className="space-y-6">
         <Alert variant="error">
-          No se pudo cargar la importacion: {inventoryImport.error.message}
+          No se pudo cargar Import Image: {inventoryImport.error.message}
         </Alert>
       </section>
     );

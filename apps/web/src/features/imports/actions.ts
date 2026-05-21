@@ -65,7 +65,7 @@ export async function confirmImportAction(
   formData: FormData,
 ): Promise<ImportActionState> {
   const importId = stringValue(formData, "import_id");
-  if (!importId) return { ok: false, message: "Importacion invalida", fieldErrors: {} };
+  if (!importId) return { ok: false, message: "Import Image invalido", fieldErrors: {} };
 
   const result = await mutateImport<ConfirmInventoryImportResponse>(
     `/inventory-imports/${importId}/confirm`,
@@ -77,7 +77,7 @@ export async function confirmImportAction(
   revalidatePath("/dashboard/products");
   return {
     ok: true,
-    message: `Importacion confirmada: ${result.data?.created_products ?? 0} productos creados`,
+    message: `Import Image confirmado: ${result.data?.created_products ?? 0} productos creados`,
     fieldErrors: {},
   };
 }
@@ -88,7 +88,7 @@ export async function cancelImportAction(
 ): Promise<ImportActionState> {
   const importId = stringValue(formData, "import_id");
   const confirm = stringValue(formData, "confirm");
-  if (!importId) return { ok: false, message: "Importacion invalida", fieldErrors: {} };
+  if (!importId) return { ok: false, message: "Import Image invalido", fieldErrors: {} };
   if (confirm !== "CANCELAR") {
     return { ok: false, fieldErrors: { confirm: "Escribe CANCELAR para confirmar" } };
   }
@@ -100,7 +100,7 @@ export async function cancelImportAction(
 
   if (!result.ok) return result;
   revalidateImportPaths(importId);
-  return { ok: true, message: "Importacion cancelada", fieldErrors: {} };
+  return { ok: true, message: "Import Image cancelado", fieldErrors: {} };
 }
 
 async function mutateImport<T>(

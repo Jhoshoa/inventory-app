@@ -20,9 +20,9 @@ export default async function ImportsPage({
   return (
     <section className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold text-slate-950">Importaciones</h1>
+        <h1 className="text-2xl font-semibold text-slate-950">Import Image</h1>
         <p className="mt-1 text-sm text-slate-600">
-          Sube fotos de listas o planillas, revisa los items detectados y confirma productos.
+          Sube imagenes de listas o planillas, revisa los items detectados y confirma productos.
         </p>
       </div>
 
@@ -31,12 +31,12 @@ export default async function ImportsPage({
 
       {!imports.ok ? (
         <Alert variant="error">
-          No se pudieron cargar importaciones: {imports.error.message}
+          No se pudo cargar Import Image: {imports.error.message}
         </Alert>
       ) : imports.data.total === 0 && params.status === "all" ? (
         <EmptyState
-          title="Todavia no hay importaciones"
-          description="Sube una foto para crear borradores revisables antes de afectar inventario."
+          title="Todavia no hay imagenes importadas"
+          description="Sube una imagen para crear borradores revisables antes de afectar inventario."
         />
       ) : (
         <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">

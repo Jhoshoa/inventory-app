@@ -38,17 +38,29 @@ class CreateInventoryImportFromPhotoUseCase:
 
         import_id = uuid4()
         try:
-            result = await self._ocr.extract_from_bytes(input.image_bytes) if self._ocr else None
-            raw_text = result.raw_text if result else None
-            structured = result.structured if result else None
-            items = parse_ocr_items(
-                store_id=input.store_id,
-                import_id=import_id,
-                raw_text=raw_text,
-                structured=structured,
-            )
-            status = InventoryImportStatus.NEEDS_REVIEW.value
-            error_message = None
+            if self._ocr is None:
+                raw_text = None
+                items = []
+                status = InventoryImportStatus.FAILED.value
+                error_message = (
+                    "OCR no esta disponible en el backend. Instala las dependencias AI "
+                    "del backend para procesar imagenes."
+                )
+            else:
+                result = await self._ocr.extract_from_bytes(input.image_bytes)
+                raw_text = result.raw_text
+                structured = result.structured
+                items = parse_ocr_items(
+                    store_id=input.store_id,
+                    import_id=import_id,
+                    raw_text=raw_text,
+                    structured=structured,
+                )
+                status = InventoryImportStatus.NEEDS_REVIEW.value
+                error_message = None
+                if not items:
+                    status = InventoryImportStatus.FAILED.value
+                    error_message = "OCR no detecto items importables en la imagen."
         except Exception as exc:
             raw_text = None
             items = []

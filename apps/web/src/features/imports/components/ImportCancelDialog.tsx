@@ -21,7 +21,7 @@ export function ImportCancelDialog({ inventoryImport }: { inventoryImport: Inven
   if (!open) {
     return (
       <Button variant="danger" onClick={() => setOpen(true)}>
-        Cancelar importacion
+        Cancelar Import Image
       </Button>
     );
   }
@@ -32,7 +32,7 @@ export function ImportCancelDialog({ inventoryImport }: { inventoryImport: Inven
         <form action={formAction} className="space-y-4">
           <input type="hidden" name="import_id" value={inventoryImport.id} />
           <div>
-            <h2 className="text-base font-semibold text-slate-950">Cancelar importacion</h2>
+            <h2 className="text-base font-semibold text-slate-950">Cancelar Import Image</h2>
             <p className="mt-1 text-sm text-slate-600">
               Escribe CANCELAR para confirmar. Esta accion no elimina productos ya creados.
             </p>

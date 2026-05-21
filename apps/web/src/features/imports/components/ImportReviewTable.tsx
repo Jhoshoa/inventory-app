@@ -20,6 +20,9 @@ const initialState: ImportActionState = { ok: false, fieldErrors: {} };
 
 export function ImportReviewTable({ inventoryImport }: { inventoryImport: InventoryImport }) {
   const editable = isImportEditable(inventoryImport.status);
+  const emptyMessage = inventoryImport.error_message
+    ? `Sin items detectados: ${inventoryImport.error_message}`
+    : "Sin items detectados";
 
   return (
     <Table>
@@ -36,7 +39,7 @@ export function ImportReviewTable({ inventoryImport }: { inventoryImport: Invent
       </thead>
       <tbody>
         {inventoryImport.items.length === 0 ? (
-          <TableEmptyRow colSpan={7}>Sin items detectados</TableEmptyRow>
+          <TableEmptyRow colSpan={7}>{emptyMessage}</TableEmptyRow>
         ) : (
           inventoryImport.items.map((item) => (
             <ImportReviewRow key={item.id} item={item} editable={editable} />

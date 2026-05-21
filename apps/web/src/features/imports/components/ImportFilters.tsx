@@ -28,7 +28,7 @@ export function ImportFilters({ params }: { params: ImportSearchParams }) {
           Estado
         </span>
         <Select
-          aria-label="Estado de importacion"
+          aria-label="Estado de Import Image"
           value={params.status}
           onChange={(event) => updateStatus(event.target.value)}
         >

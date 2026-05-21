@@ -7,12 +7,12 @@ describe("ImportConfirmPanel", () => {
   it("disables confirmation for cashier", () => {
     render(<ImportConfirmPanel inventoryImport={inventoryImport} role="cashier" />);
     expect(screen.getByText(/requiere rol owner/i)).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /confirmar importacion/i })).toBeDisabled();
+    expect(screen.getByRole("button", { name: /confirmar import image/i })).toBeDisabled();
   });
 
   it("blocks confirmation without approved items", () => {
     render(<ImportConfirmPanel inventoryImport={{ ...inventoryImport, items: [] }} role="owner" />);
-    expect(screen.getByRole("button", { name: /confirmar importacion/i })).toBeDisabled();
+    expect(screen.getByRole("button", { name: /confirmar import image/i })).toBeDisabled();
   });
 });
 

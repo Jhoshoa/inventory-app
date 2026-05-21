@@ -160,3 +160,18 @@ async def test_ocr_failure_is_persisted_as_failed(client, db_session):
 
     imports = (await db_session.execute(InventoryImportModel.__table__.select())).all()
     assert len(imports) == 1
+
+
+async def test_missing_ocr_service_is_persisted_as_failed(client):
+    app.dependency_overrides[dependencies.get_ocr_service] = lambda: None
+
+    response = await client.post(
+        "/api/v1/inventory-imports/from-photo",
+        files={"file": ("inventory.jpg", b"fake-image", "image/jpeg")},
+    )
+
+    assert response.status_code == 201
+    data = response.json()
+    assert data["status"] == "failed"
+    assert data["items_count"] == 0
+    assert "OCR no esta disponible" in data["error_message"]

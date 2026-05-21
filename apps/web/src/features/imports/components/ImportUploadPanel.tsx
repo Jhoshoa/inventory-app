@@ -58,14 +58,14 @@ export function ImportUploadPanel() {
   return (
     <form onSubmit={submitUpload} className="space-y-3 rounded-lg border border-slate-200 bg-white p-4">
       <div>
-        <h2 className="text-base font-semibold text-slate-950">Subir foto</h2>
+        <h2 className="text-base font-semibold text-slate-950">Upload image</h2>
         <p className="mt-1 text-sm text-slate-600">
           Usa una imagen JPG, PNG o WebP de hasta 8 MB.
         </p>
       </div>
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
         <Input
-          aria-label="Foto para importacion"
+          aria-label="Imagen para Import Image"
           type="file"
           accept="image/jpeg,image/png,image/webp"
           onChange={(event) => {
@@ -75,7 +75,7 @@ export function ImportUploadPanel() {
         />
         <Button type="submit" disabled={state.status === "uploading"}>
           <Upload className="h-4 w-4" aria-hidden />
-          {state.status === "uploading" ? "Subiendo" : "Procesar"}
+          {state.status === "uploading" ? "Subiendo" : "Procesar imagen"}
         </Button>
       </div>
       {state.status === "uploading" ? (

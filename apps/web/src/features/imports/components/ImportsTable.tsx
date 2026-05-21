@@ -23,7 +23,7 @@ export function ImportsTable({ imports }: { imports: InventoryImport[] }) {
       </thead>
       <tbody>
         {imports.length === 0 ? (
-          <TableEmptyRow colSpan={5}>Sin importaciones para este filtro</TableEmptyRow>
+          <TableEmptyRow colSpan={5}>Sin imagenes importadas para este filtro</TableEmptyRow>
         ) : (
           imports.map((item) => (
             <tr key={item.id} className="border-t border-slate-100">

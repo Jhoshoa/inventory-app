@@ -6,7 +6,7 @@ import type { InventoryImport } from "../types";
 describe("ImportsTable", () => {
   it("renders empty state", () => {
     render(<ImportsTable imports={[]} />);
-    expect(screen.getByText("Sin importaciones para este filtro")).toBeInTheDocument();
+    expect(screen.getByText("Sin imagenes importadas para este filtro")).toBeInTheDocument();
   });
 
   it("renders imports with status badges", () => {

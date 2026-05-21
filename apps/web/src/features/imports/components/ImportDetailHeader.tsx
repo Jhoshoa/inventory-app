@@ -13,7 +13,7 @@ export function ImportDetailHeader({ inventoryImport }: { inventoryImport: Inven
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-semibold text-slate-950">Importacion</h1>
+            <h1 className="text-2xl font-semibold text-slate-950">Import Image</h1>
             <ImportStatusBadge status={inventoryImport.status} />
           </div>
           <p className="mt-1 text-sm text-slate-600">

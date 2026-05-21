@@ -27,7 +27,7 @@ export function ImportConfirmPanel({
   return (
     <section className="space-y-3 rounded-lg border border-slate-200 bg-white p-4">
       <div>
-        <h2 className="text-base font-semibold text-slate-950">Confirmar importacion</h2>
+        <h2 className="text-base font-semibold text-slate-950">Confirmar Import Image</h2>
         <p className="mt-1 text-sm text-slate-600">
           Se crearan {counts.approved} productos aprobados. Los rechazados se ignoraran.
         </p>
@@ -36,7 +36,7 @@ export function ImportConfirmPanel({
         <Alert>
           <span className="inline-flex items-center gap-2">
             <ShieldAlert className="h-4 w-4" aria-hidden />
-            Confirmar importaciones requiere rol owner.
+            Confirmar Import Image requiere rol owner.
           </span>
         </Alert>
       ) : null}
@@ -44,7 +44,7 @@ export function ImportConfirmPanel({
       <form action={formAction}>
         <input type="hidden" name="import_id" value={inventoryImport.id} />
         <Button type="submit" disabled={disabled}>
-          {isPending ? "Confirmando" : "Confirmar importacion"}
+          {isPending ? "Confirmando" : "Confirmar Import Image"}
         </Button>
       </form>
     </section>

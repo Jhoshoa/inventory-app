@@ -12,8 +12,13 @@ class EasyOCRService(IOCRService):
     async def extract_from_bytes(self, image_bytes: bytes) -> OCRResult:
         image = Image.open(BytesIO(image_bytes))
         result = self.reader.readtext(image)
-        raw_text = " ".join([text for _, text, conf in result if conf > 0.5])
-        structured = self._structure(raw_text)
+        rows = [
+            {"text": text, "confidence": conf}
+            for _, text, conf in result
+            if conf > 0.5
+        ]
+        raw_text = "\n".join(row["text"] for row in rows)
+        structured = {"rows": rows} if rows else None
         return OCRResult(raw_text=raw_text, structured=structured)
 
     def _structure(self, text: str) -> dict | None:

@@ -5,7 +5,7 @@ export function ImportRawTextPanel({ rawText }: { rawText: string | null }) {
     return (
       <EmptyState
         title="Sin texto OCR"
-        description="El backend no devolvio texto crudo para esta importacion."
+        description="El backend no devolvio texto crudo para esta imagen. Verifica que el OCR este instalado y activo."
       />
     );
   }
