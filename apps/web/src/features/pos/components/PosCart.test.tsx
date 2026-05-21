@@ -31,6 +31,8 @@ describe("PosCart", () => {
     expect(screen.getByText("Arroz 1kg")).toBeInTheDocument();
     expect(screen.getByText("2")).toBeInTheDocument();
     expect(screen.getAllByText(/Bs\s+25,00/)).toHaveLength(2);
+    expect(screen.getByRole("button", { name: "Disminuir cantidad" })).toHaveClass("text-slate-800");
+    expect(screen.getByRole("button", { name: "Aumentar cantidad" })).toHaveClass("text-slate-800");
   });
 
   it("renders an empty state", () => {

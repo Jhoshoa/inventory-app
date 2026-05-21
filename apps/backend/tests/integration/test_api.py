@@ -131,6 +131,42 @@ async def test_failed_sale_does_not_create_partial_sale_or_stock_movement(client
     assert result.scalars().all() == []
 
 
+async def test_sale_rejects_invalid_payment_method(client):
+    product_response = await client.post(
+        "/api/v1/products",
+        json={"name": "galleta", "price": "5.00", "stock": 2},
+    )
+    product_id = product_response.json()["id"]
+
+    response = await client.post(
+        "/api/v1/sales",
+        json={"items": [{"product_id": product_id, "quantity": 1}], "payment_method": "crypto"},
+    )
+
+    assert response.status_code == 422
+
+
+async def test_sale_rejects_duplicate_products(client):
+    product_response = await client.post(
+        "/api/v1/products",
+        json={"name": "yerba", "price": "12.00", "stock": 5},
+    )
+    product_id = product_response.json()["id"]
+
+    response = await client.post(
+        "/api/v1/sales",
+        json={
+            "items": [
+                {"product_id": product_id, "quantity": 1},
+                {"product_id": product_id, "quantity": 1},
+            ],
+            "payment_method": "efectivo",
+        },
+    )
+
+    assert response.status_code == 400
+
+
 async def test_product_and_sale_access_is_isolated_by_store(client, db_session):
     other_store_id = uuid4()
     db_session.add(StoreModel(id=other_store_id, name="Other Store"))

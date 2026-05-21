@@ -34,7 +34,7 @@ async def create_sale(
     sale = await use_case.execute(CreateSaleInput(
         store_id=UUID(str(user["store_id"])),
         items=items,
-        payment_method=dto.payment_method,
+        payment_method=dto.payment_method.value,
         device_id=dto.device_id,
         customer_name=dto.customer_name,
     ))

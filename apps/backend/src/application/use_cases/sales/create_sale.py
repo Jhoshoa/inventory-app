@@ -28,6 +28,10 @@ class CreateSaleUseCase:
 
     async def execute(self, input: CreateSaleInput) -> Sale:
         sale_items: list[SaleItem] = []
+        product_ids = [item.product_id for item in input.items]
+        if len(set(product_ids)) != len(product_ids):
+            raise ValueError("La venta no puede incluir productos duplicados")
+
         for item in input.items:
             product = await self._product_repo.get_by_id(input.store_id, item.product_id)
             if not product:

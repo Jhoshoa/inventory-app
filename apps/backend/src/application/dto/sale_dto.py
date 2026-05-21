@@ -1,7 +1,15 @@
 from decimal import Decimal
+from enum import StrEnum
 from uuid import UUID
 from pydantic import BaseModel, Field
 from datetime import datetime
+
+
+class PaymentMethodDTO(StrEnum):
+    EFECTIVO = "efectivo"
+    QR = "qr"
+    TRANSFERENCIA = "transferencia"
+    TARJETA = "tarjeta"
 
 
 class SaleItemDTO(BaseModel):
@@ -11,7 +19,7 @@ class SaleItemDTO(BaseModel):
 
 class CreateSaleDTO(BaseModel):
     items: list[SaleItemDTO] = Field(..., min_length=1)
-    payment_method: str = "efectivo"
+    payment_method: PaymentMethodDTO = PaymentMethodDTO.EFECTIVO
     device_id: str | None = Field(default=None, max_length=100)
     customer_name: str | None = Field(default=None, max_length=100)
 

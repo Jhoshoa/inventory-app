@@ -35,6 +35,7 @@ export function PosCheckoutPanel({ items }: { items: CartItem[] }) {
           <option value="transferencia">Transferencia</option>
           <option value="tarjeta">Tarjeta</option>
         </Select>
+        <FieldError message={state.fieldErrors.payment_method} />
       </div>
       <div className="space-y-2">
         <Label htmlFor="customer_name">Cliente</Label>

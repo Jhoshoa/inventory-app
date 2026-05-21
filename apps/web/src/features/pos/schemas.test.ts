@@ -58,4 +58,10 @@ describe("checkout helpers", () => {
       items: "Cantidad invalida para Arroz 1kg",
     });
   });
+
+  it("validates payment methods", () => {
+    expect(validateCheckout([{ product, quantity: 1 }], "crypto")).toEqual({
+      payment_method: "Metodo de pago invalido",
+    });
+  });
 });
