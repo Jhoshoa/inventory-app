@@ -20,6 +20,31 @@ async def test_products_search_filters_and_pagination(client):
     assert len(category_response.json()["items"]) == 1
 
 
+async def test_products_search_matches_name_only(client):
+    await client.post(
+        "/api/v1/products",
+        json={"name": "Cafe", "price": "20.00", "stock": 2, "sku": "MATCH-001", "qr_code": "MATCH-QR"},
+    )
+    await client.post(
+        "/api/v1/products",
+        json={"name": "Matcha", "price": "30.00", "stock": 2, "sku": "TEA-001", "qr_code": "TEA-QR"},
+    )
+
+    response = await client.get("/api/v1/products?q=mat")
+
+    assert response.status_code == 200
+    assert response.json()["total"] == 1
+    assert response.json()["items"][0]["name"] == "Matcha"
+
+
+async def test_products_search_rejects_short_query(client):
+    response = await client.get("/api/v1/products?q=ar")
+    assert response.status_code == 422
+
+    pos_response = await client.get("/api/v1/products/pos?q=ar")
+    assert pos_response.status_code == 422
+
+
 async def test_products_stock_filters(client):
     await client.post("/api/v1/products", json={"name": "Disponible", "price": "10.00", "stock": 10, "min_stock": 2})
     await client.post("/api/v1/products", json={"name": "Bajo", "price": "10.00", "stock": 2, "min_stock": 5})

@@ -10,6 +10,7 @@ describe("parseProductSearchParams", () => {
   it("applies defaults for invalid values", () => {
     expect(
       parseProductSearchParams({
+        q: "ar",
         stock: "bad",
         limit: "999",
         offset: "-1",
@@ -26,6 +27,10 @@ describe("parseProductSearchParams", () => {
       direction: "asc",
     });
   });
+
+  it("accepts search text with at least three characters", () => {
+    expect(parseProductSearchParams({ q: " arr " }).q).toBe("arr");
+  });
 });
 
 describe("buildProductQueryString", () => {
@@ -41,6 +46,20 @@ describe("buildProductQueryString", () => {
         direction: "desc",
       }),
     ).toBe("q=arroz&category=abarrotes&stock=low&limit=50&offset=0&sort=stock&direction=desc");
+  });
+
+  it("omits short search text", () => {
+    expect(
+      buildProductQueryString({
+        q: "ar",
+        category: undefined,
+        stock: "all",
+        limit: 50,
+        offset: 0,
+        sort: "name",
+        direction: "asc",
+      }),
+    ).toBe("stock=all&limit=50&offset=0&sort=name&direction=asc");
   });
 });
 

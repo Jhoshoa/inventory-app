@@ -4,8 +4,11 @@ import { useEffect, useState } from "react";
 import { Search } from "lucide-react";
 import { Alert } from "@/components/ui/Alert";
 import { Input } from "@/components/ui/Input";
+import { MIN_PRODUCT_SEARCH_LENGTH } from "@/features/products/schemas";
 import { PosProductResults } from "./PosProductResults";
 import type { PosProduct, PosProductListResponse } from "../types";
+
+const POS_SEARCH_DEBOUNCE_MS = 500;
 
 export function PosProductSearch({
   onAdd,
@@ -20,6 +23,11 @@ export function PosProductSearch({
   useEffect(() => {
     const trimmed = query.trim();
     if (!trimmed) {
+      setProducts([]);
+      setError(null);
+      return;
+    }
+    if (trimmed.length < MIN_PRODUCT_SEARCH_LENGTH) {
       setProducts([]);
       setError(null);
       return;
@@ -47,7 +55,7 @@ export function PosProductSearch({
           setIsLoading(false);
         }
       }
-    }, 300);
+    }, POS_SEARCH_DEBOUNCE_MS);
 
     return () => {
       cancelled = true;
@@ -72,9 +80,14 @@ export function PosProductSearch({
           Escribe para buscar productos disponibles.
         </div>
       ) : null}
+      {query.trim() && query.trim().length < MIN_PRODUCT_SEARCH_LENGTH ? (
+        <Alert>Escribe al menos {MIN_PRODUCT_SEARCH_LENGTH} caracteres para buscar.</Alert>
+      ) : null}
       {isLoading ? <Alert>Buscando productos...</Alert> : null}
       {error ? <Alert variant="error">{error}</Alert> : null}
-      {query.trim() ? <PosProductResults products={products} onAdd={onAdd} /> : null}
+      {query.trim().length >= MIN_PRODUCT_SEARCH_LENGTH ? (
+        <PosProductResults products={products} onAdd={onAdd} />
+      ) : null}
     </section>
   );
 }

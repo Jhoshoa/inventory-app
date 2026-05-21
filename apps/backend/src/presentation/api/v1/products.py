@@ -36,7 +36,7 @@ router = APIRouter(prefix="/products", tags=["products"])
 
 @router.get("", response_model=ProductListResponseDTO)
 async def list_products(
-    q: str | None = Query(default=None, max_length=100),
+    q: str | None = Query(default=None, min_length=3, max_length=100),
     category: str | None = Query(default=None, max_length=50),
     stock: ProductStockFilter = ProductStockFilter.ALL,
     limit: int = Query(default=50, ge=1, le=100),
@@ -63,7 +63,7 @@ async def list_products(
 
 @router.get("/pos", response_model=ProductCompactListResponseDTO)
 async def list_products_for_pos(
-    q: str | None = Query(default=None, max_length=100),
+    q: str | None = Query(default=None, min_length=3, max_length=100),
     limit: int = Query(default=50, ge=1, le=100),
     offset: int = Query(default=0, ge=0),
     user: dict = Depends(get_current_user),

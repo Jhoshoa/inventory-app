@@ -11,6 +11,7 @@ const sortFields = new Set<ProductSortField>(["name", "stock", "updated_at", "pr
 const sortDirections = new Set<SortDirection>(["asc", "desc"]);
 
 export const DEFAULT_PRODUCT_LIMIT = 50;
+export const MIN_PRODUCT_SEARCH_LENGTH = 3;
 
 export function parseProductSearchParams(
   searchParams: Record<string, string | string[] | undefined>,
@@ -21,7 +22,7 @@ export function parseProductSearchParams(
   const limit = parseBoundedInteger(firstValue(searchParams.limit), DEFAULT_PRODUCT_LIMIT, 1, 100);
 
   return {
-    q: optionalString(firstValue(searchParams.q)),
+    q: optionalSearchString(firstValue(searchParams.q)),
     category: optionalString(firstValue(searchParams.category)),
     stock: stockFilters.has(stock as ProductStockFilter)
       ? (stock as ProductStockFilter)
@@ -37,7 +38,7 @@ export function parseProductSearchParams(
 
 export function buildProductQueryString(params: ProductSearchParams) {
   const query = new URLSearchParams();
-  if (params.q) query.set("q", params.q);
+  if (params.q && params.q.length >= MIN_PRODUCT_SEARCH_LENGTH) query.set("q", params.q);
   if (params.category) query.set("category", params.category);
   query.set("stock", params.stock);
   query.set("limit", params.limit.toString());
@@ -140,6 +141,11 @@ function firstValue(value: string | string[] | undefined) {
 function optionalString(value: string | undefined) {
   const trimmed = value?.trim();
   return trimmed ? trimmed : undefined;
+}
+
+function optionalSearchString(value: string | undefined) {
+  const trimmed = optionalString(value);
+  return trimmed && trimmed.length >= MIN_PRODUCT_SEARCH_LENGTH ? trimmed : undefined;
 }
 
 function parseBoundedInteger(

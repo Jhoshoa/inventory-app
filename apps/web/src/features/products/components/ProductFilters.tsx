@@ -1,37 +1,30 @@
 "use client";
 
-import { useCallback, useEffect, useState, useTransition } from "react";
-import { usePathname, useRouter } from "next/navigation";
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
-import type { ProductSearchParams } from "../types";
+import { MIN_PRODUCT_SEARCH_LENGTH } from "../schemas";
+import type {
+  ProductSearchParams,
+  ProductSortField,
+  ProductStockFilter,
+  SortDirection,
+} from "../types";
 
-export function ProductFilters({ params }: { params: ProductSearchParams }) {
-  const router = useRouter();
-  const pathname = usePathname();
-  const [query, setQuery] = useState(params.q ?? "");
-  const [, startTransition] = useTransition();
-
-  const updateParam = useCallback((name: string, value: string | null) => {
-    const next = new URLSearchParams(window.location.search);
-    if (value) next.set(name, value);
-    else next.delete(name);
-    next.set("offset", "0");
-
-    startTransition(() => {
-      router.replace(`${pathname}?${next.toString()}`);
-    });
-  }, [pathname, router]);
-
-  useEffect(() => {
-    const timeout = window.setTimeout(() => {
-      const currentQuery = new URLSearchParams(window.location.search).get("q") ?? "";
-      if (query === currentQuery) return;
-      updateParam("q", query || null);
-    }, 300);
-    return () => window.clearTimeout(timeout);
-  }, [query, updateParam]);
+export function ProductFilters({
+  params,
+  query,
+  onQueryChange,
+  onFilterChange,
+}: {
+  params: ProductSearchParams;
+  query: string;
+  onQueryChange: (value: string) => void;
+  onFilterChange: (patch: Partial<ProductSearchParams>) => void;
+}) {
+  const trimmedQuery = query.trim();
+  const isSearchPending =
+    trimmedQuery.length > 0 && trimmedQuery.length < MIN_PRODUCT_SEARCH_LENGTH;
 
   return (
     <div className="grid gap-3 rounded-lg border border-slate-200 bg-white p-4 md:grid-cols-[1fr_160px_160px_160px]">
@@ -40,15 +33,22 @@ export function ProductFilters({ params }: { params: ProductSearchParams }) {
         <Search className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-slate-400" aria-hidden />
         <Input
           className="pl-9"
-          placeholder="Buscar por nombre, SKU o QR"
+          placeholder="Buscar por nombre"
           value={query}
-          onChange={(event) => setQuery(event.target.value)}
+          onChange={(event) => onQueryChange(event.target.value)}
         />
+        {isSearchPending ? (
+          <span className="mt-1 block text-xs text-slate-500">
+            Escribe al menos {MIN_PRODUCT_SEARCH_LENGTH} caracteres para buscar.
+          </span>
+        ) : null}
       </label>
       <Select
         aria-label="Filtro de stock"
         value={params.stock}
-        onChange={(event) => updateParam("stock", event.target.value)}
+        onChange={(event) =>
+          onFilterChange({ stock: event.target.value as ProductStockFilter })
+        }
       >
         <option value="all">Todo stock</option>
         <option value="available">Disponible</option>
@@ -58,7 +58,9 @@ export function ProductFilters({ params }: { params: ProductSearchParams }) {
       <Select
         aria-label="Ordenar por"
         value={params.sort}
-        onChange={(event) => updateParam("sort", event.target.value)}
+        onChange={(event) =>
+          onFilterChange({ sort: event.target.value as ProductSortField })
+        }
       >
         <option value="name">Nombre</option>
         <option value="stock">Stock</option>
@@ -68,7 +70,9 @@ export function ProductFilters({ params }: { params: ProductSearchParams }) {
       <Select
         aria-label="Direccion"
         value={params.direction}
-        onChange={(event) => updateParam("direction", event.target.value)}
+        onChange={(event) =>
+          onFilterChange({ direction: event.target.value as SortDirection })
+        }
       >
         <option value="asc">Ascendente</option>
         <option value="desc">Descendente</option>

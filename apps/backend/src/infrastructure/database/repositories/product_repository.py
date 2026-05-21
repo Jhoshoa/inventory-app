@@ -1,6 +1,6 @@
 from uuid import UUID
 from datetime import datetime, timezone
-from sqlalchemy import func, or_, select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.domain.entities.product import Product
 from src.domain.repositories.product_repository import IProductRepository
@@ -85,13 +85,7 @@ class ProductRepository(IProductRepository):
         filters = [ProductModel.store_id == store_id, ProductModel.deleted_at.is_(None)]
         if q:
             pattern = f"%{q}%"
-            filters.append(
-                or_(
-                    ProductModel.name.ilike(pattern),
-                    ProductModel.sku.ilike(pattern),
-                    ProductModel.qr_code.ilike(pattern),
-                )
-            )
+            filters.append(ProductModel.name.ilike(pattern))
         if category:
             filters.append(ProductModel.category == category)
         if stock == "available":
