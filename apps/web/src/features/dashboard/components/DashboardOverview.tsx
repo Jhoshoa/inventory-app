@@ -10,7 +10,7 @@ import {
   TableHeaderCell,
 } from "@/components/ui/Table";
 import { formatCurrency } from "@/lib/format/currency";
-import type { DashboardSummaryResult } from "../types";
+import type { DashboardSale, DashboardSummaryResult } from "../types";
 
 export function DashboardOverview({ summary }: { summary: DashboardSummaryResult }) {
   if (!summary.ok) {
@@ -73,20 +73,26 @@ export function DashboardOverview({ summary }: { summary: DashboardSummaryResult
           <Table>
             <thead>
               <tr>
-                <TableHeaderCell>Venta</TableHeaderCell>
+                <TableHeaderCell>Producto</TableHeaderCell>
+                <TableHeaderCell>Cantidad</TableHeaderCell>
                 <TableHeaderCell>Metodo</TableHeaderCell>
                 <TableHeaderCell>Total</TableHeaderCell>
+                <TableHeaderCell>Fecha</TableHeaderCell>
               </tr>
             </thead>
             <tbody>
               {data.latest_sales.length === 0 ? (
-                <TableEmptyRow colSpan={3}>Sin ventas recientes</TableEmptyRow>
+                <TableEmptyRow colSpan={5}>Sin ventas recientes</TableEmptyRow>
               ) : (
                 data.latest_sales.map((sale) => (
                   <tr key={sale.id} className="border-t border-slate-100">
-                    <TableCell>{sale.id.slice(0, 8)}</TableCell>
+                    <TableCell>{formatSaleProducts(sale)}</TableCell>
+                    <TableCell>{saleQuantity(sale)}</TableCell>
                     <TableCell>{sale.payment_method ?? "Sin metodo"}</TableCell>
                     <TableCell>{formatCurrency(sale.total)}</TableCell>
+                    <TableCell>
+                      {sale.created_at ? formatDate(sale.created_at) : "Sin fecha"}
+                    </TableCell>
                   </tr>
                 ))
               )}
@@ -136,6 +142,25 @@ export function DashboardOverview({ summary }: { summary: DashboardSummaryResult
       </div>
     </section>
   );
+}
+
+function formatSaleProducts(sale: DashboardSale) {
+  if (!sale.items || sale.items.length === 0) return "Sin producto";
+
+  return sale.items.map((item) => item.product_name).join(", ");
+}
+
+function saleQuantity(sale: DashboardSale) {
+  if (!sale.items || sale.items.length === 0) return 0;
+
+  return sale.items.reduce((total, item) => total + item.quantity, 0);
+}
+
+function formatDate(value: string) {
+  return new Intl.DateTimeFormat("es-BO", {
+    dateStyle: "short",
+    timeStyle: "short",
+  }).format(new Date(value));
 }
 
 function PageTitle() {

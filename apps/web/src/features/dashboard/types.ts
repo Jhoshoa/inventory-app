@@ -13,10 +13,19 @@ export interface DashboardSummary {
 
 export interface DashboardSale {
   id: string;
+  items?: DashboardSaleItem[];
   total: string;
   payment_method?: string | null;
   status?: string;
   created_at?: string;
+}
+
+export interface DashboardSaleItem {
+  product_id: string;
+  product_name: string;
+  quantity: number;
+  unit_price?: string;
+  subtotal?: string;
 }
 
 export interface DashboardProduct {

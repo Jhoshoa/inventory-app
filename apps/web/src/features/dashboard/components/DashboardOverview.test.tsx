@@ -28,4 +28,57 @@ describe("DashboardOverview", () => {
 
     expect(screen.getByRole("alert")).toHaveTextContent("Backend unavailable");
   });
+
+  it("renders latest sales with products, quantity, and date", () => {
+    const createdAt = "2026-05-19T10:00:00Z";
+
+    render(
+      <DashboardOverview
+        summary={{
+          ok: true,
+          data: {
+            ...createEmptyDashboardSummary(),
+            products_total: 1,
+            latest_sales: [
+              {
+                id: "sale-12345678",
+                total: "45.50",
+                payment_method: "efectivo",
+                created_at: createdAt,
+                items: [
+                  {
+                    product_id: "product-1",
+                    product_name: "Cafe molido",
+                    quantity: 2,
+                    unit_price: "10.00",
+                    subtotal: "20.00",
+                  },
+                  {
+                    product_id: "product-2",
+                    product_name: "Azucar",
+                    quantity: 1,
+                    unit_price: "25.50",
+                    subtotal: "25.50",
+                  },
+                ],
+              },
+            ],
+          },
+        }}
+      />,
+    );
+
+    expect(screen.getAllByText("Producto").length).toBeGreaterThan(0);
+    expect(screen.getByText("Cantidad")).toBeInTheDocument();
+    expect(screen.getByText("Fecha")).toBeInTheDocument();
+    expect(screen.getByText("Cafe molido, Azucar")).toBeInTheDocument();
+    expect(screen.getByText("3")).toBeInTheDocument();
+    expect(screen.getByText(datePrefix(createdAt), { exact: false })).toBeInTheDocument();
+  });
 });
+
+function datePrefix(value: string) {
+  return new Intl.DateTimeFormat("es-BO", {
+    dateStyle: "short",
+  }).format(new Date(value));
+}
