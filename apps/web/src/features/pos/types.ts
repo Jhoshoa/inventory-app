@@ -29,6 +29,7 @@ export type PosCartAction =
   | { type: "add"; product: PosProduct }
   | { type: "increment"; productId: string }
   | { type: "decrement"; productId: string }
+  | { type: "setQuantity"; productId: string; quantity: number }
   | { type: "remove"; productId: string }
   | { type: "clear" };
 

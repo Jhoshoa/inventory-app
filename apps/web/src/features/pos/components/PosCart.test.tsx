@@ -1,4 +1,5 @@
 import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { PosCart } from "./PosCart";
 import type { CartItem } from "../types";
@@ -24,12 +25,13 @@ describe("PosCart", () => {
         items={items}
         onIncrement={vi.fn()}
         onDecrement={vi.fn()}
+        onQuantityChange={vi.fn()}
         onRemove={vi.fn()}
       />,
     );
 
     expect(screen.getByText("Arroz 1kg")).toBeInTheDocument();
-    expect(screen.getByText("2")).toBeInTheDocument();
+    expect(screen.getByRole("textbox", { name: "Cantidad" })).toHaveValue("2");
     expect(screen.getByText("-")).toBeInTheDocument();
     expect(screen.getByText("+")).toBeInTheDocument();
     expect(screen.getAllByText(/Bs\s+25,00/)).toHaveLength(2);
@@ -43,10 +45,53 @@ describe("PosCart", () => {
         items={[]}
         onIncrement={vi.fn()}
         onDecrement={vi.fn()}
+        onQuantityChange={vi.fn()}
         onRemove={vi.fn()}
       />,
     );
 
     expect(screen.getByText("Agrega productos para iniciar una venta.")).toBeInTheDocument();
+  });
+
+  it("allows typing a valid quantity directly", async () => {
+    const user = userEvent.setup();
+    const onQuantityChange = vi.fn();
+
+    render(
+      <PosCart
+        items={items}
+        onIncrement={vi.fn()}
+        onDecrement={vi.fn()}
+        onQuantityChange={onQuantityChange}
+        onRemove={vi.fn()}
+      />,
+    );
+
+    const quantityInput = screen.getByRole("textbox", { name: "Cantidad" });
+    await user.clear(quantityInput);
+    await user.type(quantityInput, "5");
+
+    expect(onQuantityChange).toHaveBeenLastCalledWith("product-1", 5);
+  });
+
+  it("ignores zero-only typed quantities", async () => {
+    const user = userEvent.setup();
+    const onQuantityChange = vi.fn();
+
+    render(
+      <PosCart
+        items={items}
+        onIncrement={vi.fn()}
+        onDecrement={vi.fn()}
+        onQuantityChange={onQuantityChange}
+        onRemove={vi.fn()}
+      />,
+    );
+
+    const quantityInput = screen.getByRole("textbox", { name: "Cantidad" });
+    await user.clear(quantityInput);
+    await user.type(quantityInput, "000");
+
+    expect(onQuantityChange).not.toHaveBeenCalled();
   });
 });

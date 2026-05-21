@@ -12,11 +12,13 @@ export function PosCart({
   items,
   onIncrement,
   onDecrement,
+  onQuantityChange,
   onRemove,
 }: {
   items: CartItem[];
   onIncrement: (productId: string) => void;
   onDecrement: (productId: string) => void;
+  onQuantityChange: (productId: string, quantity: number) => void;
   onRemove: (productId: string) => void;
 }) {
   const total = calculateCartTotal(items);
@@ -56,7 +58,9 @@ export function PosCart({
                   value={item.quantity}
                   onIncrement={() => onIncrement(item.product.id)}
                   onDecrement={() => onDecrement(item.product.id)}
+                  onValueChange={(quantity) => onQuantityChange(item.product.id, quantity)}
                   incrementDisabled={item.quantity >= item.product.stock}
+                  max={item.product.stock}
                 />
                 <span className="text-sm font-semibold text-slate-950">
                   {formatCurrency(Number(item.product.price) * item.quantity)}

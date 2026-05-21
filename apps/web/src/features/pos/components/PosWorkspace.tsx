@@ -17,6 +17,7 @@ export function PosWorkspace() {
           items={cart.items}
           onIncrement={(productId) => dispatch({ type: "increment", productId })}
           onDecrement={(productId) => dispatch({ type: "decrement", productId })}
+          onQuantityChange={(productId, quantity) => dispatch({ type: "setQuantity", productId, quantity })}
           onRemove={(productId) => dispatch({ type: "remove", productId })}
         />
         <PosCheckoutPanel items={cart.items} />

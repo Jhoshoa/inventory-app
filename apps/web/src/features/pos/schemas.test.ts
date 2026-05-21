@@ -41,6 +41,29 @@ describe("posCartReducer", () => {
 
     expect(empty.items).toEqual([]);
   });
+
+  it("sets typed quantities and rejects invalid direct values", () => {
+    const withProduct = posCartReducer(initialCartState, { type: "add", product });
+    const setToTwo = posCartReducer(withProduct, {
+      type: "setQuantity",
+      productId: product.id,
+      quantity: 2,
+    });
+    const overStock = posCartReducer(setToTwo, {
+      type: "setQuantity",
+      productId: product.id,
+      quantity: 50,
+    });
+    const zero = posCartReducer(overStock, {
+      type: "setQuantity",
+      productId: product.id,
+      quantity: 0,
+    });
+
+    expect(setToTwo.items[0]?.quantity).toBe(2);
+    expect(overStock.items[0]?.quantity).toBe(product.stock);
+    expect(zero.items[0]?.quantity).toBe(product.stock);
+  });
 });
 
 describe("checkout helpers", () => {
