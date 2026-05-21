@@ -21,13 +21,28 @@ from src.infrastructure.auth.supabase_auth import verify_jwt
 security_scheme = HTTPBearer(auto_error=False)
 DEV_USER_ID = UUID("00000000-0000-0000-0000-000000000001")
 DEV_STORE_ID = UUID("00000000-0000-0000-0000-000000000101")
+DEV_ACCESS_TOKEN = "dev-token-123"
 
 
 async def get_current_user(token: str = Depends(security_scheme)) -> dict:
     if settings.DEBUG and token is None:
-        return {"id": DEV_USER_ID, "email": "dev@local.dev", "store_id": DEV_STORE_ID}
+        return {
+            "id": DEV_USER_ID,
+            "email": "dev@local.dev",
+            "store_id": DEV_STORE_ID,
+            "full_name": "Dev User",
+            "role": "owner",
+        }
     if token is None:
         raise HTTPException(status_code=401, detail="Token requerido")
+    if settings.DEBUG and token.credentials == DEV_ACCESS_TOKEN:
+        return {
+            "id": DEV_USER_ID,
+            "email": "dev@local.dev",
+            "store_id": DEV_STORE_ID,
+            "full_name": "Dev User",
+            "role": "owner",
+        }
     try:
         payload = verify_jwt(token.credentials)
         if payload.get("store_id") is not None:
