@@ -2,6 +2,7 @@ import Link from "next/link";
 import {
   BarChart3,
   Boxes,
+  FileImage,
   LayoutDashboard,
   ReceiptText,
   ShoppingCart,
@@ -12,6 +13,7 @@ const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/dashboard/pos", label: "POS", icon: ShoppingCart },
   { href: "/dashboard/products", label: "Productos", icon: Boxes },
+  { href: "/dashboard/imports", label: "Importaciones", icon: FileImage },
   { href: "/dashboard/sales", label: "Ventas", icon: ReceiptText },
   { href: "/dashboard/reports", label: "Reportes", icon: BarChart3 },
   { href: "/dashboard/settings", label: "Ajustes", icon: Settings },

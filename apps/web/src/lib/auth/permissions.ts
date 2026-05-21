@@ -15,3 +15,7 @@ export function canVoidSale(role: UserRole | undefined): boolean {
 export function canManageSettings(role: UserRole | undefined): boolean {
   return isOwner(role);
 }
+
+export function canConfirmImport(role: UserRole | undefined): boolean {
+  return isOwner(role);
+}
