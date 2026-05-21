@@ -1,18 +1,7 @@
-import { EmptyState } from "@/components/ui/EmptyState";
+import { SettingsOverview } from "@/features/settings/components/SettingsOverview";
+import { requireSession } from "@/lib/auth/session";
 
-export default function SettingsPage() {
-  return (
-    <section className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold text-slate-950">Ajustes</h1>
-        <p className="mt-1 text-sm text-slate-600">
-          Configuracion de tienda, usuarios y permisos.
-        </p>
-      </div>
-      <EmptyState
-        title="Configuracion pendiente"
-        description="La ruta queda protegida y lista para los flujos owner/cashier."
-      />
-    </section>
-  );
+export default async function SettingsPage() {
+  const session = await requireSession();
+  return <SettingsOverview session={session} />;
 }
