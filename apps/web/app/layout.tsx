@@ -1,9 +1,21 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Inventory App",
-  description: "Administracion de inventario",
+  applicationName: "Inventory App",
+  title: {
+    default: "Inventory App",
+    template: "%s | Inventory App",
+  },
+  description: "Herramienta operativa para inventario, ventas, reportes e importacion asistida.",
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#f8fafc",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
