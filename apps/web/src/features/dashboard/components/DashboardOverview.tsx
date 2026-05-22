@@ -171,7 +171,7 @@ function StoreDaySection({
     );
   }
 
-  return <StoreDayStatusPanel storeDay={storeDay.data} role={role} />;
+  return <StoreDayStatusPanel storeDay={storeDay.data} role={role} actions="link" />;
 }
 
 function formatSaleProducts(sale: DashboardSale) {

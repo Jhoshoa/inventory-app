@@ -46,6 +46,26 @@ export async function closeStoreDayAction(
   return { ok: true, message: "Tienda cerrada", fieldErrors: {} };
 }
 
+export async function reopenStoreDayAction(
+  _previousState: StoreDayActionState,
+  formData: FormData,
+): Promise<StoreDayActionState> {
+  const noteError = validateStoreDayNote(formData.get("note"));
+  if (noteError) return { ok: false, fieldErrors: { note: noteError } };
+
+  const token = await getAuthToken();
+  const result = await apiRequest<StoreDay>("/store-day/reopen", {
+    method: "POST",
+    token: token ?? undefined,
+    body: { opening_note: noteValue(formData) },
+  });
+
+  if (!result.ok) return { ok: false, message: result.error.message, fieldErrors: {} };
+
+  revalidateOperationalPaths();
+  return { ok: true, message: "Tienda reabierta", fieldErrors: {} };
+}
+
 function revalidateOperationalPaths() {
   revalidatePath("/dashboard");
   revalidatePath("/dashboard/pos");

@@ -17,3 +17,6 @@ class IStoreBusinessDayRepository(ABC):
 
     @abstractmethod
     async def close(self, business_day: StoreBusinessDay) -> StoreBusinessDay: ...
+
+    @abstractmethod
+    async def reopen(self, business_day: StoreBusinessDay) -> StoreBusinessDay: ...

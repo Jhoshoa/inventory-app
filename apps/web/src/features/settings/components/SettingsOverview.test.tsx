@@ -2,6 +2,7 @@ import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { SettingsOverview } from "./SettingsOverview";
 import type { Session } from "@/lib/auth/session";
+import type { StoreDay } from "@/features/store-day/types";
 
 const session: Session = {
   userId: "user-1",
@@ -14,10 +15,29 @@ const session: Session = {
 
 describe("SettingsOverview", () => {
   it("renders session role and permission matrix", () => {
-    render(<SettingsOverview session={session} />);
+    render(<SettingsOverview session={session} storeDay={{ ok: true, data: storeDay }} />);
 
     expect(screen.getByText("owner")).toBeInTheDocument();
     expect(screen.getByText("Exportar CSV")).toBeInTheDocument();
+    expect(screen.getByText("Operacion diaria")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Abrir tienda" })).toBeInTheDocument();
     expect(screen.getByText("Gestion de usuarios pendiente")).toBeInTheDocument();
   });
 });
+
+const storeDay: StoreDay = {
+  id: null,
+  status: "closed",
+  business_date: "2026-05-21",
+  opened_at: null,
+  closed_at: null,
+  opened_by_user_id: null,
+  closed_by_user_id: null,
+  opening_note: null,
+  closing_note: null,
+  sales_total: null,
+  sales_count: null,
+  voided_sales_count: null,
+  timezone: "America/La_Paz",
+  first_business_date: null,
+};

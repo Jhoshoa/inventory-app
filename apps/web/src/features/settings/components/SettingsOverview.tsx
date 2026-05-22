@@ -1,9 +1,18 @@
+import { Alert } from "@/components/ui/Alert";
 import { Badge } from "@/components/ui/Badge";
 import { EmptyState } from "@/components/ui/EmptyState";
 import type { Session } from "@/lib/auth/session";
+import { StoreDayStatusPanel } from "@/features/store-day/components/StoreDayStatusPanel";
+import type { StoreDayResult } from "@/features/store-day/types";
 import { PermissionMatrix } from "./PermissionMatrix";
 
-export function SettingsOverview({ session }: { session: Session }) {
+export function SettingsOverview({
+  session,
+  storeDay,
+}: {
+  session: Session;
+  storeDay?: StoreDayResult;
+}) {
   return (
     <section className="space-y-6">
       <div>
@@ -28,12 +37,40 @@ export function SettingsOverview({ session }: { session: Session }) {
 
       <PermissionMatrix />
 
+      <section className="space-y-3">
+        <div>
+          <h2 className="text-base font-semibold text-slate-950">Operacion diaria</h2>
+          <p className="mt-1 text-sm text-slate-600">
+            Apertura y cierre de la jornada de ventas.
+          </p>
+        </div>
+        {storeDay ? <StoreDayManagement storeDay={storeDay} role={session.role} /> : null}
+      </section>
+
       <EmptyState
         title="Gestion de usuarios pendiente"
         description="Invitaciones, cambio de roles y administracion de usuarios quedan para un sprint dedicado."
       />
     </section>
   );
+}
+
+function StoreDayManagement({
+  storeDay,
+  role,
+}: {
+  storeDay: StoreDayResult;
+  role: Session["role"];
+}) {
+  if (!storeDay.ok) {
+    return (
+      <Alert variant="error">
+        No se pudo cargar el estado de tienda: {storeDay.error.message}
+      </Alert>
+    );
+  }
+
+  return <StoreDayStatusPanel storeDay={storeDay.data} role={role} actions="manage" />;
 }
 
 function InfoItem({ label, value }: { label: string; value: string }) {

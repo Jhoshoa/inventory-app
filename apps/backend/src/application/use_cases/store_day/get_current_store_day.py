@@ -24,11 +24,14 @@ class GetCurrentStoreDayUseCase:
         if store is None:
             raise NotFoundError("Tienda no encontrada")
 
+        today = local_business_date(store.timezone)
         business_day = await self._business_day_repo.get_open_by_store(input.store_id)
+        if business_day is None:
+            business_day = await self._business_day_repo.get_by_business_date(input.store_id, today)
         if business_day is None:
             return StoreDayResponseDTO(
                 status="closed",
-                business_date=local_business_date(store.timezone),
+                business_date=today,
                 timezone=store.timezone,
                 first_business_date=store.first_business_date,
             )

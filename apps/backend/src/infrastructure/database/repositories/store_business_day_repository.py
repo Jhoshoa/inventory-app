@@ -54,12 +54,21 @@ class StoreBusinessDayRepository(IStoreBusinessDayRepository):
         return self._to_entity(model) if model else None
 
     async def close(self, business_day: StoreBusinessDay) -> StoreBusinessDay:
+        return await self._update_existing(business_day)
+
+    async def reopen(self, business_day: StoreBusinessDay) -> StoreBusinessDay:
+        return await self._update_existing(business_day)
+
+    async def _update_existing(self, business_day: StoreBusinessDay) -> StoreBusinessDay:
         model = await self._session.get(StoreBusinessDayModel, business_day.id)
         if model is None:
             raise ValueError("Jornada no encontrada")
         model.status = business_day.status
+        model.opened_at = business_day.opened_at
+        model.opened_by_user_id = business_day.opened_by_user_id
         model.closed_at = business_day.closed_at
         model.closed_by_user_id = business_day.closed_by_user_id
+        model.opening_note = business_day.opening_note
         model.closing_note = business_day.closing_note
         model.sales_total = business_day.sales_total
         model.sales_count = business_day.sales_count

@@ -14,32 +14,46 @@ vi.mock("react", async () => {
 vi.mock("../actions", () => ({
   openStoreDayAction: vi.fn(),
   closeStoreDayAction: vi.fn(),
+  reopenStoreDayAction: vi.fn(),
 }));
 
 describe("StoreDayStatusPanel", () => {
   it("renders closed state and owner action", () => {
-    render(<StoreDayStatusPanel storeDay={closedStoreDay()} role="owner" />);
+    render(<StoreDayStatusPanel storeDay={closedStoreDay()} role="owner" actions="manage" />);
 
     expect(screen.getByText("Tienda cerrada")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Abrir tienda" })).toBeInTheDocument();
   });
 
+  it("renders reopen action for a closed business day from today", () => {
+    render(<StoreDayStatusPanel storeDay={closedStoreDay({ id: "day-1", closed_at: "2026-05-21T18:00:00Z" })} role="owner" actions="manage" />);
+
+    expect(screen.getByRole("button", { name: "Reabrir tienda" })).toBeInTheDocument();
+  });
+
   it("renders open state and owner close action", () => {
-    render(<StoreDayStatusPanel storeDay={openStoreDay()} role="owner" />);
+    render(<StoreDayStatusPanel storeDay={openStoreDay()} role="owner" actions="manage" />);
 
     expect(screen.getByText("Tienda abierta")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Cerrar tienda" })).toBeInTheDocument();
   });
 
+  it("renders management link without inline actions", () => {
+    render(<StoreDayStatusPanel storeDay={openStoreDay()} role="owner" actions="link" />);
+
+    expect(screen.getByRole("link", { name: "Gestionar jornada" })).toHaveAttribute("href", "/dashboard/settings");
+    expect(screen.queryByRole("button", { name: "Cerrar tienda" })).not.toBeInTheDocument();
+  });
+
   it("hides actions for cashier", () => {
-    render(<StoreDayStatusPanel storeDay={openStoreDay()} role="cashier" />);
+    render(<StoreDayStatusPanel storeDay={openStoreDay()} role="cashier" actions="manage" />);
 
     expect(screen.getByText("Tienda abierta")).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Cerrar tienda" })).not.toBeInTheDocument();
   });
 });
 
-function closedStoreDay(): StoreDay {
+function closedStoreDay(overrides: Partial<StoreDay> = {}): StoreDay {
   return {
     id: null,
     status: "closed",
@@ -55,6 +69,7 @@ function closedStoreDay(): StoreDay {
     voided_sales_count: null,
     timezone: "America/La_Paz",
     first_business_date: null,
+    ...overrides,
   };
 }
 

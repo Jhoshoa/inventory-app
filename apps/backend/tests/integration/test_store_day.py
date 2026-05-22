@@ -34,9 +34,11 @@ async def test_cashier_cannot_open_or_close_store_day(client, db_session):
 
     open_response = await client.post("/api/v1/store-day/open")
     close_response = await client.post("/api/v1/store-day/close")
+    reopen_response = await client.post("/api/v1/store-day/reopen")
 
     assert open_response.status_code == 403
     assert close_response.status_code == 403
+    assert reopen_response.status_code == 403
 
 
 async def test_cannot_open_second_store_day_when_one_is_open(client):
@@ -71,6 +73,40 @@ async def test_owner_can_close_open_store_day_with_sales_snapshot(client):
     assert data["sales_total"] == "20.00"
     assert data["sales_count"] == 1
     assert data["voided_sales_count"] == 0
+
+    current_response = await client.get("/api/v1/store-day/current")
+    assert current_response.status_code == 200
+    assert current_response.json()["id"] == open_response.json()["id"]
+    assert current_response.json()["status"] == "closed"
+
+
+async def test_owner_can_reopen_closed_store_day_and_keep_same_business_day(client):
+    product_response = await client.post("/api/v1/products", json={"name": "Cafe", "price": "10.00", "stock": 3})
+    assert product_response.status_code == 201
+    open_response = await client.post("/api/v1/store-day/open")
+    assert open_response.status_code == 201
+    close_response = await client.post("/api/v1/store-day/close", json={"closing_note": "Pausa"})
+    assert close_response.status_code == 200
+
+    reopen_response = await client.post("/api/v1/store-day/reopen", json={"opening_note": "Reapertura"})
+
+    assert reopen_response.status_code == 200
+    reopened = reopen_response.json()
+    assert reopened["id"] == open_response.json()["id"]
+    assert reopened["status"] == "open"
+    assert reopened["opening_note"] == "Reapertura"
+    assert reopened["closed_at"] is None
+    assert reopened["closing_note"] is None
+
+    sale_response = await client.post(
+        "/api/v1/sales",
+        json={
+            "items": [{"product_id": product_response.json()["id"], "quantity": 1}],
+            "payment_method": "efectivo",
+        },
+    )
+    assert sale_response.status_code == 201
+    assert sale_response.json()["business_day_id"] == open_response.json()["id"]
 
 
 async def test_cannot_close_without_open_store_day(client):

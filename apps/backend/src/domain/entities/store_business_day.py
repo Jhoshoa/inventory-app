@@ -59,3 +59,18 @@ class StoreBusinessDay:
         self.sales_count = sales_count
         self.voided_sales_count = voided_sales_count
         self.updated_at = datetime.now(timezone.utc)
+
+    def reopen(self, *, opened_by_user_id: UUID, opening_note: str | None = None) -> None:
+        if self.status != "closed":
+            raise ValueError("Solo se puede reabrir una jornada cerrada")
+        self.status = "open"
+        self.opened_at = datetime.now(timezone.utc)
+        self.opened_by_user_id = opened_by_user_id
+        self.closed_at = None
+        self.closed_by_user_id = None
+        self.opening_note = opening_note
+        self.closing_note = None
+        self.sales_total = None
+        self.sales_count = None
+        self.voided_sales_count = None
+        self.updated_at = datetime.now(timezone.utc)

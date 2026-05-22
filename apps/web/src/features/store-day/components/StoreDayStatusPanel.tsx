@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useActionState } from "react";
 import { LockKeyhole, Store, UnlockKeyhole } from "lucide-react";
 import { Alert } from "@/components/ui/Alert";
@@ -8,7 +9,7 @@ import { FieldError } from "@/components/ui/FieldError";
 import { Input } from "@/components/ui/Input";
 import { canOpenCloseStore } from "@/lib/auth/permissions";
 import type { UserRole } from "@/lib/auth/types";
-import { closeStoreDayAction, openStoreDayAction } from "../actions";
+import { closeStoreDayAction, openStoreDayAction, reopenStoreDayAction } from "../actions";
 import type { StoreDay, StoreDayActionState } from "../types";
 
 const initialState: StoreDayActionState = {
@@ -19,9 +20,11 @@ const initialState: StoreDayActionState = {
 export function StoreDayStatusPanel({
   storeDay,
   role,
+  actions = "none",
 }: {
   storeDay: StoreDay;
   role: UserRole;
+  actions?: "none" | "link" | "manage";
 }) {
   const isOpen = storeDay.status === "open";
   const canManage = canOpenCloseStore(role);
@@ -58,27 +61,36 @@ export function StoreDayStatusPanel({
           </div>
         </div>
 
-        {canManage ? <StoreDayActionForm isOpen={isOpen} /> : null}
+        {canManage && actions === "manage" ? <StoreDayActionForm storeDay={storeDay} /> : null}
+        {canManage && actions === "link" ? (
+          <Button asChild variant="secondary">
+            <Link href="/dashboard/settings">Gestionar jornada</Link>
+          </Button>
+        ) : null}
       </div>
     </section>
   );
 }
 
-function StoreDayActionForm({ isOpen }: { isOpen: boolean }) {
-  const action = isOpen ? closeStoreDayAction : openStoreDayAction;
+function StoreDayActionForm({ storeDay }: { storeDay: StoreDay }) {
+  const isOpen = storeDay.status === "open";
+  const isReopen = !isOpen && Boolean(storeDay.id && storeDay.closed_at);
+  const action = isOpen ? closeStoreDayAction : isReopen ? reopenStoreDayAction : openStoreDayAction;
   const [state, formAction, isPending] = useActionState(action, initialState);
+  const noteLabel = isOpen ? "Nota de cierre" : isReopen ? "Nota de reapertura" : "Nota de apertura";
+  const buttonLabel = isOpen ? "Cerrar tienda" : isReopen ? "Reabrir tienda" : "Abrir tienda";
 
   return (
     <form action={formAction} className="min-w-full space-y-2 lg:min-w-80">
       {state.message ? <Alert variant={state.ok ? "info" : "error"}>{state.message}</Alert> : null}
       <Input
-        aria-label={isOpen ? "Nota de cierre" : "Nota de apertura"}
+        aria-label={noteLabel}
         name="note"
-        placeholder={isOpen ? "Nota de cierre opcional" : "Nota de apertura opcional"}
+        placeholder={`${noteLabel} opcional`}
       />
       <FieldError message={state.fieldErrors.note} />
       <Button className="w-full" type="submit" variant={isOpen ? "danger" : "primary"} disabled={isPending}>
-        {isPending ? "Procesando..." : isOpen ? "Cerrar tienda" : "Abrir tienda"}
+        {isPending ? "Procesando..." : buttonLabel}
       </Button>
     </form>
   );

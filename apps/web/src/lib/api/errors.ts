@@ -70,9 +70,9 @@ function getErrorMessage(details: unknown) {
 
   const maybeError = details as { detail?: unknown; message?: unknown; error?: unknown };
 
+  if (typeof maybeError.detail === "string") return maybeError.detail;
   if (typeof maybeError.message === "string") return maybeError.message;
   if (typeof maybeError.error === "string") return maybeError.error;
-  if (typeof maybeError.detail === "string") return maybeError.detail;
 
   return null;
 }
