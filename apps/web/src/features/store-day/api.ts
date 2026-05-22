@@ -2,7 +2,6 @@ import { apiRequest } from "@/lib/api/client";
 import { getAuthToken } from "@/lib/auth/session";
 import type {
   StoreDay,
-  CashMovement,
   CashMovementList,
   CashMovementListResult,
   StoreDayCloseReport,

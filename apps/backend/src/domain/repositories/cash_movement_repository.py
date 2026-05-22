@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from datetime import date
+from datetime import date, datetime
 from uuid import UUID
 
 from src.domain.entities.cash_movement import CashMovement
@@ -31,3 +31,13 @@ class ICashMovementRepository(ABC):
 
     @abstractmethod
     async def update(self, movement: CashMovement) -> CashMovement: ...
+
+    @abstractmethod
+    async def list_for_export(
+        self,
+        store_id: UUID,
+        *,
+        from_date: datetime,
+        to_date: datetime,
+        movement_type: str | None = None,
+    ) -> list[CashMovement]: ...

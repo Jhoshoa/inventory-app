@@ -626,6 +626,7 @@ Flujo manual:
 - Owner puede registrar entrada de efectivo en jornada abierta.
 - Owner puede registrar gasto/salida/retiro/deposito en jornada abierta.
 - Cashier no puede registrar ni ver movimientos de caja.
+- Cashier no puede exportar movimientos de caja.
 - No se pueden registrar movimientos si la tienda esta cerrada.
 - Montos deben ser positivos y con precision monetaria.
 - Todos los movimientos quedan scoped por `store_id` y `business_day_id`.
@@ -633,10 +634,39 @@ Flujo manual:
 - Efectivo esperado considera movimientos de caja.
 - Cierre guarda snapshot de movimientos de caja.
 - Reporte de cierre muestra resumen y detalle de movimientos.
+- Reporte de movimientos de caja tiene filtro visible por tipo.
+- Reporte de movimientos de caja permite export CSV owner-only.
 - Historico de movimientos no filtra datos de otra tienda.
 - Movimientos anulados no afectan preview ni cierre.
 - Si la jornada se reabre, cambios de caja recalculan el siguiente cierre.
 - Tests backend y web pasan.
+
+## Actualizacion Sprint 4.1
+
+Fecha: 2026-05-22
+
+Se cerro la deuda menor identificada antes de iniciar Sprint 5:
+
+- Se agrego filtro visible por tipo en `/dashboard/reports/cash-movements`.
+- Se agrego export CSV de movimientos de caja:
+  - Web: `/api/exports/cash-movements`.
+  - Backend: `/api/v1/exports/cash-movements.csv`.
+  - Parametros soportados: `from`, `to`, `type`.
+- Se mantiene owner-only en backend para export/list/create/void.
+- La pagina de movimientos sigue bloqueada para cashier desde UI.
+- Se agregaron tests frontend para:
+  - controles de filtro/export.
+  - tabla de movimientos y totales con signo.
+  - formulario compacto de movimiento en Ajustes.
+  - link de export CSV de caja en panel de exportes.
+- Se agregaron tests backend para:
+  - cashier bloqueado en export.
+  - CSV con columnas esperadas.
+  - filtro de export por tipo.
+
+Pendiente fuera de automatizacion:
+
+- Validacion manual completa en navegador con flujo real owner/cashier.
 
 ## Fuera de Alcance
 

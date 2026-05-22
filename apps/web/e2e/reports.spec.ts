@@ -23,6 +23,10 @@ test("owner sees export links", async ({ context, page }) => {
   await expect(
     main.getByRole("link", { name: "Movimientos", exact: true }),
   ).toHaveAttribute("href", /\/api\/exports\/stock-movements/);
+  await expect(main.getByRole("link", { name: "Caja" })).toHaveAttribute(
+    "href",
+    /\/api\/exports\/cash-movements\?from=.*T00%3A00%3A00\.000Z&to=.*T23%3A59%3A59\.999Z/,
+  );
 });
 
 test("report date filter updates URL", async ({ context, page }) => {

@@ -5,18 +5,11 @@ import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ForbiddenState } from "@/components/ui/ForbiddenState";
 import { Pagination } from "@/components/ui/Pagination";
-import {
-  Table,
-  TableCell,
-  TableEmptyRow,
-  TableHeaderCell,
-} from "@/components/ui/Table";
-import { StoreDayReportsDateFilter } from "@/features/store-day/components/StoreDayReportsDateFilter";
 import { listCashMovements } from "@/features/store-day/api";
-import type { CashMovement } from "@/features/store-day/types";
+import { CashMovementsReportControls } from "@/features/store-day/components/CashMovementsReportControls";
+import { CashMovementsTable } from "@/features/store-day/components/CashMovementsTable";
 import { canViewCashMovements } from "@/lib/auth/permissions";
 import { requireSession } from "@/lib/auth/session";
-import { formatCurrency } from "@/lib/format/currency";
 
 const DEFAULT_LIMIT = 50;
 
@@ -51,7 +44,7 @@ export default async function CashMovementsPage({
         </Button>
       </div>
 
-      <StoreDayReportsDateFilter fromDate={params.from_date} toDate={params.to_date} />
+      <CashMovementsReportControls params={params} />
 
       {!movements.ok ? (
         <Alert variant="error">No se pudieron cargar movimientos: {movements.error.message}</Alert>
@@ -76,41 +69,11 @@ export default async function CashMovementsPage({
   );
 }
 
-function CashMovementsTable({ items }: { items: CashMovement[] }) {
-  return (
-    <Table>
-      <thead>
-        <tr>
-          <TableHeaderCell>Fecha</TableHeaderCell>
-          <TableHeaderCell>Tipo</TableHeaderCell>
-          <TableHeaderCell>Monto</TableHeaderCell>
-          <TableHeaderCell>Nota</TableHeaderCell>
-        </tr>
-      </thead>
-      <tbody>
-        {items.length === 0 ? (
-          <TableEmptyRow colSpan={4}>Sin movimientos</TableEmptyRow>
-        ) : (
-          items.map((item) => (
-            <tr key={item.id} className="border-t border-slate-100">
-              <TableCell>{formatDateTime(item.occurred_at)}</TableCell>
-              <TableCell>{cashMovementLabel(item.movement_type)}</TableCell>
-              <TableCell className={item.direction === "in" ? "text-emerald-700" : "text-red-700"}>
-                {item.direction === "in" ? "+" : "-"}{formatCurrency(item.amount)}
-              </TableCell>
-              <TableCell>{item.note ?? "Sin nota"}</TableCell>
-            </tr>
-          ))
-        )}
-      </tbody>
-    </Table>
-  );
-}
-
 function parseParams(searchParams: Record<string, string | string[] | undefined>) {
   return {
     from_date: first(searchParams.from_date),
     to_date: first(searchParams.to_date),
+    type: first(searchParams.type) ?? "all",
     limit: parseIntParam(first(searchParams.limit), DEFAULT_LIMIT),
     offset: parseIntParam(first(searchParams.offset), 0),
   };
@@ -131,22 +94,4 @@ function rawParamsToStringEntries(params: Record<string, string | string[] | und
     const firstValue = Array.isArray(value) ? value[0] : value;
     return firstValue ? [[key, firstValue]] : [];
   });
-}
-
-function cashMovementLabel(type: string) {
-  const labels: Record<string, string> = {
-    cash_in: "Entrada",
-    cash_out: "Salida",
-    expense: "Gasto",
-    deposit: "Deposito",
-    withdrawal: "Retiro",
-  };
-  return labels[type] ?? type;
-}
-
-function formatDateTime(value: string) {
-  return new Intl.DateTimeFormat("es-BO", {
-    dateStyle: "short",
-    timeStyle: "short",
-  }).format(new Date(value));
 }

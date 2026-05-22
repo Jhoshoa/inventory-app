@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime
 from decimal import Decimal
 from uuid import UUID
 
@@ -115,6 +115,29 @@ class CashMovementRepository(ICashMovementRepository):
         model.void_reason = movement.void_reason
         await self._session.flush()
         return self._to_entity(model)
+
+    async def list_for_export(
+        self,
+        store_id: UUID,
+        *,
+        from_date: datetime,
+        to_date: datetime,
+        movement_type: str | None = None,
+    ) -> list[CashMovement]:
+        filters = [
+            CashMovementModel.store_id == store_id,
+            CashMovementModel.occurred_at >= from_date,
+            CashMovementModel.occurred_at <= to_date,
+        ]
+        if movement_type is not None:
+            filters.append(CashMovementModel.movement_type == movement_type)
+
+        result = await self._session.execute(
+            select(CashMovementModel)
+            .where(*filters)
+            .order_by(CashMovementModel.occurred_at.desc(), CashMovementModel.id.asc())
+        )
+        return [self._to_entity(model) for model in result.scalars().all()]
 
     def _to_entity(self, model: CashMovementModel) -> CashMovement:
         return CashMovement(

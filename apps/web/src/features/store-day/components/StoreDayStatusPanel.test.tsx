@@ -34,12 +34,47 @@ describe("StoreDayStatusPanel", () => {
   });
 
   it("renders open state and owner close action", () => {
-    render(<StoreDayStatusPanel storeDay={openStoreDay()} role="owner" actions="manage" />);
+    render(
+      <StoreDayStatusPanel
+        storeDay={openStoreDay()}
+        role="owner"
+        actions="manage"
+        cashMovements={{
+          ok: true,
+          data: {
+            items: [
+              {
+                id: "movement-1",
+                store_id: "store-1",
+                business_day_id: "day-1",
+                movement_type: "expense",
+                direction: "out",
+                amount: "25.00",
+                note: "Bolsas",
+                created_by_user_id: "user-1",
+                occurred_at: "2026-05-22T14:00:00Z",
+                created_at: "2026-05-22T14:00:00Z",
+                voided_at: null,
+                voided_by_user_id: null,
+                void_reason: null,
+              },
+            ],
+            total: 1,
+            limit: 50,
+            offset: 0,
+          },
+        }}
+      />,
+    );
 
     expect(screen.getByText("Tienda abierta")).toBeInTheDocument();
     expect(screen.getByRole("checkbox", { name: "Cerrar sin conteo de efectivo" })).toBeInTheDocument();
     expect(screen.getByRole("textbox", { name: "Efectivo contado" })).toBeRequired();
     expect(screen.getByRole("button", { name: "Cerrar tienda" })).toBeInTheDocument();
+    expect(screen.getByRole("combobox", { name: "Tipo de movimiento" })).toHaveValue("expense");
+    expect(screen.getByRole("textbox", { name: "Monto de movimiento" })).toBeRequired();
+    expect(screen.getByText("Bolsas")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Anular" })).toBeInTheDocument();
   });
 
   it("renders management link without inline actions", () => {

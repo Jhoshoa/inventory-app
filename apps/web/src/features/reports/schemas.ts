@@ -91,6 +91,13 @@ export function buildStockMovementApiQuery(params: StockMovementSearchParams) {
   return query.toString();
 }
 
+export function buildExportDateTimeQuery(params: Pick<ReportSearchParams, "from" | "to">) {
+  return new URLSearchParams({
+    from: toApiDateTime(params.from, "start"),
+    to: toApiDateTime(params.to, "end"),
+  }).toString();
+}
+
 export function averageTicket(totalSales: string, salesCount: number) {
   if (salesCount <= 0) return "0";
   return (Number(totalSales) / salesCount).toFixed(2);

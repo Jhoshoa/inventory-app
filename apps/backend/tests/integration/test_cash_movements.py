@@ -1,5 +1,12 @@
+import csv
+from io import StringIO
+
 from src.infrastructure.database.models import UserModel
 from src.presentation import dependencies
+
+
+def _csv_rows(response):
+    return list(csv.DictReader(StringIO(response.text)))
 
 
 async def test_owner_creates_cash_movement_for_open_day(client):
@@ -33,6 +40,16 @@ async def test_cashier_cannot_create_or_list_cash_movements(client, db_session):
 
     assert create_response.status_code == 403
     assert list_response.status_code == 403
+
+
+async def test_cashier_cannot_export_cash_movements(client, db_session):
+    user = await db_session.get(UserModel, dependencies.DEV_USER_ID)
+    user.role = "cashier"
+    await db_session.commit()
+
+    response = await client.get("/api/v1/exports/cash-movements.csv")
+
+    assert response.status_code == 403
 
 
 async def test_cannot_create_cash_movement_without_open_day(client):
@@ -117,3 +134,35 @@ async def test_voided_cash_movement_excluded_from_closing_preview(client):
     assert preview["cash_movements_in_total"] == "0"
     assert preview["cash_movements_count"] == 0
     assert preview["expected_cash_amount"] == "100.00"
+
+
+async def test_export_cash_movements_csv_returns_expected_rows(client):
+    open_response = await client.post("/api/v1/store-day/open")
+    assert open_response.status_code == 201
+    await client.post("/api/v1/cash-movements", json={"movement_type": "cash_in", "amount": "20.00", "note": "Cambio"})
+    await client.post("/api/v1/cash-movements", json={"movement_type": "expense", "amount": "15.00", "note": "Bolsas"})
+
+    response = await client.get("/api/v1/exports/cash-movements.csv")
+
+    assert response.status_code == 200
+    assert response.headers["content-type"].startswith("text/csv")
+    assert response.text.splitlines()[0] == (
+        "id,occurred_at,business_day_id,movement_type,direction,amount,note,"
+        "created_by_user_id,voided_at,voided_by_user_id,void_reason"
+    )
+    rows = _csv_rows(response)
+    assert {row["movement_type"] for row in rows} == {"cash_in", "expense"}
+    assert {row["direction"] for row in rows} == {"in", "out"}
+
+
+async def test_export_cash_movements_csv_filters_by_type(client):
+    open_response = await client.post("/api/v1/store-day/open")
+    assert open_response.status_code == 201
+    await client.post("/api/v1/cash-movements", json={"movement_type": "cash_in", "amount": "20.00"})
+    await client.post("/api/v1/cash-movements", json={"movement_type": "expense", "amount": "15.00"})
+
+    response = await client.get("/api/v1/exports/cash-movements.csv", params={"type": "expense"})
+
+    assert response.status_code == 200
+    rows = _csv_rows(response)
+    assert [row["movement_type"] for row in rows] == ["expense"]
