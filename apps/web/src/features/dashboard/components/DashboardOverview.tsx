@@ -13,16 +13,19 @@ import { formatCurrency } from "@/lib/format/currency";
 import type { UserRole } from "@/lib/auth/types";
 import { StoreDayStatusPanel } from "@/features/store-day/components/StoreDayStatusPanel";
 import type { StoreDayResult } from "@/features/store-day/types";
-import type { DashboardSale, DashboardSummaryResult } from "../types";
+import { DashboardScopeTabs } from "./DashboardScopeTabs";
+import type { DashboardSale, DashboardScope, DashboardSummaryResult } from "../types";
 
 export function DashboardOverview({
   summary,
   storeDay,
   role = "cashier",
+  scope = "today",
 }: {
   summary: DashboardSummaryResult;
   storeDay?: StoreDayResult;
   role?: UserRole;
+  scope?: DashboardScope;
 }) {
   if (!summary.ok) {
     return (
@@ -43,11 +46,14 @@ export function DashboardOverview({
 
   return (
     <section className="space-y-6">
-      <PageTitle />
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <PageTitle />
+        <DashboardScopeTabs scope={data.scope ?? scope} />
+      </div>
       {storeDay ? <StoreDaySection storeDay={storeDay} role={role} /> : null}
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <MetricCard
-          label="Ventas hoy"
+          label={data.scope === "month" ? "Ventas del mes" : "Ventas hoy"}
           value={formatCurrency(data.sales_today_total)}
           icon={TrendingUp}
         />

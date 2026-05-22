@@ -75,7 +75,7 @@ async def test_sales_create_list_and_get_reduce_stock(client):
 
     list_response = await client.get("/api/v1/sales")
     assert list_response.status_code == 200
-    assert len(list_response.json()) == 1
+    assert len(list_response.json()["items"]) == 1
 
     get_response = await client.get(f"/api/v1/sales/{sale['id']}")
     assert get_response.status_code == 200
@@ -132,7 +132,7 @@ async def test_failed_sale_does_not_create_partial_sale_or_stock_movement(client
 
     sales_response = await client.get("/api/v1/sales")
     assert sales_response.status_code == 200
-    assert sales_response.json() == []
+    assert sales_response.json()["items"] == []
 
     product_after_failure = await client.get(f"/api/v1/products/{product_id}")
     assert product_after_failure.json()["stock"] == 1
@@ -281,7 +281,7 @@ async def test_sale_rejects_stale_cart_after_concurrent_stock_change(client):
     assert data["stock_conflicts"][0]["requested_quantity"] == 10
 
     sales_response = await client.get("/api/v1/sales")
-    assert len(sales_response.json()) == 1
+    assert len(sales_response.json()["items"]) == 1
 
     product_after_failure = await client.get(f"/api/v1/products/{product_id}")
     assert product_after_failure.json()["stock"] == 9

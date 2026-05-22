@@ -22,6 +22,27 @@ export interface Sale {
   void_reason: string | null;
 }
 
+export type SaleStatusFilter = "all" | "completed" | "voided";
+
+export interface SaleSearchParams {
+  from_date?: string;
+  to_date?: string;
+  status: SaleStatusFilter;
+  limit: number;
+  offset: number;
+}
+
+export interface SaleListResponse {
+  items: Sale[];
+  total: number;
+  limit: number;
+  offset: number;
+  from_date: string;
+  to_date: string;
+  timezone: string;
+  first_business_date: string | null;
+}
+
 export interface CreateSalePayload {
   items: Array<{ product_id: string; quantity: number }>;
   payment_method: string;
@@ -35,5 +56,5 @@ export interface SaleActionState {
   fieldErrors: Partial<Record<"items" | "payment_method" | "customer_name" | "reason", string>>;
 }
 
-export type SaleListResult = ApiResult<Sale[]>;
+export type SaleListResult = ApiResult<SaleListResponse>;
 export type SaleResult = ApiResult<Sale>;

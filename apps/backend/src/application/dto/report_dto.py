@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date, datetime
 from decimal import Decimal
 from uuid import UUID
 
@@ -19,8 +19,8 @@ class TopProductDTO(BaseModel):
 
 
 class SalesReportDTO(BaseModel):
-    from_date: datetime
-    to_date: datetime
+    from_date: date | datetime
+    to_date: date | datetime
     total_sales: Decimal
     sales_count: int
     items_count: int

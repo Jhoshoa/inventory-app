@@ -11,10 +11,10 @@ import {
 const now = new Date("2026-05-20T12:00:00.000Z");
 
 describe("parseReportSearchParams", () => {
-  it("applies a default 30 day range", () => {
+  it("applies a default current month range", () => {
     expect(parseReportSearchParams({}, now)).toEqual({
-      range: "30d",
-      from: "2026-04-21",
+      range: "month",
+      from: "2026-05-01",
       to: "2026-05-20",
     });
   });
@@ -24,7 +24,7 @@ describe("parseReportSearchParams", () => {
       parseReportSearchParams({ range: "custom", from: "bad", to: "2026-05-10" }, now),
     ).toEqual({
       range: "custom",
-      from: "2026-04-21",
+      from: "2026-05-01",
       to: "2026-05-10",
     });
   });
@@ -53,14 +53,14 @@ describe("report query builders", () => {
     ).toBe("range=7d&from=2026-05-14&to=2026-05-20");
   });
 
-  it("serializes API date boundaries", () => {
+  it("serializes sales report API dates without UTC boundaries", () => {
     expect(
       buildSalesReportApiQuery({
         range: "custom",
         from: "2026-05-01",
         to: "2026-05-20",
       }),
-    ).toBe("from=2026-05-01T00%3A00%3A00.000Z&to=2026-05-20T23%3A59%3A59.999Z");
+    ).toBe("from_date=2026-05-01&to_date=2026-05-20");
   });
 
   it("omits all movement type from backend query", () => {

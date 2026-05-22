@@ -7,7 +7,7 @@ import type {
 
 export const DEFAULT_REPORT_LIMIT = 50;
 
-const rangePresets = new Set<ReportRangePreset>(["today", "7d", "30d", "custom"]);
+const rangePresets = new Set<ReportRangePreset>(["today", "7d", "30d", "month", "custom"]);
 const stockMovementTypes = new Set<StockMovementType>([
   "all",
   "sale",
@@ -24,10 +24,10 @@ export function parseReportSearchParams(
   const rangeValue = firstValue(searchParams.range);
   const range = rangePresets.has(rangeValue as ReportRangePreset)
     ? (rangeValue as ReportRangePreset)
-    : "30d";
+    : "month";
 
   if (range === "custom") {
-    const fallback = rangeToDates("30d", now);
+    const fallback = rangeToDates("month", now);
     return {
       range,
       from: normalizeDateInput(firstValue(searchParams.from)) ?? fallback.from,
@@ -75,8 +75,8 @@ export function buildStockMovementQueryString(params: StockMovementSearchParams)
 
 export function buildSalesReportApiQuery(params: ReportSearchParams) {
   const query = new URLSearchParams();
-  query.set("from", toApiDateTime(params.from, "start"));
-  query.set("to", toApiDateTime(params.to, "end"));
+  query.set("from_date", params.from);
+  query.set("to_date", params.to);
   return query.toString();
 }
 
@@ -102,6 +102,11 @@ function rangeToDates(range: Exclude<ReportRangePreset, "custom">, now: Date) {
 
   if (range === "today") {
     return { from: to, to };
+  }
+
+  if (range === "month") {
+    fromDate.setDate(1);
+    return { from: toDateInput(fromDate), to };
   }
 
   fromDate.setDate(fromDate.getDate() - (range === "7d" ? 6 : 29));

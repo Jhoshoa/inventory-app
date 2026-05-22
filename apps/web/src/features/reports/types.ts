@@ -1,6 +1,6 @@
 import type { ApiResult } from "@/lib/api/client";
 
-export type ReportRangePreset = "today" | "7d" | "30d" | "custom";
+export type ReportRangePreset = "today" | "7d" | "30d" | "month" | "custom";
 
 export type StockMovementType =
   | "all"

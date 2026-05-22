@@ -98,7 +98,7 @@ async def test_sync_push_sale_create_is_idempotent_and_reduces_stock_once(client
     assert product_after_sync.json()["stock"] == 3
 
     sales_response = await client.get("/api/v1/sales")
-    assert len(sales_response.json()) == 1
+    assert len(sales_response.json()["items"]) == 1
 
     movement_result = await db_session.execute(
         select(StockMovementModel).where(StockMovementModel.product_id == UUID(product_id))

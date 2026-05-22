@@ -1,32 +1,50 @@
+from datetime import date
 from uuid import UUID
 
-from fastapi import APIRouter, Depends
-from src.application.dto.sale_dto import CreateSaleDTO, SaleResponseDTO, VoidSaleDTO
+from fastapi import APIRouter, Depends, Query
+from src.application.dto.sale_dto import CreateSaleDTO, SaleListResponseDTO, SaleResponseDTO, VoidSaleDTO
 from src.application.use_cases.sales.create_sale import CreateSaleUseCase, CreateSaleInput, SaleItemInput
-from src.application.use_cases.sales.list_sales import ListSalesUseCase
+from src.application.use_cases.sales.list_sales import ListSalesInput, ListSalesUseCase
 from src.application.use_cases.sales.get_sale import GetSaleUseCase
 from src.application.use_cases.sales.void_sale import VoidSaleInput, VoidSaleUseCase
 from src.presentation.dependencies import (
     get_current_user,
     get_product_repo,
     get_sale_repo,
+    get_store_repo,
     get_store_business_day_repo,
     require_owner,
 )
 from src.infrastructure.database.repositories.product_repository import ProductRepository
 from src.infrastructure.database.repositories.sale_repository import SaleRepository
+from src.infrastructure.database.repositories.store_repository import StoreRepository
 from src.infrastructure.database.repositories.store_business_day_repository import StoreBusinessDayRepository
 
 router = APIRouter(prefix="/sales", tags=["sales"])
 
 
-@router.get("", response_model=list[SaleResponseDTO])
+@router.get("", response_model=SaleListResponseDTO)
 async def list_sales(
+    from_date: date | None = Query(default=None),
+    to_date: date | None = Query(default=None),
+    status: str = Query(default="all"),
+    limit: int = Query(default=50, ge=1, le=100),
+    offset: int = Query(default=0, ge=0),
     user: dict = Depends(get_current_user),
     repo: SaleRepository = Depends(get_sale_repo),
+    store_repo: StoreRepository = Depends(get_store_repo),
 ):
-    use_case = ListSalesUseCase(repo)
-    return await use_case.execute(user["store_id"])
+    use_case = ListSalesUseCase(repo, store_repo)
+    return await use_case.execute(
+        ListSalesInput(
+            store_id=UUID(str(user["store_id"])),
+            from_date=from_date,
+            to_date=to_date,
+            status=status,
+            limit=limit,
+            offset=offset,
+        )
+    )
 
 
 @router.post("", response_model=SaleResponseDTO, status_code=201)

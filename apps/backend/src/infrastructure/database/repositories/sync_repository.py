@@ -1,6 +1,7 @@
 from datetime import datetime, timezone
 from decimal import Decimal
 from uuid import UUID
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from pydantic import ValidationError
 from sqlalchemy import select
@@ -23,6 +24,7 @@ from src.domain.repositories.sync_repository import ISyncRepository
 from src.infrastructure.database.models.product_model import ProductModel
 from src.infrastructure.database.models.sale_model import SaleItemModel, SaleModel
 from src.infrastructure.database.models.stock_movement_model import StockMovementModel
+from src.infrastructure.database.models.store_model import StoreModel
 from src.infrastructure.database.models.sync_change_model import SyncChangeModel
 
 
@@ -227,6 +229,9 @@ class SyncRepository(ISyncRepository):
         existing = await self._session.get(SaleModel, change.entity_id)
         if existing is not None:
             raise ValueError("Venta ya existe")
+        store = await self._session.get(StoreModel, store_id)
+        store_timezone = store.timezone if store is not None and store.timezone else "America/La_Paz"
+        now = datetime.now(timezone.utc)
 
         sale = SaleModel(
             id=change.entity_id,
@@ -239,6 +244,9 @@ class SyncRepository(ISyncRepository):
             items_count=len(payload.items),
             payment_method=payload.payment_method,
             status="completed",
+            business_date=self._business_date(now, store_timezone),
+            created_at=now,
+            updated_at=now,
         )
         total = Decimal("0")
         stock_updates: list[tuple[ProductModel, int]] = []
@@ -268,7 +276,6 @@ class SyncRepository(ISyncRepository):
         self._session.add(sale)
         await self._session.flush()
 
-        now = datetime.now(timezone.utc)
         for product, quantity in stock_updates:
             product.stock -= quantity
             product.version = (product.version or 0) + 1
@@ -408,3 +415,10 @@ class SyncRepository(ISyncRepository):
         if value.tzinfo is None:
             value = value.replace(tzinfo=timezone.utc)
         return value.timestamp()
+
+    def _business_date(self, value: datetime, timezone_name: str):
+        try:
+            zone = ZoneInfo(timezone_name)
+        except ZoneInfoNotFoundError:
+            zone = ZoneInfo("America/La_Paz")
+        return value.astimezone(zone).date()

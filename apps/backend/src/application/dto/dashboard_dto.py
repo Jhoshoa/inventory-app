@@ -1,3 +1,4 @@
+from datetime import date
 from decimal import Decimal
 
 from pydantic import BaseModel
@@ -16,3 +17,8 @@ class DashboardSummaryDTO(BaseModel):
     latest_sales: list[SaleResponseDTO]
     low_stock_products: list[ProductResponseDTO]
     exchange_rates: list[ExchangeRateResponseDTO]
+    scope: str = "today"
+    from_date: date | None = None
+    to_date: date | None = None
+    timezone: str | None = None
+    first_business_date: date | None = None

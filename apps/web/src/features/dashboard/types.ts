@@ -9,7 +9,14 @@ export interface DashboardSummary {
   latest_sales: DashboardSale[];
   low_stock_products: DashboardProduct[];
   exchange_rates: DashboardExchangeRate[];
+  scope: DashboardScope;
+  from_date: string | null;
+  to_date: string | null;
+  timezone: string | null;
+  first_business_date: string | null;
 }
+
+export type DashboardScope = "today" | "month";
 
 export interface DashboardSale {
   id: string;

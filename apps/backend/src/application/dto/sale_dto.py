@@ -52,3 +52,14 @@ class SaleResponseDTO(BaseModel):
     void_reason: str | None = None
 
     model_config = {"from_attributes": True}
+
+
+class SaleListResponseDTO(BaseModel):
+    items: list[SaleResponseDTO]
+    total: int
+    limit: int
+    offset: int
+    from_date: date
+    to_date: date
+    timezone: str
+    first_business_date: date | None = None

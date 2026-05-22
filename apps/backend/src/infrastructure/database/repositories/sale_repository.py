@@ -1,5 +1,5 @@
 from uuid import UUID
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from decimal import Decimal
 
 from sqlalchemy import func, select
@@ -56,17 +56,37 @@ class SaleRepository(ISaleRepository):
             return None
         return self._to_entity(model)
 
-    async def list_by_store(self, store_id: UUID) -> list[Sale]:
+    async def list_by_store(
+        self,
+        store_id: UUID,
+        *,
+        from_date: date | None = None,
+        to_date: date | None = None,
+        status: str = "all",
+        limit: int = 50,
+        offset: int = 0,
+    ) -> tuple[list[Sale], int]:
+        filters = [SaleModel.store_id == store_id, SaleModel.deleted_at.is_(None)]
+        if from_date is not None:
+            filters.append(SaleModel.business_date >= from_date)
+        if to_date is not None:
+            filters.append(SaleModel.business_date <= to_date)
+        if status != "all":
+            filters.append(SaleModel.status == status)
+
+        total_result = await self._session.execute(select(func.count(SaleModel.id)).where(*filters))
         result = await self._session.execute(
             select(SaleModel)
-            .where(SaleModel.store_id == store_id, SaleModel.deleted_at.is_(None))
+            .where(*filters)
             .options(selectinload(SaleModel.items))
             .order_by(SaleModel.created_at.desc())
+            .limit(limit)
+            .offset(offset)
         )
         sales = []
         for model in result.scalars().all():
             sales.append(self._to_entity(model))
-        return sales
+        return sales, int(total_result.scalar_one() or 0)
 
     async def sales_summary_for_range(self, store_id: UUID, start: datetime, end: datetime) -> dict:
         result = await self._session.execute(
@@ -78,7 +98,8 @@ class SaleRepository(ISaleRepository):
                 SaleModel.store_id == store_id,
                 SaleModel.deleted_at.is_(None),
                 SaleModel.created_at >= start,
-                SaleModel.created_at <= end,
+                SaleModel.created_at < end,
+                SaleModel.status == "completed",
             )
         )
         total, count, items_count = result.one()
@@ -130,6 +151,27 @@ class SaleRepository(ISaleRepository):
             sales.append(self._to_entity(model))
         return sales
 
+    async def latest_sales_for_range(
+        self,
+        store_id: UUID,
+        start: datetime,
+        end: datetime,
+        limit: int = 5,
+    ) -> list[Sale]:
+        result = await self._session.execute(
+            select(SaleModel)
+            .where(
+                SaleModel.store_id == store_id,
+                SaleModel.deleted_at.is_(None),
+                SaleModel.created_at >= start,
+                SaleModel.created_at < end,
+            )
+            .options(selectinload(SaleModel.items))
+            .order_by(SaleModel.created_at.desc())
+            .limit(limit)
+        )
+        return [self._to_entity(model) for model in result.scalars().all()]
+
     async def mark_voided(self, store_id: UUID, sale_id: UUID, reason: str) -> Sale | None:
         result = await self._session.execute(
             select(SaleModel)
@@ -154,7 +196,7 @@ class SaleRepository(ISaleRepository):
                 SaleModel.store_id == store_id,
                 SaleModel.deleted_at.is_(None),
                 SaleModel.created_at >= start,
-                SaleModel.created_at <= end,
+                SaleModel.created_at < end,
             )
             .order_by(SaleModel.created_at.desc(), SaleModel.id.asc())
         )
@@ -183,7 +225,8 @@ class SaleRepository(ISaleRepository):
                 SaleModel.store_id == store_id,
                 SaleModel.deleted_at.is_(None),
                 SaleModel.created_at >= start,
-                SaleModel.created_at <= end,
+                SaleModel.created_at < end,
+                SaleModel.status == "completed",
             )
             .group_by(SaleModel.payment_method)
             .order_by(func.coalesce(func.sum(SaleModel.total), 0).desc())
@@ -206,7 +249,8 @@ class SaleRepository(ISaleRepository):
                 SaleModel.store_id == store_id,
                 SaleModel.deleted_at.is_(None),
                 SaleModel.created_at >= start,
-                SaleModel.created_at <= end,
+                SaleModel.created_at < end,
+                SaleModel.status == "completed",
             )
             .group_by(SaleItemModel.product_id, SaleItemModel.product_name)
             .order_by(func.coalesce(func.sum(SaleItemModel.quantity), 0).desc())

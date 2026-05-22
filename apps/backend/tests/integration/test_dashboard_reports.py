@@ -41,6 +41,27 @@ async def test_dashboard_summary_returns_store_metrics(client):
     assert len(data["latest_sales"]) == 1
 
 
+async def test_dashboard_month_scope_starts_at_first_business_date(client):
+    product = await client.post(
+        "/api/v1/products",
+        json={"name": "Normal", "price": "20.00", "stock": 10, "min_stock": 2},
+    )
+    opened_day = await _open_store_day(client)
+
+    await client.post(
+        "/api/v1/sales",
+        json={"items": [{"product_id": product.json()["id"], "quantity": 1}], "payment_method": "efectivo"},
+    )
+
+    response = await client.get("/api/v1/dashboard/summary?scope=month")
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["scope"] == "month"
+    assert data["from_date"] == opened_day["first_business_date"]
+    assert data["sales_today_count"] == 1
+
+
 async def test_dashboard_summary_does_not_leak_other_store(client, db_session):
     other_store_id = uuid4()
     db_session.add(StoreModel(id=other_store_id, name="Other Store"))

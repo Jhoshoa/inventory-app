@@ -1,8 +1,8 @@
 import { apiRequest } from "@/lib/api/client";
 import { getAuthToken } from "@/lib/auth/session";
-import type { DashboardSummary, DashboardSummaryResult } from "./types";
+import type { DashboardScope, DashboardSummary, DashboardSummaryResult } from "./types";
 
-export async function getDashboardSummary(): Promise<DashboardSummaryResult> {
+export async function getDashboardSummary(scope: DashboardScope = "today"): Promise<DashboardSummaryResult> {
   const token = await getAuthToken();
 
   if (!token) {
@@ -12,7 +12,7 @@ export async function getDashboardSummary(): Promise<DashboardSummaryResult> {
     };
   }
 
-  const result = await apiRequest<DashboardSummary>("/dashboard/summary", {
+  const result = await apiRequest<DashboardSummary>(`/dashboard/summary?scope=${scope}`, {
     token,
   });
 
@@ -36,5 +36,10 @@ export function createEmptyDashboardSummary(): DashboardSummary {
     latest_sales: [],
     low_stock_products: [],
     exchange_rates: [],
+    scope: "today",
+    from_date: null,
+    to_date: null,
+    timezone: null,
+    first_business_date: null,
   };
 }
