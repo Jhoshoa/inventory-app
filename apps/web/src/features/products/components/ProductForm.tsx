@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
 import { Select } from "@/components/ui/Select";
 import type { ProductCategory } from "@/features/product-categories/types";
+import { QrPreviewDialog } from "./QrPreviewDialog";
 import {
   createProductAction,
   updateProductAction,
@@ -38,11 +39,13 @@ export function ProductForm({
   const [categoryId, setCategoryId] = useState(values.category_id);
   const [sku, setSku] = useState(values.sku);
   const [scanCode, setScanCode] = useState(values.qr_code);
+  const [isQrPreviewOpen, setIsQrPreviewOpen] = useState(false);
   const selectedCategory = useMemo(
     () => categories.find((category) => category.id === categoryId),
     [categories, categoryId],
   );
   const categoryName = selectedCategory?.name ?? values.category;
+  const normalizedScanCode = scanCode.trim();
 
   return (
     <form action={formAction} className="space-y-6">
@@ -149,6 +152,14 @@ export function ProductForm({
               <Button type="button" variant="secondary" onClick={() => setScanCode(sku)} disabled={!sku.trim()}>
                 Usar SKU
               </Button>
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => setIsQrPreviewOpen(true)}
+                disabled={!normalizedScanCode}
+              >
+                Ver QR
+              </Button>
             </div>
           </div>
         </Field>
@@ -173,6 +184,13 @@ export function ProductForm({
           {isPending ? "Guardando..." : mode === "create" ? "Crear producto" : "Guardar cambios"}
         </Button>
       </div>
+
+      <QrPreviewDialog
+        open={isQrPreviewOpen}
+        code={normalizedScanCode}
+        productName={product?.name}
+        onClose={() => setIsQrPreviewOpen(false)}
+      />
     </form>
   );
 }
