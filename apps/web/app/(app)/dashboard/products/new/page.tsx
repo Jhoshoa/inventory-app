@@ -1,8 +1,16 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
+import { ForbiddenState } from "@/components/ui/ForbiddenState";
 import { ProductForm } from "@/features/products/components/ProductForm";
+import { canManageProducts } from "@/lib/auth/permissions";
+import { requireSession } from "@/lib/auth/session";
 
-export default function NewProductPage() {
+export default async function NewProductPage() {
+  const session = await requireSession();
+  if (!canManageProducts(session.role)) {
+    return <ForbiddenState description="Crear productos requiere permisos de owner." />;
+  }
+
   return (
     <section className="space-y-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">

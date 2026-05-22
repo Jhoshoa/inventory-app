@@ -6,11 +6,13 @@ import {
   TableHeaderCell,
 } from "@/components/ui/Table";
 import { formatCurrency } from "@/lib/format/currency";
+import { canVoidSale } from "@/lib/auth/permissions";
+import type { UserRole } from "@/lib/auth/types";
 import { SaleStatusBadge } from "./SaleStatusBadge";
 import { VoidSaleDialog } from "./VoidSaleDialog";
 import type { Sale } from "../types";
 
-export function SaleDetail({ sale }: { sale: Sale }) {
+export function SaleDetail({ sale, role }: { sale: Sale; role: UserRole }) {
   return (
     <section className="space-y-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -25,7 +27,7 @@ export function SaleDetail({ sale }: { sale: Sale }) {
             {formatDate(sale.created_at)} - {sale.payment_method}
           </p>
         </div>
-        {sale.status === "completed" ? <VoidSaleDialog saleId={sale.id} /> : null}
+        {sale.status === "completed" && canVoidSale(role) ? <VoidSaleDialog saleId={sale.id} /> : null}
       </div>
 
       {sale.status === "voided" ? (

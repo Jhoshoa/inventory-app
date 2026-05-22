@@ -1,11 +1,14 @@
 import { Alert } from "@/components/ui/Alert";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { ForbiddenState } from "@/components/ui/ForbiddenState";
 import { Pagination } from "@/components/ui/Pagination";
 import { listInventoryImports } from "@/features/imports/api";
 import { ImportFilters } from "@/features/imports/components/ImportFilters";
 import { ImportsTable } from "@/features/imports/components/ImportsTable";
 import { ImportUploadPanel } from "@/features/imports/components/ImportUploadPanel";
 import { buildImportQueryString, parseImportSearchParams } from "@/features/imports/schemas";
+import { canCreateImport } from "@/lib/auth/permissions";
+import { requireSession } from "@/lib/auth/session";
 
 export default async function ImportsPage({
   searchParams,
@@ -14,6 +17,11 @@ export default async function ImportsPage({
 }) {
   const rawParams = await searchParams;
   const params = parseImportSearchParams(rawParams);
+  const session = await requireSession();
+  if (!canCreateImport(session.role)) {
+    return <ForbiddenState description="Import Image requiere permisos de owner." />;
+  }
+
   const imports = await listInventoryImports(params);
   const urlParams = new URLSearchParams(buildImportQueryString(params));
 

@@ -1,8 +1,15 @@
 import { describe, expect, it } from "vitest";
 import {
+  canAdjustStock,
+  canCancelImport,
   canConfirmImport,
+  canCreateImport,
+  canDeleteProduct,
   canExport,
+  canManageProducts,
   canManageSettings,
+  canReviewImport,
+  canViewSettings,
   canVoidSale,
   isOwner,
 } from "./permissions";
@@ -14,6 +21,13 @@ describe("permissions", () => {
     expect(canVoidSale("owner")).toBe(true);
     expect(canManageSettings("owner")).toBe(true);
     expect(canConfirmImport("owner")).toBe(true);
+    expect(canViewSettings("owner")).toBe(true);
+    expect(canManageProducts("owner")).toBe(true);
+    expect(canAdjustStock("owner")).toBe(true);
+    expect(canDeleteProduct("owner")).toBe(true);
+    expect(canCreateImport("owner")).toBe(true);
+    expect(canReviewImport("owner")).toBe(true);
+    expect(canCancelImport("owner")).toBe(true);
   });
 
   it("blocks cashier administrative actions", () => {
@@ -22,5 +36,12 @@ describe("permissions", () => {
     expect(canVoidSale("cashier")).toBe(false);
     expect(canManageSettings("cashier")).toBe(false);
     expect(canConfirmImport("cashier")).toBe(false);
+    expect(canViewSettings("cashier")).toBe(false);
+    expect(canManageProducts("cashier")).toBe(false);
+    expect(canAdjustStock("cashier")).toBe(false);
+    expect(canDeleteProduct("cashier")).toBe(false);
+    expect(canCreateImport("cashier")).toBe(false);
+    expect(canReviewImport("cashier")).toBe(false);
+    expect(canCancelImport("cashier")).toBe(false);
   });
 });

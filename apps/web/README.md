@@ -85,6 +85,12 @@ Email: dev@local.dev
 Password: secret123
 ```
 
+Cashier login credentials
+```text
+Email: cashier@local.dev
+Password: password123
+```
+
 Note: in `DEBUG=true`, the backend does not validate the password against a stored hash, but the web login form requires at least 6 characters.
 
 ## Seed Data
@@ -95,6 +101,12 @@ The backend includes deterministic local seed data. Run migrations first, then s
 cd apps/backend
 .\.venv\Scripts\python.exe -m alembic upgrade head
 .\.venv\Scripts\python.exe -m src.infrastructure.database.seed.dev_seed
+```
+
+and if you actually are inside the virtual environment, use this command to run the seed
+```bash
+cd apps/backend
+py -m src.infrastructure.database.seed.dev_seed
 ```
 
 The seed is idempotent and creates:

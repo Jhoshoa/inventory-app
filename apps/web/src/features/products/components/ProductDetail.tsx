@@ -1,12 +1,14 @@
 import Link from "next/link";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
+import { canAdjustStock, canManageProducts } from "@/lib/auth/permissions";
+import type { UserRole } from "@/lib/auth/types";
 import { formatCurrency } from "@/lib/format/currency";
 import { ProductStockDialog } from "./ProductStockDialog";
 import { StockBadge } from "./ProductTable";
 import type { Product } from "../types";
 
-export function ProductDetail({ product }: { product: Product }) {
+export function ProductDetail({ product, role }: { product: Product; role: UserRole }) {
   return (
     <section className="space-y-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -17,10 +19,14 @@ export function ProductDetail({ product }: { product: Product }) {
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Button variant="secondary" asChild>
-            <Link href={`/dashboard/products/${product.id}/edit`}>Editar</Link>
-          </Button>
-          <ProductStockDialog productId={product.id} productName={product.name} />
+          {canManageProducts(role) ? (
+            <Button variant="secondary" asChild>
+              <Link href={`/dashboard/products/${product.id}/edit`}>Editar</Link>
+            </Button>
+          ) : null}
+          {canAdjustStock(role) ? (
+            <ProductStockDialog productId={product.id} productName={product.name} />
+          ) : null}
         </div>
       </div>
 

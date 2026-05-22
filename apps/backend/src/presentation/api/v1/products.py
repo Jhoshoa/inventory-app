@@ -29,7 +29,7 @@ from src.application.use_cases.stock_movements.list_product_stock_movements impo
 )
 from src.infrastructure.database.repositories.product_repository import ProductRepository
 from src.infrastructure.database.repositories.stock_movement_repository import StockMovementRepository
-from src.presentation.dependencies import get_current_user, get_product_repo, get_stock_movement_repo, require_active_user, require_owner
+from src.presentation.dependencies import get_product_repo, get_stock_movement_repo, require_active_user, require_owner
 
 router = APIRouter(prefix="/products", tags=["products"])
 
@@ -43,12 +43,12 @@ async def list_products(
     offset: int = Query(default=0, ge=0),
     sort: ProductSortField = ProductSortField.NAME,
     direction: SortDirection = SortDirection.ASC,
-    user: dict = Depends(get_current_user),
+    user=Depends(require_active_user),
     repo: ProductRepository = Depends(get_product_repo),
 ):
     products, total = await SearchProductsUseCase(repo).execute(
         SearchProductsInput(
-            store_id=UUID(str(user["store_id"])),
+            store_id=user.store_id,
             q=q,
             category=category,
             stock=stock.value,
@@ -66,12 +66,12 @@ async def list_products_for_pos(
     q: str | None = Query(default=None, min_length=3, max_length=100),
     limit: int = Query(default=50, ge=1, le=100),
     offset: int = Query(default=0, ge=0),
-    user: dict = Depends(get_current_user),
+    user=Depends(require_active_user),
     repo: ProductRepository = Depends(get_product_repo),
 ):
     products, total = await SearchProductsUseCase(repo).execute(
         SearchProductsInput(
-            store_id=UUID(str(user["store_id"])),
+            store_id=user.store_id,
             q=q,
             limit=limit,
             offset=offset,
@@ -100,19 +100,19 @@ async def list_products_for_pos(
 @router.get("/low-stock", response_model=list[ProductResponseDTO])
 async def list_low_stock_products(
     limit: int = Query(default=20, ge=1, le=100),
-    user: dict = Depends(get_current_user),
+    user=Depends(require_active_user),
     repo: ProductRepository = Depends(get_product_repo),
 ):
-    return await ListLowStockProductsUseCase(repo).execute(UUID(str(user["store_id"])), limit)
+    return await ListLowStockProductsUseCase(repo).execute(user.store_id, limit)
 
 
 @router.get("/qr/{qr_code}", response_model=ProductResponseDTO)
 async def get_product_by_qr(
     qr_code: str,
-    user: dict = Depends(get_current_user),
+    user=Depends(require_active_user),
     repo: ProductRepository = Depends(get_product_repo),
 ):
-    return await GetProductByQRUseCase(repo).execute(UUID(str(user["store_id"])), qr_code)
+    return await GetProductByQRUseCase(repo).execute(user.store_id, qr_code)
 
 
 @router.get("/{product_id}/stock-movements", response_model=StockMovementListResponseDTO)
@@ -138,12 +138,12 @@ async def list_product_stock_movements(
 @router.post("", response_model=ProductResponseDTO, status_code=201)
 async def create_product(
     dto: CreateProductDTO,
-    user: dict = Depends(get_current_user),
+    user=Depends(require_owner),
     repo: ProductRepository = Depends(get_product_repo),
 ):
     product = await CreateProductUseCase(repo).execute(
         CreateProductInput(
-            store_id=UUID(str(user["store_id"])),
+            store_id=user.store_id,
             name=dto.name,
             price=dto.price,
             stock=dto.stock,
@@ -162,22 +162,22 @@ async def create_product(
 @router.get("/{product_id}", response_model=ProductResponseDTO)
 async def get_product(
     product_id: UUID,
-    user: dict = Depends(get_current_user),
+    user=Depends(require_active_user),
     repo: ProductRepository = Depends(get_product_repo),
 ):
-    return await GetProductUseCase(repo).execute(UUID(str(user["store_id"])), product_id)
+    return await GetProductUseCase(repo).execute(user.store_id, product_id)
 
 
 @router.patch("/{product_id}", response_model=ProductResponseDTO)
 async def update_product(
     product_id: UUID,
     dto: UpdateProductDTO,
-    user: dict = Depends(get_current_user),
+    user=Depends(require_owner),
     repo: ProductRepository = Depends(get_product_repo),
 ):
     product = await UpdateProductUseCase(repo).execute(
         UpdateProductInput(
-            store_id=UUID(str(user["store_id"])),
+            store_id=user.store_id,
             product_id=product_id,
             name=dto.name,
             price=dto.price,
@@ -194,7 +194,7 @@ async def update_product(
         delta = dto.stock - product.stock
         if delta:
             product = await UpdateStockUseCase(repo).execute(
-                UUID(str(user["store_id"])),
+                user.store_id,
                 product_id,
                 delta,
                 "stock set from product update",
@@ -206,17 +206,16 @@ async def update_product(
 async def adjust_stock(
     product_id: UUID,
     dto: StockAdjustmentDTO,
-    user: dict = Depends(get_current_user),
+    user=Depends(require_owner),
     repo: ProductRepository = Depends(get_product_repo),
 ):
-    return await UpdateStockUseCase(repo).execute(UUID(str(user["store_id"])), product_id, dto.quantity, dto.reason)
+    return await UpdateStockUseCase(repo).execute(user.store_id, product_id, dto.quantity, dto.reason)
 
 
 @router.delete("/{product_id}", status_code=204)
 async def delete_product(
     product_id: UUID,
-    user: dict = Depends(get_current_user),
-    _owner=Depends(require_owner),
+    user=Depends(require_owner),
     repo: ProductRepository = Depends(get_product_repo),
 ):
-    await DeleteProductUseCase(repo).execute(UUID(str(user["store_id"])), product_id)
+    await DeleteProductUseCase(repo).execute(user.store_id, product_id)

@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/Button";
 import { getProduct, listProductStockMovements } from "@/features/products/api";
 import { ProductDetail } from "@/features/products/components/ProductDetail";
 import { ProductStockMovements } from "@/features/products/components/ProductStockMovements";
+import { requireSession } from "@/lib/auth/session";
 
 export default async function ProductDetailPage({
   params,
@@ -12,7 +13,8 @@ export default async function ProductDetailPage({
   params: Promise<{ productId: string }>;
 }) {
   const { productId } = await params;
-  const [product, movements] = await Promise.all([
+  const [session, product, movements] = await Promise.all([
+    requireSession(),
     getProduct(productId),
     listProductStockMovements(productId),
   ]);
@@ -28,7 +30,7 @@ export default async function ProductDetailPage({
         <Alert variant="error">No se pudo cargar el producto: {product.error.message}</Alert>
       ) : (
         <>
-          <ProductDetail product={product.data} />
+          <ProductDetail product={product.data} role={session.role} />
           {!movements.ok ? (
             <Alert variant="error">
               No se pudo cargar el historial: {movements.error.message}

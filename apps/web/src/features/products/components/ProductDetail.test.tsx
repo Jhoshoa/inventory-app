@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
-import { ProductTable } from "./ProductTable";
+import { ProductDetail } from "./ProductDetail";
 import type { Product } from "../types";
 
 vi.mock("react", async () => {
@@ -24,30 +24,18 @@ const product: Product = {
   version: 1,
 };
 
-describe("ProductTable", () => {
-  it("renders rows and stock badges", () => {
-    render(<ProductTable products={[product]} role="owner" />);
+describe("ProductDetail", () => {
+  it("shows administrative actions for owner", () => {
+    render(<ProductDetail product={product} role="owner" />);
 
-    expect(screen.getByText("Arroz 1kg")).toBeInTheDocument();
-    expect(screen.getByText("A-001")).toBeInTheDocument();
-    expect(screen.getByText("Bajo")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Editar" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Ajustar stock" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Eliminar" })).toBeInTheDocument();
-  });
-
-  it("renders an empty state", () => {
-    render(<ProductTable products={[]} role="owner" />);
-
-    expect(screen.getByText("No hay productos para mostrar")).toBeInTheDocument();
   });
 
   it("hides administrative actions for cashier", () => {
-    render(<ProductTable products={[product]} role="cashier" />);
+    render(<ProductDetail product={product} role="cashier" />);
 
-    expect(screen.getByRole("link", { name: "Ver" })).toBeInTheDocument();
     expect(screen.queryByRole("link", { name: "Editar" })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Ajustar stock" })).not.toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: "Eliminar" })).not.toBeInTheDocument();
   });
 });

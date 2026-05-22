@@ -8,18 +8,22 @@ import {
   ShoppingCart,
   Settings,
 } from "lucide-react";
+import { canCreateImport, canViewSettings } from "@/lib/auth/permissions";
+import type { UserRole } from "@/lib/auth/types";
+
+const canView = () => true;
 
 const navItems = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/dashboard/pos", label: "POS", icon: ShoppingCart },
-  { href: "/dashboard/products", label: "Productos", icon: Boxes },
-  { href: "/dashboard/imports", label: "Import Image", icon: FileImage },
-  { href: "/dashboard/sales", label: "Ventas", icon: ReceiptText },
-  { href: "/dashboard/reports", label: "Reportes", icon: BarChart3 },
-  { href: "/dashboard/settings", label: "Ajustes", icon: Settings },
+  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, allowed: canView },
+  { href: "/dashboard/pos", label: "POS", icon: ShoppingCart, allowed: canView },
+  { href: "/dashboard/products", label: "Productos", icon: Boxes, allowed: canView },
+  { href: "/dashboard/imports", label: "Import Image", icon: FileImage, allowed: canCreateImport },
+  { href: "/dashboard/sales", label: "Ventas", icon: ReceiptText, allowed: canView },
+  { href: "/dashboard/reports", label: "Reportes", icon: BarChart3, allowed: canView },
+  { href: "/dashboard/settings", label: "Ajustes", icon: Settings, allowed: canViewSettings },
 ] as const;
 
-export function AppSidebar() {
+export function AppSidebar({ role }: { role: UserRole }) {
   return (
     <aside className="hidden border-r border-slate-200 bg-white lg:fixed lg:inset-y-0 lg:z-30 lg:flex lg:w-64 lg:flex-col">
       <div className="flex h-16 items-center border-b border-slate-200 px-5">
@@ -28,7 +32,7 @@ export function AppSidebar() {
         </Link>
       </div>
       <nav className="flex-1 space-y-1 px-3 py-4" aria-label="Principal">
-        {navItems.map((item) => {
+        {navItems.filter((item) => item.allowed(role)).map((item) => {
           const Icon = item.icon;
           return (
             <Link

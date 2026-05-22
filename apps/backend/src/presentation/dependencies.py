@@ -20,8 +20,10 @@ from src.infrastructure.auth.supabase_auth import verify_jwt
 
 security_scheme = HTTPBearer(auto_error=False)
 DEV_USER_ID = UUID("00000000-0000-0000-0000-000000000001")
+DEV_CASHIER_USER_ID = UUID("00000000-0000-0000-0000-000000000002")
 DEV_STORE_ID = UUID("00000000-0000-0000-0000-000000000101")
 DEV_ACCESS_TOKEN = "dev-token-123"
+DEV_CASHIER_ACCESS_TOKEN = "dev-cashier-token-123"
 
 
 async def get_current_user(token: str = Depends(security_scheme)) -> dict:
@@ -42,6 +44,14 @@ async def get_current_user(token: str = Depends(security_scheme)) -> dict:
             "store_id": DEV_STORE_ID,
             "full_name": "Dev User",
             "role": "owner",
+        }
+    if settings.DEBUG and token.credentials == DEV_CASHIER_ACCESS_TOKEN:
+        return {
+            "id": DEV_CASHIER_USER_ID,
+            "email": "cashier@local.dev",
+            "store_id": DEV_STORE_ID,
+            "full_name": "Demo Cashier",
+            "role": "cashier",
         }
     try:
         payload = verify_jwt(token.credentials)

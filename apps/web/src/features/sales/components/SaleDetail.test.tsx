@@ -1,7 +1,12 @@
 import { render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { SaleDetail } from "./SaleDetail";
 import type { Sale } from "../types";
+
+vi.mock("react", async () => {
+  const actual = await vi.importActual<typeof import("react")>("react");
+  return { ...actual, useActionState: () => [{ ok: false, fieldErrors: {} }, vi.fn(), false] };
+});
 
 const sale: Sale = {
   id: "sale-12345678",
@@ -24,12 +29,24 @@ const sale: Sale = {
 
 describe("SaleDetail", () => {
   it("renders sale items, status, and void reason", () => {
-    render(<SaleDetail sale={sale} />);
+    render(<SaleDetail sale={sale} role="owner" />);
 
     expect(screen.getByRole("heading", { name: "Venta sale-123" })).toBeInTheDocument();
     expect(screen.getByText("Anulada")).toBeInTheDocument();
     expect(screen.getByText(/Error de cobro/)).toBeInTheDocument();
     expect(screen.getByText("Arroz 1kg")).toBeInTheDocument();
     expect(screen.getAllByText(/Bs\s+25,00/)).toHaveLength(2);
+  });
+
+  it("hides void action for cashier", () => {
+    render(<SaleDetail sale={{ ...sale, status: "completed", voided_at: null, void_reason: null }} role="cashier" />);
+
+    expect(screen.queryByRole("button", { name: /anular venta/i })).not.toBeInTheDocument();
+  });
+
+  it("shows void action for owner", () => {
+    render(<SaleDetail sale={{ ...sale, status: "completed", voided_at: null, void_reason: null }} role="owner" />);
+
+    expect(screen.getByRole("button", { name: /anular venta/i })).toBeInTheDocument();
   });
 });

@@ -12,6 +12,7 @@ from src.infrastructure.database.models.store_model import StoreModel
 from src.infrastructure.database.models.user_model import UserModel
 
 DEV_USER_ID = UUID("00000000-0000-0000-0000-000000000001")
+DEV_CASHIER_USER_ID = UUID("00000000-0000-0000-0000-000000000002")
 DEV_STORE_ID = UUID("00000000-0000-0000-0000-000000000101")
 
 SEEDED_PRODUCT_IDS = {
@@ -40,6 +41,16 @@ async def seed_dev_data(session: AsyncSession) -> None:
     user.full_name = "Dev User"
     user.role = "owner"
     user.is_active = True
+
+    cashier = await session.get(UserModel, DEV_CASHIER_USER_ID)
+    if cashier is None:
+        cashier = UserModel(id=DEV_CASHIER_USER_ID)
+        session.add(cashier)
+    cashier.email = "cashier@local.dev"
+    cashier.store_id = DEV_STORE_ID
+    cashier.full_name = "Demo Cashier"
+    cashier.role = "cashier"
+    cashier.is_active = True
 
     products = [
         {

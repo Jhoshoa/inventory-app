@@ -11,7 +11,10 @@ from src.config.settings import settings
 from src.infrastructure.database.repositories.store_repository import StoreRepository
 from src.infrastructure.database.repositories.user_repository import UserRepository
 from src.presentation.dependencies import (
+    DEV_CASHIER_ACCESS_TOKEN,
+    DEV_CASHIER_USER_ID,
     DEV_STORE_ID,
+    DEV_ACCESS_TOKEN,
     DEV_USER_ID,
     get_current_user_context,
     get_store_repo,
@@ -53,15 +56,22 @@ def _auth_response(access_token: str, refresh_token: str, *, user_id, email, sto
     )
 
 
-def _dev_auth_response(email: str = "dev@local.dev", store_id=DEV_STORE_ID, user_id=DEV_USER_ID, role: str = "owner") -> AuthResponseDTO:
+def _dev_auth_response(
+    email: str = "dev@local.dev",
+    store_id=DEV_STORE_ID,
+    user_id=DEV_USER_ID,
+    role: str = "owner",
+    full_name: str = "Dev User",
+) -> AuthResponseDTO:
+    access_token = DEV_CASHIER_ACCESS_TOKEN if role == "cashier" else DEV_ACCESS_TOKEN
     return AuthResponseDTO(
-        access_token="dev-token-123",
+        access_token=access_token,
         refresh_token="dev-refresh-123",
         user={
             "id": str(user_id),
             "email": email,
             "store_id": str(store_id),
-            "full_name": "Dev User",
+            "full_name": full_name,
             "role": role,
         },
     )
@@ -74,17 +84,21 @@ async def login(
     store_repo: StoreRepository = Depends(get_store_repo),
 ):
     if settings.DEBUG:
+        is_cashier_login = dto.email.lower() == "cashier@local.dev"
+        user_id = DEV_CASHIER_USER_ID if is_cashier_login else DEV_USER_ID
+        role = "cashier" if is_cashier_login else "owner"
+        full_name = "Demo Cashier" if is_cashier_login else "Dev User"
         await EnsureLocalUserUseCase(user_repo, store_repo).execute(
             EnsureLocalUserInput(
-                user_id=DEV_USER_ID,
+                user_id=user_id,
                 email=dto.email,
                 store_id=DEV_STORE_ID,
-                full_name="Dev User",
-                role="owner",
+                full_name=full_name,
+                role=role,
                 touch_login=True,
             )
         )
-        return _dev_auth_response(dto.email)
+        return _dev_auth_response(dto.email, user_id=user_id, role=role, full_name=full_name)
 
     supabase = create_client(settings.SUPABASE_URL, settings.SUPABASE_ANON_KEY)
     response = supabase.auth.sign_in_with_password(
@@ -177,10 +191,30 @@ async def refresh_token(refresh_token: str):
 
 
 @router.post("/dev-login", response_model=AuthResponseDTO)
-async def dev_login():
+async def dev_login(
+    role: str = "owner",
+    user_repo: UserRepository = Depends(get_user_repo),
+    store_repo: StoreRepository = Depends(get_store_repo),
+):
     if not settings.DEBUG:
         raise PermissionError("Dev login is disabled")
-    return _dev_auth_response()
+    if role not in {"owner", "cashier"}:
+        raise PermissionError("Rol dev invalido")
+    is_cashier = role == "cashier"
+    user_id = DEV_CASHIER_USER_ID if is_cashier else DEV_USER_ID
+    email = "cashier@local.dev" if is_cashier else "dev@local.dev"
+    full_name = "Demo Cashier" if is_cashier else "Dev User"
+    await EnsureLocalUserUseCase(user_repo, store_repo).execute(
+        EnsureLocalUserInput(
+            user_id=user_id,
+            email=email,
+            store_id=DEV_STORE_ID,
+            full_name=full_name,
+            role=role,
+            touch_login=True,
+        )
+    )
+    return _dev_auth_response(email, user_id=user_id, role=role, full_name=full_name)
 
 
 @router.get("/me", response_model=CurrentUserDTO)

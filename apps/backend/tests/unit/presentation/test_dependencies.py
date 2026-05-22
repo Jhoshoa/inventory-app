@@ -18,3 +18,18 @@ async def test_get_current_user_accepts_dev_access_token_in_debug(monkeypatch):
     assert user["store_id"] == dependencies.DEV_STORE_ID
     assert user["role"] == "owner"
 
+
+async def test_get_current_user_accepts_dev_cashier_access_token_in_debug(monkeypatch):
+    monkeypatch.setattr(dependencies.settings, "DEBUG", True)
+
+    user = await dependencies.get_current_user(
+        HTTPAuthorizationCredentials(
+            scheme="Bearer",
+            credentials=dependencies.DEV_CASHIER_ACCESS_TOKEN,
+        )
+    )
+
+    assert user["id"] == dependencies.DEV_CASHIER_USER_ID
+    assert user["email"] == "cashier@local.dev"
+    assert user["store_id"] == dependencies.DEV_STORE_ID
+    assert user["role"] == "cashier"

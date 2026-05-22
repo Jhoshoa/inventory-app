@@ -1,6 +1,7 @@
 from uuid import uuid4
 
 from src.application.ports.ocr_service import OCRResult
+from src.infrastructure.database.models import UserModel
 from src.infrastructure.database.models.inventory_import_model import InventoryImportModel
 from src.infrastructure.database.models.stock_movement_model import StockMovementModel
 from src.main import app
@@ -38,6 +39,19 @@ async def test_create_import_from_photo_persists_needs_review(client):
     assert list_response.json()["total"] == 1
 
 
+async def test_cashier_cannot_create_inventory_import(client, db_session):
+    user = await db_session.get(UserModel, dependencies.DEV_USER_ID)
+    user.role = "cashier"
+    await db_session.commit()
+
+    response = await client.post(
+        "/api/v1/inventory-imports/from-photo",
+        files={"file": ("inventory.jpg", b"fake-image", "image/jpeg")},
+    )
+
+    assert response.status_code == 403
+
+
 async def test_get_import_is_store_scoped(client):
     data = await _create_import(client)
 
@@ -67,6 +81,23 @@ async def test_update_import_item_validates_fields(client):
     assert valid.status_code == 200
     assert valid.json()["items"][0]["status"] == "approved"
     assert valid.json()["items"][0]["name"] == "Arroz Premium 1kg"
+
+
+async def test_cashier_cannot_update_or_cancel_inventory_import(client, db_session):
+    data = await _create_import(client)
+    item_id = data["items"][0]["id"]
+    user = await db_session.get(UserModel, dependencies.DEV_USER_ID)
+    user.role = "cashier"
+    await db_session.commit()
+
+    update_response = await client.patch(
+        f"/api/v1/inventory-imports/{data['id']}/items/{item_id}",
+        json={"status": "approved"},
+    )
+    cancel_response = await client.post(f"/api/v1/inventory-imports/{data['id']}/cancel")
+
+    assert update_response.status_code == 403
+    assert cancel_response.status_code == 403
 
 
 async def test_confirm_import_creates_products_and_stock_movements(client, db_session):

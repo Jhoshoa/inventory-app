@@ -1,11 +1,13 @@
 import { notFound } from "next/navigation";
 import { Alert } from "@/components/ui/Alert";
+import { ForbiddenState } from "@/components/ui/ForbiddenState";
 import { getInventoryImport } from "@/features/imports/api";
 import { ImportCancelDialog } from "@/features/imports/components/ImportCancelDialog";
 import { ImportConfirmPanel } from "@/features/imports/components/ImportConfirmPanel";
 import { ImportDetailHeader } from "@/features/imports/components/ImportDetailHeader";
 import { ImportRawTextPanel } from "@/features/imports/components/ImportRawTextPanel";
 import { ImportReviewTable } from "@/features/imports/components/ImportReviewTable";
+import { canCreateImport } from "@/lib/auth/permissions";
 import { requireSession } from "@/lib/auth/session";
 
 export default async function ImportDetailPage({
@@ -14,10 +16,12 @@ export default async function ImportDetailPage({
   params: Promise<{ importId: string }>;
 }) {
   const { importId } = await params;
-  const [session, inventoryImport] = await Promise.all([
-    requireSession(),
-    getInventoryImport(importId),
-  ]);
+  const session = await requireSession();
+  if (!canCreateImport(session.role)) {
+    return <ForbiddenState description="Import Image requiere permisos de owner." />;
+  }
+
+  const inventoryImport = await getInventoryImport(importId);
 
   if (!inventoryImport.ok) {
     if (inventoryImport.error.status === 404) notFound();

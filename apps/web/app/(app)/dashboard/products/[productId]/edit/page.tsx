@@ -2,8 +2,11 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
+import { ForbiddenState } from "@/components/ui/ForbiddenState";
 import { getProduct } from "@/features/products/api";
 import { ProductForm } from "@/features/products/components/ProductForm";
+import { canManageProducts } from "@/lib/auth/permissions";
+import { requireSession } from "@/lib/auth/session";
 
 export default async function EditProductPage({
   params,
@@ -11,6 +14,10 @@ export default async function EditProductPage({
   params: Promise<{ productId: string }>;
 }) {
   const { productId } = await params;
+  const session = await requireSession();
+  if (!canManageProducts(session.role)) {
+    return <ForbiddenState description="Editar productos requiere permisos de owner." />;
+  }
   const product = await getProduct(productId);
 
   if (!product.ok && product.error.status === 404) notFound();

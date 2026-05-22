@@ -5,6 +5,8 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { canManageProducts } from "@/lib/auth/permissions";
+import type { UserRole } from "@/lib/auth/types";
 import {
   buildProductQueryString,
   MIN_PRODUCT_SEARCH_LENGTH,
@@ -18,9 +20,11 @@ const PRODUCT_SEARCH_DEBOUNCE_MS = 500;
 export function ProductBrowser({
   initialParams,
   initialProducts,
+  role,
 }: {
   initialParams: ProductSearchParams;
   initialProducts: ProductListResponse;
+  role: UserRole;
 }) {
   const [params, setParams] = useState(initialParams);
   const [query, setQuery] = useState(initialParams.q ?? "");
@@ -84,6 +88,7 @@ export function ProductBrowser({
     !params.q &&
     !params.category &&
     params.stock === "all";
+  const canCreateProducts = canManageProducts(role);
 
   return (
     <>
@@ -102,12 +107,16 @@ export function ProductBrowser({
       {!error && showEmptyInventory ? (
         <EmptyState
           title="Todavia no hay productos"
-          description="Crea el primer producto para empezar a vender y controlar stock."
-          actionLabel="Usa Nuevo producto"
+          description={
+            canCreateProducts
+              ? "Crea el primer producto para empezar a vender y controlar stock."
+              : "La tienda todavia no tiene productos disponibles para vender."
+          }
+          actionLabel={canCreateProducts ? "Usa Nuevo producto" : undefined}
         />
       ) : !error ? (
         <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
-          <ProductTable products={products.items} />
+          <ProductTable products={products.items} role={role} />
           <ProductPagination
             total={products.total}
             limit={products.limit}
@@ -177,4 +186,3 @@ async function readErrorMessage(response: Response) {
   }
   return "No se pudieron cargar los productos";
 }
-

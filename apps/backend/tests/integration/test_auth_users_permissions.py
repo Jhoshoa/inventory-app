@@ -3,6 +3,7 @@ from uuid import uuid4
 from sqlalchemy import delete
 
 from src.infrastructure.database.models import StoreModel, UserModel
+from src.main import app
 from src.presentation import dependencies
 
 
@@ -43,6 +44,42 @@ async def test_login_creates_missing_local_dev_user(client, db_session):
     assert user.email == "dev-login@example.com"
     assert user.store_id == dependencies.DEV_STORE_ID
     assert user.last_login_at is not None
+
+
+async def test_debug_login_with_cashier_email_returns_cashier(client, db_session):
+    response = await client.post(
+        "/api/v1/auth/login",
+        json={"email": "cashier@local.dev", "password": "password123"},
+    )
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["access_token"] == dependencies.DEV_CASHIER_ACCESS_TOKEN
+    assert data["user"]["id"] == str(dependencies.DEV_CASHIER_USER_ID)
+    assert data["user"]["role"] == "cashier"
+
+    user = await db_session.get(UserModel, dependencies.DEV_CASHIER_USER_ID)
+    assert user.email == "cashier@local.dev"
+    assert user.role == "cashier"
+
+
+async def test_dev_login_can_return_cashier_context(client):
+    response = await client.post("/api/v1/auth/dev-login", params={"role": "cashier"})
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["access_token"] == dependencies.DEV_CASHIER_ACCESS_TOKEN
+    assert data["user"]["role"] == "cashier"
+
+    app.dependency_overrides.pop(dependencies.get_current_user)
+    me = await client.get(
+        "/api/v1/auth/me",
+        headers={"Authorization": f"Bearer {data['access_token']}"},
+    )
+
+    assert me.status_code == 200
+    assert me.json()["id"] == str(dependencies.DEV_CASHIER_USER_ID)
+    assert me.json()["role"] == "cashier"
 
 
 async def test_auth_me_returns_local_role_and_store(client):
@@ -104,6 +141,78 @@ async def test_cashier_cannot_delete_product(client, db_session):
     delete_response = await client.delete(f"/api/v1/products/{create_response.json()['id']}")
 
     assert delete_response.status_code == 403
+
+
+async def test_cashier_can_list_products_and_create_sale(client, db_session):
+    create_response = await client.post("/api/v1/products", json={"name": "Cafe", "price": "10.00", "stock": 3})
+    assert create_response.status_code == 201
+
+    user = await db_session.get(UserModel, dependencies.DEV_USER_ID)
+    user.role = "cashier"
+    await db_session.commit()
+
+    products_response = await client.get("/api/v1/products")
+    assert products_response.status_code == 200
+    assert products_response.json()["total"] == 1
+
+    sale_response = await client.post(
+        "/api/v1/sales",
+        json={
+            "items": [{"product_id": create_response.json()["id"], "quantity": 1}],
+            "payment_method": "efectivo",
+        },
+    )
+    assert sale_response.status_code == 201
+
+
+async def test_cashier_cannot_create_product(client, db_session):
+    user = await db_session.get(UserModel, dependencies.DEV_USER_ID)
+    user.role = "cashier"
+    await db_session.commit()
+
+    response = await client.post("/api/v1/products", json={"name": "Cafe", "price": "10.00", "stock": 1})
+
+    assert response.status_code == 403
+
+
+async def test_cashier_cannot_update_product_or_adjust_stock(client, db_session):
+    create_response = await client.post("/api/v1/products", json={"name": "Cafe", "price": "10.00", "stock": 1})
+    assert create_response.status_code == 201
+
+    user = await db_session.get(UserModel, dependencies.DEV_USER_ID)
+    user.role = "cashier"
+    await db_session.commit()
+
+    product_id = create_response.json()["id"]
+    update_response = await client.patch(f"/api/v1/products/{product_id}", json={"name": "Cafe Especial"})
+    stock_response = await client.patch(f"/api/v1/products/{product_id}/stock", json={"quantity": 1, "reason": "test"})
+
+    assert update_response.status_code == 403
+    assert stock_response.status_code == 403
+
+
+async def test_cashier_cannot_manage_users(client, db_session):
+    cashier_id = uuid4()
+    db_session.add(
+        UserModel(
+            id=cashier_id,
+            email="cashier@example.com",
+            store_id=dependencies.DEV_STORE_ID,
+            role="cashier",
+            is_active=True,
+        )
+    )
+    user = await db_session.get(UserModel, dependencies.DEV_USER_ID)
+    user.role = "cashier"
+    await db_session.commit()
+
+    list_response = await client.get("/api/v1/users")
+    role_response = await client.patch(f"/api/v1/users/{cashier_id}/role", json={"role": "owner"})
+    status_response = await client.patch(f"/api/v1/users/{cashier_id}/status", json={"is_active": False})
+
+    assert list_response.status_code == 403
+    assert role_response.status_code == 403
+    assert status_response.status_code == 403
 
 
 async def test_owner_lists_only_store_users(client, db_session):

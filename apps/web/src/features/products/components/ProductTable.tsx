@@ -2,6 +2,12 @@ import Link from "next/link";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import {
+  canAdjustStock,
+  canDeleteProduct,
+  canManageProducts,
+} from "@/lib/auth/permissions";
+import type { UserRole } from "@/lib/auth/types";
+import {
   Table,
   TableCell,
   TableEmptyRow,
@@ -12,7 +18,7 @@ import { ProductDeleteDialog } from "./ProductDeleteDialog";
 import { ProductStockDialog } from "./ProductStockDialog";
 import type { Product } from "../types";
 
-export function ProductTable({ products }: { products: Product[] }) {
+export function ProductTable({ products, role }: { products: Product[]; role: UserRole }) {
   return (
     <Table>
       <thead>
@@ -53,11 +59,17 @@ export function ProductTable({ products }: { products: Product[] }) {
                   <Button variant="secondary" asChild>
                     <Link href={`/dashboard/products/${product.id}`}>Ver</Link>
                   </Button>
-                  <Button variant="secondary" asChild>
-                    <Link href={`/dashboard/products/${product.id}/edit`}>Editar</Link>
-                  </Button>
-                  <ProductStockDialog productId={product.id} productName={product.name} />
-                  <ProductDeleteDialog productId={product.id} productName={product.name} />
+                  {canManageProducts(role) ? (
+                    <Button variant="secondary" asChild>
+                      <Link href={`/dashboard/products/${product.id}/edit`}>Editar</Link>
+                    </Button>
+                  ) : null}
+                  {canAdjustStock(role) ? (
+                    <ProductStockDialog productId={product.id} productName={product.name} />
+                  ) : null}
+                  {canDeleteProduct(role) ? (
+                    <ProductDeleteDialog productId={product.id} productName={product.name} />
+                  ) : null}
                 </div>
               </TableCell>
             </tr>
