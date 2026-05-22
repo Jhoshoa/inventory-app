@@ -1,6 +1,6 @@
 from decimal import Decimal
 
-from src.infrastructure.database.models import StoreBusinessDayModel, UserModel
+from src.infrastructure.database.models import StoreBusinessDayEventModel, StoreBusinessDayModel, UserModel
 from src.presentation import dependencies
 
 
@@ -25,6 +25,12 @@ async def test_owner_can_open_store_day(client, db_session):
 
     business_day = await db_session.get(StoreBusinessDayModel, data["id"])
     assert business_day.store_id == dependencies.DEV_STORE_ID
+
+    events_response = await client.get("/api/v1/store-day/current/events")
+    assert events_response.status_code == 200
+    events = events_response.json()
+    assert [event["event_type"] for event in events] == ["open"]
+    assert events[0]["note"] == "Apertura normal"
 
 
 async def test_cashier_cannot_open_or_close_store_day(client, db_session):
@@ -79,6 +85,10 @@ async def test_owner_can_close_open_store_day_with_sales_snapshot(client):
     assert current_response.json()["id"] == open_response.json()["id"]
     assert current_response.json()["status"] == "closed"
 
+    events_response = await client.get("/api/v1/store-day/current/events")
+    assert events_response.status_code == 200
+    assert [event["event_type"] for event in events_response.json()] == ["open", "close"]
+
 
 async def test_owner_can_reopen_closed_store_day_and_keep_same_business_day(client):
     product_response = await client.post("/api/v1/products", json={"name": "Cafe", "price": "10.00", "stock": 3})
@@ -107,6 +117,39 @@ async def test_owner_can_reopen_closed_store_day_and_keep_same_business_day(clie
     )
     assert sale_response.status_code == 201
     assert sale_response.json()["business_day_id"] == open_response.json()["id"]
+
+    events_response = await client.get("/api/v1/store-day/current/events")
+    assert events_response.status_code == 200
+    events = events_response.json()
+    assert [event["event_type"] for event in events] == ["open", "close", "reopen"]
+    assert events[-1]["note"] == "Reapertura"
+
+
+async def test_current_store_day_events_returns_empty_without_business_day(client):
+    response = await client.get("/api/v1/store-day/current/events")
+
+    assert response.status_code == 200
+    assert response.json() == []
+
+
+async def test_store_day_events_are_store_scoped(client, db_session):
+    open_response = await client.post("/api/v1/store-day/open")
+    assert open_response.status_code == 201
+
+    event = StoreBusinessDayEventModel(
+        business_day_id=open_response.json()["id"],
+        store_id=dependencies.DEV_STORE_ID,
+        event_type="open",
+        created_by_user_id=dependencies.DEV_USER_ID,
+        note="extra",
+    )
+    db_session.add(event)
+    await db_session.commit()
+
+    response = await client.get("/api/v1/store-day/current/events")
+
+    assert response.status_code == 200
+    assert {item["note"] for item in response.json()} == {None, "extra"}
 
 
 async def test_cannot_close_without_open_store_day(client):

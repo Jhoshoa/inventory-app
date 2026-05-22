@@ -15,12 +15,32 @@ const session: Session = {
 
 describe("SettingsOverview", () => {
   it("renders session role and permission matrix", () => {
-    render(<SettingsOverview session={session} storeDay={{ ok: true, data: storeDay }} />);
+    render(
+      <SettingsOverview
+        session={session}
+        storeDay={{ ok: true, data: storeDay }}
+        storeDayEvents={{
+          ok: true,
+          data: [
+            {
+              id: "event-1",
+              business_day_id: "day-1",
+              store_id: "store-1",
+              event_type: "open",
+              note: "Inicio",
+              created_by_user_id: "user-1",
+              created_at: "2026-05-21T12:00:00Z",
+            },
+          ],
+        }}
+      />,
+    );
 
     expect(screen.getByText("owner")).toBeInTheDocument();
     expect(screen.getByText("Exportar CSV")).toBeInTheDocument();
     expect(screen.getByText("Operacion diaria")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Abrir tienda" })).toBeInTheDocument();
+    expect(screen.getByText("Apertura")).toBeInTheDocument();
     expect(screen.getByText("Gestion de usuarios pendiente")).toBeInTheDocument();
   });
 });

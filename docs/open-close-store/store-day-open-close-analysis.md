@@ -16,7 +16,7 @@ La meta no es solo agregar dos botones. La app necesita una entidad de "jornada 
 - Como consulto hoy, ayer, este mes o un rango historico?
 - Que fechas no deben ser seleccionables porque son anteriores a la apertura inicial de la tienda?
 
-## Estado Actual Verificado
+## Estado Inicial Verificado Antes de Sprint 1
 
 ### Backend
 
@@ -123,9 +123,29 @@ Agregar una entidad llamada `store_business_days` o `store_days`.
 
 Una jornada representa el periodo operativo de una tienda para una fecha local.
 
-No necesariamente es igual a `00:00-23:59`. El owner puede abrir a las 08:30 y cerrar a las 19:10. Las ventas de esa jornada deben caer dentro de `opened_at` y `closed_at`, o dentro de `opened_at` hasta ahora si sigue abierta.
+No necesariamente es igual a `00:00-23:59`. El owner puede abrir a las 08:30, cerrar a las 13:00, reabrir a las 15:00 y cerrar otra vez a las 20:00. Las ventas pertenecen al `business_day_id`; los eventos definen la auditoria de cuando se habilito o cerro la operacion.
 
-## Modelo de Datos Propuesto
+## Estado Implementado Despues de Sprint 1
+
+La base actual ya tiene una jornada operativa funcional:
+
+- `store_business_days` existe con `unique(store_id, business_date)`.
+- `stores` tiene `timezone` y `first_business_date`.
+- `sales` tiene `business_day_id`, `business_date` y `created_by_user_id`.
+- `POST /sales` exige jornada abierta.
+- `GET /store-day/current` devuelve la jornada abierta o la jornada cerrada del dia actual si existe.
+- `POST /store-day/open` abre una jornada nueva si no existe una para hoy.
+- `POST /store-day/close` cierra la jornada abierta y guarda snapshot basico.
+- `POST /store-day/reopen` reabre la misma jornada cerrada del dia actual.
+- Dashboard muestra estado operativo.
+- Ajustes administra abrir/cerrar/reabrir.
+- POS se bloquea si no hay jornada abierta.
+
+Esto es correcto como MVP. La limitacion es que la reapertura actual muta el mismo registro y sobrescribe campos como `opened_at`, `closed_at`, `opening_note` y `closing_note`. Para operacion diaria basica esta bien; para auditoria fuerte no es suficiente.
+
+## Modelo de Datos Recomendado a Mediano Plazo
+
+La evolucion recomendada es mantener `store_business_days` como cabecera del dia y agregar una tabla append-only de eventos. Esto es mejor que crear varias jornadas para el mismo dia porque conserva una sola fuente de verdad para Dashboard, Ventas y Reportes, pero permite auditar multiples aperturas/cierres/reaperturas.
 
 Tabla `store_business_days`:
 
@@ -134,12 +154,6 @@ id uuid primary key
 store_id uuid not null references stores(id)
 business_date date not null
 status varchar(20) not null
-opened_at timestamptz not null
-closed_at timestamptz null
-opened_by_user_id uuid not null references users(id)
-closed_by_user_id uuid null references users(id)
-opening_note varchar(255) null
-closing_note varchar(255) null
 sales_total numeric(12,2) null
 sales_count int null
 voided_sales_count int null
@@ -152,20 +166,64 @@ Estados:
 - `open`
 - `closed`
 
+Tabla `store_business_day_events`:
+
+```text
+id uuid primary key
+business_day_id uuid not null references store_business_days(id)
+store_id uuid not null references stores(id)
+event_type varchar(20) not null
+note varchar(255) null
+created_by_user_id uuid not null references users(id)
+created_at timestamptz not null
+```
+
+Eventos:
+
+- `open`
+- `close`
+- `reopen`
+
 Restricciones:
 
 ```text
 unique(store_id, business_date)
 index(store_id, status)
 index(store_id, business_date)
-index(store_id, opened_at, closed_at)
+index(store_id, created_at)
+index(store_business_day_events business_day_id, created_at)
+index(store_business_day_events store_id, created_at)
+index(store_business_day_events business_day_id, event_type, created_at)
 ```
 
 Notas:
 
 - `business_date` es la fecha local operativa de la tienda.
-- `opened_at` y `closed_at` se guardan en UTC.
-- Los totales de cierre se pueden guardar como snapshot para auditoria, pero los reportes pueden recalcular desde ventas si se necesita.
+- `store_business_days.status` representa el estado actual.
+- `store_business_day_events` conserva el historial completo de aperturas, cierres y reaperturas.
+- Los timestamps se guardan en UTC.
+- Los totales de cierre pueden guardarse como snapshot en `store_business_days`, pero los reportes deben poder recalcular desde ventas.
+- Para consultas frecuentes de estado actual, leer `store_business_days` es O(1). Para auditoria, leer eventos por `business_day_id`.
+
+### Comparacion con el Modelo Actual
+
+Modelo actual:
+
+- Simple.
+- Ya implementado.
+- Suficiente para bloquear POS y asociar ventas.
+- Permite reapertura basica.
+- No conserva historial completo de cada apertura/cierre.
+
+Modelo con eventos:
+
+- Agrega una tabla y algunos use cases mas.
+- Conserva auditoria completa.
+- Permite mostrar timeline de jornada.
+- Es mejor para caja, cierres, turnos y soporte.
+- No cambia la relacion de `sales.business_day_id`, por lo que la migracion futura es manejable.
+
+Conclusion: no es un cambio grande si se hace antes de cierre avanzado/caja. Es una evolucion mediana y localizada. Conviene planearla para Sprint 2 o Sprint 3 antes de construir reportes definitivos de cierre diario.
 
 ## Store Settings Recomendado
 
@@ -203,12 +261,11 @@ Solo `owner` puede abrir jornada.
 Reglas:
 
 - Si ya hay una jornada `open` para la tienda, no crear otra.
-- Si existe jornada `closed` para `business_date` actual, no reabrir en Sprint inicial. Reapertura puede ser futura.
+- Si existe jornada `closed` para `business_date` actual, el flujo actual permite reabrirla con `POST /store-day/reopen`.
+- La reapertura basica usa el mismo registro de `store_business_days`; a mediano plazo debe registrar un evento `reopen`.
 - Si no existe jornada para hoy, crear con:
   - `business_date = fecha local segun timezone de tienda`
-  - `opened_at = now UTC`
   - `status = open`
-  - `opened_by_user_id = current_user.id`
 - Si `first_business_date` es null, fijarla a `business_date`.
 
 ### Cierre de tienda
@@ -219,10 +276,9 @@ Reglas:
 
 - Debe existir una jornada abierta.
 - Cerrar setea:
-  - `closed_at = now UTC`
-  - `closed_by_user_id`
   - `status = closed`
   - snapshots opcionales: total, count, voided count.
+- En el modelo con eventos, tambien agrega evento `close` con `created_by_user_id`, `created_at` y nota.
 - Despues del cierre, no se permiten nuevas ventas en esa jornada.
 
 ### Ventas
@@ -363,6 +419,29 @@ Payload opcional:
 }
 ```
 
+### Reabrir jornada
+
+```http
+POST /api/v1/store-day/reopen
+```
+
+Owner-only.
+
+Payload opcional:
+
+```json
+{
+  "opening_note": "Reapertura por venta pendiente"
+}
+```
+
+Reglas:
+
+- Solo reabre la jornada cerrada de la fecha local actual.
+- No crea otro `store_business_days`.
+- Si ya hay una jornada abierta, responde `409`.
+- A mediano plazo debe escribir un evento `reopen` en `store_business_day_events`.
+
 ### Dashboard summary
 
 Actualizar:
@@ -472,8 +551,8 @@ Agregar un panel de estado operativo:
 - Tienda abierta/cerrada.
 - Fecha de jornada.
 - Hora de apertura.
-- Boton abrir/cerrar solo para owner.
-- Cashier ve estado, pero no puede abrir/cerrar.
+- Link "Gestionar jornada" solo para owner.
+- Cashier ve estado, pero no puede administrar jornada.
 
 Default:
 
@@ -483,6 +562,8 @@ Default:
   - Mes
 
 No hacer dashboard complejo. El foco es que el owner entienda si puede vender y que el resumen coincida con ventas/reportes.
+
+Las acciones de abrir, cerrar y reabrir deben vivir en Ajustes. Dashboard debe ser lectura operativa, no una pantalla de administracion global.
 
 ### POS
 
@@ -528,13 +609,14 @@ Corregir filtros:
 
 ### Settings
 
-Agregar seccion operativa futura:
+Agregar seccion operativa:
 
+- Abrir/cerrar/reabrir jornada.
 - Zona horaria de tienda.
 - Fecha inicial operativa.
 - Politica: requerir jornada abierta para vender.
 
-Esto puede quedar para una fase posterior si el sprint se enfoca en open/close.
+La gestion de jornada ya vive aqui en el MVP. Zona horaria editable, historial de eventos y politicas avanzadas quedan para siguientes sprints.
 
 ## Arquitectura de Fechas Recomendada
 
@@ -663,18 +745,34 @@ Backend:
 
 - Crear `store_business_days`.
 - Agregar `timezone` y `first_business_date`.
-- Endpoints open/current/close.
+- Endpoints current/open/close/reopen.
 - `POST /sales` requiere jornada abierta.
 - Asociar venta a jornada.
-- Tests de apertura/cierre y venta bloqueada.
+- Tests de apertura/cierre/reapertura y venta bloqueada.
 
 Web:
 
 - Panel de estado en dashboard.
-- Boton abrir/cerrar para owner.
+- Acciones abrir/cerrar/reabrir en Ajustes para owner.
 - POS bloqueado si cerrado.
 
-### Fase 2: Fechas correctas en Dashboard y Ventas
+### Fase 2: Eventos de jornada y fechas correctas en Dashboard/Ventas
+
+Backend:
+
+- Crear `store_business_day_events`.
+- Al abrir/cerrar/reabrir, escribir evento append-only.
+- Mantener `store_business_days.status` como estado actual.
+- Exponer historial de eventos por jornada.
+- Migrar datos existentes creando eventos iniciales desde campos actuales cuando sea posible.
+
+Web:
+
+- Mostrar timeline simple en Ajustes.
+- Mostrar ultimo evento en Dashboard.
+- Mantener acciones en Ajustes.
+
+### Fase 3: Fechas correctas en Dashboard y Ventas
 
 Backend:
 
@@ -689,7 +787,7 @@ Web:
 - Ventas con calendario default hoy.
 - Date inputs con `min=first_business_date`.
 
-### Fase 3: Reportes consistentes
+### Fase 4: Reportes consistentes
 
 Backend:
 
@@ -702,7 +800,7 @@ Web:
 - Presets Hoy, 7d, 30d, Mes, Custom.
 - No serializar `Z` desde frontend para fechas de negocio.
 
-### Fase 4: Cierre avanzado
+### Fase 5: Cierre avanzado
 
 Opcional futuro:
 
@@ -710,7 +808,7 @@ Opcional futuro:
 - Monto inicial/final.
 - Diferencia de efectivo.
 - Turnos.
-- Reapertura con motivo.
+- Reapertura con motivo e historial completo.
 - Export de cierre diario.
 
 ## Tests Requeridos
@@ -722,33 +820,44 @@ Backend:
 3. `test_cannot_open_two_days_at_once`
 4. `test_owner_closes_open_store_day`
 5. `test_cashier_cannot_close_store_day`
-6. `test_sale_requires_open_store_day`
-7. `test_sale_is_assigned_to_business_day`
-8. `test_dashboard_today_uses_open_business_day`
-9. `test_dashboard_month_uses_store_timezone`
-10. `test_sales_list_defaults_to_today`
-11. `test_sales_list_rejects_date_before_first_business_date`
-12. `test_reports_reject_date_before_first_business_date`
-13. `test_report_boundaries_use_store_timezone`
+6. `test_owner_reopens_closed_store_day`
+7. `test_reopen_keeps_same_business_day_id`
+8. `test_cashier_cannot_reopen_store_day`
+9. `test_sale_requires_open_store_day`
+10. `test_sale_is_assigned_to_business_day`
+11. `test_dashboard_today_uses_open_business_day`
+12. `test_dashboard_month_uses_store_timezone`
+13. `test_sales_list_defaults_to_today`
+14. `test_sales_list_rejects_date_before_first_business_date`
+15. `test_reports_reject_date_before_first_business_date`
+16. `test_report_boundaries_use_store_timezone`
+17. `test_store_day_events_are_created_for_open_close_reopen` (fase eventos)
 
 Web:
 
 1. `StoreDayStatusPanel_renders_open_and_closed_states`
 2. `StoreDayStatusPanel_hides_actions_for_cashier`
-3. `PosPage_blocks_checkout_when_store_closed`
-4. `SalesDateFilter_defaults_to_today`
-5. `SalesDateFilter_uses_min_business_date`
-6. `ReportsDateRangeFilter_supports_month_preset`
-7. `ReportsDateRangeFilter_does_not_emit_utc_datetime`
-8. `DashboardScopeTabs_switch_today_month`
+3. `StoreDayStatusPanel_renders_reopen_action`
+4. `Settings_renders_store_day_management`
+5. `Dashboard_renders_store_day_status_without_inline_management`
+6. `PosPage_blocks_checkout_when_store_closed`
+7. `SalesDateFilter_defaults_to_today`
+8. `SalesDateFilter_uses_min_business_date`
+9. `ReportsDateRangeFilter_supports_month_preset`
+10. `ReportsDateRangeFilter_does_not_emit_utc_datetime`
+11. `DashboardScopeTabs_switch_today_month`
 
 ## Criterios de Aceptacion
 
 - Owner puede abrir y cerrar la tienda por dia.
+- Owner puede reabrir una jornada cerrada del mismo dia.
 - Cashier no puede abrir ni cerrar.
+- Cashier no puede reabrir.
 - No se pueden registrar ventas si la tienda esta cerrada.
 - Ventas nuevas quedan asociadas a la jornada abierta.
 - Dashboard por defecto muestra la jornada de hoy.
+- Dashboard muestra estado operativo sin acciones destructivas.
+- Ajustes administra abrir/cerrar/reabrir.
 - Dashboard permite ver resumen del mes.
 - Ventas por defecto muestra hoy.
 - Ventas tiene filtro de calendario.
@@ -760,7 +869,8 @@ Web:
 
 - **Timezone:** es el riesgo principal. La decision correcta es centralizar conversion en backend.
 - **Offline/mobile:** si mobile vende offline, cerrar tienda puede entrar en conflicto con ventas sincronizadas tarde. Para MVP web, bloquear venta si cerrado. Para offline futuro, usar reglas de sync por `business_day_id`.
-- **Reapertura:** no incluir inicialmente. Si se necesita, agregar `reopened_at`/eventos o historial.
+- **Reapertura:** ya existe una version basica que reabre el mismo registro diario. La deuda tecnica es agregar eventos append-only para auditoria completa.
+- **Eventos:** conviene agregarlos antes de cierre avanzado/caja. Sin eventos, una reapertura sobrescribe parte del contexto anterior.
 - **Ventas despues del cierre:** rechazar en online. En offline, marcar conflicto.
 - **Fecha minima:** usar `first_business_date`, con fallback a primera venta o `stores.created_at`.
 - **Snapshot de cierre:** guardar snapshot ayuda auditoria, pero reportes deben poder recalcular.
@@ -774,7 +884,9 @@ Orden recomendado:
 1. Agregar `store_business_days` y estado actual de tienda.
 2. Bloquear `POST /sales` si no hay jornada abierta.
 3. Asociar ventas a jornada.
-4. Actualizar dashboard para jornada actual y mes.
-5. Agregar filtros de calendario en ventas con default hoy.
-6. Corregir reportes para usar fechas locales y timezone de tienda.
-7. Agregar cierre avanzado/caja solo despues de estabilizar el flujo base.
+4. Permitir reapertura basica de la misma jornada del dia.
+5. Agregar `store_business_day_events` para auditoria.
+6. Actualizar dashboard para jornada actual y mes.
+7. Agregar filtros de calendario en ventas con default hoy.
+8. Corregir reportes para usar fechas locales y timezone de tienda.
+9. Agregar cierre avanzado/caja solo despues de estabilizar el flujo base y eventos.

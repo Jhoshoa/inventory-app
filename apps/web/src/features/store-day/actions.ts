@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { apiRequest } from "@/lib/api/client";
 import { getAuthToken } from "@/lib/auth/session";
 import { noteValue, validateStoreDayNote } from "./schemas";
@@ -23,7 +24,7 @@ export async function openStoreDayAction(
   if (!result.ok) return { ok: false, message: result.error.message, fieldErrors: {} };
 
   revalidateOperationalPaths();
-  return { ok: true, message: "Tienda abierta", fieldErrors: {} };
+  redirect("/dashboard/settings");
 }
 
 export async function closeStoreDayAction(
@@ -43,7 +44,7 @@ export async function closeStoreDayAction(
   if (!result.ok) return { ok: false, message: result.error.message, fieldErrors: {} };
 
   revalidateOperationalPaths();
-  return { ok: true, message: "Tienda cerrada", fieldErrors: {} };
+  redirect("/dashboard/settings");
 }
 
 export async function reopenStoreDayAction(
@@ -63,11 +64,12 @@ export async function reopenStoreDayAction(
   if (!result.ok) return { ok: false, message: result.error.message, fieldErrors: {} };
 
   revalidateOperationalPaths();
-  return { ok: true, message: "Tienda reabierta", fieldErrors: {} };
+  redirect("/dashboard/settings");
 }
 
 function revalidateOperationalPaths() {
   revalidatePath("/dashboard");
+  revalidatePath("/dashboard/settings");
   revalidatePath("/dashboard/pos");
   revalidatePath("/dashboard/sales");
 }

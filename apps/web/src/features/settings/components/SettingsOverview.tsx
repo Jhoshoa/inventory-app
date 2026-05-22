@@ -2,16 +2,19 @@ import { Alert } from "@/components/ui/Alert";
 import { Badge } from "@/components/ui/Badge";
 import { EmptyState } from "@/components/ui/EmptyState";
 import type { Session } from "@/lib/auth/session";
+import { StoreDayEventTimeline } from "@/features/store-day/components/StoreDayEventTimeline";
 import { StoreDayStatusPanel } from "@/features/store-day/components/StoreDayStatusPanel";
-import type { StoreDayResult } from "@/features/store-day/types";
+import type { StoreDayEventListResult, StoreDayResult } from "@/features/store-day/types";
 import { PermissionMatrix } from "./PermissionMatrix";
 
 export function SettingsOverview({
   session,
   storeDay,
+  storeDayEvents,
 }: {
   session: Session;
   storeDay?: StoreDayResult;
+  storeDayEvents?: StoreDayEventListResult;
 }) {
   return (
     <section className="space-y-6">
@@ -45,6 +48,7 @@ export function SettingsOverview({
           </p>
         </div>
         {storeDay ? <StoreDayManagement storeDay={storeDay} role={session.role} /> : null}
+        {storeDayEvents ? <StoreDayEventTimeline events={storeDayEvents} /> : null}
       </section>
 
       <EmptyState

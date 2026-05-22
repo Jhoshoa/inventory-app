@@ -25,4 +25,15 @@ export interface StoreDayActionState {
   fieldErrors: Partial<Record<"note", string>>;
 }
 
+export interface StoreDayEvent {
+  id: string;
+  business_day_id: string;
+  store_id: string;
+  event_type: "open" | "close" | "reopen" | string;
+  note: string | null;
+  created_by_user_id: string;
+  created_at: string;
+}
+
 export type StoreDayResult = ApiResult<StoreDay>;
+export type StoreDayEventListResult = ApiResult<StoreDayEvent[]>;

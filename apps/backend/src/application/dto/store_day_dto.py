@@ -27,3 +27,15 @@ class StoreDayResponseDTO(BaseModel):
     first_business_date: date | None = None
 
     model_config = {"from_attributes": True}
+
+
+class StoreDayEventResponseDTO(BaseModel):
+    id: UUID
+    business_day_id: UUID
+    store_id: UUID
+    event_type: str
+    note: str | None = None
+    created_by_user_id: UUID
+    created_at: datetime
+
+    model_config = {"from_attributes": True}

@@ -1,6 +1,6 @@
 import { apiRequest } from "@/lib/api/client";
 import { getAuthToken } from "@/lib/auth/session";
-import type { StoreDay, StoreDayResult } from "./types";
+import type { StoreDay, StoreDayEvent, StoreDayEventListResult, StoreDayResult } from "./types";
 
 export async function getCurrentStoreDay(): Promise<StoreDayResult> {
   const token = await getAuthToken();
@@ -11,6 +11,12 @@ export async function getCurrentStoreDay(): Promise<StoreDayResult> {
     };
   }
   return apiRequest<StoreDay>("/store-day/current", { token });
+}
+
+export async function getCurrentStoreDayEvents(): Promise<StoreDayEventListResult> {
+  const token = await getAuthToken();
+  if (!token) return { ok: true, data: [] };
+  return apiRequest<StoreDayEvent[]>("/store-day/current/events", { token });
 }
 
 export function createClosedStoreDay(): StoreDay {

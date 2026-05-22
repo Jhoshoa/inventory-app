@@ -14,7 +14,7 @@ Este sprint no intenta resolver todos los filtros historicos de Dashboard, Venta
 - `next-best-practices`: usar Server Components para lectura inicial, Server Actions para abrir/cerrar, `revalidatePath` despues de mutaciones y rutas existentes bajo `/dashboard`.
 - `vercel-react-best-practices`: evitar waterfalls con fetches paralelos en Dashboard/POS y pasar props minimas a componentes cliente.
 
-## Estado Actual del Codigo
+## Estado Inicial del Codigo Antes del Sprint
 
 ### Backend
 
@@ -47,14 +47,16 @@ Este sprint no intenta resolver todos los filtros historicos de Dashboard, Venta
    - `GET /api/v1/store-day/current`
    - `POST /api/v1/store-day/open`
    - `POST /api/v1/store-day/close`
+   - `POST /api/v1/store-day/reopen`
 5. Permitir abrir/cerrar solo a `owner`.
-6. Permitir que `cashier` consulte el estado, pero no abra/cierre.
-7. Bloquear `POST /sales` si no hay jornada abierta.
-8. Asociar cada venta nueva con la jornada abierta.
-9. Mostrar estado de tienda en Dashboard.
-10. Agregar botones abrir/cerrar para owner en Dashboard.
-11. Bloquear POS cuando la tienda este cerrada.
-12. Agregar pruebas backend y web para el flujo base.
+6. Permitir reabrir solo a `owner` cuando la jornada cerrada pertenece al dia actual.
+7. Permitir que `cashier` consulte el estado, pero no abra/cierre/reabra.
+8. Bloquear `POST /sales` si no hay jornada abierta.
+9. Asociar cada venta nueva con la jornada abierta.
+10. Mostrar estado de tienda en Dashboard.
+11. Gestionar abrir/cerrar/reabrir desde Ajustes.
+12. Bloquear POS cuando la tienda este cerrada.
+13. Agregar pruebas backend y web para el flujo base.
 
 ### Fuera de Alcance
 
@@ -63,7 +65,7 @@ Este sprint no intenta resolver todos los filtros historicos de Dashboard, Venta
 - Refactor completo de Reportes para fechas locales.
 - Paginacion de Ventas.
 - Cierre avanzado de caja.
-- Reapertura de jornada cerrada.
+- Historial append-only de eventos de jornada.
 - Turnos por cashier.
 - Resolucion de conflictos offline/mobile.
 
@@ -75,7 +77,7 @@ Estos puntos deben quedar para Sprint 2 y Sprint 3, porque dependen de tener pri
 
 - Solo `owner` puede abrir.
 - Si ya existe una jornada `open` para la tienda, responder `409`.
-- Si ya existe una jornada `closed` para la fecha local actual, no reabrir en Sprint 1; responder `409`.
+- Si ya existe una jornada `closed` para la fecha local actual, usar `POST /store-day/reopen`.
 - `business_date` se calcula en backend usando `store.timezone`.
 - `opened_at` se guarda en UTC.
 - Si `stores.first_business_date` es null, se fija con el primer `business_date`.
@@ -90,6 +92,15 @@ Estos puntos deben quedar para Sprint 2 y Sprint 3, porque dependen de tener pri
   - `closed_by_user_id = current_user.id`
   - guardar nota opcional si viene en payload
 - Despues del cierre, `POST /sales` debe quedar bloqueado.
+
+### Reapertura
+
+- Solo `owner` puede reabrir.
+- Debe existir una jornada `closed` para la fecha local actual.
+- No crea otro registro en `store_business_days`.
+- Cambia el mismo registro a `status = open`.
+- Despues de reabrir, las ventas nuevas se asocian al mismo `business_day_id`.
+- La auditoria completa de aperturas/cierres/reaperturas queda para `store_business_day_events` en un sprint posterior.
 
 ### Ventas
 
@@ -217,6 +228,20 @@ Payload:
 }
 ```
 
+### `POST /api/v1/store-day/reopen`
+
+Owner-only.
+
+Payload:
+
+```json
+{
+  "opening_note": "Reapertura por venta pendiente"
+}
+```
+
+No crea una segunda jornada para el mismo dia. Reabre el registro existente de `store_business_days`.
+
 ## Arquitectura Backend
 
 ### Nuevos Archivos
@@ -228,6 +253,7 @@ apps/backend/src/application/dto/store_day_dto.py
 apps/backend/src/application/use_cases/store_day/get_current_store_day.py
 apps/backend/src/application/use_cases/store_day/open_store_day.py
 apps/backend/src/application/use_cases/store_day/close_store_day.py
+apps/backend/src/application/use_cases/store_day/reopen_store_day.py
 apps/backend/src/infrastructure/database/models/store_business_day_model.py
 apps/backend/src/infrastructure/database/repositories/store_business_day_repository.py
 apps/backend/src/presentation/api/v1/store_day.py
@@ -282,6 +308,14 @@ apps/backend/src/infrastructure/database/alembic/versions/<next>_add_store_busin
   - cantidad anuladas
 - Cierra jornada.
 
+`ReopenStoreDayUseCase`
+
+- Valida rol owner desde endpoint/dependency.
+- Calcula `business_date`.
+- Verifica que no exista otra jornada abierta.
+- Busca la jornada cerrada del dia actual.
+- Reabre el mismo `business_day_id`.
+
 `CreateSaleUseCase`
 
 - Recibe `user_id` ademas de `store_id`.
@@ -318,8 +352,8 @@ apps/web/src/lib/auth/permissions.ts
 Dashboard:
 
 - Ejecutar `getDashboardSummary()` y `getCurrentStoreDay()` en paralelo con `Promise.all`.
-- Renderizar `StoreDayStatusPanel` antes del resumen.
-- Owner ve acciones abrir/cerrar.
+- Renderizar estado operativo antes del resumen.
+- Owner ve link a Ajustes para gestionar jornada.
 - Cashier ve solo estado.
 - Despues de abrir/cerrar, revalidar:
   - `/dashboard`
@@ -336,7 +370,7 @@ POS:
 Permisos UI:
 
 - Agregar helper `canOpenCloseStore(role)`.
-- Solo `owner` puede ver botones de abrir/cerrar.
+- Solo `owner` puede ver acciones abrir/cerrar/reabrir en Ajustes.
 - `cashier` puede vender solo si la tienda esta abierta.
 
 ## Plan de Implementacion
@@ -350,10 +384,11 @@ Permisos UI:
 7. Actualizar `SaleRepository.save` para persistir campos de jornada.
 8. Actualizar seed para incluir `timezone` en la tienda demo; no abrir jornada automaticamente.
 9. Crear feature web `store-day` con API, schemas, actions y componentes.
-10. Actualizar Dashboard con panel de estado y acciones owner-only.
-11. Actualizar POS para bloquear UI cuando la tienda este cerrada.
-12. Agregar pruebas backend y web.
-13. Ejecutar validaciones completas.
+10. Actualizar Dashboard con panel de estado y link a Ajustes.
+11. Actualizar Ajustes con acciones owner-only para abrir/cerrar/reabrir.
+12. Actualizar POS para bloquear UI cuando la tienda este cerrada.
+13. Agregar pruebas backend y web.
+14. Ejecutar validaciones completas.
 
 ## Pruebas Requeridas
 
@@ -363,7 +398,8 @@ Permisos UI:
 - `test_owner_can_open_store_day`
 - `test_cashier_cannot_open_store_day`
 - `test_cannot_open_second_store_day_when_one_is_open`
-- `test_cannot_reopen_closed_day_in_sprint_1`
+- `test_owner_can_reopen_closed_store_day`
+- `test_reopen_keeps_same_business_day_id`
 - `test_owner_can_close_open_store_day`
 - `test_cashier_cannot_close_store_day`
 - `test_cannot_close_without_open_store_day`
@@ -378,8 +414,11 @@ Permisos UI:
 - `StoreDayStatusPanel_renders_open_state`
 - `StoreDayStatusPanel_shows_actions_for_owner`
 - `StoreDayStatusPanel_hides_actions_for_cashier`
+- `StoreDayStatusPanel_renders_reopen_action`
+- `SettingsOverview_renders_store_day_management`
 - `openStoreDayAction_revalidates_dashboard_pos_sales`
 - `closeStoreDayAction_revalidates_dashboard_pos_sales`
+- `reopenStoreDayAction_revalidates_dashboard_pos_sales`
 - `PosPage_blocks_workspace_when_store_is_closed`
 - `createSaleAction_shows_closed_store_message_on_409`
 
@@ -409,16 +448,19 @@ Nota: si `pnpm build` falla por lock de `.next/trace`, revisar si hay `pnpm dev`
 ## Criterios de Aceptacion
 
 - Owner ve en Dashboard si la tienda esta abierta o cerrada.
-- Owner puede abrir una jornada desde Dashboard.
-- Owner puede cerrar una jornada desde Dashboard.
-- Cashier puede ver estado, pero no puede abrir ni cerrar.
+- Owner ve el estado en Dashboard y gestiona la jornada desde Ajustes.
+- Owner puede gestionar abrir/cerrar/reabrir desde Ajustes.
+- Cashier puede ver estado, pero no puede abrir/cerrar/reabrir.
 - Backend rechaza open/close de cashier con `403`.
+- Backend rechaza reopen de cashier con `403`.
 - Backend rechaza doble apertura con `409`.
 - Backend rechaza cierre sin jornada abierta con `409`.
+- Backend permite reabrir una jornada cerrada del dia actual.
 - POS aparece bloqueado cuando no hay jornada abierta.
 - `POST /sales` responde `409` si la tienda esta cerrada.
 - Venta creada durante jornada abierta queda asociada a `business_day_id` y `business_date`.
 - Cerrar jornada guarda timestamps y snapshot basico.
+- Reabrir jornada conserva el mismo `business_day_id`.
 - Tests backend y web pasan.
 
 ## Riesgos y Decisiones
@@ -428,16 +470,34 @@ Nota: si `pnpm build` falla por lock de `.next/trace`, revisar si hay `pnpm dev`
 - **Seed local:** no abrir automaticamente la jornada. Es mejor que DEBUG/local pruebe el flujo real: entrar como owner, abrir, vender, cerrar.
 - **Race condition:** aunque POS bloquee en UI, `POST /sales` debe validar de nuevo en backend.
 - **Offline futuro:** mobile/offline puede requerir reglas especiales para ventas sincronizadas despues del cierre. No entra en Sprint 1.
-- **Reapertura:** no implementarla aun. Si se necesita luego, conviene usar historial/eventos de jornada.
+- **Reapertura:** se implementa de forma basica reabriendo el mismo registro del dia. La evolucion recomendada es agregar `store_business_day_events` para auditoria append-only.
+
+## Evolucion Recomendada: Eventos de Jornada
+
+El Sprint 1 mantiene el modelo simple para entregar valor rapido. A mediano plazo conviene agregar:
+
+```text
+store_business_day_events
+  id uuid primary key
+  business_day_id uuid not null references store_business_days(id)
+  store_id uuid not null references stores(id)
+  event_type varchar(20) not null -- open, close, reopen
+  note varchar(255) null
+  created_by_user_id uuid not null references users(id)
+  created_at timestamptz not null
+```
+
+Esto no cambia `sales.business_day_id`. Solo agrega historial auditable para aperturas, cierres y reaperturas. No es un cambio grande si se hace antes de caja/cierre avanzado; si se espera hasta despues de reportes definitivos, sera mas costoso.
 
 ## Recomendacion para Sprint 2
 
 Despues de este sprint, avanzar con filtros y consistencia de fechas:
 
 1. `GET /sales` con `from_date`, `to_date`, `status`, `limit`, `offset`.
-2. Ventas con calendario default hoy y `min=first_business_date`.
-3. Dashboard con tabs `Hoy` y `Mes`.
-4. Reportes usando fechas locales `YYYY-MM-DD`, no datetimes con `Z`.
-5. Servicio backend unico para rangos locales por timezone.
+2. `store_business_day_events` para auditoria de open/close/reopen.
+3. Ventas con calendario default hoy y `min=first_business_date`.
+4. Dashboard con tabs `Hoy` y `Mes`.
+5. Reportes usando fechas locales `YYYY-MM-DD`, no datetimes con `Z`.
+6. Servicio backend unico para rangos locales por timezone.
 
 Ese orden evita construir filtros sobre una definicion ambigua de "hoy".
