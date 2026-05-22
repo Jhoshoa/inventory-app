@@ -1,6 +1,8 @@
 from decimal import Decimal
+from datetime import date, datetime, timezone
+from uuid import uuid4
 
-from src.infrastructure.database.models import StoreBusinessDayEventModel, StoreBusinessDayModel, UserModel
+from src.infrastructure.database.models import StoreBusinessDayEventModel, StoreBusinessDayModel, StoreModel, UserModel
 from src.presentation import dependencies
 
 
@@ -43,12 +45,57 @@ async def test_cashier_cannot_open_or_close_store_day(client, db_session):
     await db_session.commit()
 
     open_response = await client.post("/api/v1/store-day/open")
-    close_response = await client.post("/api/v1/store-day/close")
+    close_response = await client.post("/api/v1/store-day/close", json={"counted_cash_amount": "0.00"})
     reopen_response = await client.post("/api/v1/store-day/reopen")
+    preview_response = await client.get("/api/v1/store-day/current/closing-preview")
+    current_report_response = await client.get("/api/v1/store-day/current/close-report")
+    reports_response = await client.get("/api/v1/store-day/reports")
 
     assert open_response.status_code == 403
     assert close_response.status_code == 403
     assert reopen_response.status_code == 403
+    assert preview_response.status_code == 403
+    assert current_report_response.status_code == 403
+    assert reports_response.status_code == 403
+
+
+async def test_open_store_day_rejects_negative_opening_cash_amount(client):
+    response = await client.post("/api/v1/store-day/open", json={"opening_cash_amount": "-1.00"})
+
+    assert response.status_code == 422
+
+
+async def test_close_store_day_requires_counted_cash_amount_or_skip_intent(client):
+    open_response = await client.post("/api/v1/store-day/open")
+    assert open_response.status_code == 201
+
+    missing_response = await client.post("/api/v1/store-day/close", json={"closing_note": "Sin arqueo"})
+    negative_response = await client.post("/api/v1/store-day/close", json={"counted_cash_amount": "-1.00"})
+    conflicting_response = await client.post(
+        "/api/v1/store-day/close",
+        json={"skip_cash_count": True, "counted_cash_amount": "0.00"},
+    )
+
+    assert missing_response.status_code == 422
+    assert negative_response.status_code == 422
+    assert conflicting_response.status_code == 422
+
+
+async def test_close_store_day_allows_explicit_skip_cash_count(client):
+    open_response = await client.post("/api/v1/store-day/open", json={"opening_cash_amount": "100.00"})
+    assert open_response.status_code == 201
+
+    close_response = await client.post(
+        "/api/v1/store-day/close",
+        json={"closing_note": "Cierre rapido", "skip_cash_count": True},
+    )
+
+    assert close_response.status_code == 200
+    data = close_response.json()
+    assert data["status"] == "closed"
+    assert data["expected_cash_amount"] == "100.00"
+    assert data["counted_cash_amount"] is None
+    assert data["cash_difference_amount"] is None
 
 
 async def test_cannot_open_second_store_day_when_one_is_open(client):
@@ -74,7 +121,10 @@ async def test_owner_can_close_open_store_day_with_sales_snapshot(client):
     )
     assert sale_response.status_code == 201
 
-    close_response = await client.post("/api/v1/store-day/close", json={"closing_note": "Cierre ok"})
+    close_response = await client.post(
+        "/api/v1/store-day/close",
+        json={"closing_note": "Cierre ok", "counted_cash_amount": "20.00"},
+    )
 
     assert close_response.status_code == 200
     data = close_response.json()
@@ -166,7 +216,10 @@ async def test_owner_can_reopen_closed_store_day_and_keep_same_business_day(clie
     assert product_response.status_code == 201
     open_response = await client.post("/api/v1/store-day/open")
     assert open_response.status_code == 201
-    close_response = await client.post("/api/v1/store-day/close", json={"closing_note": "Pausa"})
+    close_response = await client.post(
+        "/api/v1/store-day/close",
+        json={"closing_note": "Pausa", "counted_cash_amount": "0.00"},
+    )
     assert close_response.status_code == 200
 
     reopen_response = await client.post("/api/v1/store-day/reopen", json={"opening_note": "Reapertura"})
@@ -224,9 +277,123 @@ async def test_store_day_events_are_store_scoped(client, db_session):
 
 
 async def test_cannot_close_without_open_store_day(client):
-    response = await client.post("/api/v1/store-day/close")
+    response = await client.post("/api/v1/store-day/close", json={"counted_cash_amount": "0.00"})
 
     assert response.status_code == 409
+
+
+async def test_close_report_rejects_closed_day_without_snapshot(client, db_session):
+    business_day_id = uuid4()
+    db_session.add(
+        StoreBusinessDayModel(
+            id=business_day_id,
+            store_id=dependencies.DEV_STORE_ID,
+            business_date=date(2026, 5, 20),
+            status="closed",
+            opened_at=datetime(2026, 5, 20, 12, 0, tzinfo=timezone.utc),
+            closed_at=datetime(2026, 5, 20, 22, 0, tzinfo=timezone.utc),
+            opened_by_user_id=dependencies.DEV_USER_ID,
+            closed_by_user_id=dependencies.DEV_USER_ID,
+        )
+    )
+    await db_session.commit()
+
+    response = await client.get(f"/api/v1/store-day/reports/{business_day_id}")
+
+    assert response.status_code == 409
+    assert response.json()["detail"] == "El cierre aun no tiene snapshot disponible"
+
+
+async def test_close_reports_do_not_leak_other_store_data(client, db_session):
+    other_store_id = uuid4()
+    other_user_id = uuid4()
+    other_business_day_id = uuid4()
+    db_session.add(StoreModel(id=other_store_id, name="Other Store"))
+    db_session.add(
+        UserModel(
+            id=other_user_id,
+            email="other@local.dev",
+            store_id=other_store_id,
+            full_name="Other Owner",
+            role="owner",
+            is_active=True,
+        )
+    )
+    db_session.add(
+        StoreBusinessDayModel(
+            id=other_business_day_id,
+            store_id=other_store_id,
+            business_date=date(2026, 5, 20),
+            status="closed",
+            opened_at=datetime(2026, 5, 20, 12, 0, tzinfo=timezone.utc),
+            closed_at=datetime(2026, 5, 20, 22, 0, tzinfo=timezone.utc),
+            opened_by_user_id=other_user_id,
+            closed_by_user_id=other_user_id,
+            opening_cash_amount=Decimal("10.00"),
+            expected_cash_amount=Decimal("30.00"),
+            counted_cash_amount=Decimal("30.00"),
+            cash_difference_amount=Decimal("0.00"),
+            closing_sales_total=Decimal("20.00"),
+            closing_sales_count=1,
+            closing_voided_sales_count=0,
+            closing_items_count=2,
+            closing_cash_sales_total=Decimal("20.00"),
+            closing_qr_sales_total=Decimal("0.00"),
+            closing_transfer_sales_total=Decimal("0.00"),
+            closing_card_sales_total=Decimal("0.00"),
+            closing_snapshot_at=datetime(2026, 5, 20, 22, 0, tzinfo=timezone.utc),
+        )
+    )
+    await db_session.commit()
+
+    list_response = await client.get("/api/v1/store-day/reports?from_date=2026-05-01&to_date=2026-05-31")
+    detail_response = await client.get(f"/api/v1/store-day/reports/{other_business_day_id}")
+
+    assert list_response.status_code == 200
+    assert list_response.json()["items"] == []
+    assert detail_response.status_code == 404
+
+
+async def test_reclose_after_reopen_recalculates_cash_snapshot(client):
+    product_response = await client.post("/api/v1/products", json={"name": "Cafe", "price": "10.00", "stock": 10})
+    assert product_response.status_code == 201
+    open_response = await client.post("/api/v1/store-day/open", json={"opening_cash_amount": "100.00"})
+    assert open_response.status_code == 201
+
+    await client.post(
+        "/api/v1/sales",
+        json={
+            "items": [{"product_id": product_response.json()["id"], "quantity": 1}],
+            "payment_method": "efectivo",
+        },
+    )
+    first_close = await client.post("/api/v1/store-day/close", json={"counted_cash_amount": "110.00"})
+    assert first_close.status_code == 200
+    assert first_close.json()["expected_cash_amount"] == "110.00"
+    assert first_close.json()["counted_cash_amount"] == "110.00"
+
+    reopen_response = await client.post("/api/v1/store-day/reopen")
+    assert reopen_response.status_code == 200
+    await client.post(
+        "/api/v1/sales",
+        json={
+            "items": [{"product_id": product_response.json()["id"], "quantity": 2}],
+            "payment_method": "efectivo",
+        },
+    )
+    second_close = await client.post(
+        "/api/v1/store-day/close",
+        json={"closing_note": "Cierre final", "counted_cash_amount": "129.00"},
+    )
+
+    assert second_close.status_code == 200
+    data = second_close.json()
+    assert data["id"] == open_response.json()["id"]
+    assert data["expected_cash_amount"] == "130.00"
+    assert data["counted_cash_amount"] == "129.00"
+    assert data["cash_difference_amount"] == "-1.00"
+    assert data["closing_sales_total"] == "30.00"
+    assert data["closing_sales_count"] == 2
 
 
 async def test_create_sale_requires_open_store_day(client):

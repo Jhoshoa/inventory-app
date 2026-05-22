@@ -38,7 +38,8 @@ export async function closeStoreDayAction(
 ): Promise<StoreDayActionState> {
   const noteError = validateStoreDayNote(formData.get("note"));
   if (noteError) return { ok: false, fieldErrors: { note: noteError } };
-  const cashError = validateMoneyAmount(formData.get("counted_cash_amount"), "Efectivo contado", true);
+  const skipCashCount = formData.get("skip_cash_count") === "on";
+  const cashError = validateMoneyAmount(formData.get("counted_cash_amount"), "Efectivo contado", !skipCashCount);
   if (cashError) return { ok: false, fieldErrors: { counted_cash_amount: cashError } };
 
   const token = await getAuthToken();
@@ -47,7 +48,8 @@ export async function closeStoreDayAction(
     token: token ?? undefined,
     body: {
       closing_note: noteValue(formData),
-      counted_cash_amount: moneyValue(formData, "counted_cash_amount"),
+      counted_cash_amount: skipCashCount ? null : moneyValue(formData, "counted_cash_amount"),
+      skip_cash_count: skipCashCount,
     },
   });
 

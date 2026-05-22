@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { LockKeyhole, Store, UnlockKeyhole } from "lucide-react";
 import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
@@ -88,6 +88,7 @@ function StoreDayActionForm({
   const isReopen = !isOpen && Boolean(storeDay.id && storeDay.closed_at);
   const action = isOpen ? closeStoreDayAction : isReopen ? reopenStoreDayAction : openStoreDayAction;
   const [state, formAction, isPending] = useActionState(action, initialState);
+  const [skipCashCount, setSkipCashCount] = useState(false);
   const noteLabel = isOpen ? "Nota de cierre" : isReopen ? "Nota de reapertura" : "Nota de apertura";
   const buttonLabel = isOpen ? "Cerrar tienda" : isReopen ? "Reabrir tienda" : "Abrir tienda";
 
@@ -108,12 +109,23 @@ function StoreDayActionForm({
       ) : null}
       {isOpen ? (
         <>
+          <label className="flex items-center gap-2 rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700">
+            <input
+              className="h-4 w-4 rounded border-slate-300 text-slate-950 focus:ring-slate-400"
+              name="skip_cash_count"
+              type="checkbox"
+              checked={skipCashCount}
+              onChange={(event) => setSkipCashCount(event.target.checked)}
+            />
+            Cerrar sin conteo de efectivo
+          </label>
           <Input
             aria-label="Efectivo contado"
+            disabled={skipCashCount}
             inputMode="decimal"
             name="counted_cash_amount"
-            placeholder="Efectivo contado"
-            required
+            placeholder={skipCashCount ? "Sin conteo" : "Efectivo contado"}
+            required={!skipCashCount}
           />
           <FieldError message={state.fieldErrors.counted_cash_amount} />
         </>

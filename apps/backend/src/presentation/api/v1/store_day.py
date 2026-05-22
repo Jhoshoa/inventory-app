@@ -5,6 +5,7 @@ from fastapi import APIRouter, Depends, Query
 
 from src.application.dto.store_day_dto import (
     StoreDayActionDTO,
+    StoreDayCloseActionDTO,
     StoreDayCloseReportDTO,
     StoreDayCloseReportListDTO,
     StoreDayClosingPreviewDTO,
@@ -87,7 +88,7 @@ async def open_store_day(
 
 @router.post("/close", response_model=StoreDayResponseDTO)
 async def close_store_day(
-    dto: StoreDayActionDTO | None = None,
+    dto: StoreDayCloseActionDTO,
     user: CurrentUserContext = Depends(require_owner),
     store_repo: StoreRepository = Depends(get_store_repo),
     business_day_repo: StoreBusinessDayRepository = Depends(get_store_business_day_repo),
@@ -98,8 +99,8 @@ async def close_store_day(
         CloseStoreDayInput(
             store_id=UUID(str(user.store_id)),
             closed_by_user_id=UUID(str(user.id)),
-            closing_note=dto.closing_note if dto else None,
-            counted_cash_amount=dto.counted_cash_amount if dto else None,
+            closing_note=dto.closing_note,
+            counted_cash_amount=None if dto.skip_cash_count else dto.counted_cash_amount,
         )
     )
 

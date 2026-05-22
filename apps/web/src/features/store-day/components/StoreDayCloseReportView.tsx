@@ -13,8 +13,8 @@ export function StoreDayCloseReportView({ report }: { report: StoreDayCloseRepor
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <Metric label="Ventas" value={formatCurrency(data.sales_total)} />
         <Metric label="Efectivo esperado" value={formatCurrency(data.expected_cash_amount)} />
-        <Metric label="Efectivo contado" value={formatCurrency(data.counted_cash_amount ?? "0")} />
-        <Metric label="Diferencia" value={formatCurrency(data.cash_difference_amount ?? "0")} />
+        <Metric label="Efectivo contado" value={data.counted_cash_amount ? formatCurrency(data.counted_cash_amount) : "Sin conteo"} />
+        <Metric label="Diferencia" value={data.cash_difference_amount ? formatCurrency(data.cash_difference_amount) : "No calculada"} />
       </div>
 
       <section className="rounded-lg border border-slate-200 bg-white p-4">

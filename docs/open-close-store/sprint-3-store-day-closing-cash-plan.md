@@ -91,6 +91,7 @@ Backend:
 - `POST /store-day/open` acepta `opening_cash_amount`.
 - `GET /store-day/current/closing-preview` devuelve preview de cierre owner-only.
 - `POST /store-day/close` acepta `counted_cash_amount`.
+- `POST /store-day/close` acepta `skip_cash_count` para cierres rapidos sin conteo fisico.
 - El cierre calcula `expected_cash_amount` y `cash_difference_amount`.
 - El cierre guarda snapshot por metodo de pago:
   - efectivo.
@@ -265,13 +266,14 @@ expected_cash_amount = opening_cash_amount + cash_sales_total
 
 No se incluyen QR/transferencia/tarjeta en caja fisica.
 
-### Cierre con arqueo
+### Cierre con conteo opcional
 
 `POST /store-day/close` debe aceptar:
 
 ```json
 {
   "closing_note": "Cierre sin novedades",
+  "skip_cash_count": false,
   "counted_cash_amount": "548.00"
 }
 ```
@@ -280,11 +282,18 @@ Reglas:
 
 - Solo owner.
 - Debe existir jornada abierta.
-- `counted_cash_amount >= 0`.
+- `skip_cash_count` indica si el owner esta cerrando sin conteo fisico de efectivo.
+- Si `skip_cash_count=false`, `counted_cash_amount` es obligatorio.
+- Si `skip_cash_count=true`, `counted_cash_amount` debe omitirse o enviarse como `null`.
+- Si se envia `counted_cash_amount`, debe ser `>= 0`.
 - Backend recalcula snapshot al momento de cerrar.
-- Backend calcula:
+- Backend calcula, solo cuando hay conteo:
   - `expected_cash_amount`
   - `cash_difference_amount = counted_cash_amount - expected_cash_amount`
+- Si el cierre es sin conteo:
+  - `expected_cash_amount` se calcula igual.
+  - `counted_cash_amount = null`.
+  - `cash_difference_amount = null`.
 - Backend guarda snapshot en `store_business_days`.
 - Backend registra evento `close`.
 - POS queda bloqueado.
@@ -305,6 +314,8 @@ Reglas para Sprint 3:
 - En UI, el boton `Ver reporte de cierre` se oculta cuando la jornada esta abierta.
 
 Nota: a futuro puede guardarse historico de cada cierre en una tabla separada. No es necesario para Sprint 3 porque ya tenemos eventos y el snapshot actual.
+
+Decision actualizada: para Sprint 3, `store_business_days` representa el ultimo cierre valido de la jornada. Si una jornada se cierra, se reabre y se vuelve a cerrar, el backend recalcula y sobreescribe `counted_cash_amount`, `expected_cash_amount`, `cash_difference_amount` y el snapshot de ventas con el cierre mas reciente. Los eventos `close` y `reopen` conservan la trazabilidad operativa minima. Un cierre sin conteo queda representado con `counted_cash_amount = null` y `cash_difference_amount = null`; en UI debe mostrarse como `Sin conteo` y `No calculada`. Un historial completo de arqueos por cada intento de cierre queda fuera de alcance y debe modelarse luego con una tabla dedicada, por ejemplo `store_day_closing_snapshots` o `cash_sessions`.
 
 ### Consulta del reporte despues de cerrar
 
@@ -385,9 +396,22 @@ Payload:
 ```json
 {
   "closing_note": "Cierre sin novedades",
+  "skip_cash_count": false,
   "counted_cash_amount": "548.00"
 }
 ```
+
+Para cierre rapido sin conteo:
+
+```json
+{
+  "closing_note": "Cierre rapido",
+  "skip_cash_count": true,
+  "counted_cash_amount": null
+}
+```
+
+`counted_cash_amount` es requerido solo cuando `skip_cash_count=false`; si se envia debe ser mayor o igual a cero.
 
 ### Reporte de cierre por jornada actual
 
@@ -516,7 +540,8 @@ Actualizar la seccion de jornada:
 
 - Cuando esta cerrada y no hay jornada de hoy: formulario de apertura con `opening_cash_amount` y nota.
 - Cuando esta abierta: mostrar preview de cierre.
-- Cierre debe pedir `counted_cash_amount` y nota.
+- Cierre debe permitir conteo fisico de efectivo o cierre rapido `Sin conteo`.
+- El backend debe exigir una intencion explicita: `counted_cash_amount` cuando hay conteo, o `skip_cash_count=true` cuando no hay conteo.
 - Mostrar diferencia antes de confirmar si el owner ingresa efectivo contado.
 - Cuando queda cerrada: mostrar boton `Ver reporte de cierre`.
 - Si se reabre: ocultar boton `Ver reporte de cierre` hasta el siguiente cierre.

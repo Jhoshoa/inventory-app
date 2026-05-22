@@ -10,6 +10,7 @@ import {
   TableHeaderCell,
 } from "@/components/ui/Table";
 import { listCloseReports } from "@/features/store-day/api";
+import { StoreDayReportsDateFilter } from "@/features/store-day/components/StoreDayReportsDateFilter";
 import type { StoreDayCloseReport } from "@/features/store-day/types";
 import { canViewStoreDayReports } from "@/lib/auth/permissions";
 import { requireSession } from "@/lib/auth/session";
@@ -39,6 +40,8 @@ export default async function StoreDayReportsPage({
           Historial de cierres operativos y diferencias de caja.
         </p>
       </div>
+
+      <StoreDayReportsDateFilter fromDate={params.from_date} toDate={params.to_date} />
 
       {!reports.ok ? (
         <Alert variant="error">No se pudieron cargar cierres: {reports.error.message}</Alert>
@@ -80,8 +83,8 @@ function CloseReportsTable({ items }: { items: StoreDayCloseReport[] }) {
               <TableCell>{formatBusinessDate(item.business_date)}</TableCell>
               <TableCell>{formatCurrency(item.sales_total)}</TableCell>
               <TableCell>{formatCurrency(item.expected_cash_amount)}</TableCell>
-              <TableCell>{formatCurrency(item.counted_cash_amount ?? "0")}</TableCell>
-              <TableCell>{formatCurrency(item.cash_difference_amount ?? "0")}</TableCell>
+              <TableCell>{item.counted_cash_amount ? formatCurrency(item.counted_cash_amount) : "Sin conteo"}</TableCell>
+              <TableCell>{item.cash_difference_amount ? formatCurrency(item.cash_difference_amount) : "No calculada"}</TableCell>
               <TableCell>
                 <Button variant="secondary" asChild>
                   <Link href={`/dashboard/reports/store-days/${item.business_day_id}`}>Ver</Link>

@@ -35,6 +35,8 @@ describe("StoreDayStatusPanel", () => {
     render(<StoreDayStatusPanel storeDay={openStoreDay()} role="owner" actions="manage" />);
 
     expect(screen.getByText("Tienda abierta")).toBeInTheDocument();
+    expect(screen.getByRole("checkbox", { name: "Cerrar sin conteo de efectivo" })).toBeInTheDocument();
+    expect(screen.getByRole("textbox", { name: "Efectivo contado" })).toBeRequired();
     expect(screen.getByRole("button", { name: "Cerrar tienda" })).toBeInTheDocument();
   });
 

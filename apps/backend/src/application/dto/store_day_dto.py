@@ -2,7 +2,7 @@ from datetime import date, datetime
 from decimal import Decimal
 from uuid import UUID
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 
 class StoreDayActionDTO(BaseModel):
@@ -10,6 +10,22 @@ class StoreDayActionDTO(BaseModel):
     closing_note: str | None = Field(default=None, max_length=255)
     opening_cash_amount: Decimal | None = Field(default=None, ge=0)
     counted_cash_amount: Decimal | None = Field(default=None, ge=0)
+
+
+class StoreDayCloseActionDTO(BaseModel):
+    closing_note: str | None = Field(default=None, max_length=255)
+    counted_cash_amount: Decimal | None = Field(default=None, ge=0)
+    skip_cash_count: bool = False
+
+    @model_validator(mode="after")
+    def validate_cash_count_intent(self) -> "StoreDayCloseActionDTO":
+        if self.skip_cash_count:
+            if self.counted_cash_amount is not None:
+                raise ValueError("No envie efectivo contado cuando cierre sin conteo")
+            return self
+        if self.counted_cash_amount is None:
+            raise ValueError("Efectivo contado es requerido o marque cierre sin conteo")
+        return self
 
 
 class StoreDayResponseDTO(BaseModel):
