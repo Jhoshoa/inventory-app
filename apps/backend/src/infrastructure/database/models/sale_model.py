@@ -1,7 +1,9 @@
 import uuid
-from sqlalchemy import Column, String, Integer, Numeric, DateTime, ForeignKey, Boolean, Index
-from sqlalchemy.orm import relationship
 from datetime import datetime, timezone
+
+from sqlalchemy import Boolean, Column, Date, DateTime, ForeignKey, Index, Integer, Numeric, String
+from sqlalchemy.orm import relationship
+
 from src.infrastructure.database.models.product_model import Base
 from src.infrastructure.database.types import GUID
 
@@ -19,6 +21,9 @@ class SaleModel(Base):
     items_count = Column(Integer, nullable=False, default=0)
     payment_method = Column(String(20), default="efectivo")
     status = Column(String(20), default="completed")
+    business_day_id = Column(GUID(), ForeignKey("store_business_days.id"))
+    business_date = Column(Date)
+    created_by_user_id = Column(GUID(), ForeignKey("users.id"))
     voided_at = Column(DateTime(timezone=True))
     void_reason = Column(String(200))
     synced = Column(Boolean, default=False)
@@ -33,6 +38,8 @@ class SaleModel(Base):
         Index("ix_sales_store_id", "store_id"),
         Index("ix_sales_store_id_id", "store_id", "id"),
         Index("ix_sales_store_status_created_at", "store_id", "status", "created_at"),
+        Index("ix_sales_store_business_date_created_at", "store_id", "business_date", "created_at"),
+        Index("ix_sales_store_business_day", "store_id", "business_day_id"),
         Index("ix_sales_created_at", "created_at"),
     )
 

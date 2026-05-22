@@ -14,6 +14,9 @@ export interface Sale {
   total: string;
   payment_method: string;
   status: "completed" | "voided" | string;
+  business_day_id: string | null;
+  business_date: string | null;
+  created_by_user_id: string | null;
   created_at: string;
   voided_at: string | null;
   void_reason: string | null;

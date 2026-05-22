@@ -1,5 +1,7 @@
 from uuid import UUID
+from datetime import date
 
+from sqlalchemy import update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.domain.entities.store import Store
@@ -20,6 +22,8 @@ class StoreRepository(IStoreRepository):
         model.address = store.address
         model.phone = store.phone
         model.is_active = store.is_active
+        model.timezone = store.timezone
+        model.first_business_date = store.first_business_date
         await self._session.flush()
         return store
 
@@ -33,4 +37,14 @@ class StoreRepository(IStoreRepository):
             address=model.address,
             phone=model.phone,
             is_active=model.is_active,
+            timezone=model.timezone or "America/La_Paz",
+            first_business_date=model.first_business_date,
         )
+
+    async def set_first_business_date(self, store_id: UUID, first_business_date: date) -> None:
+        await self._session.execute(
+            update(StoreModel)
+            .where(StoreModel.id == store_id, StoreModel.first_business_date.is_(None))
+            .values(first_business_date=first_business_date)
+        )
+        await self._session.flush()

@@ -1,0 +1,70 @@
+import { render, screen } from "@testing-library/react";
+import { describe, expect, it, vi } from "vitest";
+import { StoreDayStatusPanel } from "./StoreDayStatusPanel";
+import type { StoreDay } from "../types";
+
+vi.mock("react", async () => {
+  const actual = await vi.importActual<typeof import("react")>("react");
+  return {
+    ...actual,
+    useActionState: () => [{ ok: false, fieldErrors: {} }, vi.fn(), false],
+  };
+});
+
+vi.mock("../actions", () => ({
+  openStoreDayAction: vi.fn(),
+  closeStoreDayAction: vi.fn(),
+}));
+
+describe("StoreDayStatusPanel", () => {
+  it("renders closed state and owner action", () => {
+    render(<StoreDayStatusPanel storeDay={closedStoreDay()} role="owner" />);
+
+    expect(screen.getByText("Tienda cerrada")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Abrir tienda" })).toBeInTheDocument();
+  });
+
+  it("renders open state and owner close action", () => {
+    render(<StoreDayStatusPanel storeDay={openStoreDay()} role="owner" />);
+
+    expect(screen.getByText("Tienda abierta")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Cerrar tienda" })).toBeInTheDocument();
+  });
+
+  it("hides actions for cashier", () => {
+    render(<StoreDayStatusPanel storeDay={openStoreDay()} role="cashier" />);
+
+    expect(screen.getByText("Tienda abierta")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Cerrar tienda" })).not.toBeInTheDocument();
+  });
+});
+
+function closedStoreDay(): StoreDay {
+  return {
+    id: null,
+    status: "closed",
+    business_date: "2026-05-21",
+    opened_at: null,
+    closed_at: null,
+    opened_by_user_id: null,
+    closed_by_user_id: null,
+    opening_note: null,
+    closing_note: null,
+    sales_total: null,
+    sales_count: null,
+    voided_sales_count: null,
+    timezone: "America/La_Paz",
+    first_business_date: null,
+  };
+}
+
+function openStoreDay(): StoreDay {
+  return {
+    ...closedStoreDay(),
+    id: "day-1",
+    status: "open",
+    opened_at: "2026-05-21T12:00:00Z",
+    opened_by_user_id: "user-1",
+    first_business_date: "2026-05-21",
+  };
+}

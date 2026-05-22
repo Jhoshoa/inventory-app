@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
+from datetime import date, datetime, timezone
 from decimal import Decimal
 from uuid import UUID, uuid4
-from datetime import datetime, timezone
 
 
 @dataclass
@@ -37,6 +37,9 @@ class Sale:
     total: Decimal = Decimal("0")
     payment_method: str = "efectivo"
     status: str = "completed"
+    business_day_id: UUID | None = None
+    business_date: date | None = None
+    created_by_user_id: UUID | None = None
     device_id: str | None = None
     customer_name: str | None = None
     created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
@@ -48,6 +51,9 @@ class Sale:
         store_id: UUID,
         items: list[SaleItem],
         payment_method: str = "efectivo",
+        business_day_id: UUID | None = None,
+        business_date: date | None = None,
+        created_by_user_id: UUID | None = None,
         device_id: str | None = None,
         customer_name: str | None = None,
     ) -> "Sale":
@@ -60,6 +66,9 @@ class Sale:
             items=items,
             total=total,
             payment_method=payment_method,
+            business_day_id=business_day_id,
+            business_date=business_date,
+            created_by_user_id=created_by_user_id,
             device_id=device_id,
             customer_name=customer_name,
         )

@@ -31,6 +31,7 @@ async def seed_dev_data(session: AsyncSession) -> None:
     store.address = "Av. Siempre Viva 123"
     store.phone = "70000000"
     store.is_active = True
+    store.timezone = "America/La_Paz"
 
     user = await session.get(UserModel, DEV_USER_ID)
     if user is None:

@@ -11,6 +11,7 @@ from src.presentation.api.v1 import (
     sales,
     stock_movements,
     store,
+    store_day,
     sync,
     users,
 )
@@ -22,6 +23,7 @@ api_v1_router.include_router(photos.router)
 api_v1_router.include_router(sync.router)
 api_v1_router.include_router(auth.router)
 api_v1_router.include_router(store.router)
+api_v1_router.include_router(store_day.router)
 api_v1_router.include_router(exchange_rates.router)
 api_v1_router.include_router(dashboard.router)
 api_v1_router.include_router(reports.router)

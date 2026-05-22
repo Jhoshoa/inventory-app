@@ -2,7 +2,7 @@ from decimal import Decimal
 from enum import StrEnum
 from uuid import UUID
 from pydantic import BaseModel, Field
-from datetime import datetime
+from datetime import date, datetime
 
 
 class PaymentMethodDTO(StrEnum):
@@ -44,6 +44,9 @@ class SaleResponseDTO(BaseModel):
     total: Decimal
     payment_method: str
     status: str
+    business_day_id: UUID | None = None
+    business_date: date | None = None
+    created_by_user_id: UUID | None = None
     created_at: datetime
     voided_at: datetime | None = None
     void_reason: str | None = None

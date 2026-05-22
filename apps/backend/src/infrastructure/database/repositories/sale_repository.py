@@ -26,6 +26,9 @@ class SaleRepository(ISaleRepository):
             items_count=len(sale.items),
             payment_method=sale.payment_method,
             status=sale.status,
+            business_day_id=sale.business_day_id,
+            business_date=sale.business_date,
+            created_by_user_id=sale.created_by_user_id,
         )
         for item in sale.items:
             item_model = SaleItemModel(
@@ -51,23 +54,7 @@ class SaleRepository(ISaleRepository):
         model = result.scalar_one_or_none()
         if not model:
             return None
-        items = [
-            SaleItem(id=i.id, product_id=i.product_id, product_name=i.product_name, quantity=i.quantity, unit_price=i.unit_price, subtotal=i.subtotal)
-            for i in model.items
-        ]
-        return Sale(
-            id=model.id,
-            store_id=model.store_id,
-            items=items,
-            total=model.total,
-            payment_method=model.payment_method,
-            status=model.status,
-            device_id=model.device_id,
-            customer_name=model.customer_name,
-            created_at=model.created_at,
-            voided_at=model.voided_at,
-            void_reason=model.void_reason,
-        )
+        return self._to_entity(model)
 
     async def list_by_store(self, store_id: UUID) -> list[Sale]:
         result = await self._session.execute(
@@ -78,25 +65,7 @@ class SaleRepository(ISaleRepository):
         )
         sales = []
         for model in result.scalars().all():
-            items = [
-                SaleItem(id=i.id, product_id=i.product_id, product_name=i.product_name, quantity=i.quantity, unit_price=i.unit_price, subtotal=i.subtotal)
-                for i in model.items
-            ]
-            sales.append(
-                Sale(
-                    id=model.id,
-                    store_id=model.store_id,
-                    items=items,
-                    total=model.total,
-                    payment_method=model.payment_method,
-                    status=model.status,
-                    device_id=model.device_id,
-                    customer_name=model.customer_name,
-                    created_at=model.created_at,
-                    voided_at=model.voided_at,
-                    void_reason=model.void_reason,
-                )
-            )
+            sales.append(self._to_entity(model))
         return sales
 
     async def sales_summary_for_range(self, store_id: UUID, start: datetime, end: datetime) -> dict:
@@ -119,6 +88,35 @@ class SaleRepository(ISaleRepository):
             "items_count": int(items_count or 0),
         }
 
+    async def sales_summary_for_business_day(self, store_id: UUID, business_day_id: UUID) -> dict:
+        result = await self._session.execute(
+            select(
+                func.coalesce(func.sum(SaleModel.total), 0),
+                func.count(SaleModel.id),
+                func.coalesce(func.sum(SaleModel.items_count), 0),
+            ).where(
+                SaleModel.store_id == store_id,
+                SaleModel.business_day_id == business_day_id,
+                SaleModel.deleted_at.is_(None),
+                SaleModel.status == "completed",
+            )
+        )
+        total, count, items_count = result.one()
+        voided_result = await self._session.execute(
+            select(func.count(SaleModel.id)).where(
+                SaleModel.store_id == store_id,
+                SaleModel.business_day_id == business_day_id,
+                SaleModel.deleted_at.is_(None),
+                SaleModel.status == "voided",
+            )
+        )
+        return {
+            "total_sales": Decimal(str(total or 0)),
+            "sales_count": int(count or 0),
+            "items_count": int(items_count or 0),
+            "voided_sales_count": int(voided_result.scalar_one() or 0),
+        }
+
     async def latest_sales(self, store_id: UUID, limit: int = 5) -> list[Sale]:
         result = await self._session.execute(
             select(SaleModel)
@@ -129,32 +127,7 @@ class SaleRepository(ISaleRepository):
         )
         sales = []
         for model in result.scalars().all():
-            items = [
-                SaleItem(
-                    id=i.id,
-                    product_id=i.product_id,
-                    product_name=i.product_name,
-                    quantity=i.quantity,
-                    unit_price=i.unit_price,
-                    subtotal=i.subtotal,
-                )
-                for i in model.items
-            ]
-            sales.append(
-                Sale(
-                    id=model.id,
-                    store_id=model.store_id,
-                    items=items,
-                    total=model.total,
-                    payment_method=model.payment_method,
-                    status=model.status,
-                    device_id=model.device_id,
-                    customer_name=model.customer_name,
-                    created_at=model.created_at,
-                    voided_at=model.voided_at,
-                    void_reason=model.void_reason,
-                )
-            )
+            sales.append(self._to_entity(model))
         return sales
 
     async def mark_voided(self, store_id: UUID, sale_id: UUID, reason: str) -> Sale | None:
@@ -248,3 +221,32 @@ class SaleRepository(ISaleRepository):
             }
             for product_id, product_name, quantity, total in result.all()
         ]
+
+    def _to_entity(self, model: SaleModel) -> Sale:
+        items = [
+            SaleItem(
+                id=i.id,
+                product_id=i.product_id,
+                product_name=i.product_name,
+                quantity=i.quantity,
+                unit_price=i.unit_price,
+                subtotal=i.subtotal,
+            )
+            for i in model.items
+        ]
+        return Sale(
+            id=model.id,
+            store_id=model.store_id,
+            items=items,
+            total=model.total,
+            payment_method=model.payment_method,
+            status=model.status,
+            business_day_id=model.business_day_id,
+            business_date=model.business_date,
+            created_by_user_id=model.created_by_user_id,
+            device_id=model.device_id,
+            customer_name=model.customer_name,
+            created_at=model.created_at,
+            voided_at=model.voided_at,
+            void_reason=model.void_reason,
+        )

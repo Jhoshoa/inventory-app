@@ -12,6 +12,11 @@ async def _create_product_and_sale(client, name: str = "Arroz"):
     product_response = await client.post("/api/v1/products", json={"name": name, "price": "10.00", "stock": 10})
     assert product_response.status_code == 201
     product = product_response.json()
+    current_store_day = await client.get("/api/v1/store-day/current")
+    assert current_store_day.status_code == 200
+    if current_store_day.json()["status"] != "open":
+        open_response = await client.post("/api/v1/store-day/open")
+        assert open_response.status_code == 201
     sale_response = await client.post(
         "/api/v1/sales",
         json={"items": [{"product_id": product["id"], "quantity": 3}], "payment_method": "efectivo"},

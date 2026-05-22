@@ -3,10 +3,17 @@ from uuid import UUID, uuid4
 
 from sqlalchemy import select
 
+from src.infrastructure.database.models import UserModel
 from src.infrastructure.database.models.stock_movement_model import StockMovementModel
 from src.infrastructure.database.models.store_model import StoreModel
 from src.presentation import dependencies
 from src.main import app
+
+
+async def _open_store_day(client):
+    response = await client.post("/api/v1/store-day/open")
+    assert response.status_code == 201
+    return response.json()
 
 
 async def test_products_crud_and_stock_adjustment(client):
@@ -52,6 +59,7 @@ async def test_sales_create_list_and_get_reduce_stock(client):
         json={"name": "aceite", "price": "18.00", "stock": 5},
     )
     product_id = product_response.json()["id"]
+    await _open_store_day(client)
 
     sale_response = await client.post(
         "/api/v1/sales",
@@ -80,6 +88,7 @@ async def test_sale_and_manual_adjustment_create_stock_movements(client, db_sess
         json={"name": "azucar", "price": "10.00", "stock": 6},
     )
     product_id = product_response.json()["id"]
+    await _open_store_day(client)
 
     sale_response = await client.post(
         "/api/v1/sales",
@@ -113,6 +122,7 @@ async def test_failed_sale_does_not_create_partial_sale_or_stock_movement(client
         json={"name": "leche evaporada", "price": "9.00", "stock": 1},
     )
     product_id = product_response.json()["id"]
+    await _open_store_day(client)
 
     sale_response = await client.post(
         "/api/v1/sales",
@@ -137,6 +147,7 @@ async def test_sale_rejects_invalid_payment_method(client):
         json={"name": "galleta", "price": "5.00", "stock": 2},
     )
     product_id = product_response.json()["id"]
+    await _open_store_day(client)
 
     response = await client.post(
         "/api/v1/sales",
@@ -152,6 +163,7 @@ async def test_sale_rejects_duplicate_products(client):
         json={"name": "yerba", "price": "12.00", "stock": 5},
     )
     product_id = product_response.json()["id"]
+    await _open_store_day(client)
 
     response = await client.post(
         "/api/v1/sales",
@@ -169,7 +181,17 @@ async def test_sale_rejects_duplicate_products(client):
 
 async def test_product_and_sale_access_is_isolated_by_store(client, db_session):
     other_store_id = uuid4()
+    other_user_id = uuid4()
     db_session.add(StoreModel(id=other_store_id, name="Other Store"))
+    db_session.add(
+        UserModel(
+            id=other_user_id,
+            email="other@local.dev",
+            store_id=other_store_id,
+            role="owner",
+            is_active=True,
+        )
+    )
     await db_session.flush()
 
     product_response = await client.post(
@@ -177,6 +199,7 @@ async def test_product_and_sale_access_is_isolated_by_store(client, db_session):
         json={"name": "cafe", "price": "20.00", "stock": 3},
     )
     product_id = product_response.json()["id"]
+    await _open_store_day(client)
 
     sale_response = await client.post(
         "/api/v1/sales",
@@ -186,12 +209,14 @@ async def test_product_and_sale_access_is_isolated_by_store(client, db_session):
 
     async def other_store_user():
         return {
-            "id": uuid4(),
+            "id": other_user_id,
             "email": "other@local.dev",
             "store_id": other_store_id,
         }
 
     app.dependency_overrides[dependencies.get_current_user] = other_store_user
+    open_response = await client.post("/api/v1/store-day/open")
+    assert open_response.status_code == 201
 
     assert (await client.get(f"/api/v1/products/{product_id}")).status_code == 404
     assert (await client.patch(f"/api/v1/products/{product_id}/stock", json={"quantity": 1})).status_code == 404
@@ -211,6 +236,7 @@ async def test_sale_rejects_insufficient_stock(client):
         json={"name": "leche", "price": "9.00", "stock": 1},
     )
     product_id = product_response.json()["id"]
+    await _open_store_day(client)
 
     sale_response = await client.post(
         "/api/v1/sales",
@@ -235,6 +261,7 @@ async def test_sale_rejects_stale_cart_after_concurrent_stock_change(client):
         json={"name": "aceite", "price": "18.00", "stock": 10},
     )
     product_id = product_response.json()["id"]
+    await _open_store_day(client)
 
     first_sale = await client.post(
         "/api/v1/sales",

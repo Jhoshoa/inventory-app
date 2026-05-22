@@ -19,6 +19,9 @@ class ISaleRepository(ABC):
     async def sales_summary_for_range(self, store_id: UUID, start: datetime, end: datetime) -> dict[str, Any]: ...
 
     @abstractmethod
+    async def sales_summary_for_business_day(self, store_id: UUID, business_day_id: UUID) -> dict[str, Any]: ...
+
+    @abstractmethod
     async def latest_sales(self, store_id: UUID, limit: int = 5) -> list[Sale]: ...
 
     @abstractmethod

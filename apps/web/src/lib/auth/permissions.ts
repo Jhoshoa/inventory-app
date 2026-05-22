@@ -47,3 +47,7 @@ export function canReviewImport(role: UserRole | undefined): boolean {
 export function canCancelImport(role: UserRole | undefined): boolean {
   return isOwner(role);
 }
+
+export function canOpenCloseStore(role: UserRole | undefined): boolean {
+  return isOwner(role);
+}

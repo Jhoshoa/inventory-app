@@ -7,6 +7,12 @@ from src.main import app
 from src.presentation import dependencies
 
 
+async def _open_store_day(client):
+    response = await client.post("/api/v1/store-day/open")
+    assert response.status_code == 201
+    return response.json()
+
+
 async def test_dashboard_summary_returns_store_metrics(client):
     low_product = await client.post(
         "/api/v1/products",
@@ -16,6 +22,7 @@ async def test_dashboard_summary_returns_store_metrics(client):
         "/api/v1/products",
         json={"name": "Normal", "price": "20.00", "stock": 10, "min_stock": 2},
     )
+    await _open_store_day(client)
 
     await client.post(
         "/api/v1/sales",
@@ -57,6 +64,7 @@ async def test_dashboard_summary_does_not_leak_other_store(client, db_session):
 async def test_sales_report_by_range_groups_and_top_products(client):
     arroz = await client.post("/api/v1/products", json={"name": "Arroz", "price": "12.50", "stock": 20})
     aceite = await client.post("/api/v1/products", json={"name": "Aceite", "price": "18.00", "stock": 20})
+    await _open_store_day(client)
 
     await client.post(
         "/api/v1/sales",

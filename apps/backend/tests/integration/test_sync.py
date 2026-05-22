@@ -150,6 +150,8 @@ async def test_sync_pull_includes_products_sales_and_stock_movements(client):
         json={"name": "Leche", "price": "9.00", "stock": 5},
     )
     product_id = product_response.json()["id"]
+    open_response = await client.post("/api/v1/store-day/open")
+    assert open_response.status_code == 201
 
     sale_response = await client.post(
         "/api/v1/sales",

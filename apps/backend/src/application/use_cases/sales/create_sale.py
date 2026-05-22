@@ -3,7 +3,8 @@ from uuid import UUID
 from src.domain.entities.sale import Sale, SaleItem
 from src.domain.repositories.sale_repository import ISaleRepository
 from src.domain.repositories.product_repository import IProductRepository
-from src.application.exceptions import NotFoundError, StockConflictError
+from src.domain.repositories.store_business_day_repository import IStoreBusinessDayRepository
+from src.application.exceptions import ConflictError, NotFoundError, StockConflictError
 
 
 @dataclass
@@ -15,6 +16,7 @@ class SaleItemInput:
 @dataclass
 class CreateSaleInput:
     store_id: UUID
+    user_id: UUID
     items: list[SaleItemInput]
     payment_method: str = "efectivo"
     device_id: str | None = None
@@ -22,11 +24,21 @@ class CreateSaleInput:
 
 
 class CreateSaleUseCase:
-    def __init__(self, sale_repo: ISaleRepository, product_repo: IProductRepository):
+    def __init__(
+        self,
+        sale_repo: ISaleRepository,
+        product_repo: IProductRepository,
+        business_day_repo: IStoreBusinessDayRepository,
+    ):
         self._sale_repo = sale_repo
         self._product_repo = product_repo
+        self._business_day_repo = business_day_repo
 
     async def execute(self, input: CreateSaleInput) -> Sale:
+        business_day = await self._business_day_repo.get_open_by_store(input.store_id)
+        if business_day is None:
+            raise ConflictError("La tienda esta cerrada. Un owner debe abrir la jornada para vender.")
+
         sale_items: list[SaleItem] = []
         product_ids = [item.product_id for item in input.items]
         if len(set(product_ids)) != len(product_ids):
@@ -55,6 +67,9 @@ class CreateSaleUseCase:
             store_id=input.store_id,
             items=sale_items,
             payment_method=input.payment_method,
+            business_day_id=business_day.id,
+            business_date=business_day.business_date,
+            created_by_user_id=input.user_id,
             device_id=input.device_id,
             customer_name=input.customer_name,
         )

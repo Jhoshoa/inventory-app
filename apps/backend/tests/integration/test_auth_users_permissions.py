@@ -146,6 +146,8 @@ async def test_cashier_cannot_delete_product(client, db_session):
 async def test_cashier_can_list_products_and_create_sale(client, db_session):
     create_response = await client.post("/api/v1/products", json={"name": "Cafe", "price": "10.00", "stock": 3})
     assert create_response.status_code == 201
+    open_response = await client.post("/api/v1/store-day/open", json={"opening_note": "Inicio"})
+    assert open_response.status_code == 201
 
     user = await db_session.get(UserModel, dependencies.DEV_USER_ID)
     user.role = "cashier"

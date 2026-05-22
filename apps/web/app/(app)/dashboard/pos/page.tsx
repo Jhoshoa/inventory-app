@@ -1,6 +1,11 @@
+import { Alert } from "@/components/ui/Alert";
 import { PosWorkspace } from "@/features/pos/components/PosWorkspace";
+import { getCurrentStoreDay } from "@/features/store-day/api";
+import { StoreClosedNotice } from "@/features/store-day/components/StoreClosedNotice";
 
-export default function PosPage() {
+export default async function PosPage() {
+  const storeDay = await getCurrentStoreDay();
+
   return (
     <section className="space-y-6">
       <div>
@@ -9,7 +14,13 @@ export default function PosPage() {
           Busca productos, arma el carrito y confirma ventas.
         </p>
       </div>
-      <PosWorkspace />
+      {!storeDay.ok ? (
+        <Alert variant="error">No se pudo cargar el estado de tienda: {storeDay.error.message}</Alert>
+      ) : storeDay.data.status !== "open" ? (
+        <StoreClosedNotice />
+      ) : (
+        <PosWorkspace />
+      )}
     </section>
   );
 }

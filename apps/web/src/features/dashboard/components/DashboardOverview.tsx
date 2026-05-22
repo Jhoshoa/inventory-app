@@ -10,9 +10,20 @@ import {
   TableHeaderCell,
 } from "@/components/ui/Table";
 import { formatCurrency } from "@/lib/format/currency";
+import type { UserRole } from "@/lib/auth/types";
+import { StoreDayStatusPanel } from "@/features/store-day/components/StoreDayStatusPanel";
+import type { StoreDayResult } from "@/features/store-day/types";
 import type { DashboardSale, DashboardSummaryResult } from "../types";
 
-export function DashboardOverview({ summary }: { summary: DashboardSummaryResult }) {
+export function DashboardOverview({
+  summary,
+  storeDay,
+  role = "cashier",
+}: {
+  summary: DashboardSummaryResult;
+  storeDay?: StoreDayResult;
+  role?: UserRole;
+}) {
   if (!summary.ok) {
     return (
       <section className="space-y-6">
@@ -33,6 +44,7 @@ export function DashboardOverview({ summary }: { summary: DashboardSummaryResult
   return (
     <section className="space-y-6">
       <PageTitle />
+      {storeDay ? <StoreDaySection storeDay={storeDay} role={role} /> : null}
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <MetricCard
           label="Ventas hoy"
@@ -142,6 +154,24 @@ export function DashboardOverview({ summary }: { summary: DashboardSummaryResult
       </div>
     </section>
   );
+}
+
+function StoreDaySection({
+  storeDay,
+  role,
+}: {
+  storeDay: StoreDayResult;
+  role: UserRole;
+}) {
+  if (!storeDay.ok) {
+    return (
+      <Alert variant="error">
+        No se pudo cargar el estado de tienda: {storeDay.error.message}
+      </Alert>
+    );
+  }
+
+  return <StoreDayStatusPanel storeDay={storeDay.data} role={role} />;
 }
 
 function formatSaleProducts(sale: DashboardSale) {

@@ -6,9 +6,16 @@ from src.application.use_cases.sales.create_sale import CreateSaleUseCase, Creat
 from src.application.use_cases.sales.list_sales import ListSalesUseCase
 from src.application.use_cases.sales.get_sale import GetSaleUseCase
 from src.application.use_cases.sales.void_sale import VoidSaleInput, VoidSaleUseCase
-from src.presentation.dependencies import get_current_user, get_product_repo, get_sale_repo, require_owner
+from src.presentation.dependencies import (
+    get_current_user,
+    get_product_repo,
+    get_sale_repo,
+    get_store_business_day_repo,
+    require_owner,
+)
 from src.infrastructure.database.repositories.product_repository import ProductRepository
 from src.infrastructure.database.repositories.sale_repository import SaleRepository
+from src.infrastructure.database.repositories.store_business_day_repository import StoreBusinessDayRepository
 
 router = APIRouter(prefix="/sales", tags=["sales"])
 
@@ -28,11 +35,13 @@ async def create_sale(
     user: dict = Depends(get_current_user),
     sale_repo: SaleRepository = Depends(get_sale_repo),
     product_repo: ProductRepository = Depends(get_product_repo),
+    business_day_repo: StoreBusinessDayRepository = Depends(get_store_business_day_repo),
 ):
-    use_case = CreateSaleUseCase(sale_repo, product_repo)
+    use_case = CreateSaleUseCase(sale_repo, product_repo, business_day_repo)
     items = [SaleItemInput(product_id=i.product_id, quantity=i.quantity) for i in dto.items]
     sale = await use_case.execute(CreateSaleInput(
         store_id=UUID(str(user["store_id"])),
+        user_id=UUID(str(user["id"])),
         items=items,
         payment_method=dto.payment_method.value,
         device_id=dto.device_id,

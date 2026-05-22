@@ -12,6 +12,7 @@ from src.infrastructure.database.repositories.product_repository import ProductR
 from src.infrastructure.database.repositories.sale_repository import SaleRepository
 from src.infrastructure.database.repositories.sync_repository import SyncRepository
 from src.infrastructure.database.repositories.store_repository import StoreRepository
+from src.infrastructure.database.repositories.store_business_day_repository import StoreBusinessDayRepository
 from src.infrastructure.database.repositories.exchange_rate_repository import ExchangeRateRepository
 from src.infrastructure.database.repositories.inventory_import_repository import InventoryImportRepository
 from src.infrastructure.database.repositories.stock_movement_repository import StockMovementRepository
@@ -83,6 +84,10 @@ def get_sync_repo(session: AsyncSession = Depends(get_db_session)) -> SyncReposi
 
 def get_store_repo(session: AsyncSession = Depends(get_db_session)) -> StoreRepository:
     return StoreRepository(session)
+
+
+def get_store_business_day_repo(session: AsyncSession = Depends(get_db_session)) -> StoreBusinessDayRepository:
+    return StoreBusinessDayRepository(session)
 
 
 def get_user_repo(session: AsyncSession = Depends(get_db_session)) -> UserRepository:
