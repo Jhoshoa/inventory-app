@@ -28,6 +28,9 @@ class StoreBusinessDay:
     closing_qr_sales_total: Decimal | None = None
     closing_transfer_sales_total: Decimal | None = None
     closing_card_sales_total: Decimal | None = None
+    closing_cash_movements_in_total: Decimal | None = None
+    closing_cash_movements_out_total: Decimal | None = None
+    closing_cash_movements_count: int | None = None
     closing_snapshot_at: datetime | None = None
     sales_total: Decimal | None = None
     sales_count: int | None = None
@@ -68,6 +71,9 @@ class StoreBusinessDay:
         qr_sales_total: Decimal | None = None,
         transfer_sales_total: Decimal | None = None,
         card_sales_total: Decimal | None = None,
+        cash_movements_in_total: Decimal | None = None,
+        cash_movements_out_total: Decimal | None = None,
+        cash_movements_count: int | None = None,
         expected_cash_amount: Decimal | None = None,
         counted_cash_amount: Decimal | None = None,
         cash_difference_amount: Decimal | None = None,
@@ -90,6 +96,9 @@ class StoreBusinessDay:
         self.closing_qr_sales_total = qr_sales_total
         self.closing_transfer_sales_total = transfer_sales_total
         self.closing_card_sales_total = card_sales_total
+        self.closing_cash_movements_in_total = cash_movements_in_total
+        self.closing_cash_movements_out_total = cash_movements_out_total
+        self.closing_cash_movements_count = cash_movements_count
         self.expected_cash_amount = expected_cash_amount
         self.counted_cash_amount = counted_cash_amount
         self.cash_difference_amount = cash_difference_amount

@@ -50,6 +50,9 @@ class StoreDayResponseDTO(BaseModel):
     closing_qr_sales_total: Decimal | None = None
     closing_transfer_sales_total: Decimal | None = None
     closing_card_sales_total: Decimal | None = None
+    closing_cash_movements_in_total: Decimal | None = None
+    closing_cash_movements_out_total: Decimal | None = None
+    closing_cash_movements_count: int | None = None
     closing_snapshot_at: datetime | None = None
     sales_total: Decimal | None = None
     sales_count: int | None = None
@@ -85,6 +88,9 @@ class StoreDayClosingPreviewDTO(BaseModel):
     qr_sales_total: Decimal
     transfer_sales_total: Decimal
     card_sales_total: Decimal
+    cash_movements_in_total: Decimal = Decimal("0")
+    cash_movements_out_total: Decimal = Decimal("0")
+    cash_movements_count: int = 0
     expected_cash_amount: Decimal
 
 

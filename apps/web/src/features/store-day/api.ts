@@ -2,6 +2,9 @@ import { apiRequest } from "@/lib/api/client";
 import { getAuthToken } from "@/lib/auth/session";
 import type {
   StoreDay,
+  CashMovement,
+  CashMovementList,
+  CashMovementListResult,
   StoreDayCloseReport,
   StoreDayCloseReportList,
   StoreDayCloseReportListResult,
@@ -69,6 +72,31 @@ export async function listCloseReports(params: {
   return apiRequest<StoreDayCloseReportList>(`/store-day/reports?${query.toString()}`, { token });
 }
 
+export async function listCashMovements(params: {
+  business_day_id?: string;
+  from_date?: string;
+  to_date?: string;
+  type?: string;
+  limit: number;
+  offset: number;
+}): Promise<CashMovementListResult> {
+  const token = await getAuthToken();
+  if (!token) {
+    return {
+      ok: true,
+      data: { items: [], total: 0, limit: params.limit, offset: params.offset },
+    };
+  }
+  const query = new URLSearchParams();
+  if (params.business_day_id) query.set("business_day_id", params.business_day_id);
+  if (params.from_date) query.set("from_date", params.from_date);
+  if (params.to_date) query.set("to_date", params.to_date);
+  if (params.type && params.type !== "all") query.set("type", params.type);
+  query.set("limit", params.limit.toString());
+  query.set("offset", params.offset.toString());
+  return apiRequest<CashMovementList>(`/cash-movements?${query.toString()}`, { token });
+}
+
 export function createClosedStoreDay(): StoreDay {
   const today = new Date().toISOString().slice(0, 10);
   return {
@@ -93,6 +121,9 @@ export function createClosedStoreDay(): StoreDay {
     closing_qr_sales_total: null,
     closing_transfer_sales_total: null,
     closing_card_sales_total: null,
+    closing_cash_movements_in_total: null,
+    closing_cash_movements_out_total: null,
+    closing_cash_movements_count: null,
     closing_snapshot_at: null,
     sales_total: null,
     sales_count: null,
@@ -117,6 +148,9 @@ function createEmptyClosingPreview(): StoreDayClosingPreview {
     qr_sales_total: "0",
     transfer_sales_total: "0",
     card_sales_total: "0",
+    cash_movements_in_total: "0",
+    cash_movements_out_total: "0",
+    cash_movements_count: 0,
     expected_cash_amount: "0",
   };
 }

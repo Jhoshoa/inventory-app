@@ -11,10 +11,26 @@ export function StoreDayCloseReportView({ report }: { report: StoreDayCloseRepor
   return (
     <div className="space-y-6">
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <Metric label="Ventas" value={formatCurrency(data.sales_total)} />
-        <Metric label="Efectivo esperado" value={formatCurrency(data.expected_cash_amount)} />
-        <Metric label="Efectivo contado" value={data.counted_cash_amount ? formatCurrency(data.counted_cash_amount) : "Sin conteo"} />
-        <Metric label="Diferencia" value={data.cash_difference_amount ? formatCurrency(data.cash_difference_amount) : "No calculada"} />
+        <Metric
+          label="Ventas"
+          value={formatCurrency(data.sales_total)}
+          help="Ventas completadas de todos los metodos de pago."
+        />
+        <Metric
+          label="Efectivo esperado"
+          value={formatCurrency(data.expected_cash_amount)}
+          help="Caja inicial + efectivo vendido + entradas caja - salidas caja."
+        />
+        <Metric
+          label="Efectivo contado"
+          value={data.counted_cash_amount ? formatCurrency(data.counted_cash_amount) : "Sin conteo"}
+          help="Monto contado fisicamente al cerrar, si se registro conteo."
+        />
+        <Metric
+          label="Diferencia"
+          value={data.cash_difference_amount ? formatCurrency(data.cash_difference_amount) : "No calculada"}
+          help="Efectivo contado - efectivo esperado."
+        />
       </div>
 
       <section className="rounded-lg border border-slate-200 bg-white p-4">
@@ -28,6 +44,9 @@ export function StoreDayCloseReportView({ report }: { report: StoreDayCloseRepor
           <Item label="Items vendidos" value={data.items_count.toString()} />
           <Item label="Caja inicial" value={formatCurrency(data.opening_cash_amount)} />
           <Item label="Efectivo" value={formatCurrency(data.cash_sales_total)} />
+          <Item label="Entradas caja" value={formatCurrency(data.cash_movements_in_total)} />
+          <Item label="Salidas caja" value={formatCurrency(data.cash_movements_out_total)} />
+          <Item label="Movimientos caja" value={data.cash_movements_count.toString()} />
           <Item label="QR" value={formatCurrency(data.qr_sales_total)} />
           <Item label="Transferencia" value={formatCurrency(data.transfer_sales_total)} />
           <Item label="Tarjeta" value={formatCurrency(data.card_sales_total)} />
@@ -38,11 +57,12 @@ export function StoreDayCloseReportView({ report }: { report: StoreDayCloseRepor
   );
 }
 
-function Metric({ label, value }: { label: string; value: string }) {
+function Metric({ label, value, help }: { label: string; value: string; help?: string }) {
   return (
     <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
       <p className="text-sm font-medium text-slate-600">{label}</p>
       <p className="mt-3 text-2xl font-semibold text-slate-950">{value}</p>
+      {help ? <p className="mt-2 text-xs leading-5 text-slate-500">{help}</p> : null}
     </div>
   );
 }

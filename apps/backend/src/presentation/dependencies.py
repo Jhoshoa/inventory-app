@@ -17,6 +17,7 @@ from src.infrastructure.database.repositories.store_business_day_repository impo
 from src.infrastructure.database.repositories.exchange_rate_repository import ExchangeRateRepository
 from src.infrastructure.database.repositories.inventory_import_repository import InventoryImportRepository
 from src.infrastructure.database.repositories.stock_movement_repository import StockMovementRepository
+from src.infrastructure.database.repositories.cash_movement_repository import CashMovementRepository
 from src.infrastructure.database.repositories.user_repository import UserRepository
 from src.infrastructure.auth.supabase_auth import verify_jwt
 
@@ -109,6 +110,10 @@ def get_inventory_import_repo(session: AsyncSession = Depends(get_db_session)) -
 
 def get_stock_movement_repo(session: AsyncSession = Depends(get_db_session)) -> StockMovementRepository:
     return StockMovementRepository(session)
+
+
+def get_cash_movement_repo(session: AsyncSession = Depends(get_db_session)) -> CashMovementRepository:
+    return CashMovementRepository(session)
 
 
 def get_ocr_service():

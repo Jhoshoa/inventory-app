@@ -37,6 +37,9 @@ class StoreBusinessDayRepository(IStoreBusinessDayRepository):
             closing_qr_sales_total=business_day.closing_qr_sales_total,
             closing_transfer_sales_total=business_day.closing_transfer_sales_total,
             closing_card_sales_total=business_day.closing_card_sales_total,
+            closing_cash_movements_in_total=business_day.closing_cash_movements_in_total,
+            closing_cash_movements_out_total=business_day.closing_cash_movements_out_total,
+            closing_cash_movements_count=business_day.closing_cash_movements_count,
             closing_snapshot_at=business_day.closing_snapshot_at,
             sales_total=business_day.sales_total,
             sales_count=business_day.sales_count,
@@ -128,6 +131,9 @@ class StoreBusinessDayRepository(IStoreBusinessDayRepository):
         model.closing_qr_sales_total = business_day.closing_qr_sales_total
         model.closing_transfer_sales_total = business_day.closing_transfer_sales_total
         model.closing_card_sales_total = business_day.closing_card_sales_total
+        model.closing_cash_movements_in_total = business_day.closing_cash_movements_in_total
+        model.closing_cash_movements_out_total = business_day.closing_cash_movements_out_total
+        model.closing_cash_movements_count = business_day.closing_cash_movements_count
         model.closing_snapshot_at = business_day.closing_snapshot_at
         model.sales_total = business_day.sales_total
         model.sales_count = business_day.sales_count
@@ -159,6 +165,9 @@ class StoreBusinessDayRepository(IStoreBusinessDayRepository):
             closing_qr_sales_total=model.closing_qr_sales_total,
             closing_transfer_sales_total=model.closing_transfer_sales_total,
             closing_card_sales_total=model.closing_card_sales_total,
+            closing_cash_movements_in_total=model.closing_cash_movements_in_total,
+            closing_cash_movements_out_total=model.closing_cash_movements_out_total,
+            closing_cash_movements_count=model.closing_cash_movements_count,
             closing_snapshot_at=model.closing_snapshot_at,
             sales_total=model.sales_total,
             sales_count=model.sales_count,

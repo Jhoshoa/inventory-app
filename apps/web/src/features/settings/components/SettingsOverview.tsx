@@ -4,7 +4,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import type { Session } from "@/lib/auth/session";
 import { StoreDayEventTimeline } from "@/features/store-day/components/StoreDayEventTimeline";
 import { StoreDayStatusPanel } from "@/features/store-day/components/StoreDayStatusPanel";
-import type { StoreDayClosingPreviewResult, StoreDayEventListResult, StoreDayResult } from "@/features/store-day/types";
+import type { CashMovementListResult, StoreDayClosingPreviewResult, StoreDayEventListResult, StoreDayResult } from "@/features/store-day/types";
 import { PermissionMatrix } from "./PermissionMatrix";
 
 export function SettingsOverview({
@@ -12,11 +12,13 @@ export function SettingsOverview({
   storeDay,
   storeDayEvents,
   closingPreview,
+  cashMovements,
 }: {
   session: Session;
   storeDay?: StoreDayResult;
   storeDayEvents?: StoreDayEventListResult;
   closingPreview?: StoreDayClosingPreviewResult;
+  cashMovements?: CashMovementListResult;
 }) {
   return (
     <section className="space-y-6">
@@ -50,7 +52,12 @@ export function SettingsOverview({
           </p>
         </div>
         {storeDay ? (
-          <StoreDayManagement storeDay={storeDay} role={session.role} closingPreview={closingPreview} />
+          <StoreDayManagement
+            storeDay={storeDay}
+            role={session.role}
+            closingPreview={closingPreview}
+            cashMovements={cashMovements}
+          />
         ) : null}
         {storeDayEvents ? <StoreDayEventTimeline events={storeDayEvents} /> : null}
       </section>
@@ -67,10 +74,12 @@ function StoreDayManagement({
   storeDay,
   role,
   closingPreview,
+  cashMovements,
 }: {
   storeDay: StoreDayResult;
   role: Session["role"];
   closingPreview?: StoreDayClosingPreviewResult;
+  cashMovements?: CashMovementListResult;
 }) {
   if (!storeDay.ok) {
     return (
@@ -86,6 +95,7 @@ function StoreDayManagement({
       role={role}
       actions="manage"
       closingPreview={closingPreview}
+      cashMovements={cashMovements}
     />
   );
 }

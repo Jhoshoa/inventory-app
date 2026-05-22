@@ -28,11 +28,13 @@ from src.application.use_cases.store_day.list_current_store_day_events import (
 )
 from src.application.use_cases.store_day.open_store_day import OpenStoreDayInput, OpenStoreDayUseCase
 from src.application.use_cases.store_day.reopen_store_day import ReopenStoreDayInput, ReopenStoreDayUseCase
+from src.infrastructure.database.repositories.cash_movement_repository import CashMovementRepository
 from src.infrastructure.database.repositories.sale_repository import SaleRepository
 from src.infrastructure.database.repositories.store_business_day_event_repository import StoreBusinessDayEventRepository
 from src.infrastructure.database.repositories.store_business_day_repository import StoreBusinessDayRepository
 from src.infrastructure.database.repositories.store_repository import StoreRepository
 from src.presentation.dependencies import (
+    get_cash_movement_repo,
     get_sale_repo,
     get_store_business_day_event_repo,
     get_store_business_day_repo,
@@ -94,8 +96,9 @@ async def close_store_day(
     business_day_repo: StoreBusinessDayRepository = Depends(get_store_business_day_repo),
     event_repo: StoreBusinessDayEventRepository = Depends(get_store_business_day_event_repo),
     sale_repo: SaleRepository = Depends(get_sale_repo),
+    cash_movement_repo: CashMovementRepository = Depends(get_cash_movement_repo),
 ):
-    return await CloseStoreDayUseCase(store_repo, business_day_repo, event_repo, sale_repo).execute(
+    return await CloseStoreDayUseCase(store_repo, business_day_repo, event_repo, sale_repo, cash_movement_repo).execute(
         CloseStoreDayInput(
             store_id=UUID(str(user.store_id)),
             closed_by_user_id=UUID(str(user.id)),
@@ -111,8 +114,9 @@ async def get_closing_preview(
     store_repo: StoreRepository = Depends(get_store_repo),
     business_day_repo: StoreBusinessDayRepository = Depends(get_store_business_day_repo),
     sale_repo: SaleRepository = Depends(get_sale_repo),
+    cash_movement_repo: CashMovementRepository = Depends(get_cash_movement_repo),
 ):
-    return await GetClosingPreviewUseCase(store_repo, business_day_repo, sale_repo).execute(
+    return await GetClosingPreviewUseCase(store_repo, business_day_repo, sale_repo, cash_movement_repo).execute(
         GetClosingPreviewInput(store_id=UUID(str(user.store_id)))
     )
 

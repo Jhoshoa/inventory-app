@@ -10,7 +10,7 @@ import { PaymentMethodBreakdown } from "@/features/reports/components/PaymentMet
 import { SalesReportSummary } from "@/features/reports/components/SalesReportSummary";
 import { TopProductsTable } from "@/features/reports/components/TopProductsTable";
 import { parseReportSearchParams } from "@/features/reports/schemas";
-import { canViewStoreDayReports } from "@/lib/auth/permissions";
+import { canViewCashMovements, canViewStoreDayReports } from "@/lib/auth/permissions";
 import { requireSession } from "@/lib/auth/session";
 
 export default async function ReportsPage({
@@ -43,6 +43,11 @@ export default async function ReportsPage({
         {canViewStoreDayReports(session.role) ? (
           <Button variant="secondary" asChild>
             <Link href="/dashboard/reports/store-days">Cierres diarios</Link>
+          </Button>
+        ) : null}
+        {canViewCashMovements(session.role) ? (
+          <Button variant="secondary" asChild>
+            <Link href="/dashboard/reports/cash-movements">Movimientos de caja</Link>
           </Button>
         ) : null}
       </div>

@@ -26,3 +26,12 @@ export function moneyValue(formData: FormData, name: string) {
   if (typeof value !== "string" || !value.trim()) return null;
   return value.trim();
 }
+
+const cashMovementTypes = new Set(["cash_in", "cash_out", "expense", "deposit", "withdrawal"]);
+
+export function validateCashMovementType(value: FormDataEntryValue | null) {
+  if (typeof value !== "string" || !cashMovementTypes.has(value)) {
+    return "Tipo de movimiento no es valido";
+  }
+  return "";
+}

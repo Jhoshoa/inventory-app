@@ -4,9 +4,16 @@ from src.application.dto.store_day_dto import StoreDayCloseReportDTO, StoreDayCl
 from src.domain.entities.store_business_day import StoreBusinessDay
 
 
-def closing_preview_from_summary(business_day: StoreBusinessDay, summary: dict) -> StoreDayClosingPreviewDTO:
+def closing_preview_from_summary(
+    business_day: StoreBusinessDay,
+    summary: dict,
+    cash_movement_summary: dict | None = None,
+) -> StoreDayClosingPreviewDTO:
     opening_cash = business_day.opening_cash_amount or Decimal("0")
     cash_sales = summary["cash_sales_total"]
+    cash_movement_summary = cash_movement_summary or {}
+    cash_movements_in = cash_movement_summary.get("cash_movements_in_total", Decimal("0"))
+    cash_movements_out = cash_movement_summary.get("cash_movements_out_total", Decimal("0"))
     return StoreDayClosingPreviewDTO(
         business_day_id=business_day.id,
         business_date=business_day.business_date,
@@ -20,7 +27,10 @@ def closing_preview_from_summary(business_day: StoreBusinessDay, summary: dict) 
         qr_sales_total=summary["qr_sales_total"],
         transfer_sales_total=summary["transfer_sales_total"],
         card_sales_total=summary["card_sales_total"],
-        expected_cash_amount=opening_cash + cash_sales,
+        cash_movements_in_total=cash_movements_in,
+        cash_movements_out_total=cash_movements_out,
+        cash_movements_count=cash_movement_summary.get("cash_movements_count", 0),
+        expected_cash_amount=opening_cash + cash_sales + cash_movements_in - cash_movements_out,
     )
 
 
@@ -40,6 +50,9 @@ def close_report_from_business_day(business_day: StoreBusinessDay) -> StoreDayCl
         qr_sales_total=business_day.closing_qr_sales_total or Decimal("0"),
         transfer_sales_total=business_day.closing_transfer_sales_total or Decimal("0"),
         card_sales_total=business_day.closing_card_sales_total or Decimal("0"),
+        cash_movements_in_total=business_day.closing_cash_movements_in_total or Decimal("0"),
+        cash_movements_out_total=business_day.closing_cash_movements_out_total or Decimal("0"),
+        cash_movements_count=business_day.closing_cash_movements_count or 0,
         expected_cash_amount=business_day.expected_cash_amount or Decimal("0"),
         closed_at=business_day.closed_at,
         closed_by_user_id=business_day.closed_by_user_id,

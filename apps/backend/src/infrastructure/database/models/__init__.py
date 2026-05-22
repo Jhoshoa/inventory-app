@@ -6,6 +6,7 @@ from src.infrastructure.database.models.store_business_day_event_model import St
 from src.infrastructure.database.models.user_model import UserModel
 from src.infrastructure.database.models.exchange_rate_model import ExchangeRateModel
 from src.infrastructure.database.models.stock_movement_model import StockMovementModel
+from src.infrastructure.database.models.cash_movement_model import CashMovementModel
 from src.infrastructure.database.models.sync_change_model import SyncChangeModel
 from src.infrastructure.database.models.inventory_import_model import InventoryImportModel, InventoryImportItemModel
 
@@ -19,6 +20,7 @@ __all__ = [
     "UserModel",
     "ExchangeRateModel",
     "StockMovementModel",
+    "CashMovementModel",
     "SyncChangeModel",
     "InventoryImportModel",
     "InventoryImportItemModel",

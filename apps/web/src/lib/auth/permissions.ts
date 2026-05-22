@@ -55,3 +55,7 @@ export function canOpenCloseStore(role: UserRole | undefined): boolean {
 export function canViewStoreDayReports(role: UserRole | undefined): boolean {
   return isOwner(role);
 }
+
+export function canViewCashMovements(role: UserRole | undefined): boolean {
+  return isOwner(role);
+}

@@ -14,6 +14,8 @@ export function StoreDayClosingPreview({ preview }: { preview?: StoreDayClosingP
         <Item label="Ventas totales" value={formatCurrency(data.sales_total)} />
         <Item label="Ventas completadas" value={data.sales_count.toString()} />
         <Item label="Efectivo" value={formatCurrency(data.cash_sales_total)} />
+        <Item label="Entradas caja" value={formatCurrency(data.cash_movements_in_total)} />
+        <Item label="Salidas caja" value={formatCurrency(data.cash_movements_out_total)} />
         <Item label="QR" value={formatCurrency(data.qr_sales_total)} />
         <Item label="Transferencia" value={formatCurrency(data.transfer_sales_total)} />
         <Item label="Tarjeta" value={formatCurrency(data.card_sales_total)} />

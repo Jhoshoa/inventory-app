@@ -4,8 +4,8 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { apiRequest } from "@/lib/api/client";
 import { getAuthToken } from "@/lib/auth/session";
-import { moneyValue, noteValue, validateMoneyAmount, validateStoreDayNote } from "./schemas";
-import type { StoreDay, StoreDayActionState } from "./types";
+import { moneyValue, noteValue, validateCashMovementType, validateMoneyAmount, validateStoreDayNote } from "./schemas";
+import type { CashMovement, StoreDay, StoreDayActionState } from "./types";
 
 export async function openStoreDayAction(
   _previousState: StoreDayActionState,
@@ -79,6 +79,55 @@ export async function reopenStoreDayAction(
   redirect("/dashboard/settings");
 }
 
+export async function createCashMovementAction(
+  _previousState: StoreDayActionState,
+  formData: FormData,
+): Promise<StoreDayActionState> {
+  const typeError = validateCashMovementType(formData.get("movement_type"));
+  if (typeError) return { ok: false, fieldErrors: { movement_type: typeError } };
+  const amountError = validateMoneyAmount(formData.get("amount"), "Monto", true);
+  if (amountError) return { ok: false, fieldErrors: { amount: amountError } };
+  const noteError = validateStoreDayNote(formData.get("note"));
+  if (noteError) return { ok: false, fieldErrors: { note: noteError } };
+
+  const token = await getAuthToken();
+  const result = await apiRequest<CashMovement>("/cash-movements", {
+    method: "POST",
+    token: token ?? undefined,
+    body: {
+      movement_type: formData.get("movement_type"),
+      amount: moneyValue(formData, "amount"),
+      note: noteValue(formData),
+    },
+  });
+
+  if (!result.ok) return { ok: false, message: result.error.message, fieldErrors: {} };
+
+  revalidateOperationalPaths();
+  return { ok: true, message: "Movimiento registrado", fieldErrors: {} };
+}
+
+export async function voidCashMovementAction(
+  _previousState: StoreDayActionState,
+  formData: FormData,
+): Promise<StoreDayActionState> {
+  const movementId = formData.get("movement_id");
+  if (typeof movementId !== "string" || !movementId) {
+    return { ok: false, message: "Movimiento no valido", fieldErrors: {} };
+  }
+  const token = await getAuthToken();
+  const result = await apiRequest<CashMovement>(`/cash-movements/${movementId}/void`, {
+    method: "POST",
+    token: token ?? undefined,
+    body: { void_reason: "Anulado desde Ajustes" },
+  });
+
+  if (!result.ok) return { ok: false, message: result.error.message, fieldErrors: {} };
+
+  revalidateOperationalPaths();
+  return { ok: true, message: "Movimiento anulado", fieldErrors: {} };
+}
+
 function revalidateOperationalPaths() {
   revalidatePath("/dashboard");
   revalidatePath("/dashboard/settings");
@@ -86,4 +135,5 @@ function revalidateOperationalPaths() {
   revalidatePath("/dashboard/sales");
   revalidatePath("/dashboard/reports");
   revalidatePath("/dashboard/reports/store-days");
+  revalidatePath("/dashboard/reports/cash-movements");
 }

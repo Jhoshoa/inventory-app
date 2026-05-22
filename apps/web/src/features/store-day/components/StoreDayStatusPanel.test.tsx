@@ -15,6 +15,8 @@ vi.mock("../actions", () => ({
   openStoreDayAction: vi.fn(),
   closeStoreDayAction: vi.fn(),
   reopenStoreDayAction: vi.fn(),
+  createCashMovementAction: vi.fn(),
+  voidCashMovementAction: vi.fn(),
 }));
 
 describe("StoreDayStatusPanel", () => {
@@ -78,6 +80,9 @@ function closedStoreDay(overrides: Partial<StoreDay> = {}): StoreDay {
     closing_qr_sales_total: null,
     closing_transfer_sales_total: null,
     closing_card_sales_total: null,
+    closing_cash_movements_in_total: null,
+    closing_cash_movements_out_total: null,
+    closing_cash_movements_count: null,
     closing_snapshot_at: null,
     sales_total: null,
     sales_count: null,
