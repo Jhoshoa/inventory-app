@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect } from "react";
 import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
 import { FieldError } from "@/components/ui/FieldError";
@@ -16,11 +16,23 @@ const initialCheckoutState: CheckoutActionState = {
   fieldErrors: {},
 };
 
-export function PosCheckoutPanel({ items }: { items: CartItem[] }) {
+export function PosCheckoutPanel({
+  items,
+  onStockRefresh,
+}: {
+  items: CartItem[];
+  onStockRefresh?: (state: CheckoutActionState) => void;
+}) {
   const [state, formAction, isPending] = useActionState(
     createSaleAction,
     initialCheckoutState,
   );
+
+  useEffect(() => {
+    if (state.refreshedProducts?.length || state.stockConflicts?.length) {
+      onStockRefresh?.(state);
+    }
+  }, [onStockRefresh, state]);
 
   return (
     <form action={formAction} className="space-y-4 rounded-lg border border-slate-200 bg-white p-4">

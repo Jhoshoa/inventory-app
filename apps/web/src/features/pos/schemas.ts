@@ -24,6 +24,8 @@ export function posCartReducer(state: PosCartState, action: PosCartAction): PosC
       };
     case "setQuantity":
       return setItemQuantity(state, action.productId, action.quantity);
+    case "syncProducts":
+      return syncProducts(state, action.products);
     case "remove":
       return { items: state.items.filter((item) => item.product.id !== action.productId) };
     case "clear":
@@ -80,6 +82,19 @@ function setItemQuantity(state: PosCartState, productId: string, quantity: numbe
 
       return { ...item, quantity: Math.min(quantity, item.product.stock) };
     }),
+  };
+}
+
+function syncProducts(state: PosCartState, products: PosProduct[]): PosCartState {
+  if (products.length === 0) return state;
+
+  const productsById = new Map(products.map((product) => [product.id, product]));
+
+  return {
+    items: state.items.map((item) => ({
+      ...item,
+      product: productsById.get(item.product.id) ?? item.product,
+    })),
   };
 }
 

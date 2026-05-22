@@ -30,7 +30,18 @@ export type PosCartAction =
   | { type: "increment"; productId: string }
   | { type: "decrement"; productId: string }
   | { type: "setQuantity"; productId: string; quantity: number }
+  | { type: "syncProducts"; products: PosProduct[] }
   | { type: "remove"; productId: string }
   | { type: "clear" };
 
-export type CheckoutActionState = SaleActionState;
+export interface StockConflict {
+  product_id: string;
+  product_name: string;
+  available_stock: number;
+  requested_quantity: number;
+}
+
+export type CheckoutActionState = SaleActionState & {
+  stockConflicts?: StockConflict[];
+  refreshedProducts?: PosProduct[];
+};

@@ -35,9 +35,11 @@ def add_error_handlers(app: FastAPI):
 
     @app.exception_handler(ApplicationError)
     async def application_error(request: Request, exc: ApplicationError):
+        content = _content(request, exc.error, exc.detail)
+        content.update(exc.extra)
         return JSONResponse(
             status_code=exc.status_code,
-            content=_content(request, exc.error, exc.detail),
+            content=content,
         )
 
     @app.exception_handler(PermissionError)

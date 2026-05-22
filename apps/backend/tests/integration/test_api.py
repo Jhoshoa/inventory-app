@@ -118,7 +118,7 @@ async def test_failed_sale_does_not_create_partial_sale_or_stock_movement(client
         "/api/v1/sales",
         json={"items": [{"product_id": product_id, "quantity": 2}]},
     )
-    assert sale_response.status_code == 400
+    assert sale_response.status_code == 409
 
     sales_response = await client.get("/api/v1/sales")
     assert sales_response.status_code == 200
@@ -216,7 +216,48 @@ async def test_sale_rejects_insufficient_stock(client):
         "/api/v1/sales",
         json={"items": [{"product_id": product_id, "quantity": 2}]},
     )
-    assert sale_response.status_code == 400
+    assert sale_response.status_code == 409
+    data = sale_response.json()
+    assert data["error"] == "stock_conflict"
+    assert data["stock_conflicts"] == [
+        {
+            "product_id": product_id,
+            "product_name": "Leche",
+            "available_stock": 1,
+            "requested_quantity": 2,
+        }
+    ]
+
+
+async def test_sale_rejects_stale_cart_after_concurrent_stock_change(client):
+    product_response = await client.post(
+        "/api/v1/products",
+        json={"name": "aceite", "price": "18.00", "stock": 10},
+    )
+    product_id = product_response.json()["id"]
+
+    first_sale = await client.post(
+        "/api/v1/sales",
+        json={"items": [{"product_id": product_id, "quantity": 1}]},
+    )
+    assert first_sale.status_code == 201
+
+    stale_cart_sale = await client.post(
+        "/api/v1/sales",
+        json={"items": [{"product_id": product_id, "quantity": 10}]},
+    )
+
+    assert stale_cart_sale.status_code == 409
+    data = stale_cart_sale.json()
+    assert data["error"] == "stock_conflict"
+    assert data["stock_conflicts"][0]["available_stock"] == 9
+    assert data["stock_conflicts"][0]["requested_quantity"] == 10
+
+    sales_response = await client.get("/api/v1/sales")
+    assert len(sales_response.json()) == 1
+
+    product_after_failure = await client.get(f"/api/v1/products/{product_id}")
+    assert product_after_failure.json()["stock"] == 9
 
 
 async def test_store_get_and_update(client):

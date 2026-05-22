@@ -94,4 +94,31 @@ describe("PosCart", () => {
 
     expect(onQuantityChange).not.toHaveBeenCalled();
   });
+
+  it("marks stale cart quantities after stock refresh and offers explicit adjustment", async () => {
+    const user = userEvent.setup();
+    const onQuantityChange = vi.fn();
+
+    render(
+      <PosCart
+        items={[
+          {
+            ...items[0],
+            product: { ...items[0].product, stock: 1 },
+            quantity: 2,
+          },
+        ]}
+        onIncrement={vi.fn()}
+        onDecrement={vi.fn()}
+        onQuantityChange={onQuantityChange}
+        onRemove={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByText(/Stock actualizado: disponible 1, cantidad en carrito 2./)).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Ajustar a 1" }));
+
+    expect(onQuantityChange).toHaveBeenCalledWith("product-1", 1);
+  });
 });

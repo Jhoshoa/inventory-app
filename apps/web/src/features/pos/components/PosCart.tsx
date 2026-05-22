@@ -36,7 +36,14 @@ export function PosCart({
           </p>
         ) : (
           items.map((item) => (
-            <div key={item.product.id} className="rounded-md border border-slate-200 p-3">
+            <div
+              key={item.product.id}
+              className={`rounded-md border p-3 ${
+                item.quantity > item.product.stock
+                  ? "border-amber-300 bg-amber-50"
+                  : "border-slate-200"
+              }`}
+            >
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <p className="font-medium text-slate-950">{item.product.name}</p>
@@ -66,6 +73,25 @@ export function PosCart({
                   {formatCurrency(Number(item.product.price) * item.quantity)}
                 </span>
               </div>
+              {item.quantity > item.product.stock ? (
+                <div className="mt-3 rounded-md border border-amber-200 bg-white p-2 text-sm text-amber-900">
+                  <p>
+                    Stock actualizado: disponible {item.product.stock}, cantidad en carrito{" "}
+                    {item.quantity}.
+                  </p>
+                  {item.product.stock > 0 ? (
+                    <Button
+                      className="mt-2 h-8 px-3"
+                      variant="secondary"
+                      onClick={() => onQuantityChange(item.product.id, item.product.stock)}
+                    >
+                      Ajustar a {item.product.stock}
+                    </Button>
+                  ) : (
+                    <p className="mt-1 font-medium">Sin stock disponible. Remueve el producto.</p>
+                  )}
+                </div>
+              ) : null}
             </div>
           ))
         )}

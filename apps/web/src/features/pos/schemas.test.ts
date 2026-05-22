@@ -64,6 +64,22 @@ describe("posCartReducer", () => {
     expect(overStock.items[0]?.quantity).toBe(product.stock);
     expect(zero.items[0]?.quantity).toBe(product.stock);
   });
+
+  it("syncs refreshed product stock without changing cart quantities", () => {
+    const withProduct = posCartReducer(initialCartState, { type: "add", product });
+    const setToTwo = posCartReducer(withProduct, {
+      type: "setQuantity",
+      productId: product.id,
+      quantity: 2,
+    });
+    const refreshed = posCartReducer(setToTwo, {
+      type: "syncProducts",
+      products: [{ ...product, stock: 1 }],
+    });
+
+    expect(refreshed.items[0]?.quantity).toBe(2);
+    expect(refreshed.items[0]?.product.stock).toBe(1);
+  });
 });
 
 describe("checkout helpers", () => {

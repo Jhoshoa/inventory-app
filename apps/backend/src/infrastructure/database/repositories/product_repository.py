@@ -1,9 +1,10 @@
 from uuid import UUID
 from datetime import datetime, timezone
-from sqlalchemy import func, select
+from sqlalchemy import func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.domain.entities.product import Product
 from src.domain.repositories.product_repository import IProductRepository
+from src.application.exceptions import StockConflictError
 from src.infrastructure.database.models.product_model import ProductModel
 from src.infrastructure.database.models.stock_movement_model import StockMovementModel
 
@@ -205,21 +206,37 @@ class ProductRepository(IProductRepository):
         sale_id: UUID | None = None,
         device_id: str | None = None,
     ) -> Product:
+        filters = [
+            ProductModel.store_id == store_id,
+            ProductModel.id == product_id,
+            ProductModel.deleted_at.is_(None),
+        ]
+        if quantity < 0:
+            filters.append(ProductModel.stock >= abs(quantity))
+
         result = await self._session.execute(
-            select(ProductModel).where(
-                ProductModel.store_id == store_id,
-                ProductModel.id == product_id,
-                ProductModel.deleted_at.is_(None),
+            update(ProductModel)
+            .where(*filters)
+            .values(
+                stock=ProductModel.stock + quantity,
+                version=ProductModel.version + 1,
+                updated_at=datetime.now(timezone.utc),
             )
+            .returning(ProductModel)
         )
         model = result.scalar_one_or_none()
         if not model:
-            raise ValueError("Producto no encontrado")
-        if model.stock + quantity < 0:
-            raise ValueError(f"Stock insuficiente: {model.stock} < {abs(quantity)}")
-        model.stock += quantity
-        model.version += 1
-        model.updated_at = datetime.now(timezone.utc)
+            existing = await self.get_by_id(store_id, product_id)
+            if not existing:
+                raise ValueError("Producto no encontrado")
+            if quantity < 0:
+                raise StockConflictError(
+                    product_id=str(existing.id),
+                    product_name=existing.name,
+                    available_stock=existing.stock,
+                    requested_quantity=abs(quantity),
+                )
+            raise ValueError("No se pudo actualizar stock")
         self._session.add(
             StockMovementModel(
                 store_id=store_id,

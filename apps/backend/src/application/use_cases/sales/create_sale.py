@@ -3,7 +3,7 @@ from uuid import UUID
 from src.domain.entities.sale import Sale, SaleItem
 from src.domain.repositories.sale_repository import ISaleRepository
 from src.domain.repositories.product_repository import IProductRepository
-from src.application.exceptions import NotFoundError
+from src.application.exceptions import NotFoundError, StockConflictError
 
 
 @dataclass
@@ -37,7 +37,12 @@ class CreateSaleUseCase:
             if not product:
                 raise NotFoundError(f"Producto no encontrado: {item.product_id}")
             if not product.can_sell(item.quantity):
-                raise ValueError(f"Stock insuficiente para {product.name}: {product.stock} < {item.quantity}")
+                raise StockConflictError(
+                    product_id=str(product.id),
+                    product_name=product.name,
+                    available_stock=product.stock,
+                    requested_quantity=item.quantity,
+                )
             sale_item = SaleItem.create(
                 product_id=product.id,
                 product_name=product.name,

@@ -5,13 +5,13 @@ import { redirect } from "next/navigation";
 import { apiRequest } from "@/lib/api/client";
 import { getAuthToken } from "@/lib/auth/session";
 import { isPaymentMethod, validateCheckout } from "./schemas";
-import type { CartItem, PosProduct } from "./types";
-import type { Sale, SaleActionState } from "@/features/sales/types";
+import type { CartItem, CheckoutActionState, PosProduct, StockConflict } from "./types";
+import type { Sale } from "@/features/sales/types";
 
 export async function createSaleAction(
-  _previousState: SaleActionState,
+  _previousState: CheckoutActionState,
   formData: FormData,
-): Promise<SaleActionState> {
+): Promise<CheckoutActionState> {
   const cartItems = parseCartItems(formData.get("items"));
   const paymentMethod = stringValue(formData, "payment_method") || "efectivo";
   const customerName = stringValue(formData, "customer_name");
@@ -37,7 +37,18 @@ export async function createSaleAction(
     },
   });
 
-  if (!result.ok) return { ok: false, message: result.error.message, fieldErrors: {} };
+  if (!result.ok) {
+    const stockConflicts = stockConflictsFromDetails(result.error.details);
+    const refreshedProducts = stockConflicts.length > 0 ? await refreshCartProducts(cartItems, token) : [];
+
+    return {
+      ok: false,
+      message: stockConflicts.length > 0 ? stockConflictMessage(stockConflicts) : result.error.message,
+      fieldErrors: {},
+      stockConflicts,
+      refreshedProducts,
+    };
+  }
 
   revalidatePath("/dashboard");
   revalidatePath("/dashboard/products");
@@ -83,6 +94,64 @@ function parseProduct(value: Record<string, unknown>): PosProduct | null {
     unit: value.unit,
     qr_code: typeof value.qr_code === "string" ? value.qr_code : null,
   };
+}
+
+async function refreshCartProducts(items: CartItem[], token: string | null): Promise<PosProduct[]> {
+  if (!token || items.length === 0) return [];
+
+  const uniqueProductIds = [...new Set(items.map((item) => item.product.id))];
+  const results = await Promise.all(
+    uniqueProductIds.map((productId) => apiRequest<PosProduct>(`/products/${productId}`, { token })),
+  );
+
+  return results.flatMap((result) => (result.ok ? [compactProduct(result.data)] : []));
+}
+
+function compactProduct(product: PosProduct & { qr_code?: string | null }): PosProduct {
+  return {
+    id: product.id,
+    name: product.name,
+    price: product.price,
+    stock: product.stock,
+    unit: product.unit,
+    qr_code: product.qr_code ?? null,
+  };
+}
+
+function stockConflictsFromDetails(details: unknown): StockConflict[] {
+  if (!isRecord(details) || !Array.isArray(details.stock_conflicts)) return [];
+
+  return details.stock_conflicts.flatMap((conflict): StockConflict[] => {
+    if (!isRecord(conflict)) return [];
+    if (
+      typeof conflict.product_id !== "string" ||
+      typeof conflict.product_name !== "string" ||
+      typeof conflict.available_stock !== "number" ||
+      typeof conflict.requested_quantity !== "number"
+    ) {
+      return [];
+    }
+
+    return [
+      {
+        product_id: conflict.product_id,
+        product_name: conflict.product_name,
+        available_stock: conflict.available_stock,
+        requested_quantity: conflict.requested_quantity,
+      },
+    ];
+  });
+}
+
+function stockConflictMessage(conflicts: StockConflict[]) {
+  const [firstConflict] = conflicts;
+  if (!firstConflict) return "No se pudo confirmar la venta porque el stock cambio.";
+
+  return (
+    "No se pudo confirmar la venta porque el stock cambio. " +
+    `${firstConflict.product_name}: solicitaste ${firstConflict.requested_quantity}, ` +
+    `disponible ${firstConflict.available_stock}.`
+  );
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
