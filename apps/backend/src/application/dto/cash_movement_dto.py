@@ -7,7 +7,7 @@ from pydantic import BaseModel, Field
 
 class CreateCashMovementDTO(BaseModel):
     movement_type: str = Field(max_length=30)
-    amount: Decimal = Field(gt=0)
+    amount: Decimal = Field(gt=0, max_digits=12, decimal_places=2)
     note: str | None = Field(default=None, max_length=255)
 
 

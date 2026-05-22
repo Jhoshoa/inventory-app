@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import type { FormEvent } from "react";
 import { useActionState, useState } from "react";
 import { LockKeyhole, Store, UnlockKeyhole } from "lucide-react";
 import { Alert } from "@/components/ui/Alert";
@@ -110,7 +111,10 @@ function StoreDayActionForm({
               aria-label="Caja inicial"
               inputMode="decimal"
               name="opening_cash_amount"
+              onInput={sanitizeMoneyInput}
+              pattern="\d+(\.\d{1,2})?"
               placeholder="Caja inicial"
+              title="Use solo numeros con maximo 2 decimales"
             />
             <FieldError message={state.fieldErrors.opening_cash_amount} />
           </>
@@ -132,8 +136,11 @@ function StoreDayActionForm({
               disabled={skipCashCount}
               inputMode="decimal"
               name="counted_cash_amount"
+              onInput={sanitizeMoneyInput}
+              pattern="\d+(\.\d{1,2})?"
               placeholder={skipCashCount ? "Sin conteo" : "Efectivo contado"}
               required={!skipCashCount}
+              title="Use solo numeros con maximo 2 decimales"
             />
             <FieldError message={state.fieldErrors.counted_cash_amount} />
           </>
@@ -172,7 +179,16 @@ function CashMovementPanel({ cashMovements }: { cashMovements?: CashMovementList
           <option value="withdrawal">Retiro</option>
         </Select>
         <FieldError message={state.fieldErrors.movement_type} />
-        <Input aria-label="Monto de movimiento" inputMode="decimal" name="amount" placeholder="Monto" required />
+        <Input
+          aria-label="Monto de movimiento"
+          inputMode="decimal"
+          name="amount"
+          onInput={sanitizeMoneyInput}
+          pattern="\d+(\.\d{1,2})?"
+          placeholder="Monto"
+          required
+          title="Use solo numeros con maximo 2 decimales"
+        />
         <FieldError message={state.fieldErrors.amount} />
         <Input aria-label="Nota de movimiento" name="note" placeholder="Nota opcional" />
         <FieldError message={state.fieldErrors.note} />
@@ -226,6 +242,19 @@ function cashMovementLabel(type: string) {
     withdrawal: "Retiro",
   };
   return labels[type] ?? type;
+}
+
+function sanitizeMoneyInput(event: FormEvent<HTMLInputElement>) {
+  const input = event.currentTarget;
+  const sanitized = toMoneyInputValue(input.value);
+  if (input.value !== sanitized) input.value = sanitized;
+}
+
+export function toMoneyInputValue(value: string) {
+  const cleaned = value.replace(/[^\d.]/g, "");
+  const [integer = "", ...decimalParts] = cleaned.split(".");
+  if (decimalParts.length === 0) return integer;
+  return `${integer}.${decimalParts.join("").slice(0, 2)}`;
 }
 
 function formatBusinessDate(value: string) {

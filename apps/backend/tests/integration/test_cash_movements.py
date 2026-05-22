@@ -73,9 +73,14 @@ async def test_cash_movement_rejects_invalid_amount_and_type(client):
         "/api/v1/cash-movements",
         json={"movement_type": "invalid", "amount": "10.00"},
     )
+    too_many_decimals_response = await client.post(
+        "/api/v1/cash-movements",
+        json={"movement_type": "cash_in", "amount": "10.999"},
+    )
 
     assert zero_response.status_code == 422
     assert invalid_type_response.status_code == 400
+    assert too_many_decimals_response.status_code == 422
 
 
 async def test_closing_preview_and_close_include_cash_movements(client):

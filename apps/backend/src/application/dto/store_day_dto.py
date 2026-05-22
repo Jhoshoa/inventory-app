@@ -8,13 +8,13 @@ from pydantic import BaseModel, Field, model_validator
 class StoreDayActionDTO(BaseModel):
     opening_note: str | None = Field(default=None, max_length=255)
     closing_note: str | None = Field(default=None, max_length=255)
-    opening_cash_amount: Decimal | None = Field(default=None, ge=0)
-    counted_cash_amount: Decimal | None = Field(default=None, ge=0)
+    opening_cash_amount: Decimal | None = Field(default=None, ge=0, max_digits=12, decimal_places=2)
+    counted_cash_amount: Decimal | None = Field(default=None, ge=0, max_digits=12, decimal_places=2)
 
 
 class StoreDayCloseActionDTO(BaseModel):
     closing_note: str | None = Field(default=None, max_length=255)
-    counted_cash_amount: Decimal | None = Field(default=None, ge=0)
+    counted_cash_amount: Decimal | None = Field(default=None, ge=0, max_digits=12, decimal_places=2)
     skip_cash_count: bool = False
 
     @model_validator(mode="after")

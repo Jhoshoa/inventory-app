@@ -7,6 +7,16 @@ class CreateProductCategoryDTO(BaseModel):
     name: str = Field(min_length=1, max_length=80)
     sku_prefix: str = Field(min_length=1, max_length=8)
 
+    @field_validator("name")
+    @classmethod
+    def validate_name(cls, value: str) -> str:
+        normalized = value.strip()
+        if not normalized:
+            raise ValueError("El nombre de la categoria es requerido")
+        if len(normalized) > 80:
+            raise ValueError("El nombre debe tener maximo 80 caracteres")
+        return normalized
+
     @field_validator("sku_prefix")
     @classmethod
     def validate_sku_prefix(cls, value: str) -> str:
@@ -19,6 +29,18 @@ class CreateProductCategoryDTO(BaseModel):
 class UpdateProductCategoryDTO(BaseModel):
     name: str | None = Field(default=None, min_length=1, max_length=80)
     sku_prefix: str | None = Field(default=None, min_length=1, max_length=8)
+
+    @field_validator("name")
+    @classmethod
+    def validate_name(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        normalized = value.strip()
+        if not normalized:
+            raise ValueError("El nombre de la categoria es requerido")
+        if len(normalized) > 80:
+            raise ValueError("El nombre debe tener maximo 80 caracteres")
+        return normalized
 
     @field_validator("sku_prefix")
     @classmethod

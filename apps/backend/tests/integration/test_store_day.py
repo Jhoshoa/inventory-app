@@ -65,12 +65,19 @@ async def test_open_store_day_rejects_negative_opening_cash_amount(client):
     assert response.status_code == 422
 
 
+async def test_open_store_day_rejects_opening_cash_with_more_than_two_decimals(client):
+    response = await client.post("/api/v1/store-day/open", json={"opening_cash_amount": "10.999"})
+
+    assert response.status_code == 422
+
+
 async def test_close_store_day_requires_counted_cash_amount_or_skip_intent(client):
     open_response = await client.post("/api/v1/store-day/open")
     assert open_response.status_code == 201
 
     missing_response = await client.post("/api/v1/store-day/close", json={"closing_note": "Sin arqueo"})
     negative_response = await client.post("/api/v1/store-day/close", json={"counted_cash_amount": "-1.00"})
+    too_many_decimals_response = await client.post("/api/v1/store-day/close", json={"counted_cash_amount": "1.999"})
     conflicting_response = await client.post(
         "/api/v1/store-day/close",
         json={"skip_cash_count": True, "counted_cash_amount": "0.00"},
@@ -78,6 +85,7 @@ async def test_close_store_day_requires_counted_cash_amount_or_skip_intent(clien
 
     assert missing_response.status_code == 422
     assert negative_response.status_code == 422
+    assert too_many_decimals_response.status_code == 422
     assert conflicting_response.status_code == 422
 
 

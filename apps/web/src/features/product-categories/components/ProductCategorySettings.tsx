@@ -44,11 +44,13 @@ export function ProductCategorySettings({ categories }: { categories: ProductCat
         <Alert variant="error">{deactivateState.message}</Alert>
       ) : null}
 
-      <form action={createAction} className="grid gap-4 md:grid-cols-[1fr_180px_auto] md:items-end">
+      <form action={createAction} className="grid gap-4 md:grid-cols-[minmax(0,1fr)_180px_160px] md:items-start">
         <div className="space-y-2">
           <Label htmlFor="category-name">Nombre</Label>
           <Input id="category-name" name="name" error={Boolean(createState.fieldErrors.name)} />
-          <FieldError message={createState.fieldErrors.name} />
+          <div className="min-h-5">
+            <FieldError message={createState.fieldErrors.name} />
+          </div>
         </div>
         <div className="space-y-2">
           <Label htmlFor="category-prefix">Prefijo SKU</Label>
@@ -59,9 +61,11 @@ export function ProductCategorySettings({ categories }: { categories: ProductCat
             className="uppercase"
             error={Boolean(createState.fieldErrors.sku_prefix)}
           />
-          <FieldError message={createState.fieldErrors.sku_prefix} />
+          <div className="min-h-5">
+            <FieldError message={createState.fieldErrors.sku_prefix} />
+          </div>
         </div>
-        <Button type="submit" disabled={isCreating}>
+        <Button type="submit" className="w-full md:mt-7" disabled={isCreating}>
           {isCreating ? "Creando..." : "Crear categoria"}
         </Button>
       </form>

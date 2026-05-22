@@ -1,6 +1,6 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
-import { StoreDayStatusPanel } from "./StoreDayStatusPanel";
+import { StoreDayStatusPanel, toMoneyInputValue } from "./StoreDayStatusPanel";
 import type { StoreDay } from "../types";
 
 vi.mock("react", async () => {
@@ -73,8 +73,21 @@ describe("StoreDayStatusPanel", () => {
     expect(screen.getByRole("button", { name: "Cerrar tienda" })).toBeInTheDocument();
     expect(screen.getByRole("combobox", { name: "Tipo de movimiento" })).toHaveValue("expense");
     expect(screen.getByRole("textbox", { name: "Monto de movimiento" })).toBeRequired();
+    expect(screen.getByRole("textbox", { name: "Monto de movimiento" })).toHaveAttribute(
+      "pattern",
+      "\\d+(\\.\\d{1,2})?",
+    );
     expect(screen.getByText("Bolsas")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Anular" })).toBeInTheDocument();
+  });
+
+  it("filters cash movement amount input to numbers and two decimals", () => {
+    render(<StoreDayStatusPanel storeDay={openStoreDay()} role="owner" actions="manage" />);
+
+    const amount = screen.getByRole("textbox", { name: "Monto de movimiento" });
+    fireEvent.input(amount, { target: { value: "abc12.345x.67" } });
+
+    expect(amount).toHaveValue("12.34");
   });
 
   it("renders management link without inline actions", () => {
@@ -89,6 +102,14 @@ describe("StoreDayStatusPanel", () => {
 
     expect(screen.getByText("Tienda abierta")).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Cerrar tienda" })).not.toBeInTheDocument();
+  });
+});
+
+describe("toMoneyInputValue", () => {
+  it("keeps only digits and up to two decimal places", () => {
+    expect(toMoneyInputValue("abc12.345x.67")).toBe("12.34");
+    expect(toMoneyInputValue("100")).toBe("100");
+    expect(toMoneyInputValue("10.5")).toBe("10.5");
   });
 });
 
