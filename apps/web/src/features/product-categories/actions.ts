@@ -24,7 +24,7 @@ export async function createProductCategoryAction(
   if (!result.ok) return { ok: false, message: result.error.message, fieldErrors: {} };
 
   revalidateCategoryPaths();
-  return { ok: true, message: "Categoria creada", fieldErrors: {} };
+  return { ok: true, message: "Categoria creada", category: result.data, fieldErrors: {} };
 }
 
 export async function deactivateProductCategoryAction(
@@ -43,7 +43,7 @@ export async function deactivateProductCategoryAction(
   if (!result.ok) return { ok: false, message: result.error.message, fieldErrors: {} };
 
   revalidateCategoryPaths();
-  return { ok: true, message: "Categoria desactivada", fieldErrors: {} };
+  return { ok: true, message: "Categoria desactivada", category: result.data, fieldErrors: {} };
 }
 
 function revalidateCategoryPaths() {

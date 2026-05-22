@@ -157,6 +157,74 @@ async def test_product_category_prefix_is_unique_by_store(client):
     assert second_response.status_code == 409
 
 
+async def test_cashier_cannot_manage_product_categories(client, db_session):
+    cashier_id = uuid4()
+    db_session.add(
+        UserModel(
+            id=cashier_id,
+            email="cashier-categories@local.dev",
+            store_id=dependencies.DEV_STORE_ID,
+            full_name="Cashier Categories",
+            role="cashier",
+            is_active=True,
+        )
+    )
+    await db_session.commit()
+
+    async def cashier_user():
+        return {"id": cashier_id, "email": "cashier-categories@local.dev", "store_id": dependencies.DEV_STORE_ID}
+
+    app.dependency_overrides[dependencies.get_current_user] = cashier_user
+
+    list_response = await client.get("/api/v1/product-categories")
+    create_response = await client.post(
+        "/api/v1/product-categories",
+        json={"name": "Bebidas", "sku_prefix": "BEB"},
+    )
+
+    assert list_response.status_code == 403
+    assert create_response.status_code == 403
+
+
+async def test_product_category_is_store_scoped(client, db_session):
+    category_response = await client.post(
+        "/api/v1/product-categories",
+        json={"name": "Comida", "sku_prefix": "COM"},
+    )
+    assert category_response.status_code == 201
+    category = category_response.json()
+
+    other_store_id = uuid4()
+    other_user_id = uuid4()
+    db_session.add(StoreModel(id=other_store_id, name="Other Store"))
+    db_session.add(
+        UserModel(
+            id=other_user_id,
+            email="other-categories@local.dev",
+            store_id=other_store_id,
+            full_name="Other Categories",
+            role="owner",
+            is_active=True,
+        )
+    )
+    await db_session.commit()
+
+    async def other_store_user():
+        return {"id": other_user_id, "email": "other-categories@local.dev", "store_id": other_store_id}
+
+    app.dependency_overrides[dependencies.get_current_user] = other_store_user
+
+    list_response = await client.get("/api/v1/product-categories")
+    product_response = await client.post(
+        "/api/v1/products",
+        json={"name": "Pan otra tienda", "price": "2.00", "stock": 10, "category_id": category["id"]},
+    )
+
+    assert list_response.status_code == 200
+    assert list_response.json()["items"] == []
+    assert product_response.status_code == 404
+
+
 async def test_product_sku_collision_rejected(client):
     first_response = await client.post(
         "/api/v1/products",

@@ -16,8 +16,7 @@ const permissions = [
 
 export function PermissionMatrix() {
   return (
-    <section className="space-y-3">
-      <h2 className="text-base font-semibold text-slate-950">Permisos v1</h2>
+    <div className="overflow-hidden rounded-lg border border-slate-200">
       <Table>
         <thead>
           <tr>
@@ -36,7 +35,7 @@ export function PermissionMatrix() {
           ))}
         </tbody>
       </Table>
-    </section>
+    </div>
   );
 }
 

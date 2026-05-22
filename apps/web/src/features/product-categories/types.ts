@@ -20,6 +20,7 @@ export interface ProductCategoryFormValues {
 export interface ProductCategoryActionState {
   ok: boolean;
   message?: string;
+  category?: ProductCategory;
   fieldErrors: Partial<Record<keyof ProductCategoryFormValues | "category_id", string>>;
 }
 

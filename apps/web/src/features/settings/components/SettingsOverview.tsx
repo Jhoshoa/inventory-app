@@ -1,5 +1,6 @@
 import { Alert } from "@/components/ui/Alert";
 import { Badge } from "@/components/ui/Badge";
+import { CollapsibleSection } from "@/components/ui/CollapsibleSection";
 import { EmptyState } from "@/components/ui/EmptyState";
 import type { Session } from "@/lib/auth/session";
 import { ProductCategorySettings } from "@/features/product-categories/components/ProductCategorySettings";
@@ -46,7 +47,12 @@ export function SettingsOverview({
         </div>
       </div>
 
-      <PermissionMatrix />
+      <CollapsibleSection
+        title="Permisos v1"
+        description="Resumen de capacidades para owner y cashier."
+      >
+        <PermissionMatrix />
+      </CollapsibleSection>
 
       {productCategories ? (
         productCategories.ok ? (
@@ -58,13 +64,11 @@ export function SettingsOverview({
         )
       ) : null}
 
-      <section className="space-y-3">
-        <div>
-          <h2 className="text-base font-semibold text-slate-950">Operacion diaria</h2>
-          <p className="mt-1 text-sm text-slate-600">
-            Apertura y cierre de la jornada de ventas.
-          </p>
-        </div>
+      <CollapsibleSection
+        title="Operacion diaria"
+        description="Apertura y cierre de la jornada de ventas."
+      >
+        <div className="space-y-3">
         {storeDay ? (
           <StoreDayManagement
             storeDay={storeDay}
@@ -73,8 +77,14 @@ export function SettingsOverview({
             cashMovements={cashMovements}
           />
         ) : null}
-        {storeDayEvents ? <StoreDayEventTimeline events={storeDayEvents} /> : null}
-      </section>
+        {storeDayEvents ? (
+          <StoreDayEventTimeline
+            events={storeDayEvents}
+            timezone={storeDay?.ok ? storeDay.data.timezone : undefined}
+          />
+        ) : null}
+        </div>
+      </CollapsibleSection>
 
       <EmptyState
         title="Gestion de usuarios pendiente"

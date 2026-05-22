@@ -1,9 +1,10 @@
 "use client";
 
-import { useActionState, useEffect, useState } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 import { Alert } from "@/components/ui/Alert";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
+import { CollapsibleSection } from "@/components/ui/CollapsibleSection";
 import { FieldError } from "@/components/ui/FieldError";
 import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
@@ -18,7 +19,9 @@ const initialState: ProductCategoryActionState = { ok: false, fieldErrors: {} };
 export function ProductCategorySettings({ categories }: { categories: ProductCategory[] }) {
   const [createState, createAction, isCreating] = useActionState(createProductCategoryAction, initialState);
   const [deactivateState, deactivateAction, isDeactivating] = useActionState(deactivateProductCategoryAction, initialState);
+  const [visibleCategories, setVisibleCategories] = useState(categories);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const createFormRef = useRef<HTMLFormElement>(null);
 
   useEffect(() => {
     const message = createState.ok ? createState.message : deactivateState.ok ? deactivateState.message : null;
@@ -28,23 +31,36 @@ export function ProductCategorySettings({ categories }: { categories: ProductCat
     return () => window.clearTimeout(timeout);
   }, [createState.message, createState.ok, deactivateState.message, deactivateState.ok]);
 
-  return (
-    <section className="space-y-4 rounded-lg border border-slate-200 bg-white p-4">
-      {toastMessage ? <Toast message={toastMessage} onClose={() => setToastMessage(null)} /> : null}
+  useEffect(() => {
+    if (!createState.ok || !createState.category) return;
+    const category = createState.category;
+    setVisibleCategories((current) => upsertCategory(current, category));
+    createFormRef.current?.reset();
+  }, [createState.category, createState.ok]);
 
-      <div>
-        <h2 className="text-base font-semibold text-slate-950">Categorias de productos</h2>
-        <p className="mt-1 text-sm text-slate-600">
-          Configura prefijos para generar SKUs como COM000001.
-        </p>
-      </div>
+  useEffect(() => {
+    if (!deactivateState.ok || !deactivateState.category) return;
+    const category = deactivateState.category;
+    setVisibleCategories((current) => upsertCategory(current, category));
+  }, [deactivateState.category, deactivateState.ok]);
+
+  return (
+    <CollapsibleSection
+      title="Categorias de productos"
+      description="Configura prefijos para generar SKUs como COM000001."
+    >
+      {toastMessage ? <Toast message={toastMessage} onClose={() => setToastMessage(null)} /> : null}
 
       {createState.message && !createState.ok ? <Alert variant="error">{createState.message}</Alert> : null}
       {deactivateState.message && !deactivateState.ok ? (
         <Alert variant="error">{deactivateState.message}</Alert>
       ) : null}
 
-      <form action={createAction} className="grid gap-4 md:grid-cols-[minmax(0,1fr)_180px_160px] md:items-start">
+      <form
+        ref={createFormRef}
+        action={createAction}
+        className="mt-4 grid gap-4 md:grid-cols-[minmax(0,1fr)_180px_160px] md:items-start"
+      >
         <div className="space-y-2">
           <Label htmlFor="category-name">Nombre</Label>
           <Input id="category-name" name="name" error={Boolean(createState.fieldErrors.name)} />
@@ -76,24 +92,22 @@ export function ProductCategorySettings({ categories }: { categories: ProductCat
             <tr>
               <th className="px-4 py-3">Nombre</th>
               <th className="px-4 py-3">Prefijo SKU</th>
-              <th className="px-4 py-3">Siguiente SKU</th>
               <th className="px-4 py-3">Estado</th>
               <th className="px-4 py-3 text-right">Accion</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100 bg-white">
-            {categories.length === 0 ? (
+            {visibleCategories.length === 0 ? (
               <tr>
-                <td className="px-4 py-6 text-center text-slate-500" colSpan={5}>
+                <td className="px-4 py-6 text-center text-slate-500" colSpan={4}>
                   Sin categorias configuradas.
                 </td>
               </tr>
             ) : (
-              categories.map((category) => (
+              visibleCategories.map((category) => (
                 <tr key={category.id}>
                   <td className="px-4 py-3 font-medium text-slate-950">{category.name}</td>
                   <td className="px-4 py-3 text-slate-700">{category.sku_prefix}</td>
-                  <td className="px-4 py-3 text-slate-700">{formatNextSku(category)}</td>
                   <td className="px-4 py-3">
                     <Badge variant={category.is_active ? "success" : "default"}>
                       {category.is_active ? "Activa" : "Inactiva"}
@@ -115,12 +129,19 @@ export function ProductCategorySettings({ categories }: { categories: ProductCat
           </tbody>
         </table>
       </div>
-    </section>
+    </CollapsibleSection>
   );
 }
 
-function formatNextSku(category: ProductCategory) {
-  return `${category.sku_prefix}${category.next_sku_number.toString().padStart(6, "0")}`;
+function upsertCategory(categories: ProductCategory[], category: ProductCategory) {
+  const existing = categories.some((item) => item.id === category.id);
+  const next = existing
+    ? categories.map((item) => (item.id === category.id ? category : item))
+    : [...categories, category];
+  return next.toSorted((left, right) => {
+    if (left.is_active !== right.is_active) return left.is_active ? -1 : 1;
+    return left.name.localeCompare(right.name);
+  });
 }
 
 function Toast({ message, onClose }: { message: string; onClose: () => void }) {
