@@ -110,6 +110,36 @@ async def test_sales_report_by_range_groups_and_top_products(client):
     assert data["top_products"][0]["quantity"] == 3
 
 
+async def test_sales_report_clamps_range_to_first_business_date(client):
+    product = await client.post("/api/v1/products", json={"name": "Arroz", "price": "12.50", "stock": 20})
+    opened_day = await _open_store_day(client)
+    opened_date = opened_day["first_business_date"]
+
+    await client.post(
+        "/api/v1/sales",
+        json={"items": [{"product_id": product.json()["id"], "quantity": 2}], "payment_method": "efectivo"},
+    )
+
+    month_start = opened_date[:8] + "01"
+    response = await client.get(f"/api/v1/reports/sales?from_date={month_start}&to_date={opened_date}")
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["from_date"] == opened_date
+    assert data["to_date"] == opened_date
+    assert data["sales_count"] == 1
+
+
+async def test_sales_report_rejects_range_entirely_before_first_business_date(client):
+    opened_day = await _open_store_day(client)
+    opened_date = datetime.fromisoformat(opened_day["first_business_date"])
+    before_open = (opened_date - timedelta(days=1)).date().isoformat()
+
+    response = await client.get(f"/api/v1/reports/sales?from_date={before_open}&to_date={before_open}")
+
+    assert response.status_code == 400
+
+
 async def test_sales_report_rejects_invalid_range(client):
     start = quote(datetime.now(UTC).isoformat())
     end = quote((datetime.now(UTC) - timedelta(days=1)).isoformat())

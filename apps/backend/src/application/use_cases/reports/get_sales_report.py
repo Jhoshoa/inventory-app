@@ -44,6 +44,7 @@ class GetSalesReportUseCase:
                 to_date,
                 store.timezone,
                 first_business_date=store.first_business_date,
+                clamp_to_first_business_date=True,
             )
             start_at = date_range.start_at_utc
             end_at = date_range.end_at_utc

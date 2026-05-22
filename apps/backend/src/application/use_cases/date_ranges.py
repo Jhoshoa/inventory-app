@@ -35,11 +35,15 @@ class BusinessDateRangeService:
         timezone_name: str,
         *,
         first_business_date: date | None = None,
+        clamp_to_first_business_date: bool = False,
     ) -> BusinessDateRange:
         if from_date > to_date:
             raise ValueError("La fecha inicial no puede ser posterior a la fecha final")
         if first_business_date is not None and from_date < first_business_date:
-            raise ValueError("La fecha consultada es anterior a la apertura operativa de la tienda")
+            if clamp_to_first_business_date and to_date >= first_business_date:
+                from_date = first_business_date
+            else:
+                raise ValueError("La fecha consultada es anterior a la apertura operativa de la tienda")
         if (to_date - from_date).days > self.MAX_RANGE_DAYS:
             raise ValueError("El rango maximo es 90 dias")
 
