@@ -1,4 +1,5 @@
 from src.infrastructure.database.models.product_model import ProductModel
+from src.infrastructure.database.models.product_category_model import ProductCategoryModel
 from src.infrastructure.database.models.sale_model import SaleModel, SaleItemModel
 from src.infrastructure.database.models.store_model import StoreModel
 from src.infrastructure.database.models.store_business_day_model import StoreBusinessDayModel
@@ -12,6 +13,7 @@ from src.infrastructure.database.models.inventory_import_model import InventoryI
 
 __all__ = [
     "ProductModel",
+    "ProductCategoryModel",
     "SaleModel",
     "SaleItemModel",
     "StoreModel",

@@ -71,6 +71,7 @@ describe("validateProductForm", () => {
           name: "",
           price: "0",
           stock: "1",
+          category_id: "",
           category: "",
           min_stock: "5",
           unit: "unidad",

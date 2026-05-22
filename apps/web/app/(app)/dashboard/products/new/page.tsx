@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import { ForbiddenState } from "@/components/ui/ForbiddenState";
+import { listProductCategories } from "@/features/product-categories/api";
 import { ProductForm } from "@/features/products/components/ProductForm";
 import { canManageProducts } from "@/lib/auth/permissions";
 import { requireSession } from "@/lib/auth/session";
@@ -10,6 +11,7 @@ export default async function NewProductPage() {
   if (!canManageProducts(session.role)) {
     return <ForbiddenState description="Crear productos requiere permisos de owner." />;
   }
+  const categories = await listProductCategories();
 
   return (
     <section className="space-y-6">
@@ -25,7 +27,7 @@ export default async function NewProductPage() {
         </Button>
       </div>
       <div className="rounded-lg border border-slate-200 bg-white p-5">
-        <ProductForm mode="create" />
+        <ProductForm mode="create" categories={categories.ok ? categories.data.items : []} />
       </div>
     </section>
   );

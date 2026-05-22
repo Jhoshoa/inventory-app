@@ -98,6 +98,7 @@ export function formDataToProductValues(formData: FormData): ProductFormValues {
     name: stringValue(formData, "name"),
     price: stringValue(formData, "price"),
     stock: stringValue(formData, "stock"),
+    category_id: stringValue(formData, "category_id"),
     category: stringValue(formData, "category"),
     min_stock: stringValue(formData, "min_stock"),
     unit: stringValue(formData, "unit") || "unidad",
@@ -112,6 +113,7 @@ export function productToFormValues(product?: {
   name: string;
   price: string;
   stock: number;
+  category_id?: string | null;
   category: string | null;
   min_stock: number;
   unit: string;
@@ -124,6 +126,7 @@ export function productToFormValues(product?: {
     name: product?.name ?? "",
     price: product?.price ?? "",
     stock: product ? product.stock.toString() : "0",
+    category_id: product?.category_id ?? "",
     category: product?.category ?? "",
     min_stock: product ? product.min_stock.toString() : "5",
     unit: product?.unit ?? "unidad",

@@ -11,6 +11,7 @@ class Product:
     price: Decimal
     stock: int
     min_stock: int = 5
+    category_id: UUID | None = None
     category: str | None = None
     sku: str | None = None
     unit: str = "unidad"

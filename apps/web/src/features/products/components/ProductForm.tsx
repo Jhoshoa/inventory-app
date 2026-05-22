@@ -1,11 +1,13 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useMemo, useState } from "react";
 import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
 import { FieldError } from "@/components/ui/FieldError";
 import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
+import { Select } from "@/components/ui/Select";
+import type { ProductCategory } from "@/features/product-categories/types";
 import {
   createProductAction,
   updateProductAction,
@@ -21,9 +23,11 @@ const initialProductActionState: ProductActionState = {
 export function ProductForm({
   mode,
   product,
+  categories = [],
 }: {
   mode: "create" | "edit";
   product?: Product;
+  categories?: ProductCategory[];
 }) {
   const action = mode === "create" ? createProductAction : updateProductAction;
   const [state, formAction, isPending] = useActionState(
@@ -31,6 +35,14 @@ export function ProductForm({
     initialProductActionState,
   );
   const values = productToFormValues(product);
+  const [categoryId, setCategoryId] = useState(values.category_id);
+  const [sku, setSku] = useState(values.sku);
+  const [scanCode, setScanCode] = useState(values.qr_code);
+  const selectedCategory = useMemo(
+    () => categories.find((category) => category.id === categoryId),
+    [categories, categoryId],
+  );
+  const categoryName = selectedCategory?.name ?? values.category;
 
   return (
     <form action={formAction} className="space-y-6">
@@ -41,8 +53,44 @@ export function ProductForm({
         <Field name="name" label="Nombre" error={state.fieldErrors.name}>
           <Input name="name" defaultValue={values.name} error={Boolean(state.fieldErrors.name)} />
         </Field>
-        <Field name="sku" label="SKU / Codigo" error={state.fieldErrors.sku}>
-          <Input name="sku" defaultValue={values.sku} error={Boolean(state.fieldErrors.sku)} />
+        <Field name="category_id" label="Categoria" error={state.fieldErrors.category_id}>
+          <Select
+            name="category_id"
+            value={categoryId}
+            onChange={(event) => setCategoryId(event.target.value)}
+            aria-label="Categoria"
+          >
+            <option value="">Sin categoria</option>
+            {categories.filter((category) => category.is_active || category.id === categoryId).map((category) => (
+              <option key={category.id} value={category.id}>
+                {category.name}
+              </option>
+            ))}
+          </Select>
+          <input type="hidden" name="category" value={categoryName} />
+          {categories.length === 0 ? (
+            <p className="text-xs text-slate-500">Configura categorias en Ajustes para generar SKUs por prefijo.</p>
+          ) : null}
+        </Field>
+        <Field name="sku" label="SKU" error={state.fieldErrors.sku}>
+          <div className="flex gap-2">
+            <Input
+              name="sku"
+              value={sku}
+              onChange={(event) => setSku(event.target.value)}
+              error={Boolean(state.fieldErrors.sku)}
+            />
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => {
+                if (selectedCategory) setSku(formatNextSku(selectedCategory));
+              }}
+              disabled={!selectedCategory}
+            >
+              Generar
+            </Button>
+          </div>
         </Field>
         <Field name="price" label="Precio venta" error={state.fieldErrors.price}>
           <Input
@@ -86,19 +134,23 @@ export function ProductForm({
         <Field name="unit" label="Unidad" error={state.fieldErrors.unit}>
           <Input name="unit" defaultValue={values.unit} error={Boolean(state.fieldErrors.unit)} />
         </Field>
-        <Field name="category" label="Categoria" error={state.fieldErrors.category}>
-          <Input
-            name="category"
-            defaultValue={values.category}
-            error={Boolean(state.fieldErrors.category)}
-          />
-        </Field>
-        <Field name="qr_code" label="QR / Codigo unico" error={state.fieldErrors.qr_code}>
-          <Input
-            name="qr_code"
-            defaultValue={values.qr_code}
-            error={Boolean(state.fieldErrors.qr_code)}
-          />
+        <Field name="qr_code" label="Codigo escaneable" error={state.fieldErrors.qr_code}>
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <Input
+              name="qr_code"
+              value={scanCode}
+              onChange={(event) => setScanCode(event.target.value)}
+              error={Boolean(state.fieldErrors.qr_code)}
+            />
+            <div className="flex gap-2">
+              <Button type="button" variant="secondary" onClick={() => setScanCode(generateScanCode())}>
+                Generar
+              </Button>
+              <Button type="button" variant="secondary" onClick={() => setScanCode(sku)} disabled={!sku.trim()}>
+                Usar SKU
+              </Button>
+            </div>
+          </div>
         </Field>
         <Field name="photo_url" label="URL foto" error={state.fieldErrors.photo_url}>
           <Input
@@ -123,6 +175,14 @@ export function ProductForm({
       </div>
     </form>
   );
+}
+
+function formatNextSku(category: ProductCategory) {
+  return `${category.sku_prefix}${category.next_sku_number.toString().padStart(6, "0")}`;
+}
+
+function generateScanCode() {
+  return `P-${crypto.randomUUID().replaceAll("-", "").slice(0, 12).toUpperCase()}`;
 }
 
 function Field({

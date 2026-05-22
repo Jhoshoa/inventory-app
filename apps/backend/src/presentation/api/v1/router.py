@@ -7,6 +7,7 @@ from src.presentation.api.v1 import (
     exports,
     inventory_imports,
     photos,
+    product_categories,
     products,
     reports,
     sales,
@@ -18,6 +19,7 @@ from src.presentation.api.v1 import (
 )
 
 api_v1_router = APIRouter()
+api_v1_router.include_router(product_categories.router)
 api_v1_router.include_router(products.router)
 api_v1_router.include_router(sales.router)
 api_v1_router.include_router(photos.router)

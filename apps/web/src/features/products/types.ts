@@ -9,6 +9,7 @@ export interface Product {
   name: string;
   price: string;
   stock: number;
+  category_id: string | null;
   category: string | null;
   qr_code: string | null;
   photo_url: string | null;
@@ -60,6 +61,7 @@ export interface ProductFormValues {
   name: string;
   price: string;
   stock: string;
+  category_id: string;
   category: string;
   min_stock: string;
   unit: string;

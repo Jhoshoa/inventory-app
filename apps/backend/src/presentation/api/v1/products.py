@@ -28,8 +28,15 @@ from src.application.use_cases.stock_movements.list_product_stock_movements impo
     ListProductStockMovementsUseCase,
 )
 from src.infrastructure.database.repositories.product_repository import ProductRepository
+from src.infrastructure.database.repositories.product_category_repository import ProductCategoryRepository
 from src.infrastructure.database.repositories.stock_movement_repository import StockMovementRepository
-from src.presentation.dependencies import get_product_repo, get_stock_movement_repo, require_active_user, require_owner
+from src.presentation.dependencies import (
+    get_product_category_repo,
+    get_product_repo,
+    get_stock_movement_repo,
+    require_active_user,
+    require_owner,
+)
 
 router = APIRouter(prefix="/products", tags=["products"])
 
@@ -140,13 +147,15 @@ async def create_product(
     dto: CreateProductDTO,
     user=Depends(require_owner),
     repo: ProductRepository = Depends(get_product_repo),
+    category_repo: ProductCategoryRepository = Depends(get_product_category_repo),
 ):
-    product = await CreateProductUseCase(repo).execute(
+    product = await CreateProductUseCase(repo, category_repo).execute(
         CreateProductInput(
             store_id=user.store_id,
             name=dto.name,
             price=dto.price,
             stock=dto.stock,
+            category_id=dto.category_id,
             category=dto.category,
             min_stock=dto.min_stock,
             unit=dto.unit,
@@ -174,13 +183,15 @@ async def update_product(
     dto: UpdateProductDTO,
     user=Depends(require_owner),
     repo: ProductRepository = Depends(get_product_repo),
+    category_repo: ProductCategoryRepository = Depends(get_product_category_repo),
 ):
-    product = await UpdateProductUseCase(repo).execute(
+    product = await UpdateProductUseCase(repo, category_repo).execute(
         UpdateProductInput(
             store_id=user.store_id,
             product_id=product_id,
             name=dto.name,
             price=dto.price,
+            category_id=dto.category_id,
             category=dto.category,
             min_stock=dto.min_stock,
             unit=dto.unit,

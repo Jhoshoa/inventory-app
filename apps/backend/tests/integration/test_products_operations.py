@@ -1,6 +1,7 @@
 from uuid import uuid4
 
 from src.main import app
+from src.infrastructure.database.models import StoreModel, UserModel
 from src.presentation import dependencies
 
 
@@ -71,15 +72,30 @@ async def test_product_qr_is_generated_and_lookup_works(client):
     assert qr_response.json()["id"] == product["id"]
 
 
-async def test_product_qr_lookup_is_store_scoped(client):
+async def test_product_qr_lookup_is_store_scoped(client, db_session):
     create_response = await client.post(
         "/api/v1/products",
         json={"name": "Cafe", "price": "20.00", "stock": 2, "qr_code": "QR-STORE-A"},
     )
     assert create_response.status_code == 201
 
+    other_store_id = uuid4()
+    other_user_id = uuid4()
+    db_session.add(StoreModel(id=other_store_id, name="Other Store"))
+    db_session.add(
+        UserModel(
+            id=other_user_id,
+            email="other@local.dev",
+            store_id=other_store_id,
+            full_name="Other User",
+            role="owner",
+            is_active=True,
+        )
+    )
+    await db_session.commit()
+
     async def other_store_user():
-        return {"id": uuid4(), "email": "other@local.dev", "store_id": uuid4()}
+        return {"id": other_user_id, "email": "other@local.dev", "store_id": other_store_id}
 
     app.dependency_overrides[dependencies.get_current_user] = other_store_user
 
@@ -98,6 +114,60 @@ async def test_product_qr_collision_rejected(client):
         "/api/v1/products",
         json={"name": "Sal", "price": "4.00", "stock": 2, "qr_code": "QR-DUP"},
     )
+    assert second_response.status_code == 409
+
+
+async def test_product_category_generates_sequential_skus(client):
+    category_response = await client.post(
+        "/api/v1/product-categories",
+        json={"name": "Comida", "sku_prefix": "com"},
+    )
+    assert category_response.status_code == 201
+    category = category_response.json()
+    assert category["sku_prefix"] == "COM"
+
+    first_response = await client.post(
+        "/api/v1/products",
+        json={"name": "Pan", "price": "2.00", "stock": 10, "category_id": category["id"]},
+    )
+    second_response = await client.post(
+        "/api/v1/products",
+        json={"name": "Galleta", "price": "3.00", "stock": 10, "category_id": category["id"]},
+    )
+
+    assert first_response.status_code == 201
+    assert second_response.status_code == 201
+    assert first_response.json()["sku"] == "COM000001"
+    assert second_response.json()["sku"] == "COM000002"
+    assert first_response.json()["category"] == "Comida"
+    assert first_response.json()["category_id"] == category["id"]
+
+
+async def test_product_category_prefix_is_unique_by_store(client):
+    first_response = await client.post(
+        "/api/v1/product-categories",
+        json={"name": "Comida", "sku_prefix": "COM"},
+    )
+    second_response = await client.post(
+        "/api/v1/product-categories",
+        json={"name": "Comestibles", "sku_prefix": "COM"},
+    )
+
+    assert first_response.status_code == 201
+    assert second_response.status_code == 409
+
+
+async def test_product_sku_collision_rejected(client):
+    first_response = await client.post(
+        "/api/v1/products",
+        json={"name": "Azucar", "price": "10.00", "stock": 2, "sku": "ABAR000001"},
+    )
+    second_response = await client.post(
+        "/api/v1/products",
+        json={"name": "Sal", "price": "4.00", "stock": 2, "sku": "ABAR000001"},
+    )
+
+    assert first_response.status_code == 201
     assert second_response.status_code == 409
 
 

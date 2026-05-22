@@ -1,4 +1,5 @@
 import { ForbiddenState } from "@/components/ui/ForbiddenState";
+import { listProductCategories } from "@/features/product-categories/api";
 import { SettingsOverview } from "@/features/settings/components/SettingsOverview";
 import { getCurrentClosingPreview, getCurrentStoreDay, getCurrentStoreDayEvents, listCashMovements } from "@/features/store-day/api";
 import { canViewSettings } from "@/lib/auth/permissions";
@@ -9,9 +10,10 @@ export default async function SettingsPage() {
   if (!canViewSettings(session.role)) {
     return <ForbiddenState description="Ajustes requiere permisos de owner." />;
   }
-  const [storeDay, storeDayEvents] = await Promise.all([
+  const [storeDay, storeDayEvents, productCategories] = await Promise.all([
     getCurrentStoreDay(),
     getCurrentStoreDayEvents(),
+    listProductCategories(true),
   ]);
   const closingPreview = storeDay.ok && storeDay.data.status === "open"
     ? await getCurrentClosingPreview()
@@ -26,6 +28,7 @@ export default async function SettingsPage() {
       storeDayEvents={storeDayEvents}
       closingPreview={closingPreview}
       cashMovements={cashMovements}
+      productCategories={productCategories}
     />
   );
 }

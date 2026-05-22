@@ -34,6 +34,9 @@ class IProductRepository(ABC):
     async def qr_code_exists(self, qr_code: str, exclude_product_id: UUID | None = None) -> bool: ...
 
     @abstractmethod
+    async def sku_exists(self, store_id: UUID, sku: str, exclude_product_id: UUID | None = None) -> bool: ...
+
+    @abstractmethod
     async def list_low_stock(self, store_id: UUID, limit: int = 20) -> list[Product]: ...
 
     @abstractmethod

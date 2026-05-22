@@ -1,5 +1,5 @@
 import uuid
-from sqlalchemy import Column, String, Integer, Numeric, Boolean, DateTime, JSON, ForeignKey, Index
+from sqlalchemy import Column, String, Integer, Numeric, Boolean, DateTime, JSON, ForeignKey, Index, UniqueConstraint
 from sqlalchemy.orm import DeclarativeBase
 from datetime import datetime, timezone
 from src.infrastructure.database.types import GUID
@@ -15,6 +15,7 @@ class ProductModel(Base):
     id = Column(GUID(), primary_key=True, default=uuid.uuid4)
     store_id = Column(GUID(), ForeignKey("stores.id"), nullable=False)
     name = Column(String(100), nullable=False)
+    category_id = Column(GUID(), ForeignKey("product_categories.id"))
     category = Column(String(50))
     sku = Column(String(50))
     price = Column(Numeric(10, 2), nullable=False)
@@ -35,9 +36,11 @@ class ProductModel(Base):
         Index("ix_products_store_id", "store_id"),
         Index("ix_products_store_id_id", "store_id", "id"),
         Index("ix_products_store_name", "store_id", "name"),
+        Index("ix_products_store_category_id", "store_id", "category_id"),
         Index("ix_products_store_category", "store_id", "category"),
         Index("ix_products_store_sku", "store_id", "sku"),
         Index("ix_products_store_qr_code", "store_id", "qr_code"),
         Index("ix_products_store_stock", "store_id", "stock"),
         Index("ix_products_updated_at", "updated_at"),
+        UniqueConstraint("store_id", "sku", name="uq_products_store_sku"),
     )

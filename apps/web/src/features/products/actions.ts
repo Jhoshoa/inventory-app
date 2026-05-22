@@ -131,6 +131,7 @@ function createPayload(values: ReturnType<typeof formDataToProductValues>) {
     name: values.name,
     price: values.price,
     stock: Number(values.stock),
+    category_id: nullable(values.category_id),
     category: nullable(values.category),
     min_stock: values.min_stock ? Number(values.min_stock) : 5,
     unit: values.unit || "unidad",
@@ -145,6 +146,7 @@ function updatePayload(values: ReturnType<typeof formDataToProductValues>) {
   return {
     name: values.name,
     price: values.price,
+    category_id: nullable(values.category_id),
     category: nullable(values.category),
     min_stock: values.min_stock ? Number(values.min_stock) : 5,
     unit: values.unit || "unidad",

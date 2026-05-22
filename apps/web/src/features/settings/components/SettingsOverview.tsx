@@ -2,6 +2,8 @@ import { Alert } from "@/components/ui/Alert";
 import { Badge } from "@/components/ui/Badge";
 import { EmptyState } from "@/components/ui/EmptyState";
 import type { Session } from "@/lib/auth/session";
+import { ProductCategorySettings } from "@/features/product-categories/components/ProductCategorySettings";
+import type { ProductCategoryListResult } from "@/features/product-categories/types";
 import { StoreDayEventTimeline } from "@/features/store-day/components/StoreDayEventTimeline";
 import { StoreDayStatusPanel } from "@/features/store-day/components/StoreDayStatusPanel";
 import type { CashMovementListResult, StoreDayClosingPreviewResult, StoreDayEventListResult, StoreDayResult } from "@/features/store-day/types";
@@ -13,12 +15,14 @@ export function SettingsOverview({
   storeDayEvents,
   closingPreview,
   cashMovements,
+  productCategories,
 }: {
   session: Session;
   storeDay?: StoreDayResult;
   storeDayEvents?: StoreDayEventListResult;
   closingPreview?: StoreDayClosingPreviewResult;
   cashMovements?: CashMovementListResult;
+  productCategories?: ProductCategoryListResult;
 }) {
   return (
     <section className="space-y-6">
@@ -43,6 +47,16 @@ export function SettingsOverview({
       </div>
 
       <PermissionMatrix />
+
+      {productCategories ? (
+        productCategories.ok ? (
+          <ProductCategorySettings categories={productCategories.data.items} />
+        ) : (
+          <Alert variant="error">
+            No se pudieron cargar las categorias: {productCategories.error.message}
+          </Alert>
+        )
+      ) : null}
 
       <section className="space-y-3">
         <div>

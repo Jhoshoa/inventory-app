@@ -13,6 +13,7 @@ const product: Product = {
   name: "Arroz 1kg",
   price: "12.50",
   stock: 3,
+  category_id: null,
   category: "Abarrotes",
   qr_code: "QR-1",
   photo_url: null,

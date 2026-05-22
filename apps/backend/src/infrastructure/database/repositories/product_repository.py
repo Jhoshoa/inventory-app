@@ -22,6 +22,7 @@ class ProductRepository(IProductRepository):
         model.price = product.price
         model.stock = product.stock
         model.min_stock = product.min_stock
+        model.category_id = product.category_id
         model.category = product.category
         model.sku = product.sku
         model.unit = product.unit
@@ -42,6 +43,7 @@ class ProductRepository(IProductRepository):
             price=model.price,
             stock=model.stock,
             min_stock=model.min_stock,
+            category_id=model.category_id,
             category=model.category,
             sku=model.sku,
             unit=model.unit,
@@ -130,6 +132,17 @@ class ProductRepository(IProductRepository):
 
     async def qr_code_exists(self, qr_code: str, exclude_product_id: UUID | None = None) -> bool:
         filters = [ProductModel.qr_code == qr_code, ProductModel.deleted_at.is_(None)]
+        if exclude_product_id is not None:
+            filters.append(ProductModel.id != exclude_product_id)
+        result = await self._session.execute(select(func.count()).select_from(ProductModel).where(*filters))
+        return int(result.scalar_one()) > 0
+
+    async def sku_exists(self, store_id: UUID, sku: str, exclude_product_id: UUID | None = None) -> bool:
+        filters = [
+            ProductModel.store_id == store_id,
+            ProductModel.sku == sku,
+            ProductModel.deleted_at.is_(None),
+        ]
         if exclude_product_id is not None:
             filters.append(ProductModel.id != exclude_product_id)
         result = await self._session.execute(select(func.count()).select_from(ProductModel).where(*filters))

@@ -9,6 +9,7 @@ from src.config.settings import settings
 from src.domain.entities.store import Store
 from src.infrastructure.database.session import get_session
 from src.infrastructure.database.repositories.product_repository import ProductRepository
+from src.infrastructure.database.repositories.product_category_repository import ProductCategoryRepository
 from src.infrastructure.database.repositories.sale_repository import SaleRepository
 from src.infrastructure.database.repositories.sync_repository import SyncRepository
 from src.infrastructure.database.repositories.store_repository import StoreRepository
@@ -74,6 +75,10 @@ async def get_db_session():
 
 def get_product_repo(session: AsyncSession = Depends(get_db_session)) -> ProductRepository:
     return ProductRepository(session)
+
+
+def get_product_category_repo(session: AsyncSession = Depends(get_db_session)) -> ProductCategoryRepository:
+    return ProductCategoryRepository(session)
 
 
 def get_sale_repo(session: AsyncSession = Depends(get_db_session)) -> SaleRepository:

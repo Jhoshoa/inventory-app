@@ -28,6 +28,7 @@ class CreateProductDTO(BaseModel):
     price: Decimal = Field(..., gt=0)
     stock: int = Field(..., ge=0)
     category: str | None = None
+    category_id: UUID | None = None
     min_stock: int = Field(default=5, ge=0)
     unit: str = "unidad"
     sku: str | None = Field(default=None, max_length=50)
@@ -41,6 +42,7 @@ class UpdateProductDTO(BaseModel):
     name: str | None = Field(default=None, min_length=1, max_length=100)
     price: Decimal | None = Field(default=None, gt=0)
     category: str | None = None
+    category_id: UUID | None = None
     min_stock: int | None = Field(default=None, ge=0)
     stock: int | None = Field(default=None, ge=0)
     unit: str | None = Field(default=None, max_length=20)
@@ -60,6 +62,7 @@ class ProductResponseDTO(BaseModel):
     name: str
     price: Decimal
     stock: int
+    category_id: UUID | None = None
     category: str | None
     qr_code: str | None
     photo_url: str | None

@@ -58,7 +58,7 @@ export function StoreDayStatusPanel({
             </div>
             <p className="mt-1 text-sm text-slate-600">
               {isOpen && storeDay.opened_at
-                ? `Abierta desde ${formatDateTime(storeDay.opened_at)}`
+                ? `Abierta desde ${formatDateTime(storeDay.opened_at, storeDay.timezone)}`
                 : "Abre la jornada para habilitar ventas en POS."}
             </p>
             <p className="mt-1 inline-flex items-center gap-1 text-xs text-slate-500">
@@ -229,12 +229,27 @@ function cashMovementLabel(type: string) {
 }
 
 function formatBusinessDate(value: string) {
-  return new Intl.DateTimeFormat("es-BO", { dateStyle: "medium" }).format(new Date(`${value}T00:00:00`));
+  const [year, month, day] = value.split("-");
+  if (!year || !month || !day) return value;
+  return `${day}/${month}/${year}`;
 }
 
-function formatDateTime(value: string) {
-  return new Intl.DateTimeFormat("es-BO", {
-    dateStyle: "short",
-    timeStyle: "short",
-  }).format(new Date(value));
+function formatDateTime(value: string, timezone: string) {
+  const parts = new Intl.DateTimeFormat("en-GB", {
+    timeZone: timezone,
+    year: "2-digit",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).formatToParts(new Date(value));
+  const part = (type: string) => parts.find((item) => item.type === type)?.value;
+  const day = part("day");
+  const month = part("month");
+  const year = part("year");
+  const hour = part("hour");
+  const minute = part("minute");
+  if (!day || !month || !year || !hour || !minute) return value;
+  return `${day}/${month}/${year}, ${hour}:${minute}`;
 }
