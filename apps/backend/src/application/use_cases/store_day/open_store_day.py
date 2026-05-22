@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from decimal import Decimal
 from uuid import UUID
 
 from src.application.dto.store_day_dto import StoreDayResponseDTO
@@ -17,6 +18,7 @@ class OpenStoreDayInput:
     store_id: UUID
     opened_by_user_id: UUID
     opening_note: str | None = None
+    opening_cash_amount: Decimal | None = None
 
 
 class OpenStoreDayUseCase:
@@ -48,6 +50,7 @@ class OpenStoreDayUseCase:
             business_date=business_date,
             opened_by_user_id=input.opened_by_user_id,
             opening_note=input.opening_note,
+            opening_cash_amount=input.opening_cash_amount,
         )
         saved = await self._business_day_repo.save(business_day)
         await self._event_repo.save(

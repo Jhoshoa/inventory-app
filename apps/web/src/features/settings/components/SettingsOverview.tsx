@@ -4,17 +4,19 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import type { Session } from "@/lib/auth/session";
 import { StoreDayEventTimeline } from "@/features/store-day/components/StoreDayEventTimeline";
 import { StoreDayStatusPanel } from "@/features/store-day/components/StoreDayStatusPanel";
-import type { StoreDayEventListResult, StoreDayResult } from "@/features/store-day/types";
+import type { StoreDayClosingPreviewResult, StoreDayEventListResult, StoreDayResult } from "@/features/store-day/types";
 import { PermissionMatrix } from "./PermissionMatrix";
 
 export function SettingsOverview({
   session,
   storeDay,
   storeDayEvents,
+  closingPreview,
 }: {
   session: Session;
   storeDay?: StoreDayResult;
   storeDayEvents?: StoreDayEventListResult;
+  closingPreview?: StoreDayClosingPreviewResult;
 }) {
   return (
     <section className="space-y-6">
@@ -47,7 +49,9 @@ export function SettingsOverview({
             Apertura y cierre de la jornada de ventas.
           </p>
         </div>
-        {storeDay ? <StoreDayManagement storeDay={storeDay} role={session.role} /> : null}
+        {storeDay ? (
+          <StoreDayManagement storeDay={storeDay} role={session.role} closingPreview={closingPreview} />
+        ) : null}
         {storeDayEvents ? <StoreDayEventTimeline events={storeDayEvents} /> : null}
       </section>
 
@@ -62,9 +66,11 @@ export function SettingsOverview({
 function StoreDayManagement({
   storeDay,
   role,
+  closingPreview,
 }: {
   storeDay: StoreDayResult;
   role: Session["role"];
+  closingPreview?: StoreDayClosingPreviewResult;
 }) {
   if (!storeDay.ok) {
     return (
@@ -74,7 +80,14 @@ function StoreDayManagement({
     );
   }
 
-  return <StoreDayStatusPanel storeDay={storeDay.data} role={role} actions="manage" />;
+  return (
+    <StoreDayStatusPanel
+      storeDay={storeDay.data}
+      role={role}
+      actions="manage"
+      closingPreview={closingPreview}
+    />
+  );
 }
 
 function InfoItem({ label, value }: { label: string; value: string }) {

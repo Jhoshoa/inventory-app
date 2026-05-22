@@ -9,6 +9,7 @@ import {
   canManageProducts,
   canManageSettings,
   canOpenCloseStore,
+  canViewStoreDayReports,
   canReviewImport,
   canViewSettings,
   canVoidSale,
@@ -30,6 +31,7 @@ describe("permissions", () => {
     expect(canReviewImport("owner")).toBe(true);
     expect(canCancelImport("owner")).toBe(true);
     expect(canOpenCloseStore("owner")).toBe(true);
+    expect(canViewStoreDayReports("owner")).toBe(true);
   });
 
   it("blocks cashier administrative actions", () => {
@@ -46,5 +48,6 @@ describe("permissions", () => {
     expect(canReviewImport("cashier")).toBe(false);
     expect(canCancelImport("cashier")).toBe(false);
     expect(canOpenCloseStore("cashier")).toBe(false);
+    expect(canViewStoreDayReports("cashier")).toBe(false);
   });
 });

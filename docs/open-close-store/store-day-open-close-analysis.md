@@ -143,6 +143,38 @@ La base actual ya tiene una jornada operativa funcional:
 
 Esto es correcto como MVP. La limitacion es que la reapertura actual muta el mismo registro y sobrescribe campos como `opened_at`, `closed_at`, `opening_note` y `closing_note`. Para operacion diaria basica esta bien; para auditoria fuerte no es suficiente.
 
+## Estado Implementado Despues de Sprint 3
+
+La jornada operativa ya soporta cierre diario con caja simple:
+
+- `store_business_days` mantiene una sola jornada por `store_id + business_date`.
+- Abrir permite registrar `opening_cash_amount`.
+- Cerrar permite registrar `counted_cash_amount`.
+- El backend calcula:
+  - efectivo esperado.
+  - diferencia de caja.
+  - ventas completadas.
+  - ventas anuladas.
+  - items vendidos.
+  - totales por efectivo, QR, transferencia y tarjeta.
+- El snapshot se guarda en `store_business_days`.
+- `store_business_day_events` conserva auditoria de `open`, `close` y `reopen`.
+- Reabrir no crea otra jornada del mismo dia.
+- Si se reabre, el reporte de cierre actual queda bloqueado mientras la jornada este abierta.
+- Al cerrar otra vez, el snapshot se recalcula y vuelve a estar disponible.
+- Ajustes muestra el boton `Ver reporte de cierre` solo cuando la jornada esta cerrada con snapshot.
+- Reportes tiene vista historica de cierres diarios y detalle por jornada.
+
+Decision clave:
+
+```text
+El cierre calcula y guarda snapshot.
+El reporte se consulta despues, no se abre automaticamente.
+Si la jornada esta abierta, el reporte actual no se puede consultar.
+```
+
+Esto permite abrir y cerrar varias veces en el mismo dia sin crear registros duplicados ni mostrar cierres obsoletos como si fueran finales.
+
 ## Modelo de Datos Recomendado a Mediano Plazo
 
 La evolucion recomendada es mantener `store_business_days` como cabecera del dia y agregar una tabla append-only de eventos. Esto es mejor que crear varias jornadas para el mismo dia porque conserva una sola fuente de verdad para Dashboard, Ventas y Reportes, pero permite auditar multiples aperturas/cierres/reaperturas.

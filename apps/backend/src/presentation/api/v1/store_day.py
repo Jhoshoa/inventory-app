@@ -1,10 +1,26 @@
+from datetime import date
 from uuid import UUID
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 
-from src.application.dto.store_day_dto import StoreDayActionDTO, StoreDayEventResponseDTO, StoreDayResponseDTO
+from src.application.dto.store_day_dto import (
+    StoreDayActionDTO,
+    StoreDayCloseReportDTO,
+    StoreDayCloseReportListDTO,
+    StoreDayClosingPreviewDTO,
+    StoreDayEventResponseDTO,
+    StoreDayResponseDTO,
+)
 from src.application.use_cases.store_day.close_store_day import CloseStoreDayInput, CloseStoreDayUseCase
+from src.application.use_cases.store_day.get_close_report import (
+    GetCloseReportInput,
+    GetCloseReportUseCase,
+    GetCurrentCloseReportInput,
+    GetCurrentCloseReportUseCase,
+)
+from src.application.use_cases.store_day.get_closing_preview import GetClosingPreviewInput, GetClosingPreviewUseCase
 from src.application.use_cases.store_day.get_current_store_day import GetCurrentStoreDayInput, GetCurrentStoreDayUseCase
+from src.application.use_cases.store_day.list_close_reports import ListCloseReportsInput, ListCloseReportsUseCase
 from src.application.use_cases.store_day.list_current_store_day_events import (
     ListCurrentStoreDayEventsInput,
     ListCurrentStoreDayEventsUseCase,
@@ -64,6 +80,7 @@ async def open_store_day(
             store_id=UUID(str(user.store_id)),
             opened_by_user_id=UUID(str(user.id)),
             opening_note=dto.opening_note if dto else None,
+            opening_cash_amount=dto.opening_cash_amount if dto else None,
         )
     )
 
@@ -82,7 +99,63 @@ async def close_store_day(
             store_id=UUID(str(user.store_id)),
             closed_by_user_id=UUID(str(user.id)),
             closing_note=dto.closing_note if dto else None,
+            counted_cash_amount=dto.counted_cash_amount if dto else None,
         )
+    )
+
+
+@router.get("/current/closing-preview", response_model=StoreDayClosingPreviewDTO)
+async def get_closing_preview(
+    user: CurrentUserContext = Depends(require_owner),
+    store_repo: StoreRepository = Depends(get_store_repo),
+    business_day_repo: StoreBusinessDayRepository = Depends(get_store_business_day_repo),
+    sale_repo: SaleRepository = Depends(get_sale_repo),
+):
+    return await GetClosingPreviewUseCase(store_repo, business_day_repo, sale_repo).execute(
+        GetClosingPreviewInput(store_id=UUID(str(user.store_id)))
+    )
+
+
+@router.get("/current/close-report", response_model=StoreDayCloseReportDTO)
+async def get_current_close_report(
+    user: CurrentUserContext = Depends(require_owner),
+    store_repo: StoreRepository = Depends(get_store_repo),
+    business_day_repo: StoreBusinessDayRepository = Depends(get_store_business_day_repo),
+):
+    return await GetCurrentCloseReportUseCase(store_repo, business_day_repo).execute(
+        GetCurrentCloseReportInput(store_id=UUID(str(user.store_id)))
+    )
+
+
+@router.get("/reports", response_model=StoreDayCloseReportListDTO)
+async def list_close_reports(
+    from_date: date | None = Query(default=None),
+    to_date: date | None = Query(default=None),
+    limit: int = Query(default=50, ge=1, le=100),
+    offset: int = Query(default=0, ge=0),
+    user: CurrentUserContext = Depends(require_owner),
+    store_repo: StoreRepository = Depends(get_store_repo),
+    business_day_repo: StoreBusinessDayRepository = Depends(get_store_business_day_repo),
+):
+    return await ListCloseReportsUseCase(store_repo, business_day_repo).execute(
+        ListCloseReportsInput(
+            store_id=UUID(str(user.store_id)),
+            from_date=from_date,
+            to_date=to_date,
+            limit=limit,
+            offset=offset,
+        )
+    )
+
+
+@router.get("/reports/{business_day_id}", response_model=StoreDayCloseReportDTO)
+async def get_close_report(
+    business_day_id: UUID,
+    user: CurrentUserContext = Depends(require_owner),
+    business_day_repo: StoreBusinessDayRepository = Depends(get_store_business_day_repo),
+):
+    return await GetCloseReportUseCase(business_day_repo).execute(
+        GetCloseReportInput(store_id=UUID(str(user.store_id)), business_day_id=business_day_id)
     )
 
 

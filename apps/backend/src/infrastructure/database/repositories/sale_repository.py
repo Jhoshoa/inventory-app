@@ -138,6 +138,37 @@ class SaleRepository(ISaleRepository):
             "voided_sales_count": int(voided_result.scalar_one() or 0),
         }
 
+    async def sales_closing_summary_for_business_day(self, store_id: UUID, business_day_id: UUID) -> dict:
+        summary = await self.sales_summary_for_business_day(store_id, business_day_id)
+        payment_result = await self._session.execute(
+            select(
+                SaleModel.payment_method,
+                func.coalesce(func.sum(SaleModel.total), 0),
+            ).where(
+                SaleModel.store_id == store_id,
+                SaleModel.business_day_id == business_day_id,
+                SaleModel.deleted_at.is_(None),
+                SaleModel.status == "completed",
+            ).group_by(SaleModel.payment_method)
+        )
+        totals = {
+            "cash_sales_total": Decimal("0"),
+            "qr_sales_total": Decimal("0"),
+            "transfer_sales_total": Decimal("0"),
+            "card_sales_total": Decimal("0"),
+        }
+        mapping = {
+            "efectivo": "cash_sales_total",
+            "qr": "qr_sales_total",
+            "transferencia": "transfer_sales_total",
+            "tarjeta": "card_sales_total",
+        }
+        for payment_method, total in payment_result.all():
+            key = mapping.get(payment_method)
+            if key:
+                totals[key] = Decimal(str(total or 0))
+        return {**summary, **totals}
+
     async def latest_sales(self, store_id: UUID, limit: int = 5) -> list[Sale]:
         result = await self._session.execute(
             select(SaleModel)

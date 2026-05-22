@@ -10,6 +10,7 @@ import { PaymentMethodBreakdown } from "@/features/reports/components/PaymentMet
 import { SalesReportSummary } from "@/features/reports/components/SalesReportSummary";
 import { TopProductsTable } from "@/features/reports/components/TopProductsTable";
 import { parseReportSearchParams } from "@/features/reports/schemas";
+import { canViewStoreDayReports } from "@/lib/auth/permissions";
 import { requireSession } from "@/lib/auth/session";
 
 export default async function ReportsPage({
@@ -39,6 +40,11 @@ export default async function ReportsPage({
             Movimientos de stock
           </Link>
         </Button>
+        {canViewStoreDayReports(session.role) ? (
+          <Button variant="secondary" asChild>
+            <Link href="/dashboard/reports/store-days">Cierres diarios</Link>
+          </Button>
+        ) : null}
       </div>
 
       <DateRangeFilter params={params} />

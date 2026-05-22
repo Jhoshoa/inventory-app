@@ -10,3 +10,19 @@ export function noteValue(formData: FormData) {
   const value = formData.get("note");
   return typeof value === "string" && value.trim() ? value.trim() : null;
 }
+
+export function validateMoneyAmount(value: FormDataEntryValue | null, label: string, required = false) {
+  if (value === null || value === "") return required ? `${label} es requerido` : "";
+  if (typeof value !== "string") return `${label} no es valido`;
+  const normalized = value.trim();
+  if (!normalized) return required ? `${label} es requerido` : "";
+  if (!/^\d+(\.\d{1,2})?$/.test(normalized)) return `${label} debe tener maximo 2 decimales`;
+  if (Number(normalized) < 0) return `${label} no puede ser negativo`;
+  return "";
+}
+
+export function moneyValue(formData: FormData, name: string) {
+  const value = formData.get(name);
+  if (typeof value !== "string" || !value.trim()) return null;
+  return value.trim();
+}

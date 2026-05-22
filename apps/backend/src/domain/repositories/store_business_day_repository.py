@@ -16,6 +16,19 @@ class IStoreBusinessDayRepository(ABC):
     async def get_by_business_date(self, store_id: UUID, business_date: date) -> StoreBusinessDay | None: ...
 
     @abstractmethod
+    async def get_by_id(self, store_id: UUID, business_day_id: UUID) -> StoreBusinessDay | None: ...
+
+    @abstractmethod
+    async def list_by_date_range(
+        self,
+        store_id: UUID,
+        from_date: date,
+        to_date: date,
+        limit: int,
+        offset: int,
+    ) -> tuple[list[StoreBusinessDay], int]: ...
+
+    @abstractmethod
     async def close(self, business_day: StoreBusinessDay) -> StoreBusinessDay: ...
 
     @abstractmethod

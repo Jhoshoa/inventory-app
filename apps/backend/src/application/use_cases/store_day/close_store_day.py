@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from decimal import Decimal
 from uuid import UUID
 
 from src.application.dto.store_day_dto import StoreDayResponseDTO
@@ -16,6 +17,7 @@ class CloseStoreDayInput:
     store_id: UUID
     closed_by_user_id: UUID
     closing_note: str | None = None
+    counted_cash_amount: Decimal | None = None
 
 
 class CloseStoreDayUseCase:
@@ -40,13 +42,26 @@ class CloseStoreDayUseCase:
         if business_day is None:
             raise ConflictError("No hay una jornada abierta para cerrar")
 
-        summary = await self._sale_repo.sales_summary_for_business_day(input.store_id, business_day.id)
+        summary = await self._sale_repo.sales_closing_summary_for_business_day(input.store_id, business_day.id)
+        opening_cash = business_day.opening_cash_amount or Decimal("0")
+        cash_sales = summary["cash_sales_total"]
+        expected_cash = opening_cash + cash_sales
+        counted_cash = input.counted_cash_amount
+        cash_difference = counted_cash - expected_cash if counted_cash is not None else None
         business_day.close(
             closed_by_user_id=input.closed_by_user_id,
             closing_note=input.closing_note,
             sales_total=summary["total_sales"],
             sales_count=summary["sales_count"],
             voided_sales_count=summary["voided_sales_count"],
+            items_count=summary["items_count"],
+            cash_sales_total=summary["cash_sales_total"],
+            qr_sales_total=summary["qr_sales_total"],
+            transfer_sales_total=summary["transfer_sales_total"],
+            card_sales_total=summary["card_sales_total"],
+            expected_cash_amount=expected_cash,
+            counted_cash_amount=counted_cash,
+            cash_difference_amount=cash_difference,
         )
         closed = await self._business_day_repo.close(business_day)
         await self._event_repo.save(

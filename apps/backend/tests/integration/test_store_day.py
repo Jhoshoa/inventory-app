@@ -15,12 +15,16 @@ async def test_get_current_store_day_returns_closed_when_no_open_day(client):
 
 
 async def test_owner_can_open_store_day(client, db_session):
-    response = await client.post("/api/v1/store-day/open", json={"opening_note": "Apertura normal"})
+    response = await client.post(
+        "/api/v1/store-day/open",
+        json={"opening_note": "Apertura normal", "opening_cash_amount": "100.00"},
+    )
 
     assert response.status_code == 201
     data = response.json()
     assert data["status"] == "open"
     assert data["opening_note"] == "Apertura normal"
+    assert data["opening_cash_amount"] == "100.00"
     assert data["opened_by_user_id"] == str(dependencies.DEV_USER_ID)
 
     business_day = await db_session.get(StoreBusinessDayModel, data["id"])
@@ -88,6 +92,73 @@ async def test_owner_can_close_open_store_day_with_sales_snapshot(client):
     events_response = await client.get("/api/v1/store-day/current/events")
     assert events_response.status_code == 200
     assert [event["event_type"] for event in events_response.json()] == ["open", "close"]
+
+
+async def test_owner_can_preview_and_close_store_day_with_cash_count(client):
+    cash_product = await client.post("/api/v1/products", json={"name": "Cafe", "price": "10.00", "stock": 10})
+    qr_product = await client.post("/api/v1/products", json={"name": "Te", "price": "15.00", "stock": 10})
+    open_response = await client.post("/api/v1/store-day/open", json={"opening_cash_amount": "100.00"})
+    assert open_response.status_code == 201
+
+    await client.post(
+        "/api/v1/sales",
+        json={
+            "items": [{"product_id": cash_product.json()["id"], "quantity": 2}],
+            "payment_method": "efectivo",
+        },
+    )
+    await client.post(
+        "/api/v1/sales",
+        json={
+            "items": [{"product_id": qr_product.json()["id"], "quantity": 1}],
+            "payment_method": "qr",
+        },
+    )
+
+    preview_response = await client.get("/api/v1/store-day/current/closing-preview")
+    assert preview_response.status_code == 200
+    preview = preview_response.json()
+    assert preview["opening_cash_amount"] == "100.00"
+    assert preview["sales_total"] == "35.00"
+    assert preview["cash_sales_total"] == "20.00"
+    assert preview["qr_sales_total"] == "15.00"
+    assert preview["expected_cash_amount"] == "120.00"
+
+    close_response = await client.post(
+        "/api/v1/store-day/close",
+        json={"closing_note": "Cierre con diferencia", "counted_cash_amount": "118.00"},
+    )
+    assert close_response.status_code == 200
+    closed = close_response.json()
+    assert closed["status"] == "closed"
+    assert closed["expected_cash_amount"] == "120.00"
+    assert closed["counted_cash_amount"] == "118.00"
+    assert closed["cash_difference_amount"] == "-2.00"
+    assert closed["closing_cash_sales_total"] == "20.00"
+    assert closed["closing_qr_sales_total"] == "15.00"
+
+    report_response = await client.get("/api/v1/store-day/current/close-report")
+    assert report_response.status_code == 200
+    report = report_response.json()
+    assert report["business_day_id"] == open_response.json()["id"]
+    assert report["cash_difference_amount"] == "-2.00"
+
+
+async def test_current_close_report_rejects_open_day_after_reopen(client):
+    open_response = await client.post("/api/v1/store-day/open")
+    assert open_response.status_code == 201
+    close_response = await client.post("/api/v1/store-day/close", json={"counted_cash_amount": "0.00"})
+    assert close_response.status_code == 200
+
+    report_response = await client.get("/api/v1/store-day/current/close-report")
+    assert report_response.status_code == 200
+
+    reopen_response = await client.post("/api/v1/store-day/reopen")
+    assert reopen_response.status_code == 200
+
+    blocked_report = await client.get("/api/v1/store-day/current/close-report")
+    assert blocked_report.status_code == 409
+    assert blocked_report.json()["detail"] == "La jornada aun esta abierta"
 
 
 async def test_owner_can_reopen_closed_store_day_and_keep_same_business_day(client):

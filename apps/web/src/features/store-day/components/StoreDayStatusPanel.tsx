@@ -10,7 +10,8 @@ import { Input } from "@/components/ui/Input";
 import { canOpenCloseStore } from "@/lib/auth/permissions";
 import type { UserRole } from "@/lib/auth/types";
 import { closeStoreDayAction, openStoreDayAction, reopenStoreDayAction } from "../actions";
-import type { StoreDay, StoreDayActionState } from "../types";
+import type { StoreDay, StoreDayActionState, StoreDayClosingPreviewResult } from "../types";
+import { StoreDayClosingPreview } from "./StoreDayClosingPreview";
 
 const initialState: StoreDayActionState = {
   ok: false,
@@ -21,10 +22,12 @@ export function StoreDayStatusPanel({
   storeDay,
   role,
   actions = "none",
+  closingPreview,
 }: {
   storeDay: StoreDay;
   role: UserRole;
   actions?: "none" | "link" | "manage";
+  closingPreview?: StoreDayClosingPreviewResult;
 }) {
   const isOpen = storeDay.status === "open";
   const canManage = canOpenCloseStore(role);
@@ -61,7 +64,9 @@ export function StoreDayStatusPanel({
           </div>
         </div>
 
-        {canManage && actions === "manage" ? <StoreDayActionForm storeDay={storeDay} /> : null}
+        {canManage && actions === "manage" ? (
+          <StoreDayActionForm storeDay={storeDay} closingPreview={closingPreview} />
+        ) : null}
         {canManage && actions === "link" ? (
           <Button asChild variant="secondary">
             <Link href="/dashboard/settings">Gestionar jornada</Link>
@@ -72,7 +77,13 @@ export function StoreDayStatusPanel({
   );
 }
 
-function StoreDayActionForm({ storeDay }: { storeDay: StoreDay }) {
+function StoreDayActionForm({
+  storeDay,
+  closingPreview,
+}: {
+  storeDay: StoreDay;
+  closingPreview?: StoreDayClosingPreviewResult;
+}) {
   const isOpen = storeDay.status === "open";
   const isReopen = !isOpen && Boolean(storeDay.id && storeDay.closed_at);
   const action = isOpen ? closeStoreDayAction : isReopen ? reopenStoreDayAction : openStoreDayAction;
@@ -83,12 +94,41 @@ function StoreDayActionForm({ storeDay }: { storeDay: StoreDay }) {
   return (
     <form action={formAction} className="min-w-full space-y-2 lg:min-w-80">
       {state.message ? <Alert variant={state.ok ? "info" : "error"}>{state.message}</Alert> : null}
+      {isOpen ? <StoreDayClosingPreview preview={closingPreview} /> : null}
+      {!isOpen && !isReopen ? (
+        <>
+          <Input
+            aria-label="Caja inicial"
+            inputMode="decimal"
+            name="opening_cash_amount"
+            placeholder="Caja inicial"
+          />
+          <FieldError message={state.fieldErrors.opening_cash_amount} />
+        </>
+      ) : null}
+      {isOpen ? (
+        <>
+          <Input
+            aria-label="Efectivo contado"
+            inputMode="decimal"
+            name="counted_cash_amount"
+            placeholder="Efectivo contado"
+            required
+          />
+          <FieldError message={state.fieldErrors.counted_cash_amount} />
+        </>
+      ) : null}
       <Input
         aria-label={noteLabel}
         name="note"
         placeholder={`${noteLabel} opcional`}
       />
       <FieldError message={state.fieldErrors.note} />
+      {!isOpen && isReopen && storeDay.closing_snapshot_at ? (
+        <Button asChild className="w-full" variant="secondary">
+          <Link href={`/dashboard/reports/store-days/${storeDay.id}`}>Ver reporte de cierre</Link>
+        </Button>
+      ) : null}
       <Button className="w-full" type="submit" variant={isOpen ? "danger" : "primary"} disabled={isPending}>
         {isPending ? "Procesando..." : buttonLabel}
       </Button>
