@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useMemo, useState } from "react";
+import { useActionState, useEffect, useMemo, useState } from "react";
 import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
 import { FieldError } from "@/components/ui/FieldError";
@@ -35,7 +35,9 @@ export function ProductForm({
     action,
     initialProductActionState,
   );
-  const values = productToFormValues(product);
+  const initialValues = productToFormValues(product);
+  const values = state.values ?? initialValues;
+  const [formValues, setFormValues] = useState(values);
   const [categoryId, setCategoryId] = useState(values.category_id);
   const [sku, setSku] = useState(values.sku);
   const [scanCode, setScanCode] = useState(values.qr_code);
@@ -44,8 +46,21 @@ export function ProductForm({
     () => categories.find((category) => category.id === categoryId),
     [categories, categoryId],
   );
-  const categoryName = selectedCategory?.name ?? values.category;
+  const categoryName = selectedCategory?.name ?? formValues.category;
   const normalizedScanCode = scanCode.trim();
+  const shouldUseAutomaticSku = mode === "create" && Boolean(selectedCategory);
+
+  useEffect(() => {
+    if (!state.values) return;
+    setFormValues(state.values);
+    setCategoryId(state.values.category_id);
+    setSku(state.values.sku);
+    setScanCode(state.values.qr_code);
+  }, [state.values]);
+
+  function updateField(name: keyof typeof formValues, value: string) {
+    setFormValues((current) => ({ ...current, [name]: value }));
+  }
 
   return (
     <form action={formAction} className="space-y-6">
@@ -54,13 +69,28 @@ export function ProductForm({
 
       <div className="grid gap-4 md:grid-cols-2">
         <Field name="name" label="Nombre" error={state.fieldErrors.name}>
-          <Input name="name" defaultValue={values.name} error={Boolean(state.fieldErrors.name)} />
+          <Input
+            id="name"
+            name="name"
+            value={formValues.name}
+            onChange={(event) => updateField("name", event.target.value)}
+            error={Boolean(state.fieldErrors.name)}
+          />
         </Field>
         <Field name="category_id" label="Categoria" error={state.fieldErrors.category_id}>
           <Select
+            id="category_id"
             name="category_id"
             value={categoryId}
-            onChange={(event) => setCategoryId(event.target.value)}
+            onChange={(event) => {
+              const nextCategoryId = event.target.value;
+              setCategoryId(nextCategoryId);
+              updateField("category_id", nextCategoryId);
+              if (mode === "create" && nextCategoryId) {
+                setSku("");
+                updateField("sku", "");
+              }
+            }}
             aria-label="Categoria"
           >
             <option value="">Sin categoria</option>
@@ -75,52 +105,64 @@ export function ProductForm({
             <p className="text-xs text-slate-500">Configura categorias en Ajustes para generar SKUs por prefijo.</p>
           ) : null}
         </Field>
-        <Field name="sku" label="SKU" error={state.fieldErrors.sku}>
-          <div className="flex gap-2">
+        {shouldUseAutomaticSku && selectedCategory ? (
+          <div className="space-y-2">
+            <Label>SKU</Label>
+            <input type="hidden" name="sku" value="" />
+            <div className="min-h-10 rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm">
+              <p className="font-medium text-slate-900">Automatico al guardar</p>
+              <p className="text-xs text-slate-500">
+                Se generara en el servidor con prefijo {selectedCategory.sku_prefix}.
+              </p>
+            </div>
+            <FieldError message={state.fieldErrors.sku} />
+          </div>
+        ) : (
+          <Field name="sku" label="SKU" error={state.fieldErrors.sku}>
             <Input
+              id="sku"
               name="sku"
               value={sku}
-              onChange={(event) => setSku(event.target.value)}
+              onChange={(event) => {
+                setSku(event.target.value);
+                updateField("sku", event.target.value);
+              }}
               error={Boolean(state.fieldErrors.sku)}
             />
-            <Button
-              type="button"
-              variant="secondary"
-              onClick={() => {
-                if (selectedCategory) setSku(formatNextSku(selectedCategory));
-              }}
-              disabled={!selectedCategory}
-            >
-              Generar
-            </Button>
-          </div>
-        </Field>
+          </Field>
+        )}
         <Field name="price" label="Precio venta" error={state.fieldErrors.price}>
           <Input
             name="price"
+            id="price"
             type="number"
             step="0.01"
             min="0"
-            defaultValue={values.price}
+            value={formValues.price}
+            onChange={(event) => updateField("price", event.target.value)}
             error={Boolean(state.fieldErrors.price)}
           />
         </Field>
         <Field name="cost_price" label="Costo" error={state.fieldErrors.cost_price}>
           <Input
             name="cost_price"
+            id="cost_price"
             type="number"
             step="0.01"
             min="0"
-            defaultValue={values.cost_price}
+            value={formValues.cost_price}
+            onChange={(event) => updateField("cost_price", event.target.value)}
             error={Boolean(state.fieldErrors.cost_price)}
           />
         </Field>
         <Field name="stock" label="Stock" error={state.fieldErrors.stock}>
           <Input
             name="stock"
+            id="stock"
             type="number"
             min="0"
-            defaultValue={values.stock}
+            value={formValues.stock}
+            onChange={(event) => updateField("stock", event.target.value)}
             disabled={mode === "edit"}
             error={Boolean(state.fieldErrors.stock)}
           />
@@ -128,28 +170,56 @@ export function ProductForm({
         <Field name="min_stock" label="Stock minimo" error={state.fieldErrors.min_stock}>
           <Input
             name="min_stock"
+            id="min_stock"
             type="number"
             min="0"
-            defaultValue={values.min_stock}
+            value={formValues.min_stock}
+            onChange={(event) => updateField("min_stock", event.target.value)}
             error={Boolean(state.fieldErrors.min_stock)}
           />
         </Field>
         <Field name="unit" label="Unidad" error={state.fieldErrors.unit}>
-          <Input name="unit" defaultValue={values.unit} error={Boolean(state.fieldErrors.unit)} />
+          <Input
+            id="unit"
+            name="unit"
+            value={formValues.unit}
+            onChange={(event) => updateField("unit", event.target.value)}
+            error={Boolean(state.fieldErrors.unit)}
+          />
         </Field>
         <Field name="qr_code" label="Codigo escaneable" error={state.fieldErrors.qr_code}>
           <div className="flex flex-col gap-2 sm:flex-row">
             <Input
               name="qr_code"
+              id="qr_code"
               value={scanCode}
-              onChange={(event) => setScanCode(event.target.value)}
+              onChange={(event) => {
+                setScanCode(event.target.value);
+                updateField("qr_code", event.target.value);
+              }}
               error={Boolean(state.fieldErrors.qr_code)}
             />
             <div className="flex gap-2">
-              <Button type="button" variant="secondary" onClick={() => setScanCode(generateScanCode())}>
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => {
+                  const nextCode = generateScanCode();
+                  setScanCode(nextCode);
+                  updateField("qr_code", nextCode);
+                }}
+              >
                 Generar
               </Button>
-              <Button type="button" variant="secondary" onClick={() => setScanCode(sku)} disabled={!sku.trim()}>
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => {
+                  setScanCode(sku);
+                  updateField("qr_code", sku);
+                }}
+                disabled={!sku.trim()}
+              >
                 Usar SKU
               </Button>
               <Button
@@ -166,8 +236,10 @@ export function ProductForm({
         <Field name="photo_url" label="URL foto" error={state.fieldErrors.photo_url}>
           <Input
             name="photo_url"
+            id="photo_url"
             type="url"
-            defaultValue={values.photo_url}
+            value={formValues.photo_url}
+            onChange={(event) => updateField("photo_url", event.target.value)}
             error={Boolean(state.fieldErrors.photo_url)}
           />
         </Field>
@@ -193,10 +265,6 @@ export function ProductForm({
       />
     </form>
   );
-}
-
-function formatNextSku(category: ProductCategory) {
-  return `${category.sku_prefix}${category.next_sku_number.toString().padStart(6, "0")}`;
 }
 
 function generateScanCode() {

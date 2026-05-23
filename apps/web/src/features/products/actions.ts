@@ -18,7 +18,7 @@ export async function createProductAction(
   const values = formDataToProductValues(formData);
   const fieldErrors = validateProductForm(values, "create");
   if (Object.keys(fieldErrors).length > 0) {
-    return { ok: false, fieldErrors };
+    return { ok: false, fieldErrors, values };
   }
 
   const token = await getAuthToken();
@@ -32,6 +32,7 @@ export async function createProductAction(
     return {
       ok: false,
       message: result.error.message,
+      values,
       fieldErrors: {},
     };
   }
@@ -48,10 +49,10 @@ export async function updateProductAction(
   const values = formDataToProductValues(formData);
   const fieldErrors = validateProductForm(values, "edit");
   if (!productId) {
-    return { ok: false, message: "Producto invalido", fieldErrors: {} };
+    return { ok: false, message: "Producto invalido", fieldErrors: {}, values };
   }
   if (Object.keys(fieldErrors).length > 0) {
-    return { ok: false, fieldErrors };
+    return { ok: false, fieldErrors, values };
   }
 
   const token = await getAuthToken();
@@ -62,7 +63,7 @@ export async function updateProductAction(
   });
 
   if (!result.ok) {
-    return { ok: false, message: result.error.message, fieldErrors: {} };
+    return { ok: false, message: result.error.message, fieldErrors: {}, values };
   }
 
   revalidatePath("/dashboard/products");

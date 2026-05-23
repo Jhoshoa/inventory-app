@@ -5,6 +5,7 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.domain.entities.product_category import ProductCategory
+from src.infrastructure.database.models.product_model import ProductModel
 from src.domain.repositories.product_category_repository import IProductCategoryRepository
 from src.infrastructure.database.models.product_category_model import ProductCategoryModel
 
@@ -77,11 +78,30 @@ class ProductCategoryRepository(IProductCategoryRepository):
         model = result.scalar_one_or_none()
         if model is None:
             return None
-        sku = f"{model.sku_prefix}{model.next_sku_number:06d}"
-        model.next_sku_number += 1
+
+        sku, next_sku_number = await self._next_available_sku(
+            model.store_id,
+            model.sku_prefix,
+            model.next_sku_number,
+        )
+        model.next_sku_number = next_sku_number
         model.updated_at = datetime.now(timezone.utc)
         await self._session.flush()
         return sku
+
+    async def _next_available_sku(self, store_id: UUID, sku_prefix: str, start_number: int) -> tuple[str, int]:
+        next_number = max(start_number, 1)
+        while True:
+            sku = f"{sku_prefix}{next_number:06d}"
+            result = await self._session.execute(
+                select(func.count()).select_from(ProductModel).where(
+                    ProductModel.store_id == store_id,
+                    ProductModel.sku == sku,
+                )
+            )
+            if int(result.scalar_one()) == 0:
+                return sku, next_number + 1
+            next_number += 1
 
     def _to_entity(self, model: ProductCategoryModel) -> ProductCategory:
         return ProductCategory(

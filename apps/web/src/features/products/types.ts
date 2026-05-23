@@ -75,6 +75,7 @@ export interface ProductFormValues {
 export interface ProductActionState {
   ok: boolean;
   message?: string;
+  values?: ProductFormValues;
   fieldErrors: Partial<Record<keyof ProductFormValues | "quantity" | "reason" | "confirm", string>>;
 }
 

@@ -149,6 +149,28 @@ async def test_product_category_generates_sequential_skus(client):
     assert first_response.json()["category_id"] == category["id"]
 
 
+async def test_product_category_skips_existing_sku_when_counter_is_stale(client):
+    category_response = await client.post(
+        "/api/v1/product-categories",
+        json={"name": "Cemento", "sku_prefix": "CEM"},
+    )
+    assert category_response.status_code == 201
+    category = category_response.json()
+
+    manual_response = await client.post(
+        "/api/v1/products",
+        json={"name": "Cemento manual", "price": "45.00", "stock": 3, "sku": "CEM000001"},
+    )
+    auto_response = await client.post(
+        "/api/v1/products",
+        json={"name": "Cemento automatico", "price": "48.00", "stock": 5, "category_id": category["id"]},
+    )
+
+    assert manual_response.status_code == 201
+    assert auto_response.status_code == 201
+    assert auto_response.json()["sku"] == "CEM000002"
+
+
 async def test_products_search_filters_by_category_id(client):
     comida_response = await client.post(
         "/api/v1/product-categories",
