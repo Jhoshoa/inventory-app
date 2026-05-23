@@ -45,6 +45,7 @@ router = APIRouter(prefix="/products", tags=["products"])
 async def list_products(
     q: str | None = Query(default=None, min_length=3, max_length=100),
     category: str | None = Query(default=None, max_length=50),
+    category_id: UUID | None = Query(default=None),
     stock: ProductStockFilter = ProductStockFilter.ALL,
     limit: int = Query(default=50, ge=1, le=100),
     offset: int = Query(default=0, ge=0),
@@ -58,6 +59,7 @@ async def list_products(
             store_id=user.store_id,
             q=q,
             category=category,
+            category_id=category_id,
             stock=stock.value,
             limit=limit,
             offset=offset,

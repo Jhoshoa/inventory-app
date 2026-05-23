@@ -20,6 +20,7 @@ class IProductRepository(ABC):
         *,
         q: str | None = None,
         category: str | None = None,
+        category_id: UUID | None = None,
         stock: str = "all",
         limit: int = 50,
         offset: int = 0,

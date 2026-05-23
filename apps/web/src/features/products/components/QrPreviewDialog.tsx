@@ -6,6 +6,7 @@ import { Download, Loader2, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { DialogSurface } from "@/components/ui/Dialog";
+import { generateQrSvg, svgToDataUri, toQrFilename } from "../qr";
 
 interface QrPreviewDialogProps {
   open: boolean;
@@ -37,15 +38,7 @@ export function QrPreviewDialog({
     setIsGenerating(true);
     setError(null);
 
-    import("qrcode")
-      .then((QRCode) =>
-        QRCode.toString(normalizedCode, {
-          type: "svg",
-          errorCorrectionLevel: "M",
-          margin: 2,
-          width: 240,
-        }),
-      )
+    generateQrSvg(normalizedCode, 240)
       .then((nextSvg) => {
         if (isCurrent) setSvg(nextSvg);
       })
@@ -63,7 +56,7 @@ export function QrPreviewDialog({
 
   const previewSrc = useMemo(() => {
     if (!svg) return "";
-    return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+    return svgToDataUri(svg);
   }, [svg]);
 
   if (!open) return null;
@@ -142,13 +135,9 @@ function downloadSvg(svg: string, code: string) {
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = url;
-  link.download = `qr-${toSafeFilename(code)}.svg`;
+  link.download = `qr-${toQrFilename(code)}.svg`;
   document.body.append(link);
   link.click();
   link.remove();
   URL.revokeObjectURL(url);
-}
-
-function toSafeFilename(value: string) {
-  return value.replace(/[^a-z0-9_-]+/gi, "-").replace(/^-+|-+$/g, "") || "producto";
 }

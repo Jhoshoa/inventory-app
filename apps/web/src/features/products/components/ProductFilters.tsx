@@ -3,6 +3,7 @@
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
+import type { ProductCategory } from "@/features/product-categories/types";
 import { MIN_PRODUCT_SEARCH_LENGTH } from "../schemas";
 import type {
   ProductSearchParams,
@@ -14,11 +15,13 @@ import type {
 export function ProductFilters({
   params,
   query,
+  categories = [],
   onQueryChange,
   onFilterChange,
 }: {
   params: ProductSearchParams;
   query: string;
+  categories?: ProductCategory[];
   onQueryChange: (value: string) => void;
   onFilterChange: (patch: Partial<ProductSearchParams>) => void;
 }) {
@@ -27,7 +30,7 @@ export function ProductFilters({
     trimmedQuery.length > 0 && trimmedQuery.length < MIN_PRODUCT_SEARCH_LENGTH;
 
   return (
-    <div className="grid gap-3 rounded-lg border border-slate-200 bg-white p-4 md:grid-cols-[1fr_160px_160px_160px]">
+    <div className="grid gap-3 rounded-lg border border-slate-200 bg-white p-4 md:grid-cols-[1fr_180px_160px_160px_160px]">
       <label className="relative block">
         <span className="sr-only">Buscar productos</span>
         <Search className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-slate-400" aria-hidden />
@@ -43,6 +46,23 @@ export function ProductFilters({
           </span>
         ) : null}
       </label>
+      <Select
+        aria-label="Filtro de categoria"
+        value={params.category_id ?? ""}
+        onChange={(event) =>
+          onFilterChange({
+            category_id: event.target.value || undefined,
+            category: undefined,
+          })
+        }
+      >
+        <option value="">Todas las categorias</option>
+        {categories.map((category) => (
+          <option key={category.id} value={category.id}>
+            {category.name}
+          </option>
+        ))}
+      </Select>
       <Select
         aria-label="Filtro de stock"
         value={params.stock}

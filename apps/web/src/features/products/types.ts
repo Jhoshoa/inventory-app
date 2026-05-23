@@ -50,6 +50,7 @@ export interface StockMovementListResponse {
 export interface ProductSearchParams {
   q?: string;
   category?: string;
+  category_id?: string;
   stock: ProductStockFilter;
   limit: number;
   offset: number;

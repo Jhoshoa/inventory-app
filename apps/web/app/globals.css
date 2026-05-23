@@ -13,3 +13,41 @@
 body {
   margin: 0;
 }
+
+.label-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(50mm, 50mm));
+  align-items: start;
+  gap: 3mm;
+}
+
+@media print {
+  @page {
+    size: Letter;
+    margin: 8mm;
+  }
+
+  body {
+    background: white;
+  }
+
+  .print-hidden {
+    display: none !important;
+  }
+
+  .print-label-sheet {
+    min-height: auto !important;
+    border: 0 !important;
+    padding: 0 !important;
+  }
+
+  .label-grid {
+    grid-template-columns: repeat(3, 50mm);
+    gap: 3mm;
+  }
+
+  .product-print-label {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+}

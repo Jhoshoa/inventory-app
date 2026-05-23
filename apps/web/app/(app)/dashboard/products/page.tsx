@@ -1,7 +1,8 @@
 import Link from "next/link";
-import { PackagePlus } from "lucide-react";
+import { PackagePlus, Tags } from "lucide-react";
 import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
+import { listProductCategories } from "@/features/product-categories/api";
 import { listProducts } from "@/features/products/api";
 import { ProductBrowser } from "@/features/products/components/ProductBrowser";
 import { parseProductSearchParams } from "@/features/products/schemas";
@@ -15,9 +16,10 @@ export default async function ProductsPage({
 }) {
   const rawParams = await searchParams;
   const params = parseProductSearchParams(rawParams);
-  const [session, products] = await Promise.all([
+  const [session, products, categories] = await Promise.all([
     requireSession(),
     listProducts(params),
+    listProductCategories(),
   ]);
 
   return (
@@ -32,12 +34,20 @@ export default async function ProductsPage({
           </p>
         </div>
         {canManageProducts(session.role) ? (
-          <Button asChild>
-            <Link href="/dashboard/products/new">
-              <PackagePlus className="h-4 w-4" aria-hidden="true" />
-              Nuevo producto
-            </Link>
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <Button variant="secondary" asChild>
+              <Link href="/dashboard/products/labels">
+                <Tags className="h-4 w-4" aria-hidden="true" />
+                Imprimir etiquetas
+              </Link>
+            </Button>
+            <Button asChild>
+              <Link href="/dashboard/products/new">
+                <PackagePlus className="h-4 w-4" aria-hidden="true" />
+                Nuevo producto
+              </Link>
+            </Button>
+          </div>
         ) : null}
       </div>
 
@@ -46,7 +56,12 @@ export default async function ProductsPage({
           No se pudieron cargar los productos: {products.error.message}
         </Alert>
       ) : (
-        <ProductBrowser initialParams={params} initialProducts={products.data} role={session.role} />
+        <ProductBrowser
+          initialParams={params}
+          initialProducts={products.data}
+          role={session.role}
+          categories={categories.ok ? categories.data.items : []}
+        />
       )}
     </section>
   );

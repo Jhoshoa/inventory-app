@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { canManageProducts } from "@/lib/auth/permissions";
 import type { UserRole } from "@/lib/auth/types";
+import type { ProductCategory } from "@/features/product-categories/types";
 import {
   buildProductQueryString,
   MIN_PRODUCT_SEARCH_LENGTH,
@@ -21,10 +22,12 @@ export function ProductBrowser({
   initialParams,
   initialProducts,
   role,
+  categories = [],
 }: {
   initialParams: ProductSearchParams;
   initialProducts: ProductListResponse;
   role: UserRole;
+  categories?: ProductCategory[];
 }) {
   const [params, setParams] = useState(initialParams);
   const [query, setQuery] = useState(initialParams.q ?? "");
@@ -95,6 +98,7 @@ export function ProductBrowser({
       <ProductFilters
         params={params}
         query={query}
+        categories={categories}
         onQueryChange={setQuery}
         onFilterChange={updateFilters}
       />

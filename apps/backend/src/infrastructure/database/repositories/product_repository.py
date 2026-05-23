@@ -1,6 +1,6 @@
 from uuid import UUID
 from datetime import datetime, timezone
-from sqlalchemy import func, select, update
+from sqlalchemy import func, or_, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.domain.entities.product import Product
 from src.domain.repositories.product_repository import IProductRepository
@@ -79,6 +79,7 @@ class ProductRepository(IProductRepository):
         *,
         q: str | None = None,
         category: str | None = None,
+        category_id: UUID | None = None,
         stock: str = "all",
         limit: int = 50,
         offset: int = 0,
@@ -88,9 +89,17 @@ class ProductRepository(IProductRepository):
         filters = [ProductModel.store_id == store_id, ProductModel.deleted_at.is_(None)]
         if q:
             pattern = f"%{q}%"
-            filters.append(ProductModel.name.ilike(pattern))
+            filters.append(
+                or_(
+                    ProductModel.name.ilike(pattern),
+                    ProductModel.sku.ilike(pattern),
+                    ProductModel.qr_code.ilike(pattern),
+                )
+            )
         if category:
             filters.append(ProductModel.category == category)
+        if category_id:
+            filters.append(ProductModel.category_id == category_id)
         if stock == "available":
             filters.append(ProductModel.stock > 0)
         elif stock == "low":

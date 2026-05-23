@@ -21,7 +21,7 @@ async def test_products_search_filters_and_pagination(client):
     assert len(category_response.json()["items"]) == 1
 
 
-async def test_products_search_matches_name_only(client):
+async def test_products_search_matches_name_sku_and_qr_code(client):
     await client.post(
         "/api/v1/products",
         json={"name": "Cafe", "price": "20.00", "stock": 2, "sku": "MATCH-001", "qr_code": "MATCH-QR"},
@@ -31,11 +31,17 @@ async def test_products_search_matches_name_only(client):
         json={"name": "Matcha", "price": "30.00", "stock": 2, "sku": "TEA-001", "qr_code": "TEA-QR"},
     )
 
-    response = await client.get("/api/v1/products?q=mat")
+    name_response = await client.get("/api/v1/products?q=mat")
+    sku_response = await client.get("/api/v1/products?q=MATCH-001")
+    qr_response = await client.get("/api/v1/products?q=TEA-QR")
 
-    assert response.status_code == 200
-    assert response.json()["total"] == 1
-    assert response.json()["items"][0]["name"] == "Matcha"
+    assert name_response.status_code == 200
+    assert name_response.json()["total"] == 2
+    assert {item["name"] for item in name_response.json()["items"]} == {"Cafe", "Matcha"}
+    assert sku_response.status_code == 200
+    assert sku_response.json()["items"][0]["name"] == "Cafe"
+    assert qr_response.status_code == 200
+    assert qr_response.json()["items"][0]["name"] == "Matcha"
 
 
 async def test_products_search_rejects_short_query(client):
@@ -141,6 +147,34 @@ async def test_product_category_generates_sequential_skus(client):
     assert second_response.json()["sku"] == "COM000002"
     assert first_response.json()["category"] == "Comida"
     assert first_response.json()["category_id"] == category["id"]
+
+
+async def test_products_search_filters_by_category_id(client):
+    comida_response = await client.post(
+        "/api/v1/product-categories",
+        json={"name": "Comida", "sku_prefix": "COM"},
+    )
+    bebida_response = await client.post(
+        "/api/v1/product-categories",
+        json={"name": "Bebida", "sku_prefix": "BEB"},
+    )
+    comida = comida_response.json()
+    bebida = bebida_response.json()
+
+    await client.post(
+        "/api/v1/products",
+        json={"name": "Pan", "price": "2.00", "stock": 10, "category_id": comida["id"]},
+    )
+    await client.post(
+        "/api/v1/products",
+        json={"name": "Jugo", "price": "3.00", "stock": 10, "category_id": bebida["id"]},
+    )
+
+    response = await client.get(f"/api/v1/products?category_id={comida['id']}")
+
+    assert response.status_code == 200
+    assert response.json()["total"] == 1
+    assert response.json()["items"][0]["name"] == "Pan"
 
 
 async def test_product_category_prefix_is_unique_by_store(client):

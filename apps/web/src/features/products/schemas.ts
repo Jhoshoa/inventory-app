@@ -24,6 +24,7 @@ export function parseProductSearchParams(
   return {
     q: optionalSearchString(firstValue(searchParams.q)),
     category: optionalString(firstValue(searchParams.category)),
+    category_id: optionalString(firstValue(searchParams.category_id)),
     stock: stockFilters.has(stock as ProductStockFilter)
       ? (stock as ProductStockFilter)
       : "all",
@@ -40,6 +41,7 @@ export function buildProductQueryString(params: ProductSearchParams) {
   const query = new URLSearchParams();
   if (params.q && params.q.length >= MIN_PRODUCT_SEARCH_LENGTH) query.set("q", params.q);
   if (params.category) query.set("category", params.category);
+  if (params.category_id) query.set("category_id", params.category_id);
   query.set("stock", params.stock);
   query.set("limit", params.limit.toString());
   query.set("offset", params.offset.toString());

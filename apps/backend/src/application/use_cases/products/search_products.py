@@ -10,6 +10,7 @@ class SearchProductsInput:
     store_id: UUID
     q: str | None = None
     category: str | None = None
+    category_id: UUID | None = None
     stock: str = "all"
     limit: int = 50
     offset: int = 0
@@ -26,6 +27,7 @@ class SearchProductsUseCase:
             input.store_id,
             q=input.q,
             category=input.category,
+            category_id=input.category_id,
             stock=input.stock,
             limit=input.limit,
             offset=input.offset,
