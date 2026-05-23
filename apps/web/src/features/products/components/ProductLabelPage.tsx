@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Printer, Search } from "lucide-react";
+import { Download, Plus, Printer, Search, Trash2 } from "lucide-react";
 import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -16,6 +16,7 @@ import {
   type LabelSizePreset,
   type ProductLabelSettings,
 } from "../label-settings";
+import { exportLabelSheetSvg } from "../label-export";
 import {
   buildProductQueryString,
   MIN_PRODUCT_SEARCH_LENGTH,
@@ -62,6 +63,12 @@ export function ProductLabelPage({
       didMountRef.current = true;
       return;
     }
+    if (!params.q) {
+      setProducts({ items: [], total: 0, limit: params.limit, offset: 0 });
+      setIsLoading(false);
+      setError(null);
+      return;
+    }
 
     const controller = new AbortController();
     setIsLoading(true);
@@ -93,22 +100,28 @@ export function ProductLabelPage({
   );
   const dimensions = useMemo(() => calculateLabelDimensions(labelSettings), [labelSettings]);
   const hasPrintableLabels = totalLabels > 0 && totalLabels <= MAX_LABELS_PER_PRINT;
+  const hasSelection = selectedProducts.length > 0;
+  const hasAppliedSearch = Boolean(params.q);
 
   function updateFilters(patch: Partial<ProductSearchParams>) {
     setParams((current) => ({ ...current, ...patch, offset: 0 }));
   }
 
-  function toggleProduct(product: Product) {
+  function addProduct(product: Product) {
     const code = product.qr_code?.trim();
     if (!code) return;
 
     setSelected((current) => {
-      if (current[product.id]) {
-        const next = { ...current };
-        delete next[product.id];
-        return next;
-      }
+      if (current[product.id]) return current;
       return { ...current, [product.id]: { product, quantity: 1 } };
+    });
+  }
+
+  function removeProduct(productId: string) {
+    setSelected((current) => {
+      const next = { ...current };
+      delete next[productId];
+      return next;
     });
   }
 
@@ -125,6 +138,11 @@ export function ProductLabelPage({
     window.print();
   }
 
+  async function exportSvg() {
+    if (!hasPrintableLabels) return;
+    await exportLabelSheetSvg({ selectedProducts, settings: labelSettings, dimensions });
+  }
+
   function updateLabelSettings(patch: Partial<ProductLabelSettings>) {
     setLabelSettings((current) => ({ ...current, ...patch }));
   }
@@ -132,16 +150,27 @@ export function ProductLabelPage({
   return (
     <div className="space-y-6">
       <section className="print-hidden space-y-4 rounded-lg border border-slate-200 bg-white p-4">
-        <div className="grid gap-3 lg:grid-cols-[1fr_190px_150px_auto]">
+        <div className="grid gap-3 lg:grid-cols-[1fr_190px_150px_auto_auto]">
           <label className="relative block">
             <span className="sr-only">Buscar productos</span>
             <Search className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-slate-400" aria-hidden />
             <Input
               className="pl-9"
+              aria-describedby="product-label-search-help"
               placeholder="Buscar por nombre, SKU o codigo"
               value={query}
               onChange={(event) => setQuery(event.target.value)}
             />
+            <span
+              id="product-label-search-help"
+              className={`mt-1 block min-h-4 text-xs ${
+                query.trim() && query.trim().length < MIN_PRODUCT_SEARCH_LENGTH
+                  ? "text-amber-700"
+                  : "text-slate-500"
+              }`}
+            >
+              Escribe al menos {MIN_PRODUCT_SEARCH_LENGTH} caracteres para buscar.
+            </span>
           </label>
           <Select
             aria-label="Filtro de categoria"
@@ -176,9 +205,17 @@ export function ProductLabelPage({
             <Printer className="h-4 w-4" aria-hidden="true" />
             Imprimir
           </Button>
+          <Button type="button" variant="secondary" onClick={() => void exportSvg()} disabled={!hasPrintableLabels}>
+            <Download className="h-4 w-4" aria-hidden="true" />
+            SVG
+          </Button>
         </div>
 
-        <div className="grid gap-4 rounded-lg border border-slate-200 bg-slate-50 p-4 xl:grid-cols-[minmax(0,1fr)_220px]">
+        <div
+          className={`grid gap-4 rounded-lg border border-slate-200 bg-slate-50 p-4 xl:grid-cols-[minmax(0,1fr)_220px] ${
+            hasSelection ? "" : "opacity-60"
+          }`}
+        >
           <div className="space-y-4">
             <div className="grid gap-3 md:grid-cols-2">
               <label className="min-w-0 space-y-2">
@@ -187,6 +224,7 @@ export function ProductLabelPage({
                   className="w-full truncate"
                   aria-label="Tamano de hoja"
                   value={labelSettings.pageSize}
+                  disabled={!hasSelection}
                   onChange={(event) => updateLabelSettings({ pageSize: event.target.value as LabelPageSize })}
                 >
                   {Object.entries(PAGE_SIZE_OPTIONS).map(([value, option]) => (
@@ -202,6 +240,7 @@ export function ProductLabelPage({
                   className="w-full truncate"
                   aria-label="Tamano de etiqueta"
                   value={labelSettings.labelSize}
+                  disabled={!hasSelection}
                   onChange={(event) => updateLabelSettings({ labelSize: event.target.value as LabelSizePreset })}
                 >
                   {Object.entries(LABEL_SIZE_OPTIONS).map(([value, option]) => (
@@ -219,26 +258,31 @@ export function ProductLabelPage({
                 <LabelToggle
                   label="Nombre"
                   checked={labelSettings.showName}
+                  disabled={!hasSelection}
                   onChange={(checked) => updateLabelSettings({ showName: checked })}
                 />
                 <LabelToggle
                   label="Codigo"
                   checked={labelSettings.showCode}
+                  disabled={!hasSelection}
                   onChange={(checked) => updateLabelSettings({ showCode: checked })}
                 />
                 <LabelToggle
                   label="SKU"
                   checked={labelSettings.showSku}
+                  disabled={!hasSelection}
                   onChange={(checked) => updateLabelSettings({ showSku: checked })}
                 />
                 <LabelToggle
                   label="Categoria"
                   checked={labelSettings.showCategory}
+                  disabled={!hasSelection}
                   onChange={(checked) => updateLabelSettings({ showCategory: checked })}
                 />
                 <LabelToggle
                   label="Precio"
                   checked={labelSettings.showPrice}
+                  disabled={!hasSelection}
                   onChange={(checked) => updateLabelSettings({ showPrice: checked })}
                 />
               </div>
@@ -266,70 +310,92 @@ export function ProductLabelPage({
           </div>
         </div>
 
-        {query.trim() && query.trim().length < MIN_PRODUCT_SEARCH_LENGTH ? (
-          <Alert>Escribe al menos {MIN_PRODUCT_SEARCH_LENGTH} caracteres para buscar.</Alert>
-        ) : null}
-        {isLoading ? <Alert>Actualizando productos...</Alert> : null}
         {error ? <Alert variant="error">{error}</Alert> : null}
         {totalLabels > MAX_LABELS_PER_PRINT ? (
           <Alert variant="error">Reduce la seleccion a {MAX_LABELS_PER_PRINT} etiquetas o menos.</Alert>
         ) : null}
 
-        <div className="overflow-x-auto rounded-lg border border-slate-200">
-          <table className="min-w-[760px] w-full text-left text-sm">
-            <thead className="bg-slate-50 text-xs uppercase text-slate-500">
-              <tr>
-                <th className="w-12 px-4 py-3">Sel</th>
-                <th className="px-4 py-3">Producto</th>
-                <th className="px-4 py-3">Codigo</th>
-                <th className="px-4 py-3">Categoria</th>
-                <th className="w-32 px-4 py-3">Cantidad</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-200 bg-white">
-              {products.items.map((product) => {
-                const isSelected = Boolean(selected[product.id]);
-                const hasCode = Boolean(product.qr_code?.trim());
-                return (
-                  <tr key={product.id}>
-                    <td className="px-4 py-3">
-                      <input
-                        type="checkbox"
-                        className="h-4 w-4 rounded border-slate-300"
-                        checked={isSelected}
-                        disabled={!hasCode}
-                        onChange={() => toggleProduct(product)}
-                        aria-label={`Seleccionar ${product.name}`}
-                      />
-                    </td>
-                    <td className="px-4 py-3">
-                      <p className="font-medium text-slate-950">{product.name}</p>
-                      <p className="text-xs text-slate-500">SKU: {product.sku || "Sin SKU"}</p>
-                    </td>
-                    <td className="px-4 py-3 font-mono text-xs text-slate-700">
-                      {product.qr_code || <span className="font-sans text-slate-500">Sin codigo escaneable</span>}
-                    </td>
-                    <td className="px-4 py-3 text-slate-700">{product.category || "Sin categoria"}</td>
-                    <td className="px-4 py-3">
-                      <Input
-                        type="number"
-                        min="1"
-                        max={MAX_LABELS_PER_PRINT}
-                        value={selected[product.id]?.quantity ?? 1}
-                        disabled={!isSelected}
-                        onChange={(event) => updateQuantity(product, Number(event.target.value))}
-                      />
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-          {products.items.length === 0 ? (
-            <div className="bg-white p-6 text-center text-sm text-slate-600">
-              No hay productos para los filtros seleccionados.
+        <div className="grid items-start gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(420px,0.9fr)]">
+          <section className="min-h-[260px] overflow-hidden rounded-lg border border-slate-200 bg-white">
+            <div className="border-b border-slate-200 px-4 py-3">
+              <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between">
+                <div>
+                  <h2 className="text-sm font-semibold text-slate-950">Resultados</h2>
+                  <p className="text-xs text-slate-500">Busca por nombre, SKU o codigo y agrega productos a la seleccion.</p>
+                </div>
+                <span className="min-h-4 text-xs text-slate-500" aria-live="polite">
+                  {isLoading ? "Actualizando..." : ""}
+                </span>
+              </div>
             </div>
-          ) : null}
+            {!hasAppliedSearch ? (
+              <div className="p-6 text-center text-sm text-slate-600">
+                Escribe al menos {MIN_PRODUCT_SEARCH_LENGTH} caracteres para buscar productos.
+              </div>
+            ) : products.items.length === 0 ? (
+              <div className="p-6 text-center text-sm text-slate-600">No hay productos para la busqueda actual.</div>
+            ) : (
+              <div className="divide-y divide-slate-200">
+                {products.items.map((product) => {
+                  const isSelected = Boolean(selected[product.id]);
+                  const hasCode = Boolean(product.qr_code?.trim());
+                  return (
+                    <div key={product.id} className="flex flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+                      <div className="min-w-0">
+                        <p className="truncate font-medium text-slate-950">{product.name}</p>
+                        <p className="truncate text-xs text-slate-500">
+                          SKU: {product.sku || "Sin SKU"} · Codigo: {product.qr_code || "Sin codigo"}
+                        </p>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        disabled={!hasCode || isSelected}
+                        onClick={() => addProduct(product)}
+                      >
+                        <Plus className="h-4 w-4" aria-hidden="true" />
+                        {isSelected ? "Agregado" : hasCode ? "Agregar" : "Sin codigo"}
+                      </Button>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </section>
+
+          <section className="overflow-hidden rounded-lg border border-slate-200 bg-white">
+            <div className="border-b border-slate-200 px-4 py-3">
+              <h2 className="text-sm font-semibold text-slate-950">Seleccionados</h2>
+              <p className="text-xs text-slate-500">{totalLabels} etiquetas en total.</p>
+            </div>
+            {selectedProducts.length === 0 ? (
+              <div className="p-6 text-center text-sm text-slate-600">
+                Agrega productos desde los resultados para configurar cantidades e imprimir.
+              </div>
+            ) : (
+              <div className="divide-y divide-slate-200">
+                {selectedProducts.map(({ product, quantity }) => (
+                  <div key={product.id} className="grid gap-3 px-4 py-3 sm:grid-cols-[minmax(0,1fr)_96px_auto] sm:items-center">
+                    <div className="min-w-0">
+                      <p className="truncate font-medium text-slate-950">{product.name}</p>
+                      <p className="truncate font-mono text-xs text-slate-500">{product.qr_code}</p>
+                    </div>
+                    <Input
+                      type="number"
+                      min="1"
+                      max={MAX_LABELS_PER_PRINT}
+                      value={quantity}
+                      aria-label={`Cantidad ${product.name}`}
+                      onChange={(event) => updateQuantity(product, Number(event.target.value))}
+                    />
+                    <Button type="button" variant="ghost" onClick={() => removeProduct(product.id)} aria-label={`Quitar ${product.name}`}>
+                      <Trash2 className="h-4 w-4" aria-hidden="true" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
         </div>
       </section>
 
@@ -341,10 +407,12 @@ export function ProductLabelPage({
 function LabelToggle({
   label,
   checked,
+  disabled,
   onChange,
 }: {
   label: string;
   checked: boolean;
+  disabled?: boolean;
   onChange: (checked: boolean) => void;
 }) {
   return (
@@ -353,6 +421,7 @@ function LabelToggle({
         type="checkbox"
         className="h-4 w-4 rounded border-slate-300"
         checked={checked}
+        disabled={disabled}
         onChange={(event) => onChange(event.target.checked)}
       />
       {label}

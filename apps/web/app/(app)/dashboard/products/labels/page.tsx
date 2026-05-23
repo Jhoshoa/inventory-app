@@ -28,8 +28,12 @@ export default async function ProductLabelsPage({
     limit: DEFAULT_PRODUCT_LIMIT,
     offset: 0,
   };
+  const emptyProducts = {
+    ok: true as const,
+    data: { items: [], total: 0, limit: params.limit, offset: params.offset },
+  };
   const [products, categories] = await Promise.all([
-    listProducts(params),
+    params.q ? listProducts(params) : Promise.resolve(emptyProducts),
     listProductCategories(),
   ]);
 

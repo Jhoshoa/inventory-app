@@ -91,10 +91,11 @@ La pantalla debe permitir:
 
 - buscar productos;
 - filtrar por categoria y stock;
-- seleccionar productos;
+- agregar productos a una seleccion temporal;
 - definir cantidad de etiquetas por producto;
 - previsualizar una hoja imprimible;
 - imprimir usando `window.print()`;
+- exportar la vista previa como SVG;
 - generar cada QR bajo demanda en cliente.
 
 No guardar imagenes QR en BD.
@@ -117,7 +118,8 @@ Comportamiento:
 
 - Solo usuarios con permisos de administrar productos deberian acceder.
 - Cashier no deberia ver acciones administrativas de impresion masiva si el modelo de permisos actual lo restringe para productos.
-- Cargar productos iniciales desde server si encaja con el patron actual.
+- No cargar todos los productos inicialmente; la pantalla debe iniciar liviana.
+- Buscar productos bajo demanda, parecido al flujo POS.
 - Delegar seleccion, cantidades y preview a un componente cliente.
 
 Componentes probables:
@@ -135,27 +137,33 @@ apps/web/src/features/products/components/ProductLabelToolbar.tsx
 Requisitos:
 
 - Buscar por nombre, SKU o codigo escaneable si el backend ya lo permite.
-- Mostrar al menos:
+- No renderizar una tabla masiva de productos al entrar.
+- Mostrar resultados compactos solo cuando la busqueda tiene longitud suficiente.
+- Cada resultado debe mostrar al menos:
   - nombre;
   - SKU;
   - codigo escaneable;
   - categoria;
-  - precio;
-  - stock.
-- Permitir seleccionar/desseleccionar productos.
+- stock si aporta valor visual.
+- Cada resultado valido debe tener accion `Agregar`.
+- Mantener una lista separada de productos seleccionados.
 - Permitir cantidad de etiquetas por producto.
+- Permitir quitar productos seleccionados.
 - Default recomendado: `1`.
 - Limite recomendado para MVP: maximo `100` etiquetas por impresion para evitar bloquear el navegador.
 
 UX esperada:
 
 ```text
-[Buscar producto...] [Categoria] [Stock]
+[Buscar por nombre, SKU o codigo...] [Categoria] [Stock] [Imprimir] [SVG]
 
-[ ] COM000001 Cafe molido       Codigo: COM000001       Cantidad [ 1 ]
-[ ] COM000002 Azucar 1kg        Codigo: COM000002       Cantidad [ 1 ]
+Resultados
+Cafe molido        SKU: COM000001   Codigo: COM000001   [Agregar]
+Azucar 1kg         SKU: COM000002   Codigo: COM000002   [Agregar]
 
-[Vista previa] [Imprimir]
+Seleccionados
+Cafe molido        COM000001        Cantidad [ 1 ]      [Quitar]
+Azucar 1kg         COM000002        Cantidad [ 3 ]      [Quitar]
 ```
 
 Reglas:
@@ -163,6 +171,8 @@ Reglas:
 - Si un producto no tiene `qr_code`, no debe poder imprimirse como QR.
 - Mostrar estado claro: `Sin codigo escaneable`.
 - Si el usuario quiere imprimirlo, debe editar el producto primero.
+- Configuracion de etiqueta, preview, imprimir y exportar SVG se habilitan cuando hay al menos un producto seleccionado.
+- El boton `SVG` descarga una representacion vectorial de la hoja de etiquetas seleccionada.
 
 ### 3. Filtro por categoria en productos
 
@@ -463,10 +473,13 @@ Agregar o actualizar:
 
 - `ProductFilters` renderiza dropdown de categorias cuando recibe categorias.
 - Cambiar categoria dispara `onFilterChange`.
-- Pantalla de etiquetas renderiza productos seleccionables.
+- Pantalla de etiquetas inicia sin tabla masiva de productos.
+- Busqueda de etiquetas muestra resultados compactos y permite agregar productos.
+- Lista de seleccionados permite cambiar cantidad y quitar productos.
 - Producto sin `qr_code` muestra `Sin codigo escaneable` y no permite imprimir.
 - Cantidad de etiquetas replica la etiqueta en preview.
 - Boton imprimir esta deshabilitado si no hay etiquetas validas.
+- Boton SVG esta deshabilitado sin seleccion y descarga cuando hay etiquetas validas.
 - `ProductLabelCard` muestra QR, nombre, codigo y precio.
 - Helper `generateQrSvg` genera SVG desde codigo exacto.
 - `QrPreviewDialog` usa helper compartido y mantiene comportamiento anterior.
@@ -480,20 +493,23 @@ Flujo manual recomendado:
 3. Entrar a inventario.
 4. Filtrar por categoria `Comida`.
 5. Abrir `Imprimir etiquetas`.
-6. Seleccionar ambos productos.
-7. Cambiar cantidad de uno a `3`.
-8. Ver preview con 4 etiquetas totales.
-9. Imprimir o guardar como PDF desde el navegador.
-10. Escanear una etiqueta con lector tipo teclado en POS.
-11. Confirmar que entra al carrito.
+6. Buscar `Comida`, SKU o codigo.
+7. Agregar ambos productos a la seleccion.
+8. Cambiar cantidad de uno a `3`.
+9. Ver preview con 4 etiquetas totales.
+10. Descargar SVG de la vista previa.
+11. Imprimir o guardar como PDF desde el navegador.
+12. Escanear una etiqueta con lector tipo teclado en POS.
+13. Confirmar que entra al carrito.
 
 ## Criterios de Aceptacion
 
 Sprint 2 se considera completo cuando:
 
 - Owner puede abrir pantalla de etiquetas desde inventario.
-- Owner puede buscar y seleccionar productos para imprimir.
+- Owner puede buscar productos y agregarlos a una seleccion de impresion.
 - Owner puede definir cantidad de etiquetas por producto.
+- Owner puede quitar productos seleccionados.
 - Productos sin codigo escaneable no generan QR imprimible.
 - Preview muestra etiquetas con QR, nombre y codigo legible.
 - El QR codifica exactamente `products.qr_code`.
@@ -501,6 +517,7 @@ Sprint 2 se considera completo cuando:
 - Owner puede ocultar o mostrar nombre, codigo, SKU, categoria y precio.
 - La pagina muestra dimensiones calculadas en cm/mm: etiqueta, QR, columnas, filas aproximadas y etiquetas por hoja.
 - `window.print()` imprime solo la hoja de etiquetas.
+- Owner puede exportar la vista previa seleccionada como SVG.
 - Exportar PDF se resuelve desde el dialogo nativo del navegador, no con motor PDF propio.
 - El layout usa medidas fisicas y no depende de screenshots.
 - El inventario permite filtrar por categoria.

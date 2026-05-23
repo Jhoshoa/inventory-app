@@ -1,5 +1,5 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ProductLabelPage } from "./ProductLabelPage";
 import type { Product, ProductListResponse, ProductSearchParams } from "../types";
 
@@ -9,6 +9,7 @@ vi.mock("../qr", () => ({
 }));
 
 const params: ProductSearchParams = {
+  q: "caf",
   stock: "all",
   limit: 50,
   offset: 0,
@@ -49,13 +50,26 @@ const initialProducts: ProductListResponse = {
 };
 
 describe("ProductLabelPage", () => {
+  beforeEach(() => {
+    vi.stubGlobal("URL", {
+      createObjectURL: vi.fn(() => "blob:labels"),
+      revokeObjectURL: vi.fn(),
+    });
+    vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(() => undefined);
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+    vi.unstubAllGlobals();
+  });
+
   it("selects products with scan code and renders print preview", async () => {
     render(<ProductLabelPage initialParams={params} initialProducts={initialProducts} categories={[]} />);
 
-    fireEvent.click(screen.getByLabelText("Seleccionar Cafe molido"));
+    fireEvent.click(screen.getByRole("button", { name: "Agregar" }));
 
     expect(screen.getByText("1 etiquetas listas para imprimir.")).toBeInTheDocument();
-    expect(screen.getAllByText("Cafe molido")).toHaveLength(2);
+    expect(screen.getAllByText("Cafe molido")).toHaveLength(3);
     expect(screen.getByText("Cod: COM000001")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Imprimir" })).toBeEnabled();
     await waitFor(() => expect(screen.getByAltText("QR COM000001")).toBeInTheDocument());
@@ -64,8 +78,8 @@ describe("ProductLabelPage", () => {
   it("does not allow selecting products without scan code", () => {
     render(<ProductLabelPage initialParams={params} initialProducts={initialProducts} categories={[]} />);
 
-    expect(screen.getByLabelText("Seleccionar Producto sin codigo")).toBeDisabled();
-    expect(screen.getByText("Sin codigo escaneable")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Sin codigo" })).toBeDisabled();
+    expect(screen.getByText(/Codigo: Sin codigo/)).toBeInTheDocument();
   });
 
   it("updates label summary from page settings", () => {
@@ -86,9 +100,52 @@ describe("ProductLabelPage", () => {
   it("renders prices in Bolivianos", async () => {
     render(<ProductLabelPage initialParams={params} initialProducts={initialProducts} categories={[]} />);
 
-    fireEvent.click(screen.getByLabelText("Seleccionar Cafe molido"));
+    fireEvent.click(screen.getByRole("button", { name: "Agregar" }));
 
     expect(screen.getByText("Bs. 12.50")).toBeInTheDocument();
     await waitFor(() => expect(screen.getByAltText("QR COM000001")).toBeInTheDocument());
   });
+
+  it("keeps settings and export disabled until a product is selected", async () => {
+    render(<ProductLabelPage initialParams={params} initialProducts={initialProducts} categories={[]} />);
+
+    expect(screen.getByLabelText("Tamano de hoja")).toBeDisabled();
+    expect(screen.getByRole("button", { name: "SVG" })).toBeDisabled();
+
+    fireEvent.click(screen.getByRole("button", { name: "Agregar" }));
+
+    expect(screen.getByLabelText("Tamano de hoja")).toBeEnabled();
+    expect(screen.getByRole("button", { name: "SVG" })).toBeEnabled();
+    await waitFor(() => expect(screen.getByAltText("QR COM000001")).toBeInTheDocument());
+  });
+
+  it("exports the selected preview as SVG", async () => {
+    const createObjectUrl = vi.fn(() => "blob:labels");
+    let exportedBlob: Blob | undefined;
+    vi.stubGlobal("URL", {
+      createObjectURL: vi.fn((blob: Blob) => {
+        exportedBlob = blob;
+        return createObjectUrl();
+      }),
+      revokeObjectURL: vi.fn(),
+    });
+    render(<ProductLabelPage initialParams={params} initialProducts={initialProducts} categories={[]} />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Agregar" }));
+    fireEvent.click(screen.getByRole("button", { name: "SVG" }));
+
+    await waitFor(() => expect(createObjectUrl).toHaveBeenCalled());
+    const svg = exportedBlob ? await readBlobText(exportedBlob) : "";
+    expect(svg).toContain('<svg x="0.8" y="0.8" width="8.4" height="8.4"');
+    expect(svg).not.toContain('width="8.4" height="8.4" xmlns="http://www.w3.org/2000/svg" width=');
+  });
 });
+
+function readBlobText(blob: Blob) {
+  return new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result));
+    reader.onerror = () => reject(reader.error);
+    reader.readAsText(blob);
+  });
+}
