@@ -220,17 +220,48 @@ Reglas:
 
 Tamanos MVP:
 
+- `20mm x 10mm`
+- `30mm x 20mm`
+- `40mm x 25mm`
 - `50mm x 30mm`
 - `60mm x 40mm`
-- `A4 grid automatico`
+- `70mm x 35mm`
+- hoja `Letter` por defecto, con opcion `A4`
 
-Para reducir complejidad, empezar con:
+Configuracion inicial recomendada:
 
 ```text
-Etiqueta 50mm x 30mm en hoja A4
+Hoja: Letter
+Margen: 8mm
+Separacion: 3mm
+Etiqueta: 20mm x 10mm
+QR automatico: 8.4mm x 8.4mm
 ```
 
-Luego agregar selector de tamano si el CSS queda limpio.
+La pagina debe exponer controles configurables sin tocar backend:
+
+- tamano de hoja: `Letter`, `A4`;
+- tamano de etiqueta: presets `20x10mm`, `30x20mm`, `40x25mm`, `50x30mm`, `60x40mm`, `70x35mm`;
+- margen de hoja interno por defecto: `8mm`;
+- separacion interna por defecto: `3mm`;
+- datos visibles:
+  - nombre;
+  - codigo escaneable;
+  - SKU;
+  - categoria;
+  - precio.
+
+Resumen esperado:
+
+```text
+Hoja: Letter
+Margen: 8mm
+Etiqueta: 2.00 x 1.00 cm
+QR: 0.84 x 0.84 cm
+Columnas: 8
+Filas aproximadas: 20
+Etiquetas por hoja: 160
+```
 
 ### 5. Impresion
 
@@ -246,10 +277,13 @@ apps/web/src/features/products/components/ProductLabelPreview.tsx
 Requisitos:
 
 - Boton `Imprimir` llama `window.print()`.
+- El usuario puede elegir `Guardar como PDF` desde el dialogo nativo del navegador.
+- No agregar export PDF propio en Sprint 2.
 - En pantalla normal se ve toolbar, filtros y preview.
 - En modo print se oculta todo excepto la hoja de etiquetas.
 - Usar unidades fisicas (`mm`) para etiquetas.
 - Evitar cards flotantes dentro de cards; la preview puede ser una hoja visual, pero el modo print debe ser limpio.
+- `@page` debe tomar el tamano de hoja configurado desde la UI y el margen interno por defecto.
 
 CSS esperado:
 
@@ -463,7 +497,11 @@ Sprint 2 se considera completo cuando:
 - Productos sin codigo escaneable no generan QR imprimible.
 - Preview muestra etiquetas con QR, nombre y codigo legible.
 - El QR codifica exactamente `products.qr_code`.
+- Owner puede cambiar tamano de hoja y tamano de etiqueta desde la pagina.
+- Owner puede ocultar o mostrar nombre, codigo, SKU, categoria y precio.
+- La pagina muestra dimensiones calculadas en cm/mm: etiqueta, QR, columnas, filas aproximadas y etiquetas por hoja.
 - `window.print()` imprime solo la hoja de etiquetas.
+- Exportar PDF se resuelve desde el dialogo nativo del navegador, no con motor PDF propio.
 - El layout usa medidas fisicas y no depende de screenshots.
 - El inventario permite filtrar por categoria.
 - Si se implementa `category_id`, el backend filtra por `store_id` autenticado.
@@ -508,7 +546,8 @@ Mitigacion:
 
 Mitigacion:
 
-- MVP con un solo formato.
+- MVP con presets cerrados de formato, no medidas libres de etiqueta.
+- Margen y separacion quedan como defaults internos para evitar una UI innecesariamente compleja.
 - No agregar editor visual.
 - No agregar PDF server-side.
 - No agregar impresora termica directa.

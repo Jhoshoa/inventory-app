@@ -67,4 +67,28 @@ describe("ProductLabelPage", () => {
     expect(screen.getByLabelText("Seleccionar Producto sin codigo")).toBeDisabled();
     expect(screen.getByText("Sin codigo escaneable")).toBeInTheDocument();
   });
+
+  it("updates label summary from page settings", () => {
+    render(<ProductLabelPage initialParams={params} initialProducts={initialProducts} categories={[]} />);
+
+    expect(screen.getByText("2.00 x 1.00 cm")).toBeInTheDocument();
+    expect(screen.getByText("0.84 x 0.84 cm")).toBeInTheDocument();
+    expect(screen.getByText("160")).toBeInTheDocument();
+
+    fireEvent.change(screen.getByLabelText("Tamano de etiqueta"), {
+      target: { value: "60x40" },
+    });
+
+    expect(screen.getByText("6.00 x 4.00 cm")).toBeInTheDocument();
+    expect(screen.getByText("2.88 x 2.88 cm")).toBeInTheDocument();
+  });
+
+  it("renders prices in Bolivianos", async () => {
+    render(<ProductLabelPage initialParams={params} initialProducts={initialProducts} categories={[]} />);
+
+    fireEvent.click(screen.getByLabelText("Seleccionar Cafe molido"));
+
+    expect(screen.getByText("Bs. 12.50")).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByAltText("QR COM000001")).toBeInTheDocument());
+  });
 });

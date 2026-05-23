@@ -3,6 +3,7 @@
 import { Loader2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Alert } from "@/components/ui/Alert";
+import type { LabelDimensions, ProductLabelSettings } from "../label-settings";
 import { generateQrSvg, svgToDataUri } from "../qr";
 import type { Product } from "../types";
 import { ProductLabelCard } from "./ProductLabelCard";
@@ -14,10 +15,12 @@ export interface SelectedLabelProduct {
 
 export function ProductLabelPreview({
   selectedProducts,
-  showPrice,
+  settings,
+  dimensions,
 }: {
   selectedProducts: SelectedLabelProduct[];
-  showPrice: boolean;
+  settings: ProductLabelSettings;
+  dimensions: LabelDimensions;
 }) {
   const [qrByCode, setQrByCode] = useState<Record<string, string>>({});
   const [isGenerating, setIsGenerating] = useState(false);
@@ -81,6 +84,9 @@ export function ProductLabelPreview({
 
   return (
     <section className="space-y-3">
+      <style>
+        {`@media print { @page { size: ${settings.pageSize}; margin: ${dimensions.marginMm}mm; } }`}
+      </style>
       <div className="print-hidden flex items-center justify-between gap-3">
         <div>
           <h2 className="text-base font-semibold text-slate-950">Vista previa</h2>
@@ -96,13 +102,19 @@ export function ProductLabelPreview({
 
       {error ? <Alert variant="error">{error}</Alert> : null}
 
-      <div className="print-label-sheet min-h-96 rounded-lg border border-slate-200 bg-white p-4">
+      <div className="print-label-sheet min-h-96 overflow-x-auto rounded-lg border border-slate-200 bg-white p-4">
         {printableItems.length === 0 ? (
           <div className="print-hidden flex h-72 items-center justify-center text-sm text-slate-600">
             Selecciona productos con codigo escaneable para previsualizar etiquetas.
           </div>
         ) : (
-          <div className="label-grid">
+          <div
+            className="label-grid"
+            style={{
+              gridTemplateColumns: `repeat(${Math.max(dimensions.columns, 1)}, ${dimensions.labelWidthMm}mm)`,
+              gap: `${dimensions.gapMm}mm`,
+            }}
+          >
             {printableItems.map((item) => {
               const code = item.product.qr_code?.trim() ?? "";
               return (
@@ -110,7 +122,8 @@ export function ProductLabelPreview({
                   key={item.key}
                   product={item.product}
                   qrSrc={qrByCode[code] ?? ""}
-                  showPrice={showPrice}
+                  settings={settings}
+                  dimensions={dimensions}
                 />
               );
             })}

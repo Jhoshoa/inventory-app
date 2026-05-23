@@ -8,6 +8,15 @@ import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import type { ProductCategory } from "@/features/product-categories/types";
 import {
+  calculateLabelDimensions,
+  DEFAULT_LABEL_SETTINGS,
+  LABEL_SIZE_OPTIONS,
+  PAGE_SIZE_OPTIONS,
+  type LabelPageSize,
+  type LabelSizePreset,
+  type ProductLabelSettings,
+} from "../label-settings";
+import {
   buildProductQueryString,
   MIN_PRODUCT_SEARCH_LENGTH,
 } from "../schemas";
@@ -30,7 +39,7 @@ export function ProductLabelPage({
   const [query, setQuery] = useState(initialParams.q ?? "");
   const [products, setProducts] = useState(initialProducts);
   const [selected, setSelected] = useState<Record<string, SelectedLabelProduct>>({});
-  const [showPrice, setShowPrice] = useState(true);
+  const [labelSettings, setLabelSettings] = useState<ProductLabelSettings>(DEFAULT_LABEL_SETTINGS);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const didMountRef = useRef(false);
@@ -82,6 +91,7 @@ export function ProductLabelPage({
     () => selectedProducts.reduce((total, item) => total + item.quantity, 0),
     [selectedProducts],
   );
+  const dimensions = useMemo(() => calculateLabelDimensions(labelSettings), [labelSettings]);
   const hasPrintableLabels = totalLabels > 0 && totalLabels <= MAX_LABELS_PER_PRINT;
 
   function updateFilters(patch: Partial<ProductSearchParams>) {
@@ -113,6 +123,10 @@ export function ProductLabelPage({
   function printLabels() {
     if (!hasPrintableLabels) return;
     window.print();
+  }
+
+  function updateLabelSettings(patch: Partial<ProductLabelSettings>) {
+    setLabelSettings((current) => ({ ...current, ...patch }));
   }
 
   return (
@@ -164,15 +178,93 @@ export function ProductLabelPage({
           </Button>
         </div>
 
-        <label className="flex items-center gap-2 text-sm text-slate-700">
-          <input
-            type="checkbox"
-            className="h-4 w-4 rounded border-slate-300"
-            checked={showPrice}
-            onChange={(event) => setShowPrice(event.target.checked)}
-          />
-          Mostrar precio en etiquetas
-        </label>
+        <div className="grid gap-4 rounded-lg border border-slate-200 bg-slate-50 p-4 xl:grid-cols-[minmax(0,1fr)_220px]">
+          <div className="space-y-4">
+            <div className="grid gap-3 md:grid-cols-2">
+              <label className="min-w-0 space-y-2">
+                <span className="text-xs font-medium uppercase text-slate-500">Hoja</span>
+                <Select
+                  className="w-full truncate"
+                  aria-label="Tamano de hoja"
+                  value={labelSettings.pageSize}
+                  onChange={(event) => updateLabelSettings({ pageSize: event.target.value as LabelPageSize })}
+                >
+                  {Object.entries(PAGE_SIZE_OPTIONS).map(([value, option]) => (
+                    <option key={value} value={value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </Select>
+              </label>
+              <label className="min-w-0 space-y-2">
+                <span className="text-xs font-medium uppercase text-slate-500">Etiqueta</span>
+                <Select
+                  className="w-full truncate"
+                  aria-label="Tamano de etiqueta"
+                  value={labelSettings.labelSize}
+                  onChange={(event) => updateLabelSettings({ labelSize: event.target.value as LabelSizePreset })}
+                >
+                  {Object.entries(LABEL_SIZE_OPTIONS).map(([value, option]) => (
+                    <option key={value} value={value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </Select>
+              </label>
+            </div>
+
+            <div>
+              <p className="text-xs font-medium uppercase text-slate-500">Datos visibles</p>
+              <div className="mt-2 grid gap-2 text-sm text-slate-700 sm:grid-cols-3 lg:grid-cols-5">
+                <LabelToggle
+                  label="Nombre"
+                  checked={labelSettings.showName}
+                  onChange={(checked) => updateLabelSettings({ showName: checked })}
+                />
+                <LabelToggle
+                  label="Codigo"
+                  checked={labelSettings.showCode}
+                  onChange={(checked) => updateLabelSettings({ showCode: checked })}
+                />
+                <LabelToggle
+                  label="SKU"
+                  checked={labelSettings.showSku}
+                  onChange={(checked) => updateLabelSettings({ showSku: checked })}
+                />
+                <LabelToggle
+                  label="Categoria"
+                  checked={labelSettings.showCategory}
+                  onChange={(checked) => updateLabelSettings({ showCategory: checked })}
+                />
+                <LabelToggle
+                  label="Precio"
+                  checked={labelSettings.showPrice}
+                  onChange={(checked) => updateLabelSettings({ showPrice: checked })}
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="rounded-md bg-white p-3 text-sm text-slate-700">
+            <p className="font-medium text-slate-950">Resumen</p>
+            <dl className="mt-2 grid grid-cols-2 gap-x-3 gap-y-1">
+              <dt>Hoja</dt>
+              <dd className="text-right">{labelSettings.pageSize}</dd>
+              <dt>Margen</dt>
+              <dd className="text-right">{dimensions.marginMm} mm</dd>
+              <dt>Etiqueta</dt>
+              <dd className="text-right">{toCm(dimensions.labelWidthMm)} x {toCm(dimensions.labelHeightMm)} cm</dd>
+              <dt>QR</dt>
+              <dd className="text-right">{toCm(dimensions.qrSizeMm)} x {toCm(dimensions.qrSizeMm)} cm</dd>
+              <dt>Columnas</dt>
+              <dd className="text-right">{dimensions.columns}</dd>
+              <dt>Filas aprox.</dt>
+              <dd className="text-right">{dimensions.rows}</dd>
+              <dt>Por hoja</dt>
+              <dd className="text-right">{dimensions.labelsPerPage}</dd>
+            </dl>
+          </div>
+        </div>
 
         {query.trim() && query.trim().length < MIN_PRODUCT_SEARCH_LENGTH ? (
           <Alert>Escribe al menos {MIN_PRODUCT_SEARCH_LENGTH} caracteres para buscar.</Alert>
@@ -241,9 +333,35 @@ export function ProductLabelPage({
         </div>
       </section>
 
-      <ProductLabelPreview selectedProducts={selectedProducts} showPrice={showPrice} />
+      <ProductLabelPreview selectedProducts={selectedProducts} settings={labelSettings} dimensions={dimensions} />
     </div>
   );
+}
+
+function LabelToggle({
+  label,
+  checked,
+  onChange,
+}: {
+  label: string;
+  checked: boolean;
+  onChange: (checked: boolean) => void;
+}) {
+  return (
+    <label className="flex items-center gap-2">
+      <input
+        type="checkbox"
+        className="h-4 w-4 rounded border-slate-300"
+        checked={checked}
+        onChange={(event) => onChange(event.target.checked)}
+      />
+      {label}
+    </label>
+  );
+}
+
+function toCm(mm: number) {
+  return (mm / 10).toFixed(2);
 }
 
 async function readErrorMessage(response: Response) {
