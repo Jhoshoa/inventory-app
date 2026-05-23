@@ -21,11 +21,11 @@ describe("ExportPanel", () => {
 
     expect(screen.getByRole("link", { name: /ventas/i })).toHaveAttribute(
       "href",
-      "/api/exports/sales?from=2026-04-21T00%3A00%3A00.000Z&to=2026-05-20T23%3A59%3A59.999Z",
+      "/api/exports/sales?from_date=2026-04-21&to_date=2026-05-20",
     );
     expect(screen.getByRole("link", { name: /caja/i })).toHaveAttribute(
       "href",
-      "/api/exports/cash-movements?from=2026-04-21T00%3A00%3A00.000Z&to=2026-05-20T23%3A59%3A59.999Z",
+      "/api/exports/cash-movements?from_date=2026-04-21&to_date=2026-05-20",
     );
     expect(screen.getByText("Ventas del POS.")).toBeInTheDocument();
     expect(screen.getByText("Cambios de stock.")).toBeInTheDocument();

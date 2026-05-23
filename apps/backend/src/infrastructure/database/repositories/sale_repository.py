@@ -109,6 +109,21 @@ class SaleRepository(ISaleRepository):
             "items_count": int(items_count or 0),
         }
 
+    async def sales_summary_for_business_date_range(self, store_id: UUID, from_date: date, to_date: date) -> dict:
+        result = await self._session.execute(
+            select(
+                func.coalesce(func.sum(SaleModel.total), 0),
+                func.count(SaleModel.id),
+                func.coalesce(func.sum(SaleModel.items_count), 0),
+            ).where(*self._business_date_filters(store_id, from_date, to_date), SaleModel.status == "completed")
+        )
+        total, count, items_count = result.one()
+        return {
+            "total_sales": Decimal(str(total or 0)),
+            "sales_count": int(count or 0),
+            "items_count": int(items_count or 0),
+        }
+
     async def sales_summary_for_business_day(self, store_id: UUID, business_day_id: UUID) -> dict:
         result = await self._session.execute(
             select(
@@ -267,6 +282,27 @@ class SaleRepository(ISaleRepository):
             for payment_method, total, count in result.all()
         ]
 
+    async def totals_by_payment_method_for_business_date_range(
+        self,
+        store_id: UUID,
+        from_date: date,
+        to_date: date,
+    ) -> list[dict]:
+        result = await self._session.execute(
+            select(
+                SaleModel.payment_method,
+                func.coalesce(func.sum(SaleModel.total), 0).label("total"),
+                func.count(SaleModel.id).label("count"),
+            )
+            .where(*self._business_date_filters(store_id, from_date, to_date), SaleModel.status == "completed")
+            .group_by(SaleModel.payment_method)
+            .order_by(func.coalesce(func.sum(SaleModel.total), 0).desc())
+        )
+        return [
+            {"payment_method": payment_method, "total": Decimal(str(total or 0)), "count": int(count or 0)}
+            for payment_method, total, count in result.all()
+        ]
+
     async def top_products(self, store_id: UUID, start: datetime, end: datetime, limit: int = 5) -> list[dict]:
         result = await self._session.execute(
             select(
@@ -295,6 +331,44 @@ class SaleRepository(ISaleRepository):
                 "total": Decimal(str(total or 0)),
             }
             for product_id, product_name, quantity, total in result.all()
+        ]
+
+    async def top_products_for_business_date_range(
+        self,
+        store_id: UUID,
+        from_date: date,
+        to_date: date,
+        limit: int = 5,
+    ) -> list[dict]:
+        result = await self._session.execute(
+            select(
+                SaleItemModel.product_id,
+                SaleItemModel.product_name,
+                func.coalesce(func.sum(SaleItemModel.quantity), 0).label("quantity"),
+                func.coalesce(func.sum(SaleItemModel.subtotal), 0).label("total"),
+            )
+            .join(SaleModel, SaleModel.id == SaleItemModel.sale_id)
+            .where(*self._business_date_filters(store_id, from_date, to_date), SaleModel.status == "completed")
+            .group_by(SaleItemModel.product_id, SaleItemModel.product_name)
+            .order_by(func.coalesce(func.sum(SaleItemModel.quantity), 0).desc())
+            .limit(limit)
+        )
+        return [
+            {
+                "product_id": product_id,
+                "product_name": product_name,
+                "quantity": int(quantity or 0),
+                "total": Decimal(str(total or 0)),
+            }
+            for product_id, product_name, quantity, total in result.all()
+        ]
+
+    def _business_date_filters(self, store_id: UUID, from_date: date, to_date: date) -> list:
+        return [
+            SaleModel.store_id == store_id,
+            SaleModel.deleted_at.is_(None),
+            SaleModel.business_date >= from_date,
+            SaleModel.business_date <= to_date,
         ]
 
     def _to_entity(self, model: SaleModel) -> Sale:

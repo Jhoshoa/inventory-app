@@ -4,6 +4,7 @@ import {
   buildReportQueryString,
   buildSalesReportApiQuery,
   buildStockMovementApiQuery,
+  datesForReportRange,
   parseReportSearchParams,
   parseStockMovementSearchParams,
 } from "./schemas";
@@ -26,6 +27,27 @@ describe("parseReportSearchParams", () => {
       range: "custom",
       from: "2026-05-01",
       to: "2026-05-10",
+    });
+  });
+
+  it("respects explicit date params for presets", () => {
+    expect(
+      parseReportSearchParams({ range: "today", from: "2026-05-22", to: "2026-05-22" }, now),
+    ).toEqual({
+      range: "today",
+      from: "2026-05-22",
+      to: "2026-05-22",
+    });
+  });
+});
+
+describe("datesForReportRange", () => {
+  it("formats dates from local calendar fields instead of UTC ISO day", () => {
+    const localDate = new Date(2026, 4, 22, 20, 30, 0);
+
+    expect(datesForReportRange("today", localDate)).toEqual({
+      from: "2026-05-22",
+      to: "2026-05-22",
     });
   });
 });

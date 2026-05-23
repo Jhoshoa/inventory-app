@@ -46,10 +46,24 @@ class GetSalesReportUseCase:
                 first_business_date=store.first_business_date,
                 clamp_to_first_business_date=True,
             )
-            start_at = date_range.start_at_utc
-            end_at = date_range.end_at_utc
             response_from = date_range.from_date
             response_to = date_range.to_date
+            summary = await self._sale_repo.sales_summary_for_business_date_range(
+                input.store_id,
+                response_from,
+                response_to,
+            )
+            by_payment_method = await self._sale_repo.totals_by_payment_method_for_business_date_range(
+                input.store_id,
+                response_from,
+                response_to,
+            )
+            top_products = await self._sale_repo.top_products_for_business_date_range(
+                input.store_id,
+                response_from,
+                response_to,
+                limit=10,
+            )
         elif input.legacy_from or input.legacy_to:
             start_at = self._ensure_aware(input.legacy_from) if input.legacy_from else datetime.now(UTC)
             end_at = self._ensure_aware(input.legacy_to) if input.legacy_to else datetime.now(UTC)
@@ -60,16 +74,29 @@ class GetSalesReportUseCase:
                 raise ValueError("El rango maximo del reporte es 90 dias")
             response_from = start_at
             response_to = end_at
+            summary = await self._sale_repo.sales_summary_for_range(input.store_id, start_at, end_at)
+            by_payment_method = await self._sale_repo.totals_by_payment_method(input.store_id, start_at, end_at)
+            top_products = await self._sale_repo.top_products(input.store_id, start_at, end_at, limit=10)
         else:
             date_range = self._date_ranges.month(store.timezone, first_business_date=store.first_business_date)
-            start_at = date_range.start_at_utc
-            end_at = date_range.end_at_utc
             response_from = date_range.from_date
             response_to = date_range.to_date
-
-        summary = await self._sale_repo.sales_summary_for_range(input.store_id, start_at, end_at)
-        by_payment_method = await self._sale_repo.totals_by_payment_method(input.store_id, start_at, end_at)
-        top_products = await self._sale_repo.top_products(input.store_id, start_at, end_at, limit=10)
+            summary = await self._sale_repo.sales_summary_for_business_date_range(
+                input.store_id,
+                response_from,
+                response_to,
+            )
+            by_payment_method = await self._sale_repo.totals_by_payment_method_for_business_date_range(
+                input.store_id,
+                response_from,
+                response_to,
+            )
+            top_products = await self._sale_repo.top_products_for_business_date_range(
+                input.store_id,
+                response_from,
+                response_to,
+                limit=10,
+            )
 
         return SalesReportDTO(
             from_date=response_from,

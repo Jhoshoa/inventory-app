@@ -25,13 +25,19 @@ export function parseReportSearchParams(
   const range = rangePresets.has(rangeValue as ReportRangePreset)
     ? (rangeValue as ReportRangePreset)
     : "month";
+  const from = normalizeDateInput(firstValue(searchParams.from));
+  const to = normalizeDateInput(firstValue(searchParams.to));
+
+  if (from && to) {
+    return { range, from, to };
+  }
 
   if (range === "custom") {
     const fallback = rangeToDates("month", now);
     return {
       range,
-      from: normalizeDateInput(firstValue(searchParams.from)) ?? fallback.from,
-      to: normalizeDateInput(firstValue(searchParams.to)) ?? fallback.to,
+      from: from ?? fallback.from,
+      to: to ?? fallback.to,
     };
   }
 
@@ -54,6 +60,10 @@ export function parseStockMovementSearchParams(
     limit: parseBoundedInteger(firstValue(searchParams.limit), DEFAULT_REPORT_LIMIT, 1, 100),
     offset: parseBoundedInteger(firstValue(searchParams.offset), 0, 0, 100_000),
   };
+}
+
+export function datesForReportRange(range: ReportRangePreset, now = new Date()) {
+  return rangeToDates(range === "custom" ? "month" : range, now);
 }
 
 export function buildReportQueryString(params: ReportSearchParams) {
@@ -93,8 +103,8 @@ export function buildStockMovementApiQuery(params: StockMovementSearchParams) {
 
 export function buildExportDateTimeQuery(params: Pick<ReportSearchParams, "from" | "to">) {
   return new URLSearchParams({
-    from: toApiDateTime(params.from, "start"),
-    to: toApiDateTime(params.to, "end"),
+    from_date: params.from,
+    to_date: params.to,
   }).toString();
 }
 
@@ -131,7 +141,10 @@ function normalizeDateInput(value: string | undefined) {
 }
 
 function toDateInput(value: Date) {
-  return value.toISOString().slice(0, 10);
+  const year = value.getFullYear();
+  const month = String(value.getMonth() + 1).padStart(2, "0");
+  const day = String(value.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
 }
 
 function firstValue(value: string | string[] | undefined) {

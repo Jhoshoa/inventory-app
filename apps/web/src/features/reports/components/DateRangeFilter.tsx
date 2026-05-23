@@ -6,6 +6,7 @@ import { CalendarDays } from "lucide-react";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import type { ReportSearchParams, ReportRangePreset } from "../types";
+import { datesForReportRange } from "../schemas";
 
 export function DateRangeFilter({ params }: { params: ReportSearchParams }) {
   const router = useRouter();
@@ -35,7 +36,8 @@ export function DateRangeFilter({ params }: { params: ReportSearchParams }) {
           aria-label="Rango de reportes"
           value={params.range}
           onChange={(event) => {
-            updateParams({ range: event.target.value as ReportRangePreset });
+            const range = event.target.value as ReportRangePreset;
+            updateParams({ range, ...datesForReportRange(range, new Date()) });
           }}
         >
           <option value="today">Hoy</option>

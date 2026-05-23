@@ -2,6 +2,9 @@ from datetime import UTC, datetime, timedelta
 from urllib.parse import quote
 from uuid import uuid4
 
+from sqlalchemy import update
+
+from src.infrastructure.database.models.sale_model import SaleModel
 from src.infrastructure.database.models.store_model import StoreModel
 from src.main import app
 from src.presentation import dependencies
@@ -127,6 +130,33 @@ async def test_sales_report_clamps_range_to_first_business_date(client):
     data = response.json()
     assert data["from_date"] == opened_date
     assert data["to_date"] == opened_date
+    assert data["sales_count"] == 1
+
+
+async def test_sales_report_uses_business_date_not_created_at_hours(client, db_session):
+    product = await client.post("/api/v1/products", json={"name": "Arroz", "price": "12.50", "stock": 20})
+    opened_day = await _open_store_day(client)
+    business_date = opened_day["business_date"]
+
+    sale_response = await client.post(
+        "/api/v1/sales",
+        json={"items": [{"product_id": product.json()["id"], "quantity": 1}], "payment_method": "efectivo"},
+    )
+    assert sale_response.status_code == 201
+
+    await db_session.execute(
+        update(SaleModel)
+        .where(SaleModel.id == sale_response.json()["id"])
+        .values(created_at=datetime.fromisoformat(f"{business_date}T23:59:59+00:00") + timedelta(days=1))
+    )
+    await db_session.commit()
+
+    response = await client.get(f"/api/v1/reports/sales?from_date={business_date}&to_date={business_date}")
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["from_date"] == business_date
+    assert data["to_date"] == business_date
     assert data["sales_count"] == 1
 
 

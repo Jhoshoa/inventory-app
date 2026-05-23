@@ -28,6 +28,14 @@ class ISaleRepository(ABC):
     async def sales_summary_for_range(self, store_id: UUID, start: datetime, end: datetime) -> dict[str, Any]: ...
 
     @abstractmethod
+    async def sales_summary_for_business_date_range(
+        self,
+        store_id: UUID,
+        from_date: date,
+        to_date: date,
+    ) -> dict[str, Any]: ...
+
+    @abstractmethod
     async def sales_summary_for_business_day(self, store_id: UUID, business_day_id: UUID) -> dict[str, Any]: ...
 
     @abstractmethod
@@ -49,7 +57,24 @@ class ISaleRepository(ABC):
     async def totals_by_payment_method(self, store_id: UUID, start: datetime, end: datetime) -> list[dict[str, Any]]: ...
 
     @abstractmethod
+    async def totals_by_payment_method_for_business_date_range(
+        self,
+        store_id: UUID,
+        from_date: date,
+        to_date: date,
+    ) -> list[dict[str, Any]]: ...
+
+    @abstractmethod
     async def top_products(self, store_id: UUID, start: datetime, end: datetime, limit: int = 5) -> list[dict[str, Any]]: ...
+
+    @abstractmethod
+    async def top_products_for_business_date_range(
+        self,
+        store_id: UUID,
+        from_date: date,
+        to_date: date,
+        limit: int = 5,
+    ) -> list[dict[str, Any]]: ...
 
     @abstractmethod
     async def mark_voided(self, store_id: UUID, sale_id: UUID, reason: str) -> Sale | None: ...
