@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { PackagePlus, Tags } from "lucide-react";
+import { PageHeader } from "@/components/layout/PageHeader";
 import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
 import { listProductCategories } from "@/features/product-categories/api";
@@ -24,17 +25,12 @@ export default async function ProductsPage({
 
   return (
     <section className="space-y-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-normal text-slate-950">
-            Productos
-          </h1>
-          <p className="mt-1 text-sm text-slate-600">
-            Busca, filtra y administra el inventario de la tienda.
-          </p>
-        </div>
-        {canManageProducts(session.role) ? (
-          <div className="flex flex-wrap gap-2">
+      <PageHeader
+        title="Productos"
+        description="Busca, filtra y administra el inventario de la tienda."
+        actions={
+          canManageProducts(session.role) ? (
+          <>
             <Button variant="secondary" asChild>
               <Link href="/dashboard/products/labels">
                 <Tags className="h-4 w-4" aria-hidden="true" />
@@ -47,9 +43,10 @@ export default async function ProductsPage({
                 Nuevo producto
               </Link>
             </Button>
-          </div>
-        ) : null}
-      </div>
+          </>
+          ) : undefined
+        }
+      />
 
       {!products.ok ? (
         <Alert variant="error">

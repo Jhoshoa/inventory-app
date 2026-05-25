@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Activity } from "lucide-react";
+import { PageHeader } from "@/components/layout/PageHeader";
 import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -27,30 +28,30 @@ export default async function ReportsPage({
 
   return (
     <section className="space-y-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold text-slate-950">Reportes</h1>
-          <p className="mt-1 text-sm text-slate-600">
-            Ventas, productos destacados y exportes administrativos.
-          </p>
-        </div>
-        <Button variant="secondary" asChild>
-          <Link href="/dashboard/reports/stock-movements">
-            <Activity className="h-4 w-4" aria-hidden />
-            Movimientos de stock
-          </Link>
-        </Button>
-        {canViewStoreDayReports(session.role) ? (
-          <Button variant="secondary" asChild>
-            <Link href="/dashboard/reports/store-days">Cierres diarios</Link>
-          </Button>
-        ) : null}
-        {canViewCashMovements(session.role) ? (
-          <Button variant="secondary" asChild>
-            <Link href="/dashboard/reports/cash-movements">Movimientos de caja</Link>
-          </Button>
-        ) : null}
-      </div>
+      <PageHeader
+        title="Reportes"
+        description="Ventas, productos destacados y exportes administrativos."
+        actions={
+          <>
+            <Button variant="secondary" asChild>
+              <Link href="/dashboard/reports/stock-movements">
+                <Activity className="h-4 w-4" aria-hidden />
+                Movimientos de stock
+              </Link>
+            </Button>
+            {canViewStoreDayReports(session.role) ? (
+              <Button variant="secondary" asChild>
+                <Link href="/dashboard/reports/store-days">Cierres diarios</Link>
+              </Button>
+            ) : null}
+            {canViewCashMovements(session.role) ? (
+              <Button variant="secondary" asChild>
+                <Link href="/dashboard/reports/cash-movements">Movimientos de caja</Link>
+              </Button>
+            ) : null}
+          </>
+        }
+      />
 
       <DateRangeFilter params={params} />
 

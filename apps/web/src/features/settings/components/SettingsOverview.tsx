@@ -1,3 +1,4 @@
+import { PageHeader } from "@/components/layout/PageHeader";
 import { Alert } from "@/components/ui/Alert";
 import { Badge } from "@/components/ui/Badge";
 import { CollapsibleSection } from "@/components/ui/CollapsibleSection";
@@ -27,12 +28,10 @@ export function SettingsOverview({
 }) {
   return (
     <section className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold text-slate-950">Ajustes</h1>
-        <p className="mt-1 text-sm text-slate-600">
-          Configuracion de tienda, usuarios y permisos.
-        </p>
-      </div>
+      <PageHeader
+        title="Ajustes"
+        description="Configuracion de tienda, usuarios y permisos."
+      />
 
       <div className="grid gap-4 rounded-lg border border-slate-200 bg-white p-4 sm:grid-cols-3">
         <InfoItem label="Usuario" value={session.email} />

@@ -36,7 +36,14 @@ NEXT_PUBLIC_SENTRY_DSN=
 SENTRY_DSN=
 ```
 
-## Run in Development
+## Run backend Development
+```bash
+cd .\apps\backend\
+.\.venv\Scripts\activate
+py -m uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload 
+```
+
+## Run in Development frontend
 
 ```bash
 cd apps/web
