@@ -6,7 +6,6 @@ import { Download } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
-import { buildExportDateTimeQuery } from "@/features/reports/schemas";
 import type { CashMovementType } from "../types";
 
 export interface CashMovementsReportParams {
@@ -65,13 +64,9 @@ export function CashMovementsReportControls({ params }: { params: CashMovementsR
 }
 
 export function buildCashMovementsExportQuery(params: CashMovementsReportParams) {
-  const query = new URLSearchParams(
-    params.from_date && params.to_date
-      ? buildExportDateTimeQuery({ from: params.from_date, to: params.to_date })
-      : "",
-  );
-  if (params.from_date && !params.to_date) query.set("from", `${params.from_date}T00:00:00.000Z`);
-  if (params.to_date && !params.from_date) query.set("to", `${params.to_date}T23:59:59.999Z`);
+  const query = new URLSearchParams();
+  if (params.from_date) query.set("from_date", params.from_date);
+  if (params.to_date) query.set("to_date", params.to_date);
   if (params.type && params.type !== "all") query.set("type", params.type);
   return query.toString();
 }

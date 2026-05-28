@@ -5,7 +5,7 @@ Next.js frontend for the offline-first inventory app.
 ## Prerequisites
 
 - Node.js with Corepack enabled
-- Backend running at `http://localhost:8000`
+- Backend running at `http://localhost:8001`
 - Backend dependencies installed in its Python virtual environment
 
 ## Install Dependencies
@@ -29,7 +29,7 @@ copy .env.example .env
 Default local values:
 
 ```env
-BACKEND_API_URL=http://localhost:8000
+BACKEND_API_URL=http://localhost:8001
 NEXT_PUBLIC_APP_NAME=Inventory App
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 NEXT_PUBLIC_SENTRY_DSN=
@@ -40,7 +40,7 @@ SENTRY_DSN=
 ```bash
 cd .\apps\backend\
 .\.venv\Scripts\activate
-py -m uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload 
+py -m uvicorn src.main:app --host 0.0.0.0 --port 8001 --reload 
 ```
 
 ## Run in Development frontend

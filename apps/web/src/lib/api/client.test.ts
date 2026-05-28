@@ -21,7 +21,7 @@ describe("apiRequest", () => {
 
     expect(result).toEqual({ ok: true, data: { ok: true } });
     expect(fetchMock).toHaveBeenCalledWith(
-      "http://localhost:8000/api/v1/health",
+      "http://localhost:8001/api/v1/health",
       expect.objectContaining({ cache: "no-store" }),
     );
   });

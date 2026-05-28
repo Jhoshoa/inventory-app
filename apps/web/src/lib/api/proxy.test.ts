@@ -9,7 +9,7 @@ describe("buildBackendUrl", () => {
     );
 
     expect(url.toString()).toBe(
-      "http://localhost:8000/api/v1/products?limit=10&search=rice",
+      "http://localhost:8001/api/v1/products?limit=10&search=rice",
     );
   });
 });
