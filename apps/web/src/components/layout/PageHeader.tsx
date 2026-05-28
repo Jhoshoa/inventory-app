@@ -1,3 +1,5 @@
+import { ResponsiveActions } from "./ResponsiveActions";
+
 export function PageHeader({
   actions,
   description,
@@ -12,15 +14,15 @@ export function PageHeader({
   className?: string;
 }) {
   return (
-    <div className={`flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between ${className}`}>
+    <div className={`flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between ${className}`}>
       <div className="min-w-0">
         {eyebrow ? (
-          <p className="mb-1 text-xs font-medium uppercase text-slate-500">{eyebrow}</p>
+          <p className="mb-1 text-xs font-semibold uppercase text-text-muted">{eyebrow}</p>
         ) : null}
-        <h1 className="text-2xl font-semibold tracking-normal text-slate-950">{title}</h1>
-        {description ? <p className="mt-1 text-sm text-slate-600">{description}</p> : null}
+        <h1 className="text-2xl font-semibold tracking-normal text-text-strong">{title}</h1>
+        {description ? <p className="mt-1 max-w-3xl text-sm text-text-muted">{description}</p> : null}
       </div>
-      {actions ? <div className="flex flex-wrap gap-2 sm:justify-end">{actions}</div> : null}
+      {actions ? <ResponsiveActions>{actions}</ResponsiveActions> : null}
     </div>
   );
 }

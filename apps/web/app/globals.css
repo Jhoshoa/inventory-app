@@ -4,6 +4,31 @@
 
 :root {
   color-scheme: light;
+  --color-app-background: #f6f8fb;
+  --color-app-surface: #ffffff;
+  --color-app-surface-muted: #f8fafc;
+  --color-app-surface-raised: #ffffff;
+  --color-app-border: #e2e8f0;
+  --color-app-border-strong: #cbd5e1;
+  --color-text-strong: #111827;
+  --color-text-body: #334155;
+  --color-text-muted: #64748b;
+  --color-text-disabled: #94a3b8;
+  --color-text-inverse: #ffffff;
+  --color-focus-ring: #2563eb;
+  --color-status-success: #047857;
+  --color-status-success-bg: #ecfdf5;
+  --color-status-success-border: #a7f3d0;
+  --color-status-warning: #b45309;
+  --color-status-warning-bg: #fffbeb;
+  --color-status-warning-border: #fde68a;
+  --color-status-danger: #b91c1c;
+  --color-status-danger-hover: #991b1b;
+  --color-status-danger-bg: #fef2f2;
+  --color-status-danger-border: #fecaca;
+  --color-status-info: #0369a1;
+  --color-status-info-bg: #eff6ff;
+  --color-status-info-border: #bfdbfe;
 }
 
 * {
@@ -12,6 +37,21 @@
 
 body {
   margin: 0;
+  background: var(--color-app-background);
+  color: var(--color-text-body);
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+::selection {
+  background: #bfdbfe;
+  color: var(--color-text-strong);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: 2px;
 }
 
 .label-grid {

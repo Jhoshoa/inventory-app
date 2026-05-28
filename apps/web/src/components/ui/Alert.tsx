@@ -1,8 +1,10 @@
 import type { HTMLAttributes } from "react";
 
 const variants = {
-  info: "border-slate-200 bg-white text-slate-700",
-  error: "border-red-200 bg-red-50 text-red-700",
+  info: "border-status-infoBorder bg-status-infoBg text-status-info",
+  success: "border-status-successBorder bg-status-successBg text-status-success",
+  warning: "border-status-warningBorder bg-status-warningBg text-status-warning",
+  error: "border-status-dangerBorder bg-status-dangerBg text-status-danger",
 } as const;
 
 export function Alert({
@@ -13,7 +15,7 @@ export function Alert({
   return (
     <div
       role={variant === "error" ? "alert" : "status"}
-      className={`rounded-md border px-4 py-3 text-sm ${variants[variant]} ${className}`}
+      className={`rounded-md border px-4 py-3 text-sm font-medium shadow-sm ${variants[variant]} ${className}`}
       {...props}
     />
   );

@@ -6,7 +6,7 @@ export function DialogSurface({
 }: HTMLAttributes<HTMLDivElement>) {
   return (
     <div
-      className={`rounded-lg border border-slate-200 bg-white p-5 shadow-lg ${className}`}
+      className={`rounded-lg border border-app-border bg-app-surface p-5 shadow-floating ${className}`}
       {...props}
     />
   );

@@ -28,11 +28,11 @@ export function ConfirmDialog({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/30 p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 p-4">
       <DialogSurface className="w-full max-w-md">
         <div className="space-y-2">
-          <h2 className="text-base font-semibold text-slate-950">{title}</h2>
-          <p className="text-sm text-slate-600">{description}</p>
+          <h2 className="text-base font-semibold text-text-strong">{title}</h2>
+          <p className="text-sm text-text-muted">{description}</p>
         </div>
         <div className="mt-5 space-y-3">{children(() => setOpen(false))}</div>
         <div className="mt-4 flex justify-end gap-2">

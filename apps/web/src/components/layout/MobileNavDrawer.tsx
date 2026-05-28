@@ -89,7 +89,7 @@ export function MobileNavDrawer({ role }: { role: UserRole }) {
       <button
         ref={triggerButtonRef}
         type="button"
-        className="inline-flex h-10 w-10 items-center justify-center rounded-md text-slate-700 hover:bg-slate-100 hover:text-slate-950 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 lg:hidden"
+        className="inline-flex h-10 w-10 items-center justify-center rounded-md text-text-body hover:bg-app-surface-muted hover:text-text-strong focus:outline-none focus:ring-2 focus:ring-focus focus:ring-offset-2 lg:hidden"
         aria-label="Abrir menu de navegacion"
         aria-expanded={isOpen}
         onClick={() => setIsOpen(true)}
@@ -107,20 +107,20 @@ export function MobileNavDrawer({ role }: { role: UserRole }) {
           />
           <aside
             ref={dialogRef}
-            className="fixed inset-y-0 left-0 z-10 flex w-80 max-w-[85vw] flex-col overflow-y-auto border-r border-slate-200 bg-white shadow-xl"
+            className="fixed inset-y-0 left-0 z-10 flex w-80 max-w-[85vw] flex-col overflow-y-auto border-r border-app-border bg-app-surface shadow-floating"
             role="dialog"
             aria-modal="true"
             aria-label="Menu de navegacion"
             tabIndex={-1}
           >
-            <div className="flex h-16 items-center justify-between border-b border-slate-200 px-5">
-              <Link href="/dashboard" className="text-base font-semibold text-slate-950">
+            <div className="flex h-16 items-center justify-between border-b border-app-border px-5">
+              <Link href="/dashboard" className="text-base font-semibold text-text-strong">
                 Inventory App
               </Link>
               <button
                 ref={closeButtonRef}
                 type="button"
-                className="inline-flex h-9 w-9 items-center justify-center rounded-md text-slate-700 hover:bg-slate-100 hover:text-slate-950 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2"
+                className="inline-flex h-9 w-9 items-center justify-center rounded-md text-text-body hover:bg-app-surface-muted hover:text-text-strong focus:outline-none focus:ring-2 focus:ring-focus focus:ring-offset-2"
                 aria-label="Cerrar menu"
                 onClick={() => setIsOpen(false)}
               >
@@ -138,11 +138,11 @@ export function MobileNavDrawer({ role }: { role: UserRole }) {
                     aria-current={isActive ? "page" : undefined}
                     className={`flex h-10 items-center gap-3 rounded-md px-3 text-sm font-medium transition-colors ${
                       isActive
-                        ? "bg-slate-900 text-white"
-                        : "text-slate-700 hover:bg-slate-100 hover:text-slate-950"
+                        ? "bg-brand-700 text-text-inverse shadow-sm"
+                        : "text-text-body hover:bg-app-surface-muted hover:text-text-strong"
                     }`}
                   >
-                    <Icon className={`h-4 w-4 ${isActive ? "text-white" : "text-slate-500"}`} aria-hidden="true" />
+                    <Icon className={`h-4 w-4 ${isActive ? "text-text-inverse" : "text-text-muted"}`} aria-hidden="true" />
                     {item.label}
                   </Link>
                 );

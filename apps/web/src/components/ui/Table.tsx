@@ -1,12 +1,19 @@
 import type { HTMLAttributes, TableHTMLAttributes } from "react";
 
+interface TableProps extends TableHTMLAttributes<HTMLTableElement> {
+  wrapperClassName?: string;
+}
+
 export function Table({
   className = "",
+  wrapperClassName = "",
   ...props
-}: TableHTMLAttributes<HTMLTableElement>) {
+}: TableProps) {
   return (
-    <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
-      <table className={`w-full text-left text-sm ${className}`} {...props} />
+    <div className={`overflow-hidden rounded-lg border border-app-border bg-app-surface shadow-panel ${wrapperClassName}`}>
+      <div className="w-full overflow-x-auto">
+        <table className={`min-w-full text-left text-sm text-text-body ${className}`} {...props} />
+      </div>
     </div>
   );
 }
@@ -20,7 +27,7 @@ export function TableEmptyRow({
 }) {
   return (
     <tr>
-      <td className="px-4 py-8 text-center text-sm text-slate-500" colSpan={colSpan}>
+      <td className="px-4 py-8 text-center text-sm text-text-muted" colSpan={colSpan}>
         {children}
       </td>
     </tr>
@@ -31,7 +38,7 @@ export function TableCell({
   className = "",
   ...props
 }: HTMLAttributes<HTMLTableCellElement>) {
-  return <td className={`px-4 py-3 ${className}`} {...props} />;
+  return <td className={`border-t border-app-border px-4 py-3 align-middle ${className}`} {...props} />;
 }
 
 export function TableHeaderCell({
@@ -40,7 +47,7 @@ export function TableHeaderCell({
 }: HTMLAttributes<HTMLTableCellElement>) {
   return (
     <th
-      className={`bg-slate-50 px-4 py-3 text-xs font-semibold uppercase text-slate-500 ${className}`}
+      className={`bg-app-surface-muted px-4 py-3 text-xs font-semibold uppercase text-text-muted ${className}`}
       {...props}
     />
   );

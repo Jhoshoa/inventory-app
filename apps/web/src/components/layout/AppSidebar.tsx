@@ -9,9 +9,9 @@ export function AppSidebar({ role }: { role: UserRole }) {
   const pathname = usePathname();
 
   return (
-    <aside className="hidden border-r border-slate-200 bg-white lg:fixed lg:inset-y-0 lg:z-30 lg:flex lg:w-64 lg:flex-col">
-      <div className="flex h-16 items-center border-b border-slate-200 px-5">
-        <Link href="/dashboard" className="text-base font-semibold text-slate-950">
+    <aside className="hidden border-r border-app-border bg-app-surface lg:fixed lg:inset-y-0 lg:z-30 lg:flex lg:w-64 lg:flex-col">
+      <div className="flex h-16 items-center border-b border-app-border px-5">
+        <Link href="/dashboard" className="text-base font-semibold text-text-strong">
           Inventory App
         </Link>
       </div>
@@ -26,11 +26,11 @@ export function AppSidebar({ role }: { role: UserRole }) {
               aria-current={isActive ? "page" : undefined}
               className={`flex h-10 items-center gap-3 rounded-md px-3 text-sm font-medium transition-colors ${
                 isActive
-                  ? "bg-slate-900 text-white"
-                  : "text-slate-700 hover:bg-slate-100 hover:text-slate-950"
+                  ? "bg-brand-700 text-text-inverse shadow-sm"
+                  : "text-text-body hover:bg-app-surface-muted hover:text-text-strong"
               }`}
             >
-              <Icon className={`h-4 w-4 ${isActive ? "text-white" : "text-slate-500"}`} aria-hidden="true" />
+              <Icon className={`h-4 w-4 ${isActive ? "text-text-inverse" : "text-text-muted"}`} aria-hidden="true" />
               {item.label}
             </Link>
           );
