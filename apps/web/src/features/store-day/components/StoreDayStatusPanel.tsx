@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import type { FormEvent } from "react";
-import { useActionState, useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { LockKeyhole, Store, UnlockKeyhole } from "lucide-react";
 import { Alert } from "@/components/ui/Alert";
@@ -213,17 +213,38 @@ function StoreDayActionForm({
 }
 
 function CashMovementPanel({ cashMovements }: { cashMovements?: CashMovementListResult }) {
-  const [state, formAction, isPending] = useActionState(createCashMovementAction, initialState);
+  const [state, setState] = useState<StoreDayActionState>(initialState);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
 
-  useEffect(() => {
-    if (state.ok) router.refresh();
-  }, [router, state.ok]);
+  async function onSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (isSubmitting) return;
+
+    setIsSubmitting(true);
+    setState(initialState);
+    try {
+      const nextState = await createCashMovementAction(initialState, new FormData(event.currentTarget));
+      setState(nextState);
+      if (nextState.ok) {
+        event.currentTarget.reset();
+        router.refresh();
+      }
+    } catch (error) {
+      setState({
+        ok: false,
+        message: error instanceof Error ? error.message : "No se pudo registrar el movimiento.",
+        fieldErrors: {},
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
 
   return (
     <div className="space-y-2 rounded-lg border border-app-border bg-app-surface-muted p-3">
       <p className="text-sm font-semibold text-text-strong">Movimientos de caja</p>
-      <form action={formAction} className="grid gap-2">
+      <form onSubmit={onSubmit} className="grid gap-2">
         {state.message ? <Alert variant={state.ok ? "info" : "error"}>{state.message}</Alert> : null}
         <Select aria-label="Tipo de movimiento" name="movement_type" defaultValue="expense">
           <option value="expense">Gasto</option>
@@ -246,7 +267,7 @@ function CashMovementPanel({ cashMovements }: { cashMovements?: CashMovementList
         <FieldError message={state.fieldErrors.amount} />
         <Input aria-label="Nota de movimiento" name="note" placeholder="Nota opcional" />
         <FieldError message={state.fieldErrors.note} />
-        <Button type="submit" disabled={isPending}>{isPending ? "Registrando..." : "Registrar movimiento"}</Button>
+        <Button type="submit" disabled={isSubmitting}>{isSubmitting ? "Registrando..." : "Registrar movimiento"}</Button>
       </form>
       <CashMovementList cashMovements={cashMovements} />
     </div>
@@ -269,12 +290,29 @@ function CashMovementList({ cashMovements }: { cashMovements?: CashMovementListR
 }
 
 function CashMovementRow({ movement }: { movement: CashMovement }) {
-  const [state, formAction, isPending] = useActionState(voidCashMovementAction, initialState);
+  const [state, setState] = useState<StoreDayActionState>(initialState);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
 
-  useEffect(() => {
-    if (state.ok) router.refresh();
-  }, [router, state.ok]);
+  async function onSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (isSubmitting) return;
+
+    setIsSubmitting(true);
+    try {
+      const nextState = await voidCashMovementAction(initialState, new FormData(event.currentTarget));
+      setState(nextState);
+      if (nextState.ok) router.refresh();
+    } catch (error) {
+      setState({
+        ok: false,
+        message: error instanceof Error ? error.message : "No se pudo anular el movimiento.",
+        fieldErrors: {},
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
 
   return (
     <div className="flex items-center justify-between gap-2 rounded-md bg-app-surface p-2 text-sm">
@@ -285,9 +323,12 @@ function CashMovementRow({ movement }: { movement: CashMovement }) {
         </p>
         {movement.note ? <p className="text-xs text-text-muted">{movement.note}</p> : null}
       </div>
-      <form action={formAction}>
+      {state.message && !state.ok ? <Alert variant="error">{state.message}</Alert> : null}
+      <form onSubmit={onSubmit}>
         <input type="hidden" name="movement_id" value={movement.id} />
-        <Button type="submit" variant="secondary" disabled={isPending}>Anular</Button>
+        <Button type="submit" variant="secondary" disabled={isSubmitting}>
+          {isSubmitting ? "Anulando..." : "Anular"}
+        </Button>
       </form>
     </div>
   );

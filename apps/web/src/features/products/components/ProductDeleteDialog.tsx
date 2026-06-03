@@ -1,6 +1,7 @@
 "use client";
 
-import { useActionState, useEffect, useState } from "react";
+import type { FormEvent } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
@@ -24,18 +25,33 @@ export function ProductDeleteDialog({
   productName: string;
 }) {
   const [open, setOpen] = useState(false);
-  const [state, formAction, isPending] = useActionState(
-    deleteProductAction,
-    initialProductActionState,
-  );
+  const [state, setState] = useState<ProductActionState>(initialProductActionState);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
 
-  useEffect(() => {
-    if (state.ok) {
-      router.replace("/dashboard/products");
-      router.refresh();
+  async function onSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (isSubmitting) return;
+
+    setIsSubmitting(true);
+    setState(initialProductActionState);
+    try {
+      const nextState = await deleteProductAction(initialProductActionState, new FormData(event.currentTarget));
+      setState(nextState);
+      if (nextState.ok) {
+        router.replace("/dashboard/products");
+        router.refresh();
+      }
+    } catch (error) {
+      setState({
+        ok: false,
+        message: error instanceof Error ? error.message : "No se pudo eliminar el producto.",
+        fieldErrors: {},
+      });
+    } finally {
+      setIsSubmitting(false);
     }
-  }, [router, state.ok]);
+  }
 
   return (
     <>
@@ -51,7 +67,7 @@ export function ProductDeleteDialog({
             <p className="mt-1 text-sm text-text-muted">
               Escribe ELIMINAR para borrar {productName}. El backend validara permisos owner.
             </p>
-            <form action={formAction} className="mt-5 space-y-4">
+            <form onSubmit={onSubmit} className="mt-5 space-y-4">
               {state.message ? <Alert variant={state.ok ? "info" : "error"}>{state.message}</Alert> : null}
               <input type="hidden" name="product_id" value={productId} />
               <div className="space-y-2">
@@ -63,8 +79,8 @@ export function ProductDeleteDialog({
                 <Button type="button" variant="secondary" onClick={() => setOpen(false)}>
                   Cancelar
                 </Button>
-                <Button type="submit" variant="danger" disabled={isPending}>
-                  {isPending ? "Eliminando..." : "Eliminar"}
+                <Button type="submit" variant="danger" disabled={isSubmitting}>
+                  {isSubmitting ? "Eliminando..." : "Eliminar"}
                 </Button>
               </div>
             </form>

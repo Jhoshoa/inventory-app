@@ -1,6 +1,7 @@
 "use client";
 
-import { useActionState, useEffect, useState } from "react";
+import type { FormEvent } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
@@ -18,12 +19,30 @@ const initialVoidState: SaleActionState = {
 
 export function VoidSaleDialog({ saleId }: { saleId: string }) {
   const [open, setOpen] = useState(false);
-  const [state, formAction, isPending] = useActionState(voidSaleAction, initialVoidState);
+  const [state, setState] = useState<SaleActionState>(initialVoidState);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
 
-  useEffect(() => {
-    if (state.ok) router.refresh();
-  }, [router, state.ok]);
+  async function onSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (isSubmitting) return;
+
+    setIsSubmitting(true);
+    setState(initialVoidState);
+    try {
+      const nextState = await voidSaleAction(initialVoidState, new FormData(event.currentTarget));
+      setState(nextState);
+      if (nextState.ok) router.refresh();
+    } catch (error) {
+      setState({
+        ok: false,
+        message: error instanceof Error ? error.message : "No se pudo anular la venta.",
+        fieldErrors: {},
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
 
   return (
     <>
@@ -37,7 +56,7 @@ export function VoidSaleDialog({ saleId }: { saleId: string }) {
             <p className="mt-1 text-sm text-text-muted">
               Esta accion devuelve stock y requiere permisos de owner.
             </p>
-            <form action={formAction} className="mt-5 space-y-4">
+            <form onSubmit={onSubmit} className="mt-5 space-y-4">
               <input type="hidden" name="sale_id" value={saleId} />
               {state.message ? <Alert variant={state.ok ? "info" : "error"}>{state.message}</Alert> : null}
               <div className="space-y-2">
@@ -49,8 +68,8 @@ export function VoidSaleDialog({ saleId }: { saleId: string }) {
                 <Button type="button" variant="secondary" onClick={() => setOpen(false)}>
                   Cancelar
                 </Button>
-                <Button type="submit" variant="danger" disabled={isPending}>
-                  {isPending ? "Anulando..." : "Confirmar anulacion"}
+                <Button type="submit" variant="danger" disabled={isSubmitting}>
+                  {isSubmitting ? "Anulando..." : "Confirmar anulacion"}
                 </Button>
               </div>
             </form>

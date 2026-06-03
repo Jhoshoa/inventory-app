@@ -1,6 +1,7 @@
 "use client";
 
-import { useActionState, useEffect, useState } from "react";
+import type { FormEvent } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
@@ -25,15 +26,30 @@ export function ProductStockDialog({
   productName: string;
 }) {
   const [open, setOpen] = useState(false);
-  const [state, formAction, isPending] = useActionState(
-    adjustStockAction,
-    initialProductActionState,
-  );
+  const [state, setState] = useState<ProductActionState>(initialProductActionState);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
 
-  useEffect(() => {
-    if (state.ok) router.refresh();
-  }, [router, state.ok]);
+  async function onSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (isSubmitting) return;
+
+    setIsSubmitting(true);
+    setState(initialProductActionState);
+    try {
+      const nextState = await adjustStockAction(initialProductActionState, new FormData(event.currentTarget));
+      setState(nextState);
+      if (nextState.ok) router.refresh();
+    } catch (error) {
+      setState({
+        ok: false,
+        message: error instanceof Error ? error.message : "No se pudo ajustar el stock.",
+        fieldErrors: {},
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
 
   return (
     <>
@@ -47,7 +63,7 @@ export function ProductStockDialog({
               Ajustar stock
             </h2>
             <p className="mt-1 text-sm text-text-muted">{productName}</p>
-            <form action={formAction} className="mt-5 space-y-4">
+            <form onSubmit={onSubmit} className="mt-5 space-y-4">
               {state.message ? <Alert variant={state.ok ? "info" : "error"}>{state.message}</Alert> : null}
               <input type="hidden" name="product_id" value={productId} />
               <div className="space-y-2">
@@ -64,8 +80,8 @@ export function ProductStockDialog({
                 <Button type="button" variant="secondary" onClick={() => setOpen(false)}>
                   Cerrar
                 </Button>
-                <Button type="submit" disabled={isPending}>
-                  {isPending ? "Guardando..." : "Guardar ajuste"}
+                <Button type="submit" disabled={isSubmitting}>
+                  {isSubmitting ? "Guardando..." : "Guardar ajuste"}
                 </Button>
               </div>
             </form>
