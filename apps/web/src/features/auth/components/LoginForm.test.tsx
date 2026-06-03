@@ -27,6 +27,8 @@ describe("LoginForm", () => {
 
     expect(screen.getByText("Email es requerido")).toBeInTheDocument();
     expect(screen.getByText("Password es requerido")).toBeInTheDocument();
+    expect(screen.getByText("Email es requerido")).toHaveClass("text-status-danger");
+    expect(screen.getByText("Password es requerido")).toHaveClass("text-status-danger");
   });
 
   it("shows invalid credentials errors", async () => {

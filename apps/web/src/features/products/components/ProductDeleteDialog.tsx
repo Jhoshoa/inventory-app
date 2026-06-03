@@ -1,6 +1,7 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
 import { DialogSurface } from "@/components/ui/Dialog";
@@ -27,6 +28,14 @@ export function ProductDeleteDialog({
     deleteProductAction,
     initialProductActionState,
   );
+  const router = useRouter();
+
+  useEffect(() => {
+    if (state.ok) {
+      router.replace("/dashboard/products");
+      router.refresh();
+    }
+  }, [router, state.ok]);
 
   return (
     <>

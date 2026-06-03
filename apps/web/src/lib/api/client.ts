@@ -8,6 +8,7 @@ export type ApiResult<T> =
 export type ApiRequestOptions = Omit<RequestInit, "body"> & {
   body?: unknown;
   token?: string;
+  timeoutMs?: number;
 };
 
 export async function apiRequest<T>(
@@ -25,11 +26,13 @@ export async function apiRequest<T>(
   }
 
   try {
+    const { timeoutMs = 20000, ...requestOptions } = options;
     const response = await fetch(`${getBackendApiUrl()}/api/v1${path}`, {
-      ...options,
+      ...requestOptions,
       headers,
       body: serializeBody(options.body),
       cache: "no-store",
+      signal: options.signal ?? AbortSignal.timeout(timeoutMs),
     });
 
     if (!response.ok) {

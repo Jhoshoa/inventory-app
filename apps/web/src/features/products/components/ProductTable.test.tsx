@@ -8,6 +8,10 @@ vi.mock("react", async () => {
   return { ...actual, useActionState: () => [{ ok: false, fieldErrors: {} }, vi.fn(), false] };
 });
 
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ refresh: vi.fn(), replace: vi.fn() }),
+}));
+
 const product: Product = {
   id: "product-1",
   name: "Arroz 1kg",

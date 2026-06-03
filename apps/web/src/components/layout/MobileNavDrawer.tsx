@@ -101,7 +101,7 @@ export function MobileNavDrawer({ role }: { role: UserRole }) {
         <div className="fixed inset-0 z-50 lg:hidden">
           <button
             type="button"
-            className="absolute inset-0 bg-slate-950/40"
+            className="absolute inset-0 bg-text-strong/40"
             aria-label="Cerrar menu de navegacion"
             onClick={() => setIsOpen(false)}
           />

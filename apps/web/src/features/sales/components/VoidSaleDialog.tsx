@@ -1,6 +1,7 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
 import { DialogSurface } from "@/components/ui/Dialog";
@@ -18,6 +19,11 @@ const initialVoidState: SaleActionState = {
 export function VoidSaleDialog({ saleId }: { saleId: string }) {
   const [open, setOpen] = useState(false);
   const [state, formAction, isPending] = useActionState(voidSaleAction, initialVoidState);
+  const router = useRouter();
+
+  useEffect(() => {
+    if (state.ok) router.refresh();
+  }, [router, state.ok]);
 
   return (
     <>

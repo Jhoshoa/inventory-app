@@ -336,6 +336,18 @@ Objetivo:
 
 Cerrar la calidad visual con validacion real.
 
+Documento de ejecucion:
+
+- `docs/ui-design-style-enhancement/sprint-5-premium-polish-accessibility-qa-implementation.md`
+
+Estado actualizado:
+
+- Implementado para el alcance inicial el 2026-06-03.
+- Auth, layout global, global error y overlay mobile fueron migrados a tokens premium.
+- Verificado con `corepack pnpm test`, `corepack pnpm typecheck`, `corepack pnpm lint` y `corepack pnpm build`.
+- Importaciones/OCR se mantiene fuera de alcance.
+- Queda pendiente QA visual con screenshots por viewport como cierre final.
+
 Alcance:
 
 - Auditoria responsive por viewport.

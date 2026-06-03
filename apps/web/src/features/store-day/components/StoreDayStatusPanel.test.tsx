@@ -1,15 +1,31 @@
-import { fireEvent, render, screen } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { StoreDayStatusPanel, toMoneyInputValue } from "./StoreDayStatusPanel";
+import { closeStoreDayAction, openStoreDayAction, reopenStoreDayAction } from "../actions";
 import type { StoreDay } from "../types";
+
+const mocks = vi.hoisted(() => ({
+  actionState: { ok: false, fieldErrors: {} } as {
+    ok: boolean;
+    message?: string;
+    storeDay?: StoreDay;
+    fieldErrors: Record<string, string>;
+  },
+  refresh: vi.fn(),
+}));
 
 vi.mock("react", async () => {
   const actual = await vi.importActual<typeof import("react")>("react");
   return {
     ...actual,
-    useActionState: () => [{ ok: false, fieldErrors: {} }, vi.fn(), false],
+    useActionState: () => [mocks.actionState, vi.fn(), false],
   };
 });
+
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ refresh: mocks.refresh }),
+}));
 
 vi.mock("../actions", () => ({
   openStoreDayAction: vi.fn(),
@@ -20,6 +36,14 @@ vi.mock("../actions", () => ({
 }));
 
 describe("StoreDayStatusPanel", () => {
+  beforeEach(() => {
+    mocks.actionState = { ok: false, fieldErrors: {} };
+    mocks.refresh.mockClear();
+    vi.mocked(openStoreDayAction).mockReset();
+    vi.mocked(closeStoreDayAction).mockReset();
+    vi.mocked(reopenStoreDayAction).mockReset();
+  });
+
   it("renders closed state and owner action", () => {
     render(<StoreDayStatusPanel storeDay={closedStoreDay()} role="owner" actions="manage" />);
 
@@ -88,6 +112,74 @@ describe("StoreDayStatusPanel", () => {
     fireEvent.input(amount, { target: { value: "abc12.345x.67" } });
 
     expect(amount).toHaveValue("12.34");
+  });
+
+  it("refreshes the route after a successful store day action", async () => {
+    vi.mocked(openStoreDayAction).mockResolvedValue({
+      ok: true,
+      message: "Tienda abierta",
+      storeDay: openStoreDay(),
+      fieldErrors: {},
+    });
+    const user = userEvent.setup();
+
+    render(<StoreDayStatusPanel storeDay={closedStoreDay()} role="owner" actions="manage" />);
+
+    await user.type(screen.getByRole("textbox", { name: "Caja inicial" }), "10");
+    await user.click(screen.getByRole("button", { name: "Abrir tienda" }));
+
+    await waitFor(() => expect(mocks.refresh).toHaveBeenCalled());
+  });
+
+  it("updates local state after closing the store day without cash count", async () => {
+    vi.mocked(closeStoreDayAction).mockResolvedValue({
+      ok: true,
+      message: "Tienda cerrada",
+      storeDay: closedStoreDay({
+        id: "day-1",
+        closed_at: "2026-05-21T18:00:00Z",
+        closing_snapshot_at: "2026-05-21T18:00:00Z",
+      }),
+      fieldErrors: {},
+    });
+    const user = userEvent.setup();
+
+    render(<StoreDayStatusPanel storeDay={openStoreDay()} role="owner" actions="manage" />);
+
+    await user.click(screen.getByRole("checkbox", { name: "Cerrar sin conteo de efectivo" }));
+    await user.click(screen.getByRole("button", { name: "Cerrar tienda" }));
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: "Tienda cerrada" })).toBeInTheDocument();
+    });
+    expect(screen.getByRole("button", { name: "Reabrir tienda" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Procesando..." })).not.toBeInTheDocument();
+  });
+
+  it("updates local state after reopening the store day", async () => {
+    vi.mocked(reopenStoreDayAction).mockResolvedValue({
+      ok: true,
+      message: "Tienda reabierta",
+      storeDay: openStoreDay(),
+      fieldErrors: {},
+    });
+    const user = userEvent.setup();
+
+    render(
+      <StoreDayStatusPanel
+        storeDay={closedStoreDay({ id: "day-1", closed_at: "2026-05-21T18:00:00Z" })}
+        role="owner"
+        actions="manage"
+      />,
+    );
+
+    await user.click(screen.getByRole("button", { name: "Reabrir tienda" }));
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: "Tienda abierta" })).toBeInTheDocument();
+    });
+    expect(screen.getByRole("button", { name: "Cerrar tienda" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Procesando..." })).not.toBeInTheDocument();
   });
 
   it("renders management link without inline actions", () => {

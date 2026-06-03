@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
+import { FieldError } from "@/components/ui/FieldError";
 import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
 
@@ -63,7 +64,7 @@ export function LoginForm() {
           error={Boolean(errors.email)}
           onChange={(event) => setValues({ ...values, email: event.target.value })}
         />
-        {errors.email ? <p className="text-sm text-red-600">{errors.email}</p> : null}
+        <FieldError message={errors.email} />
       </div>
       <div className="space-y-2">
         <Label htmlFor="password">Password</Label>
@@ -76,9 +77,7 @@ export function LoginForm() {
           error={Boolean(errors.password)}
           onChange={(event) => setValues({ ...values, password: event.target.value })}
         />
-        {errors.password ? (
-          <p className="text-sm text-red-600">{errors.password}</p>
-        ) : null}
+        <FieldError message={errors.password} />
       </div>
       <Button className="w-full" type="submit" disabled={isSubmitting}>
         {isSubmitting ? "Ingresando..." : "Iniciar sesion"}

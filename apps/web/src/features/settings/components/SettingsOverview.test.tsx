@@ -1,8 +1,12 @@
 import { render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { SettingsOverview } from "./SettingsOverview";
 import type { Session } from "@/lib/auth/session";
 import type { StoreDay } from "@/features/store-day/types";
+
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ refresh: vi.fn() }),
+}));
 
 const session: Session = {
   userId: "user-1",
