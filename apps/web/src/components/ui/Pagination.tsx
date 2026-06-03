@@ -22,7 +22,7 @@ export function Pagination({
   const hasNext = nextOffset < total;
 
   return (
-    <div className="flex flex-col gap-3 border-t border-slate-200 bg-white px-4 py-3 text-sm text-slate-600 sm:flex-row sm:items-center sm:justify-between">
+    <div className="flex flex-col gap-3 border-t border-app-border bg-app-surface px-4 py-3 text-sm text-text-muted sm:flex-row sm:items-center sm:justify-between">
       <p>
         Mostrando {from}-{to} de {total}
       </p>
@@ -65,7 +65,7 @@ function PageLink({
 
   if (disabled) {
     return (
-      <span className="inline-flex h-9 items-center gap-1 rounded-md border border-slate-200 px-3 text-slate-400">
+      <span className="inline-flex h-9 items-center gap-1 rounded-md border border-app-border px-3 text-text-disabled">
         {content}
       </span>
     );
@@ -74,7 +74,7 @@ function PageLink({
   return (
     <Link
       href={href}
-      className="inline-flex h-9 items-center gap-1 rounded-md border border-slate-300 px-3 text-slate-700 hover:bg-slate-50"
+      className="inline-flex h-9 items-center gap-1 rounded-md border border-app-borderStrong px-3 text-text-body hover:bg-app-surface-muted hover:text-text-strong"
     >
       {content}
     </Link>

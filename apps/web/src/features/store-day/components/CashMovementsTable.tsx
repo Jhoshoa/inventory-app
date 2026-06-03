@@ -18,10 +18,10 @@ export function CashMovementsTable({ items }: { items: CashMovement[] }) {
           <TableEmptyRow colSpan={4}>Sin movimientos</TableEmptyRow>
         ) : (
           items.map((item) => (
-            <tr key={item.id} className="border-t border-slate-100">
+            <tr key={item.id} className="border-t border-app-border">
               <TableCell>{formatDateTime(item.occurred_at)}</TableCell>
               <TableCell>{cashMovementLabel(item.movement_type)}</TableCell>
-              <TableCell className={item.direction === "in" ? "text-emerald-700" : "text-red-700"}>
+              <TableCell className={item.direction === "in" ? "text-status-success" : "text-status-danger"}>
                 {item.direction === "in" ? "+" : "-"}{formatCurrency(item.amount)}
               </TableCell>
               <TableCell>{item.note ?? "Sin nota"}</TableCell>

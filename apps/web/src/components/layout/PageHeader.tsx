@@ -2,12 +2,14 @@ import { ResponsiveActions } from "./ResponsiveActions";
 
 export function PageHeader({
   actions,
+  breadcrumbs,
   description,
   eyebrow,
   title,
   className = "",
 }: {
   actions?: React.ReactNode;
+  breadcrumbs?: React.ReactNode;
   description?: string;
   eyebrow?: string;
   title: string;
@@ -16,6 +18,7 @@ export function PageHeader({
   return (
     <div className={`flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between ${className}`}>
       <div className="min-w-0">
+        {breadcrumbs ? <div className="mb-2">{breadcrumbs}</div> : null}
         {eyebrow ? (
           <p className="mb-1 text-xs font-semibold uppercase text-text-muted">{eyebrow}</p>
         ) : null}

@@ -1,7 +1,7 @@
-import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
+import { PageHeader } from "@/components/layout/PageHeader";
+import { PageSection } from "@/components/layout/PageSection";
 import { Alert } from "@/components/ui/Alert";
-import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Pagination } from "@/components/ui/Pagination";
 import { listStockMovements } from "@/features/reports/api";
@@ -28,23 +28,20 @@ export default async function StockMovementsPage({
   const urlParams = new URLSearchParams(buildStockMovementQueryString(params));
 
   return (
-    <section className="space-y-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold text-slate-950">
-            Movimientos de stock
-          </h1>
-          <p className="mt-1 text-sm text-slate-600">
-            Auditoria global de ventas, anulaciones y ajustes de inventario.
-          </p>
-        </div>
-        <Button variant="secondary" asChild>
-          <Link href="/dashboard/reports">
-            <ArrowLeft className="h-4 w-4" aria-hidden />
-            Volver a reportes
-          </Link>
-        </Button>
-      </div>
+    <PageSection className="space-y-6">
+      <PageHeader
+        breadcrumbs={
+          <Breadcrumbs
+            items={[
+              { label: "Dashboard", href: "/dashboard" },
+              { label: "Reportes", href: "/dashboard/reports" },
+              { label: "Movimientos de stock" },
+            ]}
+          />
+        }
+        title="Movimientos de stock"
+        description="Auditoria global de ventas, anulaciones y ajustes de inventario."
+      />
 
       <StockMovementFilters params={params} />
 
@@ -58,7 +55,7 @@ export default async function StockMovementsPage({
           description="Ajusta el rango o registra ventas y cambios de stock para ver auditoria."
         />
       ) : (
-        <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
+        <div className="overflow-hidden rounded-lg border border-app-border bg-app-surface shadow-panel">
           <StockMovementsTable movements={movements.data.items} />
           <Pagination
             basePath="/dashboard/reports/stock-movements"
@@ -71,6 +68,6 @@ export default async function StockMovementsPage({
       )}
 
       <ExportPanel role={session.role} reportParams={params} />
-    </section>
+    </PageSection>
   );
 }

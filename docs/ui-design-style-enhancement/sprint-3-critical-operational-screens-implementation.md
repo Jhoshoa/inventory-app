@@ -2,6 +2,10 @@
 
 Fecha: 2026-06-03
 
+Estado: completado funcionalmente.
+
+Ultima actualizacion: 2026-06-03
+
 ## Objetivo
 
 Migrar las pantallas operativas de mayor uso diario al sistema visual premium existente, sin cambiar contratos de API, permisos, rutas, datos ni comportamiento de negocio.
@@ -15,6 +19,32 @@ El sprint parte de una fundacion ya creada en sprints previos: tokens semanticos
 - Productos funciona, pero sus filtros, tabla y acciones todavia no usan completamente la fundacion premium.
 - Imprimir etiquetas funciona, pero la composicion de busqueda, configuracion, seleccionados y preview necesita una jerarquia visual mas clara.
 - Hay colores directos `slate-*`, `red-*`, `amber-*` y `emerald-*` en componentes incluidos en el alcance.
+
+## Estado de cierre
+
+- Dashboard quedo migrado con `PageHeader`, `PageSection`, KPIs premium, tabs `Hoy`/`Mes` funcionales, copy temporal corregido y `StoreDayStatusPanel` en tokens semanticos.
+- POS quedo migrado con `PageHeader`, busqueda/escaneo reforzada, resultados, carrito, checkout y aviso de tienda cerrada con tokens semanticos.
+- Productos quedo migrado con `ProductFilters` en `ResponsiveToolbar`, tabla contenida, acciones compactas con iconos y `Tooltip`, y estados de stock consistentes.
+- Imprimir etiquetas quedo reorganizado con superficies premium para busqueda, filtros, configuracion, resumen, resultados, seleccionados y preview.
+- No se cambiaron contratos de API, permisos, rutas, reducers, server actions ni schemas.
+- Se conservaron clases y comportamiento de impresion/exportacion en etiquetas.
+
+## Verificacion ejecutada
+
+```bash
+cd apps/web
+corepack pnpm test src/features/dashboard/components/DashboardOverview.test.tsx
+corepack pnpm test src/features/store-day/components/StoreClosedNotice.test.tsx
+corepack pnpm test
+corepack pnpm typecheck
+corepack pnpm lint
+corepack pnpm build
+```
+
+Resultado:
+
+- Suite completa web: 42 archivos de test, 129 tests pasando.
+- `typecheck`, `lint` y `build` pasando.
 
 ## Skills aplicados
 
@@ -83,6 +113,11 @@ El sprint parte de una fundacion ya creada en sprints previos: tokens semanticos
 - Tests relevantes pasan.
 - `pnpm build` pasa.
 
+Estado de criterios:
+
+- Cumplidos para las rutas del alcance: `/dashboard`, `/dashboard/pos`, `/dashboard/products` y `/dashboard/products/labels`.
+- Pendiente para Sprint 5: QA visual documentado con screenshots o revision manual por viewport.
+
 ## Tests esperados
 
 - Dashboard: copy del empty state, tasas, stock bajo y estados de error.
@@ -104,3 +139,11 @@ El sprint parte de una fundacion ya creada en sprints previos: tokens semanticos
 - No mover data fetching de Server Components a Client Components.
 - Mantener props y contratos actuales.
 - Conservar clases de impresion necesarias en etiquetas.
+
+## Deuda fuera del alcance para sprints siguientes
+
+- Breadcrumbs globales y configuracion por ruta critica.
+- Ventas, detalle de venta, reportes, movimientos, importaciones y ajustes.
+- Textos inconsistentes de Importaciones: `Import Image`, `Upload image`.
+- Componentes compartidos aun con tokens directos en rutas no migradas: `Pagination`, `Label`, `SummaryRow`, `ErrorState`, `ForbiddenState`, `CollapsibleSection`.
+- Formularios y detalles de producto fuera de las rutas principales de Sprint 3: nuevo, editar, detalle, dialogs y preview QR.

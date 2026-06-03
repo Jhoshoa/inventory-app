@@ -23,7 +23,7 @@ export function StoreDayEventTimeline({
   if (events.data.length === 0) {
     return (
       <CollapsibleSection title="Historial de jornada" description="Aperturas, cierres y reaperturas recientes.">
-        <p className="text-sm text-slate-600">Sin eventos de jornada para hoy.</p>
+        <p className="text-sm text-text-muted">Sin eventos de jornada para hoy.</p>
       </CollapsibleSection>
     );
   }
@@ -37,13 +37,13 @@ export function StoreDayEventTimeline({
       <ol className="space-y-3">
         {sortedEvents.map((event) => (
           <li key={event.id} className="flex gap-3">
-            <div className="mt-0.5 flex h-8 w-8 items-center justify-center rounded-md bg-slate-100 text-slate-600">
+            <div className="mt-0.5 flex h-8 w-8 items-center justify-center rounded-md bg-app-surface-muted text-text-muted">
               <Clock3 className="h-4 w-4" aria-hidden={true} />
             </div>
             <div>
-              <p className="text-sm font-medium text-slate-950">{labels[event.event_type] ?? event.event_type}</p>
-              <p className="mt-0.5 text-xs text-slate-500">{formatDateTime(event.created_at, timezone)}</p>
-              {event.note ? <p className="mt-1 text-sm text-slate-600">{event.note}</p> : null}
+              <p className="text-sm font-medium text-text-strong">{labels[event.event_type] ?? event.event_type}</p>
+              <p className="mt-0.5 text-xs text-text-muted">{formatDateTime(event.created_at, timezone)}</p>
+              {event.note ? <p className="mt-1 text-sm text-text-muted">{event.note}</p> : null}
             </div>
           </li>
         ))}

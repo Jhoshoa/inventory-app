@@ -1,7 +1,6 @@
-import Link from "next/link";
+import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Alert } from "@/components/ui/Alert";
-import { Button } from "@/components/ui/Button";
 import { ForbiddenState } from "@/components/ui/ForbiddenState";
 import { listProductCategories } from "@/features/product-categories/api";
 import { listProducts } from "@/features/products/api";
@@ -42,13 +41,17 @@ export default async function ProductLabelsPage({
     <section className="space-y-6">
       <PageHeader
         className="print-hidden"
+        breadcrumbs={
+          <Breadcrumbs
+            items={[
+              { label: "Dashboard", href: "/dashboard" },
+              { label: "Productos", href: "/dashboard/products" },
+              { label: "Imprimir etiquetas" },
+            ]}
+          />
+        }
         title="Imprimir etiquetas"
         description="Selecciona productos con codigo escaneable y genera una hoja imprimible."
-        actions={
-          <Button variant="secondary" asChild>
-            <Link href="/dashboard/products">Volver a productos</Link>
-          </Button>
-        }
       />
 
       {!products.ok ? (

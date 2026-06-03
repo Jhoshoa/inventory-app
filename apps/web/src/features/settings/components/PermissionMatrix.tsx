@@ -16,7 +16,7 @@ const permissions = [
 
 export function PermissionMatrix() {
   return (
-    <div className="overflow-hidden rounded-lg border border-slate-200">
+    <div className="overflow-hidden rounded-lg border border-app-border">
       <Table>
         <thead>
           <tr>
@@ -27,7 +27,7 @@ export function PermissionMatrix() {
         </thead>
         <tbody>
           {permissions.map((permission) => (
-            <tr key={permission.label} className="border-t border-slate-100">
+            <tr key={permission.label} className="border-t border-app-border">
               <TableCell>{permission.label}</TableCell>
               <TableCell><PermissionIcon allowed={permission.cashier} /></TableCell>
               <TableCell><PermissionIcon allowed={permission.owner} /></TableCell>
@@ -41,8 +41,8 @@ export function PermissionMatrix() {
 
 function PermissionIcon({ allowed }: { allowed: boolean }) {
   if (!allowed) {
-    return <Minus className="h-4 w-4 text-slate-400" aria-label="No permitido" />;
+    return <Minus className="h-4 w-4 text-text-disabled" aria-label="No permitido" />;
   }
 
-  return <Check className="h-4 w-4 text-emerald-600" aria-label="Permitido" />;
+  return <Check className="h-4 w-4 text-status-success" aria-label="Permitido" />;
 }

@@ -27,7 +27,7 @@ export function StockMovementsTable({ movements }: { movements: StockMovement[] 
           <TableEmptyRow colSpan={7}>Sin movimientos para este filtro</TableEmptyRow>
         ) : (
           movements.map((movement) => (
-            <tr key={movement.id} className="border-t border-slate-100">
+            <tr key={movement.id} className="border-t border-app-border">
               <TableCell>{formatDate(movement.created_at)}</TableCell>
               <TableCell>
                 <Badge variant={badgeVariant(movement.movement_type)}>
@@ -35,7 +35,7 @@ export function StockMovementsTable({ movements }: { movements: StockMovement[] 
                 </Badge>
               </TableCell>
               <TableCell>{shortId(movement.product_id)}</TableCell>
-              <TableCell className={movement.quantity_delta >= 0 ? "text-emerald-700" : "text-red-700"}>
+              <TableCell className={movement.quantity_delta >= 0 ? "text-status-success" : "text-status-danger"}>
                 {movement.quantity_delta > 0 ? "+" : ""}
                 {movement.quantity_delta}
               </TableCell>
@@ -43,7 +43,7 @@ export function StockMovementsTable({ movements }: { movements: StockMovement[] 
               <TableCell>{movement.reason ?? "Sin razon"}</TableCell>
               <TableCell>
                 {movement.sale_id ? (
-                  <Link className="font-medium text-slate-700 underline" href={`/dashboard/sales/${movement.sale_id}`}>
+                  <Link className="font-medium text-brand-700 underline" href={`/dashboard/sales/${movement.sale_id}`}>
                     {shortId(movement.sale_id)}
                   </Link>
                 ) : (

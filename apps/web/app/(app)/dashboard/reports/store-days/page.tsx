@@ -1,8 +1,13 @@
 import Link from "next/link";
+import { Eye } from "lucide-react";
+import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
+import { PageHeader } from "@/components/layout/PageHeader";
+import { PageSection } from "@/components/layout/PageSection";
 import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
 import { ForbiddenState } from "@/components/ui/ForbiddenState";
 import { Pagination } from "@/components/ui/Pagination";
+import { Tooltip } from "@/components/ui/Tooltip";
 import {
   Table,
   TableCell,
@@ -33,13 +38,20 @@ export default async function StoreDayReportsPage({
   const reports = await listCloseReports(params);
 
   return (
-    <section className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold text-slate-950">Cierres diarios</h1>
-        <p className="mt-1 text-sm text-slate-600">
-          Historial de cierres operativos y diferencias de caja.
-        </p>
-      </div>
+    <PageSection className="space-y-6">
+      <PageHeader
+        breadcrumbs={
+          <Breadcrumbs
+            items={[
+              { label: "Dashboard", href: "/dashboard" },
+              { label: "Reportes", href: "/dashboard/reports" },
+              { label: "Cierres diarios" },
+            ]}
+          />
+        }
+        title="Cierres diarios"
+        description="Historial de cierres operativos y diferencias de caja."
+      />
 
       <StoreDayReportsDateFilter fromDate={params.from_date} toDate={params.to_date} />
 
@@ -57,7 +69,7 @@ export default async function StoreDayReportsPage({
           />
         </>
       )}
-    </section>
+    </PageSection>
   );
 }
 
@@ -79,16 +91,20 @@ function CloseReportsTable({ items }: { items: StoreDayCloseReport[] }) {
           <TableEmptyRow colSpan={6}>Sin cierres registrados</TableEmptyRow>
         ) : (
           items.map((item) => (
-            <tr key={item.business_day_id} className="border-t border-slate-100">
+            <tr key={item.business_day_id} className="border-t border-app-border">
               <TableCell>{formatBusinessDate(item.business_date)}</TableCell>
               <TableCell>{formatCurrency(item.sales_total)}</TableCell>
               <TableCell>{formatCurrency(item.expected_cash_amount)}</TableCell>
               <TableCell>{item.counted_cash_amount ? formatCurrency(item.counted_cash_amount) : "Sin conteo"}</TableCell>
               <TableCell>{item.cash_difference_amount ? formatCurrency(item.cash_difference_amount) : "No calculada"}</TableCell>
               <TableCell>
-                <Button variant="secondary" asChild>
-                  <Link href={`/dashboard/reports/store-days/${item.business_day_id}`}>Ver</Link>
-                </Button>
+                <Tooltip content="Ver cierre">
+                  <Button variant="icon" asChild>
+                    <Link href={`/dashboard/reports/store-days/${item.business_day_id}`} aria-label="Ver cierre">
+                      <Eye className="h-4 w-4" aria-hidden="true" />
+                    </Link>
+                  </Button>
+                </Tooltip>
               </TableCell>
             </tr>
           ))

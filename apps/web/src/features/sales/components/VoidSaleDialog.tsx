@@ -25,10 +25,10 @@ export function VoidSaleDialog({ saleId }: { saleId: string }) {
         Anular venta
       </Button>
       {open ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/30 p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-text-strong/30 p-4">
           <DialogSurface className="w-full max-w-md">
-            <h2 className="text-base font-semibold text-slate-950">Anular venta</h2>
-            <p className="mt-1 text-sm text-slate-600">
+            <h2 className="text-base font-semibold text-text-strong">Anular venta</h2>
+            <p className="mt-1 text-sm text-text-muted">
               Esta accion devuelve stock y requiere permisos de owner.
             </p>
             <form action={formAction} className="mt-5 space-y-4">

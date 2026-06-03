@@ -14,12 +14,12 @@ export function ForbiddenState({
   actionLabel?: string;
 }) {
   return (
-    <section className="rounded-lg border border-amber-200 bg-amber-50 p-6" role="status">
+    <section className="rounded-lg border border-status-warningBorder bg-status-warningBg p-6" role="status">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
-        <ShieldAlert className="h-6 w-6 text-amber-700" aria-hidden />
+        <ShieldAlert className="h-6 w-6 text-status-warning" aria-hidden />
         <div className="min-w-0 flex-1">
-          <h1 className="text-lg font-semibold text-amber-950">{title}</h1>
-          <p className="mt-1 text-sm text-amber-800">{description}</p>
+          <h1 className="text-lg font-semibold text-status-warning">{title}</h1>
+          <p className="mt-1 text-sm text-status-warning">{description}</p>
           <Button className="mt-4" variant="secondary" asChild>
             <Link href={actionHref}>{actionLabel}</Link>
           </Button>

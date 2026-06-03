@@ -18,12 +18,12 @@ export function ErrorState({
   actionLabel?: string;
 }) {
   return (
-    <section className="rounded-lg border border-red-200 bg-red-50 p-6" role="alert">
+    <section className="rounded-lg border border-status-dangerBorder bg-status-dangerBg p-6" role="alert">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
-        <AlertTriangle className="h-6 w-6 text-red-600" aria-hidden />
+        <AlertTriangle className="h-6 w-6 text-status-danger" aria-hidden />
         <div className="min-w-0 flex-1">
-          <h1 className="text-lg font-semibold text-red-950">{title}</h1>
-          <p className="mt-1 text-sm text-red-800">{description}</p>
+          <h1 className="text-lg font-semibold text-status-danger">{title}</h1>
+          <p className="mt-1 text-sm text-status-danger">{description}</p>
           <div className="mt-4 flex flex-wrap gap-2">
             {onRetry && retryLabel ? (
               <Button variant="danger" onClick={onRetry}>

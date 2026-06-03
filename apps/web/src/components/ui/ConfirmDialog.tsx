@@ -28,7 +28,7 @@ export function ConfirmDialog({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-text-strong/40 p-4">
       <DialogSurface className="w-full max-w-md">
         <div className="space-y-2">
           <h2 className="text-base font-semibold text-text-strong">{title}</h2>

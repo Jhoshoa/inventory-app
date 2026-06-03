@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
+import { PageHeader } from "@/components/layout/PageHeader";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { canAdjustStock, canManageProducts } from "@/lib/auth/permissions";
@@ -11,14 +13,20 @@ import type { Product } from "../types";
 export function ProductDetail({ product, role }: { product: Product; role: UserRole }) {
   return (
     <section className="space-y-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold text-slate-950">{product.name}</h1>
-          <p className="mt-1 text-sm text-slate-600">
-            Detalle operativo, codigos y auditoria de stock.
-          </p>
-        </div>
-        <div className="flex flex-wrap gap-2">
+      <PageHeader
+        breadcrumbs={
+          <Breadcrumbs
+            items={[
+              { label: "Dashboard", href: "/dashboard" },
+              { label: "Productos", href: "/dashboard/products" },
+              { label: product.name },
+            ]}
+          />
+        }
+        title={product.name}
+        description="Detalle operativo, codigos y auditoria de stock."
+        actions={
+          <>
           {canManageProducts(role) ? (
             <Button variant="secondary" asChild>
               <Link href={`/dashboard/products/${product.id}/edit`}>Editar</Link>
@@ -27,14 +35,15 @@ export function ProductDetail({ product, role }: { product: Product; role: UserR
           {canAdjustStock(role) ? (
             <ProductStockDialog productId={product.id} productName={product.name} />
           ) : null}
-        </div>
-      </div>
+          </>
+        }
+      />
 
       <div className="grid gap-4 md:grid-cols-3">
         <InfoCard label="Precio" value={formatCurrency(product.price)} />
         <InfoCard label="Stock" value={`${product.stock} ${product.unit}`} />
-        <div className="rounded-lg border border-slate-200 bg-white p-4">
-          <p className="text-sm text-slate-600">Estado</p>
+        <div className="rounded-lg border border-app-border bg-app-surface p-4 shadow-panel">
+          <p className="text-sm text-text-muted">Estado</p>
           <div className="mt-3">
             <StockBadge product={product} />
           </div>
@@ -42,8 +51,8 @@ export function ProductDetail({ product, role }: { product: Product; role: UserR
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
-        <div className="rounded-lg border border-slate-200 bg-white p-4">
-          <h2 className="text-base font-semibold text-slate-950">Datos</h2>
+        <div className="rounded-lg border border-app-border bg-app-surface p-4 shadow-panel">
+          <h2 className="text-base font-semibold text-text-strong">Datos</h2>
           <dl className="mt-4 grid gap-3 text-sm">
             <Row label="SKU" value={product.sku ?? "Sin SKU"} />
             <Row label="QR" value={product.qr_code ?? "Sin QR"} />
@@ -52,8 +61,8 @@ export function ProductDetail({ product, role }: { product: Product; role: UserR
             <Row label="Costo" value={product.cost_price ? formatCurrency(product.cost_price) : "Sin costo"} />
           </dl>
         </div>
-        <div className="rounded-lg border border-slate-200 bg-white p-4">
-          <h2 className="text-base font-semibold text-slate-950">Visibilidad</h2>
+        <div className="rounded-lg border border-app-border bg-app-surface p-4 shadow-panel">
+          <h2 className="text-base font-semibold text-text-strong">Visibilidad</h2>
           <div className="mt-4">
             <Badge variant={product.is_active ? "success" : "default"}>
               {product.is_active ? "Activo" : "Inactivo"}
@@ -67,9 +76,9 @@ export function ProductDetail({ product, role }: { product: Product; role: UserR
 
 function InfoCard({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-lg border border-slate-200 bg-white p-4">
-      <p className="text-sm text-slate-600">{label}</p>
-      <p className="mt-3 text-2xl font-semibold text-slate-950">{value}</p>
+    <div className="rounded-lg border border-app-border bg-app-surface p-4 shadow-panel">
+      <p className="text-sm text-text-muted">{label}</p>
+      <p className="mt-3 text-2xl font-semibold text-text-strong">{value}</p>
     </div>
   );
 }
@@ -77,8 +86,8 @@ function InfoCard({ label, value }: { label: string; value: string }) {
 function Row({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex justify-between gap-4">
-      <dt className="text-slate-500">{label}</dt>
-      <dd className="text-right font-medium text-slate-950">{value}</dd>
+      <dt className="text-text-muted">{label}</dt>
+      <dd className="text-right font-medium text-text-strong">{value}</dd>
     </div>
   );
 }

@@ -38,10 +38,13 @@ Actualizacion 2026-06-03:
 
 - Sprint 1 esta parcialmente implementado: existen tokens semanticos, superficies base, `Tooltip`, `PageContainer`, `PageSection`, `ResponsiveActions` y `ResponsiveToolbar`.
 - Sprint 2 esta parcialmente implementado: `AppShell`, `AppSidebar`, `AppHeader`, `MobileNavDrawer` y el contenedor principal ya usan parte de la fundacion premium.
-- El Dashboard ya recibio una primera migracion premium: `PageHeader`, `PageSection`, KPIs refinados, tabs de periodo, tasas disponibles y tests actualizados.
-- La deuda principal para continuar es aplicar esa fundacion de forma consistente a POS, Productos e Imprimir etiquetas, y cerrar pendientes de layout como breadcrumbs.
+- Sprint 3 esta completado funcionalmente: Dashboard, POS, Productos e Imprimir etiquetas ya usan la fundacion premium en sus rutas principales.
+- Sprint 4 esta implementado: Ventas, Reportes, Movimientos, Cierres, Ajustes, rutas secundarias de Productos y componentes compartidos del alcance usan la fundacion premium.
+- `PageHeader` ya soporta navegacion jerarquica via `Breadcrumbs`, y las rutas hijas prioritarias ya no dependen de botones manuales de regreso.
+- El Dashboard incluye KPIs refinados, tabs de periodo funcionales, tasas disponibles, estado de jornada migrado y tests actualizados.
+- La deuda principal para continuar es QA visual sistematico por viewport, accesibilidad final, contraste, focus states y limpieza de areas fuera del alcance premium actual.
 - Todavia hay colores directos `slate-*`, `red-*`, `amber-*` y `emerald-*` en pantallas criticas y componentes compartidos; deben migrarse progresivamente a tokens semanticos.
-- Persisten textos inconsistentes en Importaciones, por ejemplo `Import Image` y `Upload image`; se mantienen fuera del Sprint 3 salvo que afecten rutas tocadas.
+- La funcionalidad actual de Importaciones/OCR queda excluida del rediseño premium por decision de producto. Mas adelante se planificara una importacion CSV con columnas especificas como funcionalidad separada.
 
 Principales deudas para una experiencia premium:
 
@@ -50,9 +53,9 @@ Principales deudas para una experiencia premium:
 - Componentes base funcionales pero aun simples.
 - Tablas orientadas a desktop y con responsive limitado.
 - Formularios y filtros con grids propios por pantalla.
-- Faltan breadcrumbs consistentes.
+- Breadcrumbs consistentes ya existen en rutas hijas prioritarias; queda extenderlos si aparecen nuevas rutas.
 - Acciones repetidas de tabla usan texto donde convendrian icon buttons con tooltip.
-- Algunas pantallas todavia tienen textos o labels inconsistentes como `Import Image`.
+- La funcionalidad actual de Importaciones/OCR queda fuera del rediseño premium por ahora; la futura importacion CSV se planificara aparte.
 - No existe una validacion visual sistematica por viewport.
 
 Deuda puntual detectada antes de Sprint 3:
@@ -64,6 +67,14 @@ Deuda puntual detectada antes de Sprint 3:
 - La tabla de productos usa acciones de texto extensas y no aprovecha icon buttons con tooltip.
 - Imprimir etiquetas tiene buena funcionalidad, pero la composicion visual y mobile siguen siendo de la etapa MVP.
 - El empty state del Dashboard incluye copy temporal de sprint que debe corregirse.
+
+Deuda actual despues de Sprint 4:
+
+- Falta QA visual documentado por viewport; se mantiene como foco de Sprint 5.
+- Auth, Importaciones/OCR y algunos estados globales no forman parte del alcance premium ya implementado.
+- La funcionalidad futura de importacion CSV necesita un sprint propio con columnas esperadas, validaciones, preview y manejo de errores.
+- Queda revisar contraste, focus rings, navegacion por teclado, dialogs y tooltips con una pasada de accesibilidad dedicada.
+- Queda validar con datos extremos: nombres largos, tablas densas, montos grandes y estados vacios.
 
 ## Principios de diseno
 
@@ -224,10 +235,10 @@ Documento de ejecucion:
 
 Estado actualizado:
 
-- Dashboard: en curso avanzado; falta cerrar copy temporal y migrar el panel de jornada.
-- POS: pendiente de migracion premium.
-- Productos: pendiente de migracion premium.
-- Imprimir etiquetas: pendiente de migracion premium.
+- Dashboard: completado para el alcance del sprint.
+- POS: completado para el alcance del sprint.
+- Productos: completado para listado/filtros/tabla del sprint.
+- Imprimir etiquetas: completado para el alcance del sprint.
 
 Orden recomendado:
 
@@ -275,23 +286,34 @@ Criterios de aceptacion:
 
 Objetivo:
 
-Llevar el mismo nivel visual al resto de pantallas administrativas.
+Llevar el mismo nivel visual al resto de pantallas administrativas y reemplazar botones manuales de regreso por navegacion jerarquica reusable.
+
+Documento de ejecucion:
+
+- `docs/ui-design-style-enhancement/sprint-4-admin-reports-advanced-tables-implementation.md`
+
+Estado actualizado:
+
+- Implementado el 2026-06-03.
+- Verificado con `corepack pnpm test`, `corepack pnpm typecheck`, `corepack pnpm lint` y `corepack pnpm build`.
+- Importaciones/OCR se mantiene fuera de alcance; la futura importacion CSV queda para planificacion separada.
 
 Alcance:
 
+- Navegacion jerarquica reusable integrada con `PageHeader`.
 - Ventas.
 - Detalle de venta.
 - Reportes.
 - Movimientos de stock.
 - Cierres diarios.
 - Movimientos de caja.
-- Importaciones.
-- Detalle/revision de importacion.
 - Ajustes.
 - Permisos y categorias.
+- Rutas secundarias de Productos.
 
 Mejoras esperadas:
 
+- Breadcrumbs/navegacion jerarquica responsive en rutas hijas.
 - Tablas con overflow controlado.
 - Columnas prioritarias.
 - Acciones compactas con iconos y tooltip donde aplique.
@@ -302,9 +324,11 @@ Mejoras esperadas:
 Criterios de aceptacion:
 
 - Todas las pantallas administrativas usan la fundacion visual.
+- Las rutas hijas muestran jerarquia de navegacion clara y reutilizable.
 - Las tablas no rompen mobile.
 - Las acciones destructivas y restringidas son claras.
 - Los permisos siguen respetandose.
+- Cada bloque incluye tests de verificacion relevantes.
 
 ### Sprint 5: Pulido, accesibilidad y QA visual
 
@@ -342,7 +366,6 @@ Rutas minimas:
 /dashboard/products/labels
 /dashboard/sales
 /dashboard/reports
-/dashboard/imports
 /dashboard/settings
 ```
 

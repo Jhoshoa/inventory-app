@@ -32,7 +32,7 @@ describe("SalesTable", () => {
     expect(screen.getByText("Completada")).toBeInTheDocument();
     expect(screen.getByText("efectivo")).toBeInTheDocument();
     expect(screen.getByText(/Bs\s+25,00/)).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Ver" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "Ver venta" })).toHaveAttribute(
       "href",
       "/dashboard/sales/sale-1",
     );

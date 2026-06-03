@@ -1,3 +1,5 @@
+import { PageHeader } from "@/components/layout/PageHeader";
+import { PageSection } from "@/components/layout/PageSection";
 import { Alert } from "@/components/ui/Alert";
 import { Pagination } from "@/components/ui/Pagination";
 import { listSales } from "@/features/sales/api";
@@ -15,13 +17,12 @@ export default async function SalesPage({
   const sales = await listSales(params);
 
   return (
-    <section className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold text-slate-950">Ventas</h1>
-        <p className="mt-1 text-sm text-slate-600">
-          Historial de ventas registradas en la tienda.
-        </p>
-      </div>
+    <PageSection className="space-y-6">
+      <PageHeader
+        eyebrow="Operacion"
+        title="Ventas"
+        description="Historial de ventas registradas en la tienda."
+      />
       {!sales.ok ? (
         <Alert variant="error">No se pudieron cargar ventas: {sales.error.message}</Alert>
       ) : (
@@ -44,7 +45,7 @@ export default async function SalesPage({
           />
         </>
       )}
-    </section>
+    </PageSection>
   );
 }
 

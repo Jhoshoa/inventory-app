@@ -3,6 +3,7 @@
 import { useCallback, useTransition } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { Download } from "lucide-react";
+import { ResponsiveToolbar } from "@/components/layout/ResponsiveToolbar";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
@@ -33,11 +34,11 @@ export function CashMovementsReportControls({ params }: { params: CashMovementsR
   }, [pathname, router]);
 
   return (
-    <div className="grid gap-3 rounded-lg border border-slate-200 bg-white p-4 md:grid-cols-[160px_160px_180px_1fr]">
+    <ResponsiveToolbar className="md:grid md:grid-cols-[160px_160px_180px_minmax(160px,1fr)]">
       <DateField label="Desde" value={params.from_date ?? ""} onChange={(value) => updateParam("from_date", value || null)} />
       <DateField label="Hasta" value={params.to_date ?? ""} onChange={(value) => updateParam("to_date", value || null)} />
       <label className="block">
-        <span className="mb-1 block text-xs font-medium uppercase text-slate-500">Tipo</span>
+        <span className="mb-1 block text-xs font-medium uppercase text-text-muted">Tipo</span>
         <Select
           aria-label="Tipo de movimiento de caja"
           value={params.type}
@@ -59,7 +60,7 @@ export function CashMovementsReportControls({ params }: { params: CashMovementsR
           </a>
         </Button>
       </div>
-    </div>
+    </ResponsiveToolbar>
   );
 }
 
@@ -82,7 +83,7 @@ function DateField({
 }) {
   return (
     <label className="block">
-      <span className="mb-1 block text-xs font-medium uppercase text-slate-500">{label}</span>
+      <span className="mb-1 block text-xs font-medium uppercase text-text-muted">{label}</span>
       <Input type="date" value={value} onChange={(event) => onChange(event.target.value)} />
     </label>
   );

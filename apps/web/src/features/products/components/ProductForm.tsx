@@ -102,16 +102,16 @@ export function ProductForm({
           </Select>
           <input type="hidden" name="category" value={categoryName} />
           {categories.length === 0 ? (
-            <p className="text-xs text-slate-500">Configura categorias en Ajustes para generar SKUs por prefijo.</p>
+            <p className="text-xs text-text-muted">Configura categorias en Ajustes para generar SKUs por prefijo.</p>
           ) : null}
         </Field>
         {shouldUseAutomaticSku && selectedCategory ? (
           <div className="space-y-2">
             <Label>SKU</Label>
             <input type="hidden" name="sku" value="" />
-            <div className="min-h-10 rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm">
-              <p className="font-medium text-slate-900">Automatico al guardar</p>
-              <p className="text-xs text-slate-500">
+            <div className="min-h-10 rounded-md border border-app-border bg-app-surface-muted px-3 py-2 text-sm">
+              <p className="font-medium text-text-strong">Automatico al guardar</p>
+              <p className="text-xs text-text-muted">
                 Se generara en el servidor con prefijo {selectedCategory.sku_prefix}.
               </p>
             </div>

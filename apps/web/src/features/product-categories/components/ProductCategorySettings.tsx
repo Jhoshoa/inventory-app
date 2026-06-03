@@ -86,9 +86,9 @@ export function ProductCategorySettings({ categories }: { categories: ProductCat
         </Button>
       </form>
 
-      <div className="overflow-hidden rounded-lg border border-slate-200">
-        <table className="min-w-full divide-y divide-slate-200 text-sm">
-          <thead className="bg-slate-50 text-left text-xs font-semibold uppercase text-slate-500">
+      <div className="overflow-hidden rounded-lg border border-app-border">
+        <table className="min-w-full divide-y divide-app-border text-sm">
+          <thead className="bg-app-surface-muted text-left text-xs font-semibold uppercase text-text-muted">
             <tr>
               <th className="px-4 py-3">Nombre</th>
               <th className="px-4 py-3">Prefijo SKU</th>
@@ -96,18 +96,18 @@ export function ProductCategorySettings({ categories }: { categories: ProductCat
               <th className="px-4 py-3 text-right">Accion</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100 bg-white">
+          <tbody className="divide-y divide-app-border bg-app-surface">
             {visibleCategories.length === 0 ? (
               <tr>
-                <td className="px-4 py-6 text-center text-slate-500" colSpan={4}>
+                <td className="px-4 py-6 text-center text-text-muted" colSpan={4}>
                   Sin categorias configuradas.
                 </td>
               </tr>
             ) : (
               visibleCategories.map((category) => (
                 <tr key={category.id}>
-                  <td className="px-4 py-3 font-medium text-slate-950">{category.name}</td>
-                  <td className="px-4 py-3 text-slate-700">{category.sku_prefix}</td>
+                  <td className="px-4 py-3 font-medium text-text-strong">{category.name}</td>
+                  <td className="px-4 py-3 text-text-body">{category.sku_prefix}</td>
                   <td className="px-4 py-3">
                     <Badge variant={category.is_active ? "success" : "default"}>
                       {category.is_active ? "Activa" : "Inactiva"}
@@ -149,13 +149,13 @@ function Toast({ message, onClose }: { message: string; onClose: () => void }) {
     <div
       role="status"
       aria-live="polite"
-      className="fixed right-4 top-20 z-50 flex max-w-sm items-center gap-3 rounded-md border border-emerald-200 bg-white px-4 py-3 text-sm font-medium text-emerald-800 shadow-lg"
+      className="fixed right-4 top-20 z-50 flex max-w-sm items-center gap-3 rounded-md border border-status-successBorder bg-app-surface px-4 py-3 text-sm font-medium text-status-success shadow-floating"
     >
-      <span className="h-2 w-2 rounded-full bg-emerald-500" aria-hidden="true" />
+      <span className="h-2 w-2 rounded-full bg-status-success" aria-hidden="true" />
       <span className="flex-1">{message}</span>
       <button
         type="button"
-        className="rounded px-1 text-emerald-700 hover:bg-emerald-50 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+        className="rounded px-1 text-status-success hover:bg-status-successBg focus:outline-none focus:ring-2 focus:ring-focus"
         onClick={onClose}
         aria-label="Cerrar notificacion"
       >

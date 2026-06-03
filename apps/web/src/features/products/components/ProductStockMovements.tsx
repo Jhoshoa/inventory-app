@@ -13,7 +13,7 @@ export function ProductStockMovements({
 }) {
   return (
     <section className="space-y-3">
-      <h2 className="text-base font-semibold text-slate-950">Movimientos de stock</h2>
+      <h2 className="text-base font-semibold text-text-strong">Movimientos de stock</h2>
       <Table>
         <thead>
           <tr>
@@ -29,7 +29,7 @@ export function ProductStockMovements({
             <TableEmptyRow colSpan={5}>Sin movimientos registrados</TableEmptyRow>
           ) : (
             movements.map((movement) => (
-              <tr key={movement.id} className="border-t border-slate-100">
+              <tr key={movement.id} className="border-t border-app-border">
                 <TableCell>{formatDate(movement.created_at)}</TableCell>
                 <TableCell>{movement.movement_type}</TableCell>
                 <TableCell>{movement.quantity_delta}</TableCell>

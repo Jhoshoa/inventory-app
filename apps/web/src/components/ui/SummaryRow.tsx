@@ -9,10 +9,10 @@ export function SummaryRow({
 }) {
   return (
     <div className="flex items-center justify-between gap-4">
-      <span className={strong ? "font-semibold text-slate-950" : "text-slate-600"}>
+      <span className={strong ? "font-semibold text-text-strong" : "text-text-muted"}>
         {label}
       </span>
-      <span className={strong ? "font-semibold text-slate-950" : "text-slate-700"}>
+      <span className={strong ? "font-semibold text-text-strong" : "text-text-body"}>
         {value}
       </span>
     </div>

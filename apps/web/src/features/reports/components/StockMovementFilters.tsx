@@ -2,6 +2,7 @@
 
 import { useCallback, useTransition } from "react";
 import { usePathname, useRouter } from "next/navigation";
+import { ResponsiveToolbar } from "@/components/layout/ResponsiveToolbar";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import type { StockMovementSearchParams } from "../types";
@@ -24,11 +25,11 @@ export function StockMovementFilters({ params }: { params: StockMovementSearchPa
   }, [pathname, router]);
 
   return (
-    <div className="grid gap-3 rounded-lg border border-slate-200 bg-white p-4 md:grid-cols-[160px_160px_160px_1fr]">
+    <ResponsiveToolbar className="md:grid md:grid-cols-[160px_160px_160px_minmax(180px,1fr)]">
       <DateField label="Desde" value={params.from} onChange={(value) => updateParam("from", value)} />
       <DateField label="Hasta" value={params.to} onChange={(value) => updateParam("to", value)} />
       <label className="block">
-        <span className="mb-1 block text-xs font-medium uppercase text-slate-500">
+        <span className="mb-1 block text-xs font-medium uppercase text-text-muted">
           Tipo
         </span>
         <Select
@@ -45,7 +46,7 @@ export function StockMovementFilters({ params }: { params: StockMovementSearchPa
         </Select>
       </label>
       <label className="block">
-        <span className="mb-1 block text-xs font-medium uppercase text-slate-500">
+        <span className="mb-1 block text-xs font-medium uppercase text-text-muted">
           Producto ID
         </span>
         <Input
@@ -54,7 +55,7 @@ export function StockMovementFilters({ params }: { params: StockMovementSearchPa
           onBlur={(event) => updateParam("product_id", event.target.value.trim() || null)}
         />
       </label>
-    </div>
+    </ResponsiveToolbar>
   );
 }
 
@@ -69,7 +70,7 @@ function DateField({
 }) {
   return (
     <label className="block">
-      <span className="mb-1 block text-xs font-medium uppercase text-slate-500">
+      <span className="mb-1 block text-xs font-medium uppercase text-text-muted">
         {label}
       </span>
       <Input type="date" value={value} onChange={(event) => onChange(event.target.value)} />
