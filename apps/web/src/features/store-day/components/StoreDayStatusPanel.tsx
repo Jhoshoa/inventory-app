@@ -5,6 +5,7 @@ import type { FormEvent } from "react";
 import { useActionState, useState } from "react";
 import { LockKeyhole, Store, UnlockKeyhole } from "lucide-react";
 import { Alert } from "@/components/ui/Alert";
+import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { FieldError } from "@/components/ui/FieldError";
 import { Input } from "@/components/ui/Input";
@@ -38,31 +39,31 @@ export function StoreDayStatusPanel({
   const canManage = canOpenCloseStore(role);
 
   return (
-    <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+    <section className="rounded-lg border border-app-border bg-app-surface p-4 shadow-panel">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div className="flex gap-3">
           <div
-            className={`flex h-10 w-10 items-center justify-center rounded-md ${
-              isOpen ? "bg-emerald-50 text-emerald-700" : "bg-amber-50 text-amber-700"
+            className={`flex h-10 w-10 items-center justify-center rounded-md border ${
+              isOpen
+                ? "border-status-successBorder bg-status-successBg text-status-success"
+                : "border-status-warningBorder bg-status-warningBg text-status-warning"
             }`}
           >
             {isOpen ? <UnlockKeyhole className="h-5 w-5" aria-hidden={true} /> : <LockKeyhole className="h-5 w-5" aria-hidden={true} />}
           </div>
           <div>
             <div className="flex flex-wrap items-center gap-2">
-              <h2 className="text-base font-semibold text-slate-950">
+              <h2 className="text-base font-semibold text-text-strong">
                 {isOpen ? "Tienda abierta" : "Tienda cerrada"}
               </h2>
-              <span className="rounded-md bg-slate-100 px-2 py-1 text-xs font-medium text-slate-700">
-                {formatBusinessDate(storeDay.business_date)}
-              </span>
+              <Badge>{formatBusinessDate(storeDay.business_date)}</Badge>
             </div>
-            <p className="mt-1 text-sm text-slate-600">
+            <p className="mt-1 text-sm text-text-muted">
               {isOpen && storeDay.opened_at
                 ? `Abierta desde ${formatDateTime(storeDay.opened_at, storeDay.timezone)}`
                 : "Abre la jornada para habilitar ventas en POS."}
             </p>
-            <p className="mt-1 inline-flex items-center gap-1 text-xs text-slate-500">
+            <p className="mt-1 inline-flex items-center gap-1 text-xs text-text-muted">
               <Store className="h-3.5 w-3.5" aria-hidden={true} />
               Zona operativa: {storeDay.timezone}
             </p>
@@ -121,9 +122,9 @@ function StoreDayActionForm({
         ) : null}
         {isOpen ? (
           <>
-            <label className="flex items-center gap-2 rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700">
+            <label className="flex items-center gap-2 rounded-md border border-app-border bg-app-surface px-3 py-2 text-sm text-text-body">
               <input
-                className="h-4 w-4 rounded border-slate-300 text-slate-950 focus:ring-slate-400"
+                className="h-4 w-4 rounded border-app-borderStrong text-brand-700 focus:ring-focus"
                 name="skip_cash_count"
                 type="checkbox"
                 checked={skipCashCount}
@@ -167,8 +168,8 @@ function StoreDayActionForm({
 function CashMovementPanel({ cashMovements }: { cashMovements?: CashMovementListResult }) {
   const [state, formAction, isPending] = useActionState(createCashMovementAction, initialState);
   return (
-    <div className="space-y-2 rounded-lg border border-slate-200 bg-slate-50 p-3">
-      <p className="text-sm font-semibold text-slate-950">Movimientos de caja</p>
+    <div className="space-y-2 rounded-lg border border-app-border bg-app-surface-muted p-3">
+      <p className="text-sm font-semibold text-text-strong">Movimientos de caja</p>
       <form action={formAction} className="grid gap-2">
         {state.message ? <Alert variant={state.ok ? "info" : "error"}>{state.message}</Alert> : null}
         <Select aria-label="Tipo de movimiento" name="movement_type" defaultValue="expense">
@@ -203,7 +204,7 @@ function CashMovementList({ cashMovements }: { cashMovements?: CashMovementListR
   if (!cashMovements) return null;
   if (!cashMovements.ok) return <Alert variant="error">No se pudieron cargar movimientos: {cashMovements.error.message}</Alert>;
   if (cashMovements.data.items.length === 0) {
-    return <p className="text-sm text-slate-500">Sin movimientos de caja.</p>;
+    return <p className="text-sm text-text-muted">Sin movimientos de caja.</p>;
   }
   return (
     <div className="space-y-2">
@@ -217,13 +218,13 @@ function CashMovementList({ cashMovements }: { cashMovements?: CashMovementListR
 function CashMovementRow({ movement }: { movement: CashMovement }) {
   const [, formAction, isPending] = useActionState(voidCashMovementAction, initialState);
   return (
-    <div className="flex items-center justify-between gap-2 rounded-md bg-white p-2 text-sm">
+    <div className="flex items-center justify-between gap-2 rounded-md bg-app-surface p-2 text-sm">
       <div>
-        <p className="font-medium text-slate-950">{cashMovementLabel(movement.movement_type)}</p>
-        <p className={movement.direction === "in" ? "text-emerald-700" : "text-red-700"}>
+        <p className="font-medium text-text-strong">{cashMovementLabel(movement.movement_type)}</p>
+        <p className={movement.direction === "in" ? "text-status-success" : "text-status-danger"}>
           {movement.direction === "in" ? "+" : "-"}{formatCurrency(movement.amount)}
         </p>
-        {movement.note ? <p className="text-xs text-slate-500">{movement.note}</p> : null}
+        {movement.note ? <p className="text-xs text-text-muted">{movement.note}</p> : null}
       </div>
       <form action={formAction}>
         <input type="hidden" name="movement_id" value={movement.id} />

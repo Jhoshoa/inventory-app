@@ -119,7 +119,7 @@ export function ProductBrowser({
           actionLabel={canCreateProducts ? "Usa Nuevo producto" : undefined}
         />
       ) : !error ? (
-        <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
+        <div className="overflow-hidden rounded-lg border border-app-border bg-app-surface shadow-panel">
           <ProductTable products={products.items} role={role} />
           <ProductPagination
             total={products.total}
@@ -152,7 +152,7 @@ function ProductPagination({
   const hasNext = nextOffset < total;
 
   return (
-    <div className="flex flex-col gap-3 border-t border-slate-200 bg-white px-4 py-3 text-sm text-slate-600 sm:flex-row sm:items-center sm:justify-between">
+    <div className="flex flex-col gap-3 border-t border-app-border bg-app-surface px-4 py-3 text-sm text-text-muted sm:flex-row sm:items-center sm:justify-between">
       <p>
         Mostrando {from}-{to} de {total}
       </p>

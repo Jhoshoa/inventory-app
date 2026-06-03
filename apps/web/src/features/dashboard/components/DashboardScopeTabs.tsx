@@ -1,4 +1,3 @@
-import Link from "next/link";
 import type { DashboardScope } from "../types";
 
 const scopes: Array<{ value: DashboardScope; label: string }> = [
@@ -11,10 +10,12 @@ export function DashboardScopeTabs({ scope }: { scope: DashboardScope }) {
     <div className="inline-flex rounded-md border border-app-border bg-app-surface p-1 shadow-panel">
       {scopes.map((item) => {
         const active = item.value === scope;
+        const href = `/dashboard?scope=${item.value}`;
         return (
-          <Link
+          <a
             key={item.value}
-            href={`/dashboard?scope=${item.value}`}
+            href={href}
+            aria-current={active ? "page" : undefined}
             className={`inline-flex h-8 items-center rounded px-3 text-sm font-medium ${
               active
                 ? "bg-brand-700 text-text-inverse shadow-sm"
@@ -22,7 +23,7 @@ export function DashboardScopeTabs({ scope }: { scope: DashboardScope }) {
             }`}
           >
             {item.label}
-          </Link>
+          </a>
         );
       })}
     </div>

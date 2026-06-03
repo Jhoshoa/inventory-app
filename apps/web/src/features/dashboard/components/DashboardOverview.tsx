@@ -62,7 +62,7 @@ export function DashboardOverview({
 
   return (
     <PageSection className="space-y-6">
-      <DashboardHeader scope={data.scope ?? scope} />
+      <DashboardHeader scope={scope} />
       {storeDay ? <StoreDaySection storeDay={storeDay} role={role} /> : null}
 
       <MetricGrid data={data} />
@@ -71,7 +71,7 @@ export function DashboardOverview({
         <EmptyState
           title="Tu tienda aun no tiene actividad"
           description="Agrega productos para comenzar a vender y ver metricas reales del negocio."
-          actionLabel="Ir a productos en Sprint 2"
+          actionLabel="Ir a productos"
         />
       ) : null}
 

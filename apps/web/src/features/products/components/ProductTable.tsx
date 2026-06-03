@@ -1,6 +1,8 @@
 import Link from "next/link";
+import { Eye, Pencil } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
+import { Tooltip } from "@/components/ui/Tooltip";
 import {
   canAdjustStock,
   canDeleteProduct,
@@ -37,14 +39,14 @@ export function ProductTable({ products, role }: { products: Product[]; role: Us
           <TableEmptyRow colSpan={7}>No hay productos para mostrar</TableEmptyRow>
         ) : (
           products.map((product) => (
-            <tr key={product.id} className="border-t border-slate-100">
+            <tr key={product.id} className="border-t border-app-border hover:bg-app-surface-muted">
               <TableCell>
-                <div className="font-medium text-slate-950">{product.name}</div>
-                <div className="text-xs text-slate-500">{product.unit}</div>
+                <div className="font-medium text-text-strong">{product.name}</div>
+                <div className="text-xs text-text-muted">{product.unit}</div>
               </TableCell>
               <TableCell>
                 <div>{product.sku ?? "Sin SKU"}</div>
-                <div className="text-xs text-slate-500">{product.qr_code ?? "Sin QR"}</div>
+                <div className="text-xs text-text-muted">{product.qr_code ?? "Sin QR"}</div>
               </TableCell>
               <TableCell>{product.category ?? "Sin categoria"}</TableCell>
               <TableCell>{formatCurrency(product.price)}</TableCell>
@@ -56,13 +58,21 @@ export function ProductTable({ products, role }: { products: Product[]; role: Us
               </TableCell>
               <TableCell>
                 <div className="flex flex-wrap items-center gap-2">
-                  <Button variant="secondary" asChild>
-                    <Link href={`/dashboard/products/${product.id}`}>Ver</Link>
-                  </Button>
-                  {canManageProducts(role) ? (
-                    <Button variant="secondary" asChild>
-                      <Link href={`/dashboard/products/${product.id}/edit`}>Editar</Link>
+                  <Tooltip content="Ver">
+                    <Button variant="icon" asChild>
+                      <Link href={`/dashboard/products/${product.id}`} aria-label="Ver">
+                        <Eye className="h-4 w-4" aria-hidden="true" />
+                      </Link>
                     </Button>
+                  </Tooltip>
+                  {canManageProducts(role) ? (
+                    <Tooltip content="Editar">
+                      <Button variant="icon" asChild>
+                        <Link href={`/dashboard/products/${product.id}/edit`} aria-label="Editar">
+                          <Pencil className="h-4 w-4" aria-hidden="true" />
+                        </Link>
+                      </Button>
+                    </Tooltip>
                   ) : null}
                   {canAdjustStock(role) ? (
                     <ProductStockDialog productId={product.id} productName={product.name} />

@@ -33,6 +33,7 @@ export function Button({
     const child = Children.only(children);
     if (isValidElement<{ className?: string }>(child)) {
       return cloneElement(child, {
+        ...props,
         className: `${classes} ${child.props.className ?? ""}`,
       });
     }

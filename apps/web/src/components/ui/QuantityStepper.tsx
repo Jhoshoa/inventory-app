@@ -48,9 +48,9 @@ export function QuantityStepper({
   }
 
   return (
-    <div className="inline-flex items-center rounded-md border border-slate-300 bg-white">
+    <div className="inline-flex items-center rounded-md border border-app-borderStrong bg-app-surface">
       <Button
-        className="h-8 w-8 rounded-r-none border-r border-slate-300 bg-slate-50 px-0 text-lg font-semibold leading-none text-slate-950 hover:bg-slate-100 disabled:text-slate-300"
+        className="h-8 w-8 rounded-r-none border-r border-app-borderStrong bg-app-surface-muted px-0 text-lg font-semibold leading-none text-text-strong hover:bg-app-surface-muted disabled:text-text-disabled"
         variant="ghost"
         onClick={onDecrement}
         aria-label="Disminuir cantidad"
@@ -59,7 +59,7 @@ export function QuantityStepper({
       </Button>
       <input
         aria-label="Cantidad"
-        className="h-8 min-w-10 border-0 bg-white px-2 text-center text-sm font-medium text-slate-950 outline-none focus:ring-2 focus:ring-inset focus:ring-slate-400"
+        className="h-8 min-w-10 border-0 bg-app-surface px-2 text-center text-sm font-medium text-text-strong outline-none focus:ring-2 focus:ring-inset focus:ring-focus"
         inputMode="numeric"
         pattern="[0-9]*"
         value={draft}
@@ -69,7 +69,7 @@ export function QuantityStepper({
         style={{ width: `${Math.max(2, draft.length)}ch` }}
       />
       <Button
-        className="h-8 w-8 rounded-l-none border-l border-slate-300 bg-slate-50 px-0 text-lg font-semibold leading-none text-slate-950 hover:bg-slate-100 disabled:text-slate-300"
+        className="h-8 w-8 rounded-l-none border-l border-app-borderStrong bg-app-surface-muted px-0 text-lg font-semibold leading-none text-text-strong hover:bg-app-surface-muted disabled:text-text-disabled"
         variant="ghost"
         onClick={onIncrement}
         disabled={incrementDisabled}

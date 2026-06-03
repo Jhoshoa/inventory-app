@@ -34,6 +34,15 @@ La web ya tiene una base suficiente para comenzar:
 - Componentes UI compartidos: `Button`, `Input`, `Select`, `Table`, `Badge`, `Alert`, `Dialog`, `EmptyState`.
 - Pantallas operativas funcionales: Dashboard, POS, Productos, Ventas, Reportes, Importaciones y Ajustes.
 
+Actualizacion 2026-06-03:
+
+- Sprint 1 esta parcialmente implementado: existen tokens semanticos, superficies base, `Tooltip`, `PageContainer`, `PageSection`, `ResponsiveActions` y `ResponsiveToolbar`.
+- Sprint 2 esta parcialmente implementado: `AppShell`, `AppSidebar`, `AppHeader`, `MobileNavDrawer` y el contenedor principal ya usan parte de la fundacion premium.
+- El Dashboard ya recibio una primera migracion premium: `PageHeader`, `PageSection`, KPIs refinados, tabs de periodo, tasas disponibles y tests actualizados.
+- La deuda principal para continuar es aplicar esa fundacion de forma consistente a POS, Productos e Imprimir etiquetas, y cerrar pendientes de layout como breadcrumbs.
+- Todavia hay colores directos `slate-*`, `red-*`, `amber-*` y `emerald-*` en pantallas criticas y componentes compartidos; deben migrarse progresivamente a tokens semanticos.
+- Persisten textos inconsistentes en Importaciones, por ejemplo `Import Image` y `Upload image`; se mantienen fuera del Sprint 3 salvo que afecten rutas tocadas.
+
 Principales deudas para una experiencia premium:
 
 - Colores directos `slate-*`, `red-*`, `amber-*`, `emerald-*` dispersos.
@@ -45,6 +54,16 @@ Principales deudas para una experiencia premium:
 - Acciones repetidas de tabla usan texto donde convendrian icon buttons con tooltip.
 - Algunas pantallas todavia tienen textos o labels inconsistentes como `Import Image`.
 - No existe una validacion visual sistematica por viewport.
+
+Deuda puntual detectada antes de Sprint 3:
+
+- `PageHeader` aun no soporta breadcrumbs.
+- `StoreDayStatusPanel` mantiene estilos antiguos aunque se renderiza dentro del Dashboard.
+- POS conserva tarjetas y estados visuales con colores directos.
+- Productos conserva filtros propios en vez de `ResponsiveToolbar`.
+- La tabla de productos usa acciones de texto extensas y no aprovecha icon buttons con tooltip.
+- Imprimir etiquetas tiene buena funcionalidad, pero la composicion visual y mobile siguen siendo de la etapa MVP.
+- El empty state del Dashboard incluye copy temporal de sprint que debe corregirse.
 
 ## Principios de diseno
 
@@ -198,6 +217,17 @@ Criterios de aceptacion:
 Objetivo:
 
 Redisenar las pantallas que mas impactan la percepcion y uso diario.
+
+Documento de ejecucion:
+
+- `docs/ui-design-style-enhancement/sprint-3-critical-operational-screens-implementation.md`
+
+Estado actualizado:
+
+- Dashboard: en curso avanzado; falta cerrar copy temporal y migrar el panel de jornada.
+- POS: pendiente de migracion premium.
+- Productos: pendiente de migracion premium.
+- Imprimir etiquetas: pendiente de migracion premium.
 
 Orden recomendado:
 

@@ -15,6 +15,7 @@ describe("DashboardOverview", () => {
   it("renders the error state", () => {
     render(
       <DashboardOverview
+        scope="month"
         summary={{
           ok: false,
           error: new ApiError({
@@ -79,6 +80,7 @@ describe("DashboardOverview", () => {
   it("renders premium summary context, low stock and exchange rates", () => {
     render(
       <DashboardOverview
+        scope="month"
         summary={{
           ok: true,
           data: {
@@ -106,6 +108,7 @@ describe("DashboardOverview", () => {
     );
 
     expect(screen.getByRole("link", { name: "Mes" })).toHaveAttribute("href", "/dashboard?scope=month");
+    expect(screen.getByRole("link", { name: "Mes" })).toHaveAttribute("aria-current", "page");
     expect(screen.getByText(/120,25/)).toBeInTheDocument();
     expect(screen.getByText("01-may - 28-may")).toBeInTheDocument();
     expect(screen.getByText("1 sin stock")).toBeInTheDocument();
@@ -113,6 +116,25 @@ describe("DashboardOverview", () => {
     expect(screen.getByText("Sin stock")).toBeInTheDocument();
     expect(screen.getByText("bcb")).toBeInTheDocument();
     expect(screen.getByText("36.50 / 37.00")).toBeInTheDocument();
+  });
+
+  it("uses the requested scope to mark the active dashboard tab", () => {
+    render(
+      <DashboardOverview
+        scope="month"
+        summary={{
+          ok: true,
+          data: {
+            ...createEmptyDashboardSummary(),
+            products_total: 1,
+            scope: "today",
+          },
+        }}
+      />,
+    );
+
+    expect(screen.getByRole("link", { name: "Mes" })).toHaveAttribute("aria-current", "page");
+    expect(screen.getByRole("link", { name: "Hoy" })).not.toHaveAttribute("aria-current");
   });
 
   it("renders exchange rates even when ids are missing or duplicated", () => {

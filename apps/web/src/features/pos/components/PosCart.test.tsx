@@ -35,8 +35,8 @@ describe("PosCart", () => {
     expect(screen.getByText("-")).toBeInTheDocument();
     expect(screen.getByText("+")).toBeInTheDocument();
     expect(screen.getAllByText(/Bs\s+25,00/)).toHaveLength(2);
-    expect(screen.getByRole("button", { name: "Disminuir cantidad" })).toHaveClass("text-slate-950");
-    expect(screen.getByRole("button", { name: "Aumentar cantidad" })).toHaveClass("text-slate-950");
+    expect(screen.getByRole("button", { name: "Disminuir cantidad" })).toHaveClass("text-text-strong");
+    expect(screen.getByRole("button", { name: "Aumentar cantidad" })).toHaveClass("text-text-strong");
   });
 
   it("renders an empty state", () => {

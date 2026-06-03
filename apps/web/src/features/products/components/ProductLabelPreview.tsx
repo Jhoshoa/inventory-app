@@ -89,11 +89,11 @@ export function ProductLabelPreview({
       </style>
       <div className="print-hidden flex items-center justify-between gap-3">
         <div>
-          <h2 className="text-base font-semibold text-slate-950">Vista previa</h2>
-          <p className="text-sm text-slate-600">{printableItems.length} etiquetas listas para imprimir.</p>
+          <h2 className="text-base font-semibold text-text-strong">Vista previa</h2>
+          <p className="text-sm text-text-muted">{printableItems.length} etiquetas listas para imprimir.</p>
         </div>
         {isGenerating ? (
-          <div className="flex items-center gap-2 text-sm text-slate-600">
+          <div className="flex items-center gap-2 text-sm text-text-muted">
             <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
             Generando QR
           </div>
@@ -102,9 +102,9 @@ export function ProductLabelPreview({
 
       {error ? <Alert variant="error">{error}</Alert> : null}
 
-      <div className="print-label-sheet min-h-96 overflow-x-auto rounded-lg border border-slate-200 bg-white p-4">
+      <div className="print-label-sheet min-h-96 overflow-x-auto rounded-lg border border-app-border bg-app-surface p-4 shadow-panel">
         {printableItems.length === 0 ? (
-          <div className="print-hidden flex h-72 items-center justify-center text-sm text-slate-600">
+          <div className="print-hidden flex h-72 items-center justify-center text-sm text-text-muted">
             Selecciona productos con codigo escaneable para previsualizar etiquetas.
           </div>
         ) : (

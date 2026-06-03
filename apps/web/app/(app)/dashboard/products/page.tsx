@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { PackagePlus, Tags } from "lucide-react";
 import { PageHeader } from "@/components/layout/PageHeader";
+import { PageSection } from "@/components/layout/PageSection";
 import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
 import { listProductCategories } from "@/features/product-categories/api";
@@ -24,8 +25,9 @@ export default async function ProductsPage({
   ]);
 
   return (
-    <section className="space-y-6">
+    <PageSection className="space-y-6">
       <PageHeader
+        eyebrow="Inventario"
         title="Productos"
         description="Busca, filtra y administra el inventario de la tienda."
         actions={
@@ -60,6 +62,6 @@ export default async function ProductsPage({
           categories={categories.ok ? categories.data.items : []}
         />
       )}
-    </section>
+    </PageSection>
   );
 }
