@@ -120,16 +120,6 @@ async def test_owner_can_update_store(client):
     assert response.json()["name"] == "Owner Store"
 
 
-async def test_cashier_cannot_confirm_inventory_import(client, db_session):
-    user = await db_session.get(UserModel, dependencies.DEV_USER_ID)
-    user.role = "cashier"
-    await db_session.commit()
-
-    response = await client.post(f"/api/v1/inventory-imports/{uuid4()}/confirm")
-
-    assert response.status_code == 403
-
-
 async def test_cashier_cannot_delete_product(client, db_session):
     create_response = await client.post("/api/v1/products", json={"name": "Cafe", "price": "10.00", "stock": 1})
     assert create_response.status_code == 201

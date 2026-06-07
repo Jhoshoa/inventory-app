@@ -6,14 +6,12 @@ celery_app = Celery(
     broker=settings.REDIS_URL,
     backend=settings.REDIS_URL,
     include=[
-        "src.infrastructure.services.queue.tasks.photo_tasks",
         "src.infrastructure.services.queue.tasks.sync_tasks",
         "src.infrastructure.services.queue.tasks.notification_tasks",
     ],
 )
 
 celery_app.conf.task_routes = {
-    "photo_tasks.*": {"queue": "photo-processing"},
     "sync_tasks.*": {"queue": "sync-offline"},
     "notification_tasks.*": {"queue": "notifications"},
 }

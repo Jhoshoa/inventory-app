@@ -9,7 +9,6 @@ from src.infrastructure.database.models.exchange_rate_model import ExchangeRateM
 from src.infrastructure.database.models.stock_movement_model import StockMovementModel
 from src.infrastructure.database.models.cash_movement_model import CashMovementModel
 from src.infrastructure.database.models.sync_change_model import SyncChangeModel
-from src.infrastructure.database.models.inventory_import_model import InventoryImportModel, InventoryImportItemModel
 
 __all__ = [
     "ProductModel",
@@ -24,6 +23,4 @@ __all__ = [
     "StockMovementModel",
     "CashMovementModel",
     "SyncChangeModel",
-    "InventoryImportModel",
-    "InventoryImportItemModel",
 ]

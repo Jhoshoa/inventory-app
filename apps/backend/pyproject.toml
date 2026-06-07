@@ -39,14 +39,6 @@ qa = [
 prod = [
     "gunicorn>=23",
 ]
-ai = [
-    "easyocr>=1.7",
-    "python-bidi>=0.6.2,<0.6.4",
-    "pillow>=11.1",
-    "opencv-python>=4.10",
-    "scikit-learn>=1.6",
-    "spacy>=3.8.14",
-]
 
 [tool.setuptools.packages.find]
 where = ["src"]
