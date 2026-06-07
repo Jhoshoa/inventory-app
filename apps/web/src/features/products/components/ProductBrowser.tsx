@@ -1,7 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, PackagePlus } from "lucide-react";
 import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -110,13 +111,20 @@ export function ProductBrowser({
 
       {!error && showEmptyInventory ? (
         <EmptyState
+          icon={PackagePlus}
           title="Todavia no hay productos"
           description={
             canCreateProducts
               ? "Crea el primer producto para empezar a vender y controlar stock."
               : "La tienda todavia no tiene productos disponibles para vender."
           }
-          actionLabel={canCreateProducts ? "Usa Nuevo producto" : undefined}
+          action={
+            canCreateProducts ? (
+              <Button asChild>
+                <Link href="/dashboard/products/new">Crear producto</Link>
+              </Button>
+            ) : undefined
+          }
         />
       ) : !error ? (
         <div className="overflow-hidden rounded-lg border border-app-border bg-app-surface shadow-panel">

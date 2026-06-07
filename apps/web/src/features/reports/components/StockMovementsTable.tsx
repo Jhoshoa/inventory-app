@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Badge } from "@/components/ui/Badge";
+import { EmptyState } from "@/components/ui/EmptyState";
 import {
   Table,
   TableCell,
@@ -26,7 +27,13 @@ export function StockMovementsTable({ movements }: { movements: StockMovement[] 
       </thead>
       <tbody>
         {movements.length === 0 ? (
-          <TableEmptyRow colSpan={7}>Sin movimientos para este filtro</TableEmptyRow>
+          <TableEmptyRow colSpan={7}>
+            <EmptyState
+              title="Sin movimientos para este filtro"
+              description="Cambia los filtros o registra ventas y ajustes de stock para ver movimientos aqui."
+              className="border-0 bg-transparent py-6 shadow-none"
+            />
+          </TableEmptyRow>
         ) : (
           movements.map((movement) => (
             <TableRow key={movement.id} tone={movementRowTone(movement)}>

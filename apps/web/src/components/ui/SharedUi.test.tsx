@@ -1,6 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { CollapsibleSection } from "./CollapsibleSection";
+import { EmptyState } from "./EmptyState";
 import { ErrorState } from "./ErrorState";
 import { ForbiddenState } from "./ForbiddenState";
 import { Label } from "./Label";
@@ -63,6 +64,23 @@ describe("shared UI components", () => {
 
     expect(screen.getByRole("button", { name: "Reintentar" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Ir a ajustes" })).toHaveAttribute("href", "/dashboard/settings");
+  });
+
+  it("renders empty state actions as real links instead of disabled buttons", () => {
+    render(
+      <EmptyState
+        title="Sin datos"
+        description="Agrega registros para continuar."
+        actionLabel="Crear registro"
+        actionHref="/dashboard/products/new"
+      />,
+    );
+
+    expect(screen.getByRole("link", { name: "Crear registro" })).toHaveAttribute(
+      "href",
+      "/dashboard/products/new",
+    );
+    expect(screen.queryByRole("button", { name: "Crear registro" })).not.toBeInTheDocument();
   });
 
   it("renders collapsible sections", () => {

@@ -4,6 +4,7 @@ import {
   ArrowRight,
   Boxes,
   CircleDollarSign,
+  PackagePlus,
   PackageCheck,
   ReceiptText,
   TrendingUp,
@@ -71,9 +72,11 @@ export function DashboardOverview({
 
       {isEmpty ? (
         <EmptyState
+          icon={PackagePlus}
           title="Tu tienda aun no tiene actividad"
           description="Agrega productos para comenzar a vender y ver metricas reales del negocio."
           actionLabel="Ir a productos"
+          actionHref="/dashboard/products"
         />
       ) : null}
 

@@ -1,6 +1,7 @@
 import Link from "next/link";
-import { Eye } from "lucide-react";
+import { Eye, ReceiptText } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { Tooltip } from "@/components/ui/Tooltip";
 import {
   Table,
@@ -29,7 +30,19 @@ export function SalesTable({ sales }: { sales: Sale[] }) {
       </thead>
       <tbody>
         {sales.length === 0 ? (
-          <TableEmptyRow colSpan={6}>Sin ventas registradas</TableEmptyRow>
+          <TableEmptyRow colSpan={6}>
+            <EmptyState
+              icon={ReceiptText}
+              title="Sin ventas registradas"
+              description="Cuando confirmes ventas desde el POS, apareceran aqui para consulta y anulacion."
+              action={
+                <Button asChild>
+                  <Link href="/dashboard/pos">Ir al POS</Link>
+                </Button>
+              }
+              className="border-0 bg-transparent py-6 shadow-none"
+            />
+          </TableEmptyRow>
         ) : (
           sales.map((sale) => (
             <TableRow key={sale.id} tone={sale.status === "voided" ? "muted" : "default"}>

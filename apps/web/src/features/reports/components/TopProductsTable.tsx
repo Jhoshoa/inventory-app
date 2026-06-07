@@ -1,4 +1,5 @@
 import { formatCurrency } from "@/lib/format/currency";
+import { EmptyState } from "@/components/ui/EmptyState";
 import {
   Table,
   TableCell,
@@ -24,7 +25,13 @@ export function TopProductsTable({ products }: { products: TopProduct[] }) {
         </thead>
         <tbody>
           {products.length === 0 ? (
-            <TableEmptyRow colSpan={4}>Sin productos vendidos</TableEmptyRow>
+            <TableEmptyRow colSpan={4}>
+              <EmptyState
+                title="Sin productos vendidos"
+                description="Cuando haya ventas en este rango, veras aqui los productos con mayor rotacion."
+                className="border-0 bg-transparent py-6 shadow-none"
+              />
+            </TableEmptyRow>
           ) : (
             products.map((product, index) => (
               <TableRow key={product.product_id}>

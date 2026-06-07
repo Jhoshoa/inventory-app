@@ -1,4 +1,5 @@
 import { formatCurrency } from "@/lib/format/currency";
+import { EmptyState } from "@/components/ui/EmptyState";
 import {
   Table,
   TableCell,
@@ -31,7 +32,13 @@ export function PaymentMethodBreakdown({
         </thead>
         <tbody>
           {methods.length === 0 ? (
-            <TableEmptyRow colSpan={4}>Sin ventas en el rango</TableEmptyRow>
+            <TableEmptyRow colSpan={4}>
+              <EmptyState
+                title="Sin ventas en el rango"
+                description="Cambia el rango de fechas o registra ventas desde el POS para ver la participacion por metodo de pago."
+                className="border-0 bg-transparent py-6 shadow-none"
+              />
+            </TableEmptyRow>
           ) : (
             methods.map((method) => {
               const percent = total > 0 ? (Number(method.total) / total) * 100 : 0;

@@ -6,6 +6,7 @@ import { Alert } from "@/components/ui/Alert";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { CollapsibleSection } from "@/components/ui/CollapsibleSection";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { FieldError } from "@/components/ui/FieldError";
 import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
@@ -145,7 +146,13 @@ export function ProductCategorySettings({ categories }: { categories: ProductCat
         </thead>
         <tbody>
           {visibleCategories.length === 0 ? (
-            <TableEmptyRow colSpan={4}>Sin categorias configuradas.</TableEmptyRow>
+            <TableEmptyRow colSpan={4}>
+              <EmptyState
+                title="Sin categorias configuradas"
+                description="Crea categorias para agrupar productos y generar SKUs consistentes desde el formulario superior."
+                className="border-0 bg-transparent py-6 shadow-none"
+              />
+            </TableEmptyRow>
           ) : (
             visibleCategories.map((category) => (
               <TableRow key={category.id} tone={category.is_active ? "default" : "muted"}>

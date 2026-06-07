@@ -44,6 +44,14 @@ describe("ProductCategorySettings", () => {
     expect(screen.queryByRole("button", { name: "Creando..." })).not.toBeInTheDocument();
   });
 
+  it("guides owners to create a category when none exist", () => {
+    render(<ProductCategorySettings categories={[]} />);
+
+    expect(screen.getByText("Sin categorias configuradas")).toBeInTheDocument();
+    expect(screen.getByText(/Crea categorias para agrupar productos/)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Crear categoria" })).toBeEnabled();
+  });
+
   it("deactivates a category and updates the row without staying in loading state", async () => {
     vi.mocked(deactivateProductCategoryAction).mockResolvedValue({
       ok: true,

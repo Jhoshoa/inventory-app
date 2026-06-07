@@ -9,6 +9,10 @@ describe("DashboardOverview", () => {
     render(<DashboardOverview summary={{ ok: true, data: createEmptyDashboardSummary() }} />);
 
     expect(screen.getByText("Tu tienda aun no tiene actividad")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Ir a productos" })).toHaveAttribute(
+      "href",
+      "/dashboard/products",
+    );
     expect(screen.getByText("Sin ventas recientes")).toBeInTheDocument();
   });
 

@@ -11,7 +11,7 @@ export function StoreClosedNotice() {
           <div>
             <h2 className="text-base font-semibold">Tienda cerrada</h2>
             <p className="mt-1 text-sm">
-              Un owner debe abrir la jornada desde el dashboard para registrar ventas.
+              Abre la jornada desde el dashboard para habilitar ventas, movimientos de caja y cierre diario.
             </p>
           </div>
         </div>

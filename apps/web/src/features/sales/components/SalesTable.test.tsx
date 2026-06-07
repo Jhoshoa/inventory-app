@@ -42,5 +42,7 @@ describe("SalesTable", () => {
     render(<SalesTable sales={[]} />);
 
     expect(screen.getByText("Sin ventas registradas")).toBeInTheDocument();
+    expect(screen.getByText(/Cuando confirmes ventas desde el POS/)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Ir al POS" })).toHaveAttribute("href", "/dashboard/pos");
   });
 });

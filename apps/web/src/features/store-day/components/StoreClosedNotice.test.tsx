@@ -7,7 +7,7 @@ describe("StoreClosedNotice", () => {
     render(<StoreClosedNotice />);
 
     expect(screen.getByText("Tienda cerrada")).toBeInTheDocument();
-    expect(screen.getByText(/Un owner debe abrir la jornada/)).toBeInTheDocument();
+    expect(screen.getByText(/Abre la jornada desde el dashboard/)).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Ir al dashboard" })).toHaveAttribute("href", "/dashboard");
   });
 });
