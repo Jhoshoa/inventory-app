@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { Search } from "lucide-react";
+import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
+import { ScanLine, Search } from "lucide-react";
 import { Alert } from "@/components/ui/Alert";
+import { Badge } from "@/components/ui/Badge";
 import { Input } from "@/components/ui/Input";
 import { MIN_PRODUCT_SEARCH_LENGTH } from "@/features/products/schemas";
 import { PosProductResults } from "./PosProductResults";
@@ -10,17 +11,33 @@ import type { PosProduct, PosProductListResponse } from "../types";
 
 const POS_SEARCH_DEBOUNCE_MS = 500;
 
-export function PosProductSearch({
-  onAdd,
-}: {
+export interface PosProductSearchHandle {
+  clear: () => void;
+  focus: () => void;
+}
+
+export const PosProductSearch = forwardRef<PosProductSearchHandle, {
+  lastAddedProductName?: string | null;
   onAdd: (product: PosProduct) => void;
-}) {
+}>(function PosProductSearch({
+  lastAddedProductName,
+  onAdd,
+}, ref) {
   const [query, setQuery] = useState("");
   const [products, setProducts] = useState<PosProduct[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isLookupLoading, setIsLookupLoading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  useImperativeHandle(ref, () => ({
+    clear: () => {
+      setQuery("");
+      setProducts([]);
+      setError(null);
+    },
+    focus: () => inputRef.current?.focus(),
+  }), []);
 
   useEffect(() => {
     const trimmed = query.trim();
@@ -91,12 +108,15 @@ export function PosProductSearch({
   }
 
   return (
-    <section className="space-y-4 rounded-lg border border-app-border bg-app-surface p-4 shadow-panel">
-      <div>
-        <h2 className="text-base font-semibold text-text-strong">Buscar productos</h2>
-        <p className="mt-1 text-sm text-text-muted">
-          Escanea un codigo o busca por nombre para agregar al carrito.
-        </p>
+    <section className="min-w-0 space-y-4 rounded-lg border border-app-border bg-app-surface p-4 shadow-panel">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <h2 className="text-base font-semibold text-text-strong">Buscar y escanear</h2>
+          <p className="mt-1 text-sm text-text-muted">
+            Escanea un codigo y presiona Enter, o busca por nombre para agregar productos.
+          </p>
+        </div>
+        <Badge variant="default">Caja activa</Badge>
       </div>
       <label className="relative block">
         <span className="sr-only">Buscar producto</span>
@@ -116,9 +136,22 @@ export function PosProductSearch({
           }}
         />
       </label>
+      {lastAddedProductName ? (
+        <Alert>
+          Agregado al carrito: <span className="font-medium text-text-strong">{lastAddedProductName}</span>
+        </Alert>
+      ) : null}
       {!query.trim() ? (
-        <div className="rounded-lg border border-dashed border-app-borderStrong bg-app-surface-muted p-6 text-center text-sm text-text-muted">
-          Escribe para buscar productos disponibles.
+        <div className="grid gap-3 rounded-lg border border-dashed border-app-borderStrong bg-app-surface-muted p-6 text-center text-sm text-text-muted sm:grid-cols-[auto_1fr] sm:text-left">
+          <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-md border border-app-border bg-app-surface text-text-muted sm:mx-0">
+            <ScanLine className="h-5 w-5" aria-hidden />
+          </div>
+          <div>
+            <p className="font-medium text-text-strong">Listo para vender</p>
+            <p className="mt-1">
+              Mantén el cursor en el buscador para escanear rapido o escribe al menos {MIN_PRODUCT_SEARCH_LENGTH} caracteres.
+            </p>
+          </div>
         </div>
       ) : null}
       {query.trim() && query.trim().length < MIN_PRODUCT_SEARCH_LENGTH ? (
@@ -131,7 +164,7 @@ export function PosProductSearch({
       ) : null}
     </section>
   );
-}
+});
 
 function compactProduct(product: PosProduct): PosProduct {
   return {

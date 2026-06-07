@@ -1,9 +1,8 @@
 "use client";
 
-import { Trash2 } from "lucide-react";
+import { ShoppingCart, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { QuantityStepper } from "@/components/ui/QuantityStepper";
-import { SummaryRow } from "@/components/ui/SummaryRow";
 import { formatCurrency } from "@/lib/format/currency";
 import { calculateCartTotal } from "../schemas";
 import type { CartItem } from "../types";
@@ -22,18 +21,34 @@ export function PosCart({
   onRemove: (productId: string) => void;
 }) {
   const total = calculateCartTotal(items);
+  const itemCount = items.reduce((count, item) => count + item.quantity, 0);
 
   return (
     <section className="space-y-4 rounded-lg border border-app-border bg-app-surface p-4 shadow-panel">
-      <div>
+      <div className="rounded-lg border border-brand-100 bg-brand-50 p-4">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <p className="text-xs font-semibold uppercase text-brand-700">Total venta</p>
+            <p className="mt-1 text-3xl font-semibold leading-none text-text-strong">
+              {formatCurrency(total)}
+            </p>
+          </div>
+          <div className="rounded-md border border-brand-100 bg-app-surface px-2.5 py-1 text-xs font-medium text-brand-700">
+            {itemCount} items
+          </div>
+        </div>
+      </div>
+      <div className="flex items-center justify-between gap-3">
         <h2 className="text-base font-semibold text-text-strong">Carrito</h2>
         <p className="text-sm text-text-muted">{items.length} productos</p>
       </div>
       <div className="space-y-3">
         {items.length === 0 ? (
-          <p className="rounded-md border border-dashed border-app-borderStrong bg-app-surface-muted p-4 text-center text-sm text-text-muted">
-            Agrega productos para iniciar una venta.
-          </p>
+          <div className="rounded-md border border-dashed border-app-borderStrong bg-app-surface-muted p-5 text-center text-sm text-text-muted">
+            <ShoppingCart className="mx-auto h-7 w-7 text-text-disabled" aria-hidden />
+            <p className="mt-3 font-medium text-text-strong">Carrito listo</p>
+            <p className="mt-1">Agrega productos desde el buscador para iniciar una venta.</p>
+          </div>
         ) : (
           items.map((item) => (
             <div
@@ -45,8 +60,8 @@ export function PosCart({
               }`}
             >
               <div className="flex items-start justify-between gap-3">
-                <div>
-                  <p className="font-medium text-text-strong">{item.product.name}</p>
+                <div className="min-w-0">
+                  <p className="truncate font-medium text-text-strong">{item.product.name}</p>
                   <p className="text-sm text-text-muted">
                     {formatCurrency(item.product.price)} - stock {item.product.stock}
                   </p>
@@ -69,7 +84,7 @@ export function PosCart({
                   incrementDisabled={item.quantity >= item.product.stock}
                   max={item.product.stock}
                 />
-                <span className="text-sm font-semibold text-text-strong">
+                <span className="text-right text-sm font-semibold text-text-strong">
                   {formatCurrency(Number(item.product.price) * item.quantity)}
                 </span>
               </div>
@@ -95,9 +110,6 @@ export function PosCart({
             </div>
           ))
         )}
-      </div>
-      <div className="border-t border-app-border pt-4">
-        <SummaryRow label="Total" value={formatCurrency(total)} strong />
       </div>
     </section>
   );

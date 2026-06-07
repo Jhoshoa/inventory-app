@@ -35,6 +35,8 @@ describe("PosCart", () => {
     expect(screen.getByText("-")).toBeInTheDocument();
     expect(screen.getByText("+")).toBeInTheDocument();
     expect(screen.getAllByText(/Bs\s+25,00/)).toHaveLength(2);
+    expect(screen.getByText("Total venta")).toBeInTheDocument();
+    expect(screen.getByText("2 items")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Disminuir cantidad" })).toHaveClass("text-text-strong");
     expect(screen.getByRole("button", { name: "Aumentar cantidad" })).toHaveClass("text-text-strong");
   });
@@ -50,7 +52,8 @@ describe("PosCart", () => {
       />,
     );
 
-    expect(screen.getByText("Agrega productos para iniciar una venta.")).toBeInTheDocument();
+    expect(screen.getByText("Carrito listo")).toBeInTheDocument();
+    expect(screen.getByText("Agrega productos desde el buscador para iniciar una venta.")).toBeInTheDocument();
   });
 
   it("allows typing a valid quantity directly", async () => {

@@ -2,14 +2,16 @@
 
 import { useActionState, useEffect } from "react";
 import { Alert } from "@/components/ui/Alert";
+import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { FieldError } from "@/components/ui/FieldError";
 import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
 import { Select } from "@/components/ui/Select";
 import { createSaleAction } from "../actions";
-import { serializeCartItems } from "../schemas";
+import { calculateCartTotal, serializeCartItems } from "../schemas";
 import type { CartItem, CheckoutActionState } from "../types";
+import { formatCurrency } from "@/lib/format/currency";
 
 const initialCheckoutState: CheckoutActionState = {
   ok: false,
@@ -27,6 +29,8 @@ export function PosCheckoutPanel({
     createSaleAction,
     initialCheckoutState,
   );
+  const total = calculateCartTotal(items);
+  const isReady = items.length > 0;
 
   useEffect(() => {
     if (state.refreshedProducts?.length || state.stockConflicts?.length) {
@@ -35,11 +39,29 @@ export function PosCheckoutPanel({
   }, [onStockRefresh, state]);
 
   return (
-    <form action={formAction} className="space-y-4 rounded-lg border border-app-border bg-app-surface p-4 shadow-panel">
+    <form
+      action={formAction}
+      className={`space-y-4 rounded-lg border p-4 shadow-panel ${
+        isReady ? "border-brand-100 bg-app-surface" : "border-app-border bg-app-surface"
+      }`}
+    >
       <input type="hidden" name="items" value={serializeCartItems(items)} />
-      <div>
-        <h2 className="text-base font-semibold text-text-strong">Checkout</h2>
-        <p className="mt-1 text-sm text-text-muted">Confirma el metodo de pago y registra la venta.</p>
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <h2 className="text-base font-semibold text-text-strong">Checkout</h2>
+          <p className="mt-1 text-sm text-text-muted">
+            {isReady ? "Venta lista para confirmar." : "Agrega productos para habilitar el cobro."}
+          </p>
+        </div>
+        <Badge variant={isReady ? "success" : "default"}>
+          {isReady ? "Listo" : "En espera"}
+        </Badge>
+      </div>
+      <div className="rounded-md border border-app-border bg-app-surface-muted px-3 py-2">
+        <div className="flex items-center justify-between gap-3">
+          <span className="text-sm text-text-muted">Total a cobrar</span>
+          <span className="text-lg font-semibold text-text-strong">{formatCurrency(total)}</span>
+        </div>
       </div>
       {state.message ? <Alert variant={state.ok ? "info" : "error"}>{state.message}</Alert> : null}
       <FieldError message={state.fieldErrors.items} />
@@ -57,8 +79,8 @@ export function PosCheckoutPanel({
         <Label htmlFor="customer_name">Cliente</Label>
         <Input id="customer_name" name="customer_name" placeholder="Opcional" />
       </div>
-      <Button className="w-full" type="submit" disabled={isPending || items.length === 0}>
-        {isPending ? "Confirmando..." : "Confirmar venta"}
+      <Button className="h-11 w-full" type="submit" disabled={isPending || !isReady}>
+        {isPending ? "Confirmando..." : isReady ? "Confirmar venta" : "Carrito vacio"}
       </Button>
     </form>
   );

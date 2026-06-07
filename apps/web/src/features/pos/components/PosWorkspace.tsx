@@ -1,14 +1,24 @@
 "use client";
 
-import { useCallback, useReducer } from "react";
+import { useCallback, useReducer, useRef, useState } from "react";
 import { PosCart } from "./PosCart";
 import { PosCheckoutPanel } from "./PosCheckoutPanel";
-import { PosProductSearch } from "./PosProductSearch";
+import { PosProductSearch, type PosProductSearchHandle } from "./PosProductSearch";
 import { initialCartState, posCartReducer } from "../schemas";
-import type { CheckoutActionState } from "../types";
+import type { CheckoutActionState, PosProduct } from "../types";
 
 export function PosWorkspace() {
   const [cart, dispatch] = useReducer(posCartReducer, initialCartState);
+  const [lastAddedProductName, setLastAddedProductName] = useState<string | null>(null);
+  const searchRef = useRef<PosProductSearchHandle>(null);
+
+  const handleAddProduct = useCallback((product: PosProduct) => {
+    dispatch({ type: "add", product });
+    setLastAddedProductName(product.name);
+    searchRef.current?.clear();
+    window.setTimeout(() => searchRef.current?.focus(), 0);
+  }, []);
+
   const handleStockRefresh = useCallback((state: CheckoutActionState) => {
     if (state.refreshedProducts?.length) {
       dispatch({ type: "syncProducts", products: state.refreshedProducts });
@@ -16,8 +26,12 @@ export function PosWorkspace() {
   }, []);
 
   return (
-    <div className="grid gap-6 xl:grid-cols-[1fr_420px]">
-      <PosProductSearch onAdd={(product) => dispatch({ type: "add", product })} />
+    <div className="grid min-w-0 gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(360px,420px)]">
+      <PosProductSearch
+        ref={searchRef}
+        lastAddedProductName={lastAddedProductName}
+        onAdd={handleAddProduct}
+      />
       <aside className="space-y-4 xl:sticky xl:top-20 xl:self-start">
         <PosCart
           items={cart.items}
