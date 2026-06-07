@@ -39,10 +39,6 @@ describe("AppShell", () => {
       "href",
       "/dashboard/products",
     );
-    expect(screen.getByRole("link", { name: /importaciones/i })).toHaveAttribute(
-      "href",
-      "/dashboard/imports",
-    );
     expect(screen.getByRole("link", { name: /ajustes/i })).toHaveAttribute(
       "href",
       "/dashboard/settings",
@@ -60,7 +56,6 @@ describe("AppShell", () => {
       "href",
       "/dashboard/products",
     );
-    expect(screen.queryByRole("link", { name: /importaciones/i })).not.toBeInTheDocument();
     expect(screen.queryByRole("link", { name: /ajustes/i })).not.toBeInTheDocument();
   });
 

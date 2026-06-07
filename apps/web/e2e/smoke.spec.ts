@@ -7,7 +7,6 @@ const routes = [
   ["/dashboard/pos", "POS"],
   ["/dashboard/sales", "Ventas"],
   ["/dashboard/reports", "Reportes"],
-  ["/dashboard/imports", "Import Image"],
   ["/dashboard/settings", "Ajustes"],
 ] as const;
 
