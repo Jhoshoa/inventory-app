@@ -5,19 +5,21 @@ import {
   TableCell,
   TableEmptyRow,
   TableHeaderCell,
+  TableRow,
+  TableText,
 } from "@/components/ui/Table";
 import type { StockMovement } from "../types";
 
 export function StockMovementsTable({ movements }: { movements: StockMovement[] }) {
   return (
-    <Table>
+    <Table density="compact">
       <thead>
         <tr>
           <TableHeaderCell>Fecha</TableHeaderCell>
           <TableHeaderCell>Tipo</TableHeaderCell>
           <TableHeaderCell>Producto</TableHeaderCell>
-          <TableHeaderCell>Delta</TableHeaderCell>
-          <TableHeaderCell>Stock</TableHeaderCell>
+          <TableHeaderCell align="right">Delta</TableHeaderCell>
+          <TableHeaderCell align="right">Stock</TableHeaderCell>
           <TableHeaderCell>Razon</TableHeaderCell>
           <TableHeaderCell>Venta</TableHeaderCell>
         </tr>
@@ -27,20 +29,25 @@ export function StockMovementsTable({ movements }: { movements: StockMovement[] 
           <TableEmptyRow colSpan={7}>Sin movimientos para este filtro</TableEmptyRow>
         ) : (
           movements.map((movement) => (
-            <tr key={movement.id} className="border-t border-app-border">
+            <TableRow key={movement.id} tone={movementRowTone(movement)}>
               <TableCell>{formatDate(movement.created_at)}</TableCell>
               <TableCell>
                 <Badge variant={badgeVariant(movement.movement_type)}>
                   {movementTypeLabel(movement.movement_type)}
                 </Badge>
               </TableCell>
-              <TableCell>{shortId(movement.product_id)}</TableCell>
-              <TableCell className={movement.quantity_delta >= 0 ? "text-status-success" : "text-status-danger"}>
+              <TableCell className="font-mono text-xs">{shortId(movement.product_id)}</TableCell>
+              <TableCell
+                align="right"
+                className={`font-semibold ${movement.quantity_delta >= 0 ? "text-status-success" : "text-status-danger"}`}
+              >
                 {movement.quantity_delta > 0 ? "+" : ""}
                 {movement.quantity_delta}
               </TableCell>
-              <TableCell>{movement.stock_after}</TableCell>
-              <TableCell>{movement.reason ?? "Sin razon"}</TableCell>
+              <TableCell align="right">{movement.stock_after}</TableCell>
+              <TableCell>
+                <TableText>{movement.reason ?? "Sin razon"}</TableText>
+              </TableCell>
               <TableCell>
                 {movement.sale_id ? (
                   <Link className="font-medium text-brand-700 underline" href={`/dashboard/sales/${movement.sale_id}`}>
@@ -50,7 +57,7 @@ export function StockMovementsTable({ movements }: { movements: StockMovement[] 
                   "N/A"
                 )}
               </TableCell>
-            </tr>
+            </TableRow>
           ))
         )}
       </tbody>
@@ -72,6 +79,13 @@ export function movementTypeLabel(type: string) {
 function badgeVariant(type: string) {
   if (type === "sale_void") return "warning";
   if (type === "sale") return "danger";
+  return "default";
+}
+
+function movementRowTone(movement: Pick<StockMovement, "movement_type" | "quantity_delta">) {
+  if (movement.movement_type === "sale_void") return "warning";
+  if (movement.quantity_delta < 0) return "danger";
+  if (movement.quantity_delta > 0) return "success";
   return "default";
 }
 

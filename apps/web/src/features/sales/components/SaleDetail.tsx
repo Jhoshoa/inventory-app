@@ -7,6 +7,8 @@ import {
   TableCell,
   TableEmptyRow,
   TableHeaderCell,
+  TableRow,
+  TableText,
 } from "@/components/ui/Table";
 import { formatCurrency } from "@/lib/format/currency";
 import { canVoidSale } from "@/lib/auth/permissions";
@@ -45,26 +47,30 @@ export function SaleDetail({ sale, role }: { sale: Sale; role: UserRole }) {
         </div>
       ) : null}
 
-      <Table>
+      <Table density="compact">
         <thead>
           <tr>
             <TableHeaderCell>Producto</TableHeaderCell>
-            <TableHeaderCell>Cantidad</TableHeaderCell>
-            <TableHeaderCell>Precio</TableHeaderCell>
-            <TableHeaderCell>Subtotal</TableHeaderCell>
+            <TableHeaderCell align="right">Cantidad</TableHeaderCell>
+            <TableHeaderCell align="right">Precio</TableHeaderCell>
+            <TableHeaderCell align="right">Subtotal</TableHeaderCell>
           </tr>
         </thead>
         <tbody>
           {sale.items.length === 0 ? (
             <TableEmptyRow colSpan={4}>Sin items</TableEmptyRow>
-          ) : (
-            sale.items.map((item) => (
-              <tr key={item.product_id} className="border-t border-app-border">
-                <TableCell>{item.product_name}</TableCell>
-                <TableCell>{item.quantity}</TableCell>
-                <TableCell>{formatCurrency(item.unit_price)}</TableCell>
-                <TableCell>{formatCurrency(item.subtotal)}</TableCell>
-              </tr>
+        ) : (
+          sale.items.map((item) => (
+              <TableRow key={item.product_id}>
+                <TableCell>
+                  <TableText className="font-medium text-text-strong">{item.product_name}</TableText>
+                </TableCell>
+                <TableCell align="right">{item.quantity}</TableCell>
+                <TableCell align="right">{formatCurrency(item.unit_price)}</TableCell>
+                <TableCell align="right" className="font-semibold text-text-strong">
+                  {formatCurrency(item.subtotal)}
+                </TableCell>
+              </TableRow>
             ))
           )}
         </tbody>

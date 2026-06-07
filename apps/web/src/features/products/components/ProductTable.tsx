@@ -11,9 +11,12 @@ import {
 import type { UserRole } from "@/lib/auth/types";
 import {
   Table,
+  TableActionGroup,
   TableCell,
   TableEmptyRow,
   TableHeaderCell,
+  TableRow,
+  TableText,
 } from "@/components/ui/Table";
 import { formatCurrency } from "@/lib/format/currency";
 import { ProductDeleteDialog } from "./ProductDeleteDialog";
@@ -22,16 +25,16 @@ import type { Product } from "../types";
 
 export function ProductTable({ products, role }: { products: Product[]; role: UserRole }) {
   return (
-    <Table>
+    <Table density="compact">
       <thead>
         <tr>
           <TableHeaderCell>Producto</TableHeaderCell>
           <TableHeaderCell>Codigo</TableHeaderCell>
           <TableHeaderCell>Categoria</TableHeaderCell>
-          <TableHeaderCell>Precio</TableHeaderCell>
-          <TableHeaderCell>Stock</TableHeaderCell>
+          <TableHeaderCell align="right">Precio</TableHeaderCell>
+          <TableHeaderCell align="right">Stock</TableHeaderCell>
           <TableHeaderCell>Estado</TableHeaderCell>
-          <TableHeaderCell>Acciones</TableHeaderCell>
+          <TableHeaderCell align="right">Acciones</TableHeaderCell>
         </tr>
       </thead>
       <tbody>
@@ -39,25 +42,29 @@ export function ProductTable({ products, role }: { products: Product[]; role: Us
           <TableEmptyRow colSpan={7}>No hay productos para mostrar</TableEmptyRow>
         ) : (
           products.map((product) => (
-            <tr key={product.id} className="border-t border-app-border hover:bg-app-surface-muted">
+            <TableRow key={product.id} tone={productRowTone(product)}>
               <TableCell>
-                <div className="font-medium text-text-strong">{product.name}</div>
-                <div className="text-xs text-text-muted">{product.unit}</div>
+                <TableText className="font-medium text-text-strong">{product.name}</TableText>
+                <TableText muted>{product.unit}</TableText>
               </TableCell>
               <TableCell>
-                <div>{product.sku ?? "Sin SKU"}</div>
-                <div className="text-xs text-text-muted">{product.qr_code ?? "Sin QR"}</div>
+                <TableText>{product.sku ?? "Sin SKU"}</TableText>
+                <TableText muted>{product.qr_code ?? "Sin QR"}</TableText>
               </TableCell>
-              <TableCell>{product.category ?? "Sin categoria"}</TableCell>
-              <TableCell>{formatCurrency(product.price)}</TableCell>
               <TableCell>
+                <TableText>{product.category ?? "Sin categoria"}</TableText>
+              </TableCell>
+              <TableCell align="right" className="font-medium text-text-strong">
+                {formatCurrency(product.price)}
+              </TableCell>
+              <TableCell align="right">
                 {product.stock} / min {product.min_stock}
               </TableCell>
               <TableCell>
                 <StockBadge product={product} />
               </TableCell>
-              <TableCell>
-                <div className="flex flex-wrap items-center gap-2">
+              <TableCell align="right">
+                <TableActionGroup>
                   <Tooltip content="Ver">
                     <Button variant="icon" asChild>
                       <Link href={`/dashboard/products/${product.id}`} aria-label="Ver">
@@ -80,9 +87,9 @@ export function ProductTable({ products, role }: { products: Product[]; role: Us
                   {canDeleteProduct(role) ? (
                     <ProductDeleteDialog productId={product.id} productName={product.name} />
                   ) : null}
-                </div>
+                </TableActionGroup>
               </TableCell>
-            </tr>
+            </TableRow>
           ))
         )}
       </tbody>
@@ -94,4 +101,10 @@ export function StockBadge({ product }: { product: Pick<Product, "stock" | "min_
   if (product.stock <= 0) return <Badge variant="danger">Sin stock</Badge>;
   if (product.stock <= product.min_stock) return <Badge variant="warning">Bajo</Badge>;
   return <Badge variant="success">Disponible</Badge>;
+}
+
+function productRowTone(product: Pick<Product, "stock" | "min_stock">) {
+  if (product.stock <= 0) return "danger";
+  if (product.stock <= product.min_stock) return "warning";
+  return "default";
 }

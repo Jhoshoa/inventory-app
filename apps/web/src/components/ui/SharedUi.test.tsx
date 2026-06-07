@@ -6,6 +6,14 @@ import { ForbiddenState } from "./ForbiddenState";
 import { Label } from "./Label";
 import { Pagination } from "./Pagination";
 import { SummaryRow } from "./SummaryRow";
+import {
+  Table,
+  TableActionGroup,
+  TableCell,
+  TableHeaderCell,
+  TableRow,
+  TableText,
+} from "./Table";
 
 describe("shared UI components", () => {
   it("renders pagination links and disabled states with semantic labels", () => {
@@ -67,5 +75,38 @@ describe("shared UI components", () => {
     expect(screen.getByText("Filtros")).toBeInTheDocument();
     expect(screen.getByText("Ajusta la busqueda")).toBeInTheDocument();
     expect(screen.getByText("Contenido")).toBeInTheDocument();
+  });
+
+  it("renders operational table alignment, density, row tone, and actions", () => {
+    render(
+      <Table density="compact">
+        <thead>
+          <tr>
+            <TableHeaderCell>Producto</TableHeaderCell>
+            <TableHeaderCell align="right">Total</TableHeaderCell>
+          </tr>
+        </thead>
+        <tbody>
+          <TableRow tone="warning">
+            <TableCell>
+              <TableText>Producto largo para truncar</TableText>
+            </TableCell>
+            <TableCell align="right">Bs 100,00</TableCell>
+            <TableCell>
+              <TableActionGroup>
+                <button type="button">Ver</button>
+              </TableActionGroup>
+            </TableCell>
+          </TableRow>
+        </tbody>
+      </Table>,
+    );
+
+    expect(screen.getByRole("table")).toHaveClass("text-xs");
+    expect(screen.getByRole("columnheader", { name: "Total" })).toHaveClass("text-right");
+    expect(screen.getByText("Bs 100,00")).toHaveClass("text-right", "tabular-nums");
+    expect(screen.getByText("Producto largo para truncar")).toHaveClass("truncate");
+    expect(screen.getByRole("row", { name: /Producto largo/ })).toHaveClass("bg-status-warningBg/45");
+    expect(screen.getByRole("button", { name: "Ver" }).parentElement).toHaveClass("justify-end");
   });
 });

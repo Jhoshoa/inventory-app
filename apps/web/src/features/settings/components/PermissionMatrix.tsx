@@ -3,6 +3,7 @@ import {
   Table,
   TableCell,
   TableHeaderCell,
+  TableRow,
 } from "@/components/ui/Table";
 
 const permissions = [
@@ -17,21 +18,21 @@ const permissions = [
 export function PermissionMatrix() {
   return (
     <div className="overflow-hidden rounded-lg border border-app-border">
-      <Table>
+      <Table density="compact">
         <thead>
           <tr>
             <TableHeaderCell>Accion</TableHeaderCell>
-            <TableHeaderCell>Cashier</TableHeaderCell>
-            <TableHeaderCell>Owner</TableHeaderCell>
+            <TableHeaderCell align="center">Cashier</TableHeaderCell>
+            <TableHeaderCell align="center">Owner</TableHeaderCell>
           </tr>
         </thead>
         <tbody>
           {permissions.map((permission) => (
-            <tr key={permission.label} className="border-t border-app-border">
+            <TableRow key={permission.label}>
               <TableCell>{permission.label}</TableCell>
-              <TableCell><PermissionIcon allowed={permission.cashier} /></TableCell>
-              <TableCell><PermissionIcon allowed={permission.owner} /></TableCell>
-            </tr>
+              <TableCell align="center"><PermissionIcon allowed={permission.cashier} /></TableCell>
+              <TableCell align="center"><PermissionIcon allowed={permission.owner} /></TableCell>
+            </TableRow>
           ))}
         </tbody>
       </Table>

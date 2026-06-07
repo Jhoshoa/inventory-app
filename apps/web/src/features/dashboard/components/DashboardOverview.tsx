@@ -18,6 +18,8 @@ import {
   TableCell,
   TableEmptyRow,
   TableHeaderCell,
+  TableRow,
+  TableText,
 } from "@/components/ui/Table";
 import { formatCurrency } from "@/lib/format/currency";
 import type { UserRole } from "@/lib/auth/types";
@@ -143,13 +145,13 @@ function LatestSalesPanel({ sales }: { sales: DashboardSale[] }) {
         description="Actividad reciente del punto de venta."
         icon={ReceiptText}
       />
-      <Table>
+      <Table density="compact">
         <thead>
           <tr>
             <TableHeaderCell>Producto</TableHeaderCell>
-            <TableHeaderCell>Cantidad</TableHeaderCell>
+            <TableHeaderCell align="right">Cantidad</TableHeaderCell>
             <TableHeaderCell>Metodo</TableHeaderCell>
-            <TableHeaderCell>Total</TableHeaderCell>
+            <TableHeaderCell align="right">Total</TableHeaderCell>
             <TableHeaderCell>Fecha</TableHeaderCell>
           </tr>
         </thead>
@@ -158,19 +160,21 @@ function LatestSalesPanel({ sales }: { sales: DashboardSale[] }) {
             <TableEmptyRow colSpan={5}>Sin ventas recientes</TableEmptyRow>
           ) : (
             sales.map((sale) => (
-              <tr key={sale.id} className="hover:bg-app-surface-muted">
-                <TableCell className="min-w-52 font-medium text-text-strong">
-                  {formatSaleProducts(sale)}
+              <TableRow key={sale.id}>
+                <TableCell>
+                  <TableText className="min-w-52 font-medium text-text-strong">
+                    {formatSaleProducts(sale)}
+                  </TableText>
                 </TableCell>
-                <TableCell>{saleQuantity(sale)}</TableCell>
+                <TableCell align="right">{saleQuantity(sale)}</TableCell>
                 <TableCell>{sale.payment_method ?? "Sin metodo"}</TableCell>
-                <TableCell className="font-semibold text-text-strong">
+                <TableCell align="right" className="font-semibold text-text-strong">
                   {formatCurrency(sale.total)}
                 </TableCell>
                 <TableCell>
                   {sale.created_at ? formatDate(sale.created_at) : "Sin fecha"}
                 </TableCell>
-              </tr>
+              </TableRow>
             ))
           )}
         </tbody>
@@ -196,11 +200,11 @@ function LowStockPanel({ data }: { data: DashboardSummary }) {
           </Link>
         }
       />
-      <Table>
+      <Table density="compact">
         <thead>
           <tr>
             <TableHeaderCell>Producto</TableHeaderCell>
-            <TableHeaderCell>Stock</TableHeaderCell>
+            <TableHeaderCell align="right">Stock</TableHeaderCell>
             <TableHeaderCell>Estado</TableHeaderCell>
           </tr>
         </thead>
@@ -209,15 +213,17 @@ function LowStockPanel({ data }: { data: DashboardSummary }) {
             <TableEmptyRow colSpan={3}>Sin alertas de stock</TableEmptyRow>
           ) : (
             data.low_stock_products.map((product) => (
-              <tr key={product.id} className="hover:bg-app-surface-muted">
-                <TableCell className="font-medium text-text-strong">{product.name}</TableCell>
-                <TableCell>{product.stock}</TableCell>
+              <TableRow key={product.id} tone={product.stock <= 0 ? "danger" : "warning"}>
+                <TableCell>
+                  <TableText className="font-medium text-text-strong">{product.name}</TableText>
+                </TableCell>
+                <TableCell align="right">{product.stock}</TableCell>
                 <TableCell>
                   <Badge variant={product.stock <= 0 ? "danger" : "warning"}>
                     {product.stock <= 0 ? "Sin stock" : "Bajo"}
                   </Badge>
                 </TableCell>
-              </tr>
+              </TableRow>
             ))
           )}
         </tbody>

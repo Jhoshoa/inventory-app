@@ -4,6 +4,8 @@ import {
   TableCell,
   TableEmptyRow,
   TableHeaderCell,
+  TableRow,
+  TableText,
 } from "@/components/ui/Table";
 import type { TopProduct } from "../types";
 
@@ -11,13 +13,13 @@ export function TopProductsTable({ products }: { products: TopProduct[] }) {
   return (
     <section className="space-y-3">
       <h2 className="text-base font-semibold text-text-strong">Productos destacados</h2>
-      <Table>
+      <Table density="compact">
         <thead>
           <tr>
-            <TableHeaderCell>#</TableHeaderCell>
+            <TableHeaderCell align="right">#</TableHeaderCell>
             <TableHeaderCell>Producto</TableHeaderCell>
-            <TableHeaderCell>Cantidad</TableHeaderCell>
-            <TableHeaderCell>Total</TableHeaderCell>
+            <TableHeaderCell align="right">Cantidad</TableHeaderCell>
+            <TableHeaderCell align="right">Total</TableHeaderCell>
           </tr>
         </thead>
         <tbody>
@@ -25,12 +27,16 @@ export function TopProductsTable({ products }: { products: TopProduct[] }) {
             <TableEmptyRow colSpan={4}>Sin productos vendidos</TableEmptyRow>
           ) : (
             products.map((product, index) => (
-              <tr key={product.product_id} className="border-t border-app-border">
-                <TableCell>{index + 1}</TableCell>
-                <TableCell>{product.product_name}</TableCell>
-                <TableCell>{product.quantity}</TableCell>
-                <TableCell>{formatCurrency(product.total)}</TableCell>
-              </tr>
+              <TableRow key={product.product_id}>
+                <TableCell align="right">{index + 1}</TableCell>
+                <TableCell>
+                  <TableText className="font-medium text-text-strong">{product.product_name}</TableText>
+                </TableCell>
+                <TableCell align="right">{product.quantity}</TableCell>
+                <TableCell align="right" className="font-semibold text-text-strong">
+                  {formatCurrency(product.total)}
+                </TableCell>
+              </TableRow>
             ))
           )}
         </tbody>

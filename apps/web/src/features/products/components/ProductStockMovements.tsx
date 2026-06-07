@@ -3,6 +3,8 @@ import {
   TableCell,
   TableEmptyRow,
   TableHeaderCell,
+  TableRow,
+  TableText,
 } from "@/components/ui/Table";
 import type { StockMovement } from "../types";
 
@@ -14,28 +16,36 @@ export function ProductStockMovements({
   return (
     <section className="space-y-3">
       <h2 className="text-base font-semibold text-text-strong">Movimientos de stock</h2>
-      <Table>
+      <Table density="compact">
         <thead>
           <tr>
             <TableHeaderCell>Fecha</TableHeaderCell>
             <TableHeaderCell>Tipo</TableHeaderCell>
-            <TableHeaderCell>Delta</TableHeaderCell>
-            <TableHeaderCell>Stock final</TableHeaderCell>
+            <TableHeaderCell align="right">Delta</TableHeaderCell>
+            <TableHeaderCell align="right">Stock final</TableHeaderCell>
             <TableHeaderCell>Razon</TableHeaderCell>
           </tr>
         </thead>
         <tbody>
           {movements.length === 0 ? (
             <TableEmptyRow colSpan={5}>Sin movimientos registrados</TableEmptyRow>
-          ) : (
-            movements.map((movement) => (
-              <tr key={movement.id} className="border-t border-app-border">
+        ) : (
+          movements.map((movement) => (
+              <TableRow key={movement.id} tone={movement.quantity_delta < 0 ? "danger" : "success"}>
                 <TableCell>{formatDate(movement.created_at)}</TableCell>
                 <TableCell>{movement.movement_type}</TableCell>
-                <TableCell>{movement.quantity_delta}</TableCell>
-                <TableCell>{movement.stock_after}</TableCell>
-                <TableCell>{movement.reason ?? "Sin razon"}</TableCell>
-              </tr>
+                <TableCell
+                  align="right"
+                  className={`font-semibold ${movement.quantity_delta >= 0 ? "text-status-success" : "text-status-danger"}`}
+                >
+                  {movement.quantity_delta > 0 ? "+" : ""}
+                  {movement.quantity_delta}
+                </TableCell>
+                <TableCell align="right">{movement.stock_after}</TableCell>
+                <TableCell>
+                  <TableText>{movement.reason ?? "Sin razon"}</TableText>
+                </TableCell>
+              </TableRow>
             ))
           )}
         </tbody>
