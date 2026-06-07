@@ -16,10 +16,6 @@ export function canManageSettings(role: UserRole | undefined): boolean {
   return isOwner(role);
 }
 
-export function canConfirmImport(role: UserRole | undefined): boolean {
-  return isOwner(role);
-}
-
 export function canViewSettings(role: UserRole | undefined): boolean {
   return isOwner(role);
 }
@@ -33,18 +29,6 @@ export function canAdjustStock(role: UserRole | undefined): boolean {
 }
 
 export function canDeleteProduct(role: UserRole | undefined): boolean {
-  return isOwner(role);
-}
-
-export function canCreateImport(role: UserRole | undefined): boolean {
-  return isOwner(role);
-}
-
-export function canReviewImport(role: UserRole | undefined): boolean {
-  return isOwner(role);
-}
-
-export function canCancelImport(role: UserRole | undefined): boolean {
   return isOwner(role);
 }
 

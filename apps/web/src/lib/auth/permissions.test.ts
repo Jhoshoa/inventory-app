@@ -1,9 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
   canAdjustStock,
-  canCancelImport,
-  canConfirmImport,
-  canCreateImport,
   canDeleteProduct,
   canExport,
   canManageProducts,
@@ -11,7 +8,6 @@ import {
   canOpenCloseStore,
   canViewCashMovements,
   canViewStoreDayReports,
-  canReviewImport,
   canViewSettings,
   canVoidSale,
   isOwner,
@@ -23,14 +19,10 @@ describe("permissions", () => {
     expect(canExport("owner")).toBe(true);
     expect(canVoidSale("owner")).toBe(true);
     expect(canManageSettings("owner")).toBe(true);
-    expect(canConfirmImport("owner")).toBe(true);
     expect(canViewSettings("owner")).toBe(true);
     expect(canManageProducts("owner")).toBe(true);
     expect(canAdjustStock("owner")).toBe(true);
     expect(canDeleteProduct("owner")).toBe(true);
-    expect(canCreateImport("owner")).toBe(true);
-    expect(canReviewImport("owner")).toBe(true);
-    expect(canCancelImport("owner")).toBe(true);
     expect(canOpenCloseStore("owner")).toBe(true);
     expect(canViewStoreDayReports("owner")).toBe(true);
     expect(canViewCashMovements("owner")).toBe(true);
@@ -41,14 +33,10 @@ describe("permissions", () => {
     expect(canExport("cashier")).toBe(false);
     expect(canVoidSale("cashier")).toBe(false);
     expect(canManageSettings("cashier")).toBe(false);
-    expect(canConfirmImport("cashier")).toBe(false);
     expect(canViewSettings("cashier")).toBe(false);
     expect(canManageProducts("cashier")).toBe(false);
     expect(canAdjustStock("cashier")).toBe(false);
     expect(canDeleteProduct("cashier")).toBe(false);
-    expect(canCreateImport("cashier")).toBe(false);
-    expect(canReviewImport("cashier")).toBe(false);
-    expect(canCancelImport("cashier")).toBe(false);
     expect(canOpenCloseStore("cashier")).toBe(false);
     expect(canViewStoreDayReports("cashier")).toBe(false);
     expect(canViewCashMovements("cashier")).toBe(false);

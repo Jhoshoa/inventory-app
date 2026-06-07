@@ -312,22 +312,6 @@ async def test_exchange_rates_upsert_and_list(client):
     assert list_response.json()[0]["source"] == "bcb"
 
 
-async def test_photos_upload_and_ocr_fallback(client):
-    upload_response = await client.post(
-        "/api/v1/photos/upload",
-        files={"file": ("product.txt", b"arroz 12bs 10", "text/plain")},
-    )
-    assert upload_response.status_code == 200
-    assert upload_response.json()["size"] == 13
-
-    ocr_response = await client.post(
-        "/api/v1/photos/ocr",
-        files={"file": ("product.txt", b"arroz 12bs 10", "text/plain")},
-    )
-    assert ocr_response.status_code == 200
-    assert ocr_response.json()["status"] in {"processed", "queued"}
-
-
 async def test_sync_push_and_pull_products(client):
     product_id = str(uuid4())
     push_response = await client.post(

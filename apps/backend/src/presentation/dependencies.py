@@ -16,7 +16,6 @@ from src.infrastructure.database.repositories.store_repository import StoreRepos
 from src.infrastructure.database.repositories.store_business_day_event_repository import StoreBusinessDayEventRepository
 from src.infrastructure.database.repositories.store_business_day_repository import StoreBusinessDayRepository
 from src.infrastructure.database.repositories.exchange_rate_repository import ExchangeRateRepository
-from src.infrastructure.database.repositories.inventory_import_repository import InventoryImportRepository
 from src.infrastructure.database.repositories.stock_movement_repository import StockMovementRepository
 from src.infrastructure.database.repositories.cash_movement_repository import CashMovementRepository
 from src.infrastructure.database.repositories.user_repository import UserRepository
@@ -109,39 +108,12 @@ def get_exchange_rate_repo(session: AsyncSession = Depends(get_db_session)) -> E
     return ExchangeRateRepository(session)
 
 
-def get_inventory_import_repo(session: AsyncSession = Depends(get_db_session)) -> InventoryImportRepository:
-    return InventoryImportRepository(session)
-
-
 def get_stock_movement_repo(session: AsyncSession = Depends(get_db_session)) -> StockMovementRepository:
     return StockMovementRepository(session)
 
 
 def get_cash_movement_repo(session: AsyncSession = Depends(get_db_session)) -> CashMovementRepository:
     return CashMovementRepository(session)
-
-
-def get_ocr_service():
-    try:
-        from src.infrastructure.services.ocr.easy_ocr import EasyOCRService
-
-        return EasyOCRService()
-    except Exception:
-        return None
-
-
-def get_photo_storage():
-    has_cloudinary_credentials = (
-        settings.CLOUDINARY_CLOUD_NAME not in {"local", "your-cloud-name"}
-        and not settings.CLOUDINARY_CLOUD_NAME.startswith("your-")
-        and settings.CLOUDINARY_API_KEY not in {"local", "your-api-key"}
-        and settings.CLOUDINARY_API_SECRET not in {"local", "your-api-secret"}
-    )
-    if not has_cloudinary_credentials:
-        return None
-    from src.infrastructure.services.cloudinary.photo_storage import CloudinaryPhotoStorage
-
-    return CloudinaryPhotoStorage()
 
 
 async def get_current_user_context(
