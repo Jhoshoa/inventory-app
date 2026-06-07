@@ -2,9 +2,11 @@
 
 import Link from "next/link";
 import type { FormEvent } from "react";
-import { useActionState, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { LockKeyhole, Store, UnlockKeyhole } from "lucide-react";
 import { Alert } from "@/components/ui/Alert";
+import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { FieldError } from "@/components/ui/FieldError";
 import { Input } from "@/components/ui/Input";
@@ -34,43 +36,62 @@ export function StoreDayStatusPanel({
   closingPreview?: StoreDayClosingPreviewResult;
   cashMovements?: CashMovementListResult;
 }) {
-  const isOpen = storeDay.status === "open";
+  const [visibleStoreDay, setVisibleStoreDay] = useState(storeDay);
+  const didMountRef = useRef(false);
+  const isOpen = visibleStoreDay.status === "open";
   const canManage = canOpenCloseStore(role);
+  const handleStoreDayUpdated = useCallback((nextStoreDay: StoreDay) => {
+    setVisibleStoreDay(nextStoreDay);
+  }, []);
+
+  useEffect(() => {
+    if (!didMountRef.current) {
+      didMountRef.current = true;
+      return;
+    }
+    setVisibleStoreDay(storeDay);
+  }, [storeDay]);
 
   return (
-    <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+    <section className="rounded-lg border border-app-border bg-app-surface p-4 shadow-panel">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div className="flex gap-3">
           <div
-            className={`flex h-10 w-10 items-center justify-center rounded-md ${
-              isOpen ? "bg-emerald-50 text-emerald-700" : "bg-amber-50 text-amber-700"
+            className={`flex h-10 w-10 items-center justify-center rounded-md border ${
+              isOpen
+                ? "border-status-successBorder bg-status-successBg text-status-success"
+                : "border-status-warningBorder bg-status-warningBg text-status-warning"
             }`}
           >
             {isOpen ? <UnlockKeyhole className="h-5 w-5" aria-hidden={true} /> : <LockKeyhole className="h-5 w-5" aria-hidden={true} />}
           </div>
           <div>
             <div className="flex flex-wrap items-center gap-2">
-              <h2 className="text-base font-semibold text-slate-950">
+              <h2 className="text-base font-semibold text-text-strong">
                 {isOpen ? "Tienda abierta" : "Tienda cerrada"}
               </h2>
-              <span className="rounded-md bg-slate-100 px-2 py-1 text-xs font-medium text-slate-700">
-                {formatBusinessDate(storeDay.business_date)}
-              </span>
+              <Badge>{formatBusinessDate(visibleStoreDay.business_date)}</Badge>
             </div>
-            <p className="mt-1 text-sm text-slate-600">
-              {isOpen && storeDay.opened_at
-                ? `Abierta desde ${formatDateTime(storeDay.opened_at, storeDay.timezone)}`
+            <p className="mt-1 text-sm text-text-muted">
+              {isOpen && visibleStoreDay.opened_at
+                ? `Abierta desde ${formatDateTime(visibleStoreDay.opened_at, visibleStoreDay.timezone)}`
                 : "Abre la jornada para habilitar ventas en POS."}
             </p>
-            <p className="mt-1 inline-flex items-center gap-1 text-xs text-slate-500">
+            <p className="mt-1 inline-flex items-center gap-1 text-xs text-text-muted">
               <Store className="h-3.5 w-3.5" aria-hidden={true} />
-              Zona operativa: {storeDay.timezone}
+              Zona operativa: {visibleStoreDay.timezone}
             </p>
           </div>
         </div>
 
         {canManage && actions === "manage" ? (
-          <StoreDayActionForm storeDay={storeDay} closingPreview={closingPreview} cashMovements={cashMovements} />
+          <StoreDayActionForm
+            key={`${visibleStoreDay.status}-${visibleStoreDay.id ?? "none"}-${visibleStoreDay.opened_at ?? ""}-${visibleStoreDay.closed_at ?? ""}`}
+            storeDay={visibleStoreDay}
+            closingPreview={closingPreview}
+            cashMovements={cashMovements}
+            onStoreDayUpdated={handleStoreDayUpdated}
+          />
         ) : null}
         {canManage && actions === "link" ? (
           <Button asChild variant="secondary">
@@ -86,24 +107,51 @@ function StoreDayActionForm({
   storeDay,
   closingPreview,
   cashMovements,
+  onStoreDayUpdated,
 }: {
   storeDay: StoreDay;
   closingPreview?: StoreDayClosingPreviewResult;
   cashMovements?: CashMovementListResult;
+  onStoreDayUpdated: (storeDay: StoreDay) => void;
 }) {
   const isOpen = storeDay.status === "open";
   const isReopen = !isOpen && Boolean(storeDay.id && storeDay.closed_at);
   const action = isOpen ? closeStoreDayAction : isReopen ? reopenStoreDayAction : openStoreDayAction;
-  const [state, formAction, isPending] = useActionState(action, initialState);
+  const [state, setState] = useState<StoreDayActionState>(initialState);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const router = useRouter();
   const [skipCashCount, setSkipCashCount] = useState(false);
   const noteLabel = isOpen ? "Nota de cierre" : isReopen ? "Nota de reapertura" : "Nota de apertura";
   const buttonLabel = isOpen ? "Cerrar tienda" : isReopen ? "Reabrir tienda" : "Abrir tienda";
+
+  async function onSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (isSubmitting) return;
+
+    setIsSubmitting(true);
+    try {
+      const nextState = await action(initialState, new FormData(event.currentTarget));
+      setState(nextState);
+      if (nextState.ok && nextState.storeDay) {
+        onStoreDayUpdated(nextState.storeDay);
+        router.refresh();
+      }
+    } catch (error) {
+      setState({
+        ok: false,
+        message: error instanceof Error ? error.message : "No se pudo procesar la jornada.",
+        fieldErrors: {},
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
 
   return (
     <div className="min-w-full space-y-3 lg:min-w-80">
       {isOpen ? <StoreDayClosingPreview preview={closingPreview} /> : null}
       {isOpen ? <CashMovementPanel cashMovements={cashMovements} /> : null}
-      <form action={formAction} className="space-y-2">
+      <form onSubmit={onSubmit} className="space-y-2">
         {state.message ? <Alert variant={state.ok ? "info" : "error"}>{state.message}</Alert> : null}
         {!isOpen && !isReopen ? (
           <>
@@ -121,9 +169,9 @@ function StoreDayActionForm({
         ) : null}
         {isOpen ? (
           <>
-            <label className="flex items-center gap-2 rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700">
+            <label className="flex items-center gap-2 rounded-md border border-app-border bg-app-surface px-3 py-2 text-sm text-text-body">
               <input
-                className="h-4 w-4 rounded border-slate-300 text-slate-950 focus:ring-slate-400"
+                className="h-4 w-4 rounded border-app-borderStrong text-brand-700 focus:ring-focus"
                 name="skip_cash_count"
                 type="checkbox"
                 checked={skipCashCount}
@@ -156,8 +204,8 @@ function StoreDayActionForm({
             <Link href={`/dashboard/reports/store-days/${storeDay.id}`}>Ver reporte de cierre</Link>
           </Button>
         ) : null}
-        <Button className="w-full" type="submit" variant={isOpen ? "danger" : "primary"} disabled={isPending}>
-          {isPending ? "Procesando..." : buttonLabel}
+        <Button className="w-full" type="submit" variant={isOpen ? "danger" : "primary"} disabled={isSubmitting}>
+          {isSubmitting ? "Procesando..." : buttonLabel}
         </Button>
       </form>
     </div>
@@ -165,11 +213,38 @@ function StoreDayActionForm({
 }
 
 function CashMovementPanel({ cashMovements }: { cashMovements?: CashMovementListResult }) {
-  const [state, formAction, isPending] = useActionState(createCashMovementAction, initialState);
+  const [state, setState] = useState<StoreDayActionState>(initialState);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const router = useRouter();
+
+  async function onSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (isSubmitting) return;
+
+    setIsSubmitting(true);
+    setState(initialState);
+    try {
+      const nextState = await createCashMovementAction(initialState, new FormData(event.currentTarget));
+      setState(nextState);
+      if (nextState.ok) {
+        event.currentTarget.reset();
+        router.refresh();
+      }
+    } catch (error) {
+      setState({
+        ok: false,
+        message: error instanceof Error ? error.message : "No se pudo registrar el movimiento.",
+        fieldErrors: {},
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
   return (
-    <div className="space-y-2 rounded-lg border border-slate-200 bg-slate-50 p-3">
-      <p className="text-sm font-semibold text-slate-950">Movimientos de caja</p>
-      <form action={formAction} className="grid gap-2">
+    <div className="space-y-2 rounded-lg border border-app-border bg-app-surface-muted p-3">
+      <p className="text-sm font-semibold text-text-strong">Movimientos de caja</p>
+      <form onSubmit={onSubmit} className="grid gap-2">
         {state.message ? <Alert variant={state.ok ? "info" : "error"}>{state.message}</Alert> : null}
         <Select aria-label="Tipo de movimiento" name="movement_type" defaultValue="expense">
           <option value="expense">Gasto</option>
@@ -192,7 +267,7 @@ function CashMovementPanel({ cashMovements }: { cashMovements?: CashMovementList
         <FieldError message={state.fieldErrors.amount} />
         <Input aria-label="Nota de movimiento" name="note" placeholder="Nota opcional" />
         <FieldError message={state.fieldErrors.note} />
-        <Button type="submit" disabled={isPending}>{isPending ? "Registrando..." : "Registrar movimiento"}</Button>
+        <Button type="submit" disabled={isSubmitting}>{isSubmitting ? "Registrando..." : "Registrar movimiento"}</Button>
       </form>
       <CashMovementList cashMovements={cashMovements} />
     </div>
@@ -203,7 +278,7 @@ function CashMovementList({ cashMovements }: { cashMovements?: CashMovementListR
   if (!cashMovements) return null;
   if (!cashMovements.ok) return <Alert variant="error">No se pudieron cargar movimientos: {cashMovements.error.message}</Alert>;
   if (cashMovements.data.items.length === 0) {
-    return <p className="text-sm text-slate-500">Sin movimientos de caja.</p>;
+    return <p className="text-sm text-text-muted">Sin movimientos de caja.</p>;
   }
   return (
     <div className="space-y-2">
@@ -215,19 +290,45 @@ function CashMovementList({ cashMovements }: { cashMovements?: CashMovementListR
 }
 
 function CashMovementRow({ movement }: { movement: CashMovement }) {
-  const [, formAction, isPending] = useActionState(voidCashMovementAction, initialState);
+  const [state, setState] = useState<StoreDayActionState>(initialState);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const router = useRouter();
+
+  async function onSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (isSubmitting) return;
+
+    setIsSubmitting(true);
+    try {
+      const nextState = await voidCashMovementAction(initialState, new FormData(event.currentTarget));
+      setState(nextState);
+      if (nextState.ok) router.refresh();
+    } catch (error) {
+      setState({
+        ok: false,
+        message: error instanceof Error ? error.message : "No se pudo anular el movimiento.",
+        fieldErrors: {},
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
   return (
-    <div className="flex items-center justify-between gap-2 rounded-md bg-white p-2 text-sm">
+    <div className="flex items-center justify-between gap-2 rounded-md bg-app-surface p-2 text-sm">
       <div>
-        <p className="font-medium text-slate-950">{cashMovementLabel(movement.movement_type)}</p>
-        <p className={movement.direction === "in" ? "text-emerald-700" : "text-red-700"}>
+        <p className="font-medium text-text-strong">{cashMovementLabel(movement.movement_type)}</p>
+        <p className={movement.direction === "in" ? "text-status-success" : "text-status-danger"}>
           {movement.direction === "in" ? "+" : "-"}{formatCurrency(movement.amount)}
         </p>
-        {movement.note ? <p className="text-xs text-slate-500">{movement.note}</p> : null}
+        {movement.note ? <p className="text-xs text-text-muted">{movement.note}</p> : null}
       </div>
-      <form action={formAction}>
+      {state.message && !state.ok ? <Alert variant="error">{state.message}</Alert> : null}
+      <form onSubmit={onSubmit}>
         <input type="hidden" name="movement_id" value={movement.id} />
-        <Button type="submit" variant="secondary" disabled={isPending}>Anular</Button>
+        <Button type="submit" variant="secondary" disabled={isSubmitting}>
+          {isSubmitting ? "Anulando..." : "Anular"}
+        </Button>
       </form>
     </div>
   );

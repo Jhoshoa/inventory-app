@@ -9,6 +9,7 @@ from src.infrastructure.database import models as _models
 from src.infrastructure.database.models import StoreModel, UserModel
 from src.infrastructure.database.models.product_model import Base
 from src.main import app
+from src.config.settings import settings
 from src.presentation import dependencies
 
 TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
@@ -56,6 +57,11 @@ async def db_session() -> AsyncGenerator[AsyncSession, None]:
 
 @pytest.fixture
 async def client(db_session: AsyncSession) -> AsyncGenerator[AsyncClient, None]:
+    original_debug = settings.DEBUG
+    original_environment = settings.ENVIRONMENT
+    settings.DEBUG = True
+    settings.ENVIRONMENT = "test"
+
     async def override_db_session():
         try:
             yield db_session
@@ -79,3 +85,5 @@ async def client(db_session: AsyncSession) -> AsyncGenerator[AsyncClient, None]:
         yield async_client
 
     app.dependency_overrides.clear()
+    settings.DEBUG = original_debug
+    settings.ENVIRONMENT = original_environment

@@ -6,8 +6,8 @@ export function StoreDayClosingPreview({ preview }: { preview?: StoreDayClosingP
   const data = preview.data;
 
   return (
-    <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
-      <p className="text-sm font-semibold text-slate-950">Preview de cierre</p>
+    <div className="rounded-lg border border-app-border bg-app-surface-muted p-3">
+      <p className="text-sm font-semibold text-text-strong">Preview de cierre</p>
       <dl className="mt-3 grid gap-2 text-sm sm:grid-cols-2">
         <Item label="Caja inicial" value={formatCurrency(data.opening_cash_amount)} />
         <Item label="Efectivo esperado" value={formatCurrency(data.expected_cash_amount)} />
@@ -27,8 +27,8 @@ export function StoreDayClosingPreview({ preview }: { preview?: StoreDayClosingP
 function Item({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <dt className="text-xs font-medium uppercase text-slate-500">{label}</dt>
-      <dd className="mt-1 font-medium text-slate-950">{value}</dd>
+      <dt className="text-xs font-medium uppercase text-text-muted">{label}</dt>
+      <dd className="mt-1 font-medium text-text-strong">{value}</dd>
     </div>
   );
 }

@@ -3,6 +3,7 @@
 import { useCallback, useTransition } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { CalendarDays } from "lucide-react";
+import { ResponsiveToolbar } from "@/components/layout/ResponsiveToolbar";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import type { SaleSearchParams } from "../types";
@@ -33,7 +34,7 @@ export function SalesDateFilter({
   }, [params.limit, pathname, router]);
 
   return (
-    <div className="grid gap-3 rounded-lg border border-slate-200 bg-white p-4 md:grid-cols-[1fr_1fr_180px]">
+    <ResponsiveToolbar className="md:grid md:grid-cols-[minmax(160px,1fr)_minmax(160px,1fr)_180px]">
       <DateInput
         label="Desde"
         value={params.from_date}
@@ -47,7 +48,7 @@ export function SalesDateFilter({
         onChange={(value) => updateParams({ to_date: value })}
       />
       <label className="block">
-        <span className="mb-1 block text-xs font-medium uppercase text-slate-500">
+        <span className="mb-1 block text-xs font-medium uppercase text-text-muted">
           Estado
         </span>
         <Select
@@ -60,7 +61,7 @@ export function SalesDateFilter({
           <option value="voided">Anuladas</option>
         </Select>
       </label>
-    </div>
+    </ResponsiveToolbar>
   );
 }
 
@@ -77,12 +78,12 @@ function DateInput({
 }) {
   return (
     <label className="block">
-      <span className="mb-1 block text-xs font-medium uppercase text-slate-500">
+      <span className="mb-1 block text-xs font-medium uppercase text-text-muted">
         {label}
       </span>
       <span className="relative block">
         <CalendarDays
-          className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-slate-400"
+          className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-text-muted"
           aria-hidden
         />
         <Input

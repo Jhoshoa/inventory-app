@@ -9,7 +9,7 @@ describe("buildExportBackendUrl", () => {
     );
 
     expect(url.toString()).toBe(
-      "http://localhost:8000/api/v1/exports/sales.csv?from=2026-05-01&to=2026-05-20",
+      "http://localhost:8001/api/v1/exports/sales.csv?from=2026-05-01&to=2026-05-20",
     );
   });
 
@@ -20,7 +20,7 @@ describe("buildExportBackendUrl", () => {
     );
 
     expect(url.toString()).toBe(
-      "http://localhost:8000/api/v1/exports/cash-movements.csv?from=2026-05-01&to=2026-05-20&type=expense",
+      "http://localhost:8001/api/v1/exports/cash-movements.csv?from=2026-05-01&to=2026-05-20&type=expense",
     );
   });
 });

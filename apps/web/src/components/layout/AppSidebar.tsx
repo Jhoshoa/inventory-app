@@ -1,46 +1,36 @@
+"use client";
+
 import Link from "next/link";
-import {
-  BarChart3,
-  Boxes,
-  FileImage,
-  LayoutDashboard,
-  ReceiptText,
-  ShoppingCart,
-  Settings,
-} from "lucide-react";
-import { canCreateImport, canViewSettings } from "@/lib/auth/permissions";
+import { usePathname } from "next/navigation";
 import type { UserRole } from "@/lib/auth/types";
-
-const canView = () => true;
-
-const navItems = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, allowed: canView },
-  { href: "/dashboard/pos", label: "POS", icon: ShoppingCart, allowed: canView },
-  { href: "/dashboard/products", label: "Productos", icon: Boxes, allowed: canView },
-  { href: "/dashboard/imports", label: "Import Image", icon: FileImage, allowed: canCreateImport },
-  { href: "/dashboard/sales", label: "Ventas", icon: ReceiptText, allowed: canView },
-  { href: "/dashboard/reports", label: "Reportes", icon: BarChart3, allowed: canView },
-  { href: "/dashboard/settings", label: "Ajustes", icon: Settings, allowed: canViewSettings },
-] as const;
+import { isNavItemActive, visibleNavItems } from "./navigation";
 
 export function AppSidebar({ role }: { role: UserRole }) {
+  const pathname = usePathname();
+
   return (
-    <aside className="hidden border-r border-slate-200 bg-white lg:fixed lg:inset-y-0 lg:z-30 lg:flex lg:w-64 lg:flex-col">
-      <div className="flex h-16 items-center border-b border-slate-200 px-5">
-        <Link href="/dashboard" className="text-base font-semibold text-slate-950">
+    <aside className="hidden border-r border-app-border bg-app-surface lg:fixed lg:inset-y-0 lg:z-30 lg:flex lg:w-64 lg:flex-col">
+      <div className="flex h-16 items-center border-b border-app-border px-5">
+        <Link href="/dashboard" className="text-base font-semibold text-text-strong">
           Inventory App
         </Link>
       </div>
       <nav className="flex-1 space-y-1 px-3 py-4" aria-label="Principal">
-        {navItems.filter((item) => item.allowed(role)).map((item) => {
+        {visibleNavItems(role).map((item) => {
           const Icon = item.icon;
+          const isActive = isNavItemActive(pathname, item.href);
           return (
             <Link
               key={item.href}
               href={item.href}
-              className="flex h-10 items-center gap-3 rounded-md px-3 text-sm font-medium text-slate-700 hover:bg-slate-100 hover:text-slate-950"
+              aria-current={isActive ? "page" : undefined}
+              className={`flex h-10 items-center gap-3 rounded-md px-3 text-sm font-medium transition-colors ${
+                isActive
+                  ? "bg-brand-700 text-text-inverse shadow-sm"
+                  : "text-text-body hover:bg-app-surface-muted hover:text-text-strong"
+              }`}
             >
-              <Icon className="h-4 w-4 text-slate-500" aria-hidden="true" />
+              <Icon className={`h-4 w-4 ${isActive ? "text-text-inverse" : "text-text-muted"}`} aria-hidden="true" />
               {item.label}
             </Link>
           );

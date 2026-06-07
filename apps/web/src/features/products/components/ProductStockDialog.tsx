@@ -1,6 +1,8 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import type { FormEvent } from "react";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
 import { DialogSurface } from "@/components/ui/Dialog";
@@ -24,10 +26,30 @@ export function ProductStockDialog({
   productName: string;
 }) {
   const [open, setOpen] = useState(false);
-  const [state, formAction, isPending] = useActionState(
-    adjustStockAction,
-    initialProductActionState,
-  );
+  const [state, setState] = useState<ProductActionState>(initialProductActionState);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const router = useRouter();
+
+  async function onSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (isSubmitting) return;
+
+    setIsSubmitting(true);
+    setState(initialProductActionState);
+    try {
+      const nextState = await adjustStockAction(initialProductActionState, new FormData(event.currentTarget));
+      setState(nextState);
+      if (nextState.ok) router.refresh();
+    } catch (error) {
+      setState({
+        ok: false,
+        message: error instanceof Error ? error.message : "No se pudo ajustar el stock.",
+        fieldErrors: {},
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
 
   return (
     <>
@@ -35,13 +57,13 @@ export function ProductStockDialog({
         Ajustar stock
       </Button>
       {open ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/30 p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-text-strong/30 p-4">
           <DialogSurface className="w-full max-w-md">
-            <h2 className="text-base font-semibold text-slate-950">
+            <h2 className="text-base font-semibold text-text-strong">
               Ajustar stock
             </h2>
-            <p className="mt-1 text-sm text-slate-600">{productName}</p>
-            <form action={formAction} className="mt-5 space-y-4">
+            <p className="mt-1 text-sm text-text-muted">{productName}</p>
+            <form onSubmit={onSubmit} className="mt-5 space-y-4">
               {state.message ? <Alert variant={state.ok ? "info" : "error"}>{state.message}</Alert> : null}
               <input type="hidden" name="product_id" value={productId} />
               <div className="space-y-2">
@@ -58,8 +80,8 @@ export function ProductStockDialog({
                 <Button type="button" variant="secondary" onClick={() => setOpen(false)}>
                   Cerrar
                 </Button>
-                <Button type="submit" disabled={isPending}>
-                  {isPending ? "Guardando..." : "Guardar ajuste"}
+                <Button type="submit" disabled={isSubmitting}>
+                  {isSubmitting ? "Guardando..." : "Guardar ajuste"}
                 </Button>
               </div>
             </form>

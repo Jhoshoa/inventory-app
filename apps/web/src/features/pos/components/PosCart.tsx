@@ -24,14 +24,14 @@ export function PosCart({
   const total = calculateCartTotal(items);
 
   return (
-    <section className="space-y-4 rounded-lg border border-slate-200 bg-white p-4">
+    <section className="space-y-4 rounded-lg border border-app-border bg-app-surface p-4 shadow-panel">
       <div>
-        <h2 className="text-base font-semibold text-slate-950">Carrito</h2>
-        <p className="text-sm text-slate-600">{items.length} productos</p>
+        <h2 className="text-base font-semibold text-text-strong">Carrito</h2>
+        <p className="text-sm text-text-muted">{items.length} productos</p>
       </div>
       <div className="space-y-3">
         {items.length === 0 ? (
-          <p className="rounded-md border border-dashed border-slate-300 p-4 text-center text-sm text-slate-600">
+          <p className="rounded-md border border-dashed border-app-borderStrong bg-app-surface-muted p-4 text-center text-sm text-text-muted">
             Agrega productos para iniciar una venta.
           </p>
         ) : (
@@ -40,14 +40,14 @@ export function PosCart({
               key={item.product.id}
               className={`rounded-md border p-3 ${
                 item.quantity > item.product.stock
-                  ? "border-amber-300 bg-amber-50"
-                  : "border-slate-200"
+                  ? "border-status-warningBorder bg-status-warningBg"
+                  : "border-app-border bg-app-surface"
               }`}
             >
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <p className="font-medium text-slate-950">{item.product.name}</p>
-                  <p className="text-sm text-slate-600">
+                  <p className="font-medium text-text-strong">{item.product.name}</p>
+                  <p className="text-sm text-text-muted">
                     {formatCurrency(item.product.price)} - stock {item.product.stock}
                   </p>
                 </div>
@@ -69,12 +69,12 @@ export function PosCart({
                   incrementDisabled={item.quantity >= item.product.stock}
                   max={item.product.stock}
                 />
-                <span className="text-sm font-semibold text-slate-950">
+                <span className="text-sm font-semibold text-text-strong">
                   {formatCurrency(Number(item.product.price) * item.quantity)}
                 </span>
               </div>
               {item.quantity > item.product.stock ? (
-                <div className="mt-3 rounded-md border border-amber-200 bg-white p-2 text-sm text-amber-900">
+                <div className="mt-3 rounded-md border border-status-warningBorder bg-app-surface p-2 text-sm text-status-warning">
                   <p>
                     Stock actualizado: disponible {item.product.stock}, cantidad en carrito{" "}
                     {item.quantity}.
@@ -96,7 +96,7 @@ export function PosCart({
           ))
         )}
       </div>
-      <div className="border-t border-slate-200 pt-4">
+      <div className="border-t border-app-border pt-4">
         <SummaryRow label="Total" value={formatCurrency(total)} strong />
       </div>
     </section>

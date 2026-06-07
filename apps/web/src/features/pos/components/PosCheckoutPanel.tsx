@@ -35,8 +35,12 @@ export function PosCheckoutPanel({
   }, [onStockRefresh, state]);
 
   return (
-    <form action={formAction} className="space-y-4 rounded-lg border border-slate-200 bg-white p-4">
+    <form action={formAction} className="space-y-4 rounded-lg border border-app-border bg-app-surface p-4 shadow-panel">
       <input type="hidden" name="items" value={serializeCartItems(items)} />
+      <div>
+        <h2 className="text-base font-semibold text-text-strong">Checkout</h2>
+        <p className="mt-1 text-sm text-text-muted">Confirma el metodo de pago y registra la venta.</p>
+      </div>
       {state.message ? <Alert variant={state.ok ? "info" : "error"}>{state.message}</Alert> : null}
       <FieldError message={state.fieldErrors.items} />
       <div className="space-y-2">

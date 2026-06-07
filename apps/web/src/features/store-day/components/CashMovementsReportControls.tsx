@@ -3,10 +3,10 @@
 import { useCallback, useTransition } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { Download } from "lucide-react";
+import { ResponsiveToolbar } from "@/components/layout/ResponsiveToolbar";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
-import { buildExportDateTimeQuery } from "@/features/reports/schemas";
 import type { CashMovementType } from "../types";
 
 export interface CashMovementsReportParams {
@@ -34,11 +34,11 @@ export function CashMovementsReportControls({ params }: { params: CashMovementsR
   }, [pathname, router]);
 
   return (
-    <div className="grid gap-3 rounded-lg border border-slate-200 bg-white p-4 md:grid-cols-[160px_160px_180px_1fr]">
+    <ResponsiveToolbar className="md:grid md:grid-cols-[160px_160px_180px_minmax(160px,1fr)]">
       <DateField label="Desde" value={params.from_date ?? ""} onChange={(value) => updateParam("from_date", value || null)} />
       <DateField label="Hasta" value={params.to_date ?? ""} onChange={(value) => updateParam("to_date", value || null)} />
       <label className="block">
-        <span className="mb-1 block text-xs font-medium uppercase text-slate-500">Tipo</span>
+        <span className="mb-1 block text-xs font-medium uppercase text-text-muted">Tipo</span>
         <Select
           aria-label="Tipo de movimiento de caja"
           value={params.type}
@@ -60,18 +60,14 @@ export function CashMovementsReportControls({ params }: { params: CashMovementsR
           </a>
         </Button>
       </div>
-    </div>
+    </ResponsiveToolbar>
   );
 }
 
 export function buildCashMovementsExportQuery(params: CashMovementsReportParams) {
-  const query = new URLSearchParams(
-    params.from_date && params.to_date
-      ? buildExportDateTimeQuery({ from: params.from_date, to: params.to_date })
-      : "",
-  );
-  if (params.from_date && !params.to_date) query.set("from", `${params.from_date}T00:00:00.000Z`);
-  if (params.to_date && !params.from_date) query.set("to", `${params.to_date}T23:59:59.999Z`);
+  const query = new URLSearchParams();
+  if (params.from_date) query.set("from_date", params.from_date);
+  if (params.to_date) query.set("to_date", params.to_date);
   if (params.type && params.type !== "all") query.set("type", params.type);
   return query.toString();
 }
@@ -87,7 +83,7 @@ function DateField({
 }) {
   return (
     <label className="block">
-      <span className="mb-1 block text-xs font-medium uppercase text-slate-500">{label}</span>
+      <span className="mb-1 block text-xs font-medium uppercase text-text-muted">{label}</span>
       <Input type="date" value={value} onChange={(event) => onChange(event.target.value)} />
     </label>
   );

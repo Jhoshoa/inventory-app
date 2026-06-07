@@ -17,10 +17,10 @@ export function ExportPanel({
   const exportQuery = buildExportDateTimeQuery(reportParams);
 
   return (
-    <section className="space-y-3 rounded-lg border border-slate-200 bg-white p-4">
+    <section className="space-y-3 rounded-lg border border-app-border bg-app-surface p-4 shadow-panel">
       <div>
-        <h2 className="text-base font-semibold text-slate-950">Exportes CSV</h2>
-        <p className="mt-1 text-sm text-slate-600">
+        <h2 className="text-base font-semibold text-text-strong">Exportes CSV</h2>
+        <p className="mt-1 text-sm text-text-muted">
           Descarga productos, ventas o movimientos para analisis externo.
         </p>
       </div>
@@ -74,7 +74,7 @@ function ExportOption({
   return (
     <div className="space-y-1">
       <ExportLink allowed={allowed} href={href} label={label} />
-      <p className="text-xs leading-5 text-slate-500">{description}</p>
+      <p className="text-xs leading-5 text-text-muted">{description}</p>
     </div>
   );
 }

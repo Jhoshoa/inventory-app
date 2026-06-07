@@ -23,9 +23,9 @@ test("owner sees export links", async ({ context, page }) => {
   await expect(
     main.getByRole("link", { name: "Movimientos", exact: true }),
   ).toHaveAttribute("href", /\/api\/exports\/stock-movements/);
-  await expect(main.getByRole("link", { name: "Caja" })).toHaveAttribute(
+  await expect(main.getByRole("link", { name: "Caja", exact: true })).toHaveAttribute(
     "href",
-    /\/api\/exports\/cash-movements\?from=.*T00%3A00%3A00\.000Z&to=.*T23%3A59%3A59\.999Z/,
+    /\/api\/exports\/cash-movements\?from_date=\d{4}-\d{2}-\d{2}&to_date=\d{4}-\d{2}-\d{2}/,
   );
 });
 

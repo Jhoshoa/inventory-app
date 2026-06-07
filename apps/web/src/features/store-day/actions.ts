@@ -1,7 +1,6 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
 import { apiRequest } from "@/lib/api/client";
 import { getAuthToken } from "@/lib/auth/session";
 import { moneyValue, noteValue, validateCashMovementType, validateMoneyAmount, validateStoreDayNote } from "./schemas";
@@ -29,7 +28,7 @@ export async function openStoreDayAction(
   if (!result.ok) return { ok: false, message: result.error.message, fieldErrors: {} };
 
   revalidateOperationalPaths();
-  redirect("/dashboard/settings");
+  return { ok: true, message: "Tienda abierta", storeDay: result.data, fieldErrors: {} };
 }
 
 export async function closeStoreDayAction(
@@ -56,7 +55,7 @@ export async function closeStoreDayAction(
   if (!result.ok) return { ok: false, message: result.error.message, fieldErrors: {} };
 
   revalidateOperationalPaths();
-  redirect("/dashboard/settings");
+  return { ok: true, message: "Tienda cerrada", storeDay: result.data, fieldErrors: {} };
 }
 
 export async function reopenStoreDayAction(
@@ -76,7 +75,7 @@ export async function reopenStoreDayAction(
   if (!result.ok) return { ok: false, message: result.error.message, fieldErrors: {} };
 
   revalidateOperationalPaths();
-  redirect("/dashboard/settings");
+  return { ok: true, message: "Tienda reabierta", storeDay: result.data, fieldErrors: {} };
 }
 
 export async function createCashMovementAction(

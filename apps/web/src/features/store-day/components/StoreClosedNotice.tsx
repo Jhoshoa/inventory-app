@@ -4,13 +4,13 @@ import { Button } from "@/components/ui/Button";
 
 export function StoreClosedNotice() {
   return (
-    <div className="rounded-lg border border-amber-200 bg-amber-50 p-5 text-amber-950">
+    <div className="rounded-lg border border-status-warningBorder bg-status-warningBg p-5 text-status-warning shadow-panel">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex gap-3">
-          <LockKeyhole className="mt-0.5 h-5 w-5 text-amber-700" aria-hidden={true} />
+          <LockKeyhole className="mt-0.5 h-5 w-5" aria-hidden={true} />
           <div>
             <h2 className="text-base font-semibold">Tienda cerrada</h2>
-            <p className="mt-1 text-sm text-amber-800">
+            <p className="mt-1 text-sm">
               Un owner debe abrir la jornada desde el dashboard para registrar ventas.
             </p>
           </div>

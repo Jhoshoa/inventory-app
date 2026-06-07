@@ -63,7 +63,7 @@ export function QrPreviewDialog({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-text-strong/40 p-4"
       role="presentation"
     >
       <DialogSurface
@@ -74,16 +74,16 @@ export function QrPreviewDialog({
       >
         <div className="flex items-start justify-between gap-4">
           <div>
-            <h2 id="qr-preview-title" className="text-lg font-semibold text-slate-950">
+            <h2 id="qr-preview-title" className="text-lg font-semibold text-text-strong">
               QR del producto
             </h2>
             {productName ? (
-              <p className="mt-1 text-sm text-slate-600">{productName}</p>
+              <p className="mt-1 text-sm text-text-muted">{productName}</p>
             ) : null}
           </div>
           <button
             type="button"
-            className="inline-flex h-8 w-8 items-center justify-center rounded-md text-slate-500 hover:bg-slate-100 hover:text-slate-950 focus:outline-none focus:ring-2 focus:ring-slate-400"
+            className="inline-flex h-8 w-8 items-center justify-center rounded-md text-text-muted hover:bg-app-surface-muted hover:text-text-strong focus:outline-none focus:ring-2 focus:ring-focus"
             onClick={onClose}
             aria-label="Cerrar"
           >
@@ -91,9 +91,9 @@ export function QrPreviewDialog({
           </button>
         </div>
 
-        <div className="flex min-h-72 flex-col items-center justify-center rounded-lg border border-slate-200 bg-slate-50 p-6">
+        <div className="flex min-h-72 flex-col items-center justify-center rounded-lg border border-app-border bg-app-surface-muted p-6">
           {isGenerating ? (
-            <div className="flex items-center gap-2 text-sm text-slate-600">
+            <div className="flex items-center gap-2 text-sm text-text-muted">
               <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
               Generando QR...
             </div>
@@ -101,16 +101,16 @@ export function QrPreviewDialog({
             <img
               src={previewSrc}
               alt={`QR para ${normalizedCode}`}
-              className="h-60 w-60 rounded-md bg-white p-3"
+              className="h-60 w-60 rounded-md bg-app-surface p-3"
             />
           ) : (
-            <p className="text-sm text-slate-600">
+            <p className="text-sm text-text-muted">
               {error ?? "Ingresa un codigo escaneable para generar el QR."}
             </p>
           )}
         </div>
 
-        <div className="rounded-md bg-slate-100 px-3 py-2 font-mono text-sm text-slate-800">
+        <div className="rounded-md bg-app-surface-muted px-3 py-2 font-mono text-sm text-text-body">
           {normalizedCode || "Sin codigo"}
         </div>
 

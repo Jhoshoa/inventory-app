@@ -33,8 +33,8 @@ export function StoreDayCloseReportView({ report }: { report: StoreDayCloseRepor
         />
       </div>
 
-      <section className="rounded-lg border border-slate-200 bg-white p-4">
-        <h2 className="text-base font-semibold text-slate-950">Detalle de jornada</h2>
+      <section className="rounded-lg border border-app-border bg-app-surface p-4 shadow-panel">
+        <h2 className="text-base font-semibold text-text-strong">Detalle de jornada</h2>
         <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2 xl:grid-cols-3">
           <Item label="Fecha operativa" value={formatBusinessDate(data.business_date)} />
           <Item label="Cerrada" value={formatDateTime(data.closed_at)} />
@@ -59,10 +59,10 @@ export function StoreDayCloseReportView({ report }: { report: StoreDayCloseRepor
 
 function Metric({ label, value, help }: { label: string; value: string; help?: string }) {
   return (
-    <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
-      <p className="text-sm font-medium text-slate-600">{label}</p>
-      <p className="mt-3 text-2xl font-semibold text-slate-950">{value}</p>
-      {help ? <p className="mt-2 text-xs leading-5 text-slate-500">{help}</p> : null}
+    <div className="rounded-lg border border-app-border bg-app-surface p-4 shadow-panel">
+      <p className="text-sm font-medium text-text-muted">{label}</p>
+      <p className="mt-3 text-2xl font-semibold text-text-strong">{value}</p>
+      {help ? <p className="mt-2 text-xs leading-5 text-text-muted">{help}</p> : null}
     </div>
   );
 }
@@ -70,8 +70,8 @@ function Metric({ label, value, help }: { label: string; value: string; help?: s
 function Item({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <dt className="text-xs font-medium uppercase text-slate-500">{label}</dt>
-      <dd className="mt-1 font-medium text-slate-950">{value}</dd>
+      <dt className="text-xs font-medium uppercase text-text-muted">{label}</dt>
+      <dd className="mt-1 font-medium text-text-strong">{value}</dd>
     </div>
   );
 }

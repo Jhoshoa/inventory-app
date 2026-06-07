@@ -1,5 +1,15 @@
 import Link from "next/link";
-import { AlertTriangle, Boxes, ReceiptText, TrendingUp } from "lucide-react";
+import {
+  AlertTriangle,
+  ArrowRight,
+  Boxes,
+  CircleDollarSign,
+  PackageCheck,
+  ReceiptText,
+  TrendingUp,
+} from "lucide-react";
+import { PageHeader } from "@/components/layout/PageHeader";
+import { PageSection } from "@/components/layout/PageSection";
 import { Alert } from "@/components/ui/Alert";
 import { Badge } from "@/components/ui/Badge";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -14,7 +24,13 @@ import type { UserRole } from "@/lib/auth/types";
 import { StoreDayStatusPanel } from "@/features/store-day/components/StoreDayStatusPanel";
 import type { StoreDayResult } from "@/features/store-day/types";
 import { DashboardScopeTabs } from "./DashboardScopeTabs";
-import type { DashboardSale, DashboardScope, DashboardSummaryResult } from "../types";
+import type {
+  DashboardExchangeRate,
+  DashboardSale,
+  DashboardScope,
+  DashboardSummary,
+  DashboardSummaryResult,
+} from "../types";
 
 export function DashboardOverview({
   summary,
@@ -29,12 +45,12 @@ export function DashboardOverview({
 }) {
   if (!summary.ok) {
     return (
-      <section className="space-y-6">
-        <PageTitle />
+      <PageSection>
+        <DashboardHeader scope={scope} />
         <Alert variant="error">
           No se pudo cargar el dashboard: {summary.error.message}
         </Alert>
-      </section>
+      </PageSection>
     );
   }
 
@@ -45,119 +61,199 @@ export function DashboardOverview({
     data.latest_sales.length === 0;
 
   return (
-    <section className="space-y-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <PageTitle />
-        <DashboardScopeTabs scope={data.scope ?? scope} />
-      </div>
+    <PageSection className="space-y-6">
+      <DashboardHeader scope={scope} />
       {storeDay ? <StoreDaySection storeDay={storeDay} role={role} /> : null}
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <MetricCard
-          label={data.scope === "month" ? "Ventas del mes" : "Ventas hoy"}
-          value={formatCurrency(data.sales_today_total)}
-          icon={TrendingUp}
-        />
-        <MetricCard
-          label="Cantidad ventas"
-          value={data.sales_today_count.toString()}
-          icon={ReceiptText}
-        />
-        <MetricCard
-          label="Productos"
-          value={data.products_total.toString()}
-          icon={Boxes}
-        />
-        <MetricCard
-          label="Stock bajo"
-          value={data.low_stock_count.toString()}
-          icon={AlertTriangle}
-          tone={data.low_stock_count > 0 ? "warning" : "default"}
-        />
-      </div>
+
+      <MetricGrid data={data} />
 
       {isEmpty ? (
         <EmptyState
           title="Tu tienda aun no tiene actividad"
           description="Agrega productos para comenzar a vender y ver metricas reales del negocio."
-          actionLabel="Ir a productos en Sprint 2"
+          actionLabel="Ir a productos"
         />
       ) : null}
 
-      <div className="grid gap-6 xl:grid-cols-2">
-        <section className="space-y-3">
-          <h2 className="text-base font-semibold text-slate-950">
-            Ultimas ventas
-          </h2>
-          <Table>
-            <thead>
-              <tr>
-                <TableHeaderCell>Producto</TableHeaderCell>
-                <TableHeaderCell>Cantidad</TableHeaderCell>
-                <TableHeaderCell>Metodo</TableHeaderCell>
-                <TableHeaderCell>Total</TableHeaderCell>
-                <TableHeaderCell>Fecha</TableHeaderCell>
-              </tr>
-            </thead>
-            <tbody>
-              {data.latest_sales.length === 0 ? (
-                <TableEmptyRow colSpan={5}>Sin ventas recientes</TableEmptyRow>
-              ) : (
-                data.latest_sales.map((sale) => (
-                  <tr key={sale.id} className="border-t border-slate-100">
-                    <TableCell>{formatSaleProducts(sale)}</TableCell>
-                    <TableCell>{saleQuantity(sale)}</TableCell>
-                    <TableCell>{sale.payment_method ?? "Sin metodo"}</TableCell>
-                    <TableCell>{formatCurrency(sale.total)}</TableCell>
-                    <TableCell>
-                      {sale.created_at ? formatDate(sale.created_at) : "Sin fecha"}
-                    </TableCell>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </Table>
-        </section>
-
-        <section className="space-y-3">
-          <div className="flex items-center justify-between gap-3">
-            <h2 className="text-base font-semibold text-slate-950">
-              Productos con stock bajo
-            </h2>
-            <Link
-              href="/dashboard/products"
-              className="text-sm font-medium text-slate-700 underline"
-            >
-              Ver productos
-            </Link>
-          </div>
-          <Table>
-            <thead>
-              <tr>
-                <TableHeaderCell>Producto</TableHeaderCell>
-                <TableHeaderCell>Stock</TableHeaderCell>
-                <TableHeaderCell>Estado</TableHeaderCell>
-              </tr>
-            </thead>
-            <tbody>
-              {data.low_stock_products.length === 0 ? (
-                <TableEmptyRow colSpan={3}>Sin alertas de stock</TableEmptyRow>
-              ) : (
-                data.low_stock_products.map((product) => (
-                  <tr key={product.id} className="border-t border-slate-100">
-                    <TableCell>{product.name}</TableCell>
-                    <TableCell>{product.stock}</TableCell>
-                    <TableCell>
-                      <Badge variant={product.stock <= 0 ? "danger" : "warning"}>
-                        {product.stock <= 0 ? "Sin stock" : "Bajo"}
-                      </Badge>
-                    </TableCell>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </Table>
-        </section>
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,1.3fr)_minmax(360px,0.7fr)]">
+        <LatestSalesPanel sales={data.latest_sales} />
+        <div className="space-y-6">
+          <LowStockPanel data={data} />
+          <ExchangeRatesPanel rates={data.exchange_rates} />
+        </div>
       </div>
+    </PageSection>
+  );
+}
+
+function DashboardHeader({
+  scope,
+}: {
+  scope: DashboardScope;
+}) {
+  return (
+    <PageHeader
+      eyebrow="Operacion"
+      title="Dashboard"
+      description="Resumen operativo de ventas, productos y alertas de inventario."
+      actions={<DashboardScopeTabs scope={scope} />}
+    />
+  );
+}
+
+function MetricGrid({ data }: { data: DashboardSummary }) {
+  return (
+    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <MetricCard
+        label={data.scope === "month" ? "Ventas del mes" : "Ventas hoy"}
+        value={formatCurrency(data.sales_today_total)}
+        helper={periodLabel(data)}
+        icon={TrendingUp}
+        tone="brand"
+      />
+      <MetricCard
+        label="Cantidad ventas"
+        value={data.sales_today_count.toString()}
+        helper={data.sales_today_count === 1 ? "Ticket registrado" : "Tickets registrados"}
+        icon={ReceiptText}
+      />
+      <MetricCard
+        label="Productos"
+        value={data.products_total.toString()}
+        helper={`${data.out_of_stock_count} sin stock`}
+        icon={Boxes}
+        tone={data.out_of_stock_count > 0 ? "warning" : "default"}
+      />
+      <MetricCard
+        label="Stock bajo"
+        value={data.low_stock_count.toString()}
+        helper={data.low_stock_count > 0 ? "Requiere reposicion" : "Inventario estable"}
+        icon={AlertTriangle}
+        tone={data.low_stock_count > 0 ? "warning" : "success"}
+      />
+    </div>
+  );
+}
+
+function LatestSalesPanel({ sales }: { sales: DashboardSale[] }) {
+  return (
+    <section className="space-y-3">
+      <SectionHeading
+        title="Ultimas ventas"
+        description="Actividad reciente del punto de venta."
+        icon={ReceiptText}
+      />
+      <Table>
+        <thead>
+          <tr>
+            <TableHeaderCell>Producto</TableHeaderCell>
+            <TableHeaderCell>Cantidad</TableHeaderCell>
+            <TableHeaderCell>Metodo</TableHeaderCell>
+            <TableHeaderCell>Total</TableHeaderCell>
+            <TableHeaderCell>Fecha</TableHeaderCell>
+          </tr>
+        </thead>
+        <tbody>
+          {sales.length === 0 ? (
+            <TableEmptyRow colSpan={5}>Sin ventas recientes</TableEmptyRow>
+          ) : (
+            sales.map((sale) => (
+              <tr key={sale.id} className="hover:bg-app-surface-muted">
+                <TableCell className="min-w-52 font-medium text-text-strong">
+                  {formatSaleProducts(sale)}
+                </TableCell>
+                <TableCell>{saleQuantity(sale)}</TableCell>
+                <TableCell>{sale.payment_method ?? "Sin metodo"}</TableCell>
+                <TableCell className="font-semibold text-text-strong">
+                  {formatCurrency(sale.total)}
+                </TableCell>
+                <TableCell>
+                  {sale.created_at ? formatDate(sale.created_at) : "Sin fecha"}
+                </TableCell>
+              </tr>
+            ))
+          )}
+        </tbody>
+      </Table>
+    </section>
+  );
+}
+
+function LowStockPanel({ data }: { data: DashboardSummary }) {
+  return (
+    <section className="space-y-3">
+      <SectionHeading
+        title="Stock bajo"
+        description={`${data.low_stock_count} productos bajo minimo`}
+        icon={PackageCheck}
+        action={
+          <Link
+            href="/dashboard/products"
+            className="inline-flex items-center gap-1 text-sm font-medium text-brand-700 hover:text-brand-800"
+          >
+            Ver productos
+            <ArrowRight className="h-4 w-4" aria-hidden />
+          </Link>
+        }
+      />
+      <Table>
+        <thead>
+          <tr>
+            <TableHeaderCell>Producto</TableHeaderCell>
+            <TableHeaderCell>Stock</TableHeaderCell>
+            <TableHeaderCell>Estado</TableHeaderCell>
+          </tr>
+        </thead>
+        <tbody>
+          {data.low_stock_products.length === 0 ? (
+            <TableEmptyRow colSpan={3}>Sin alertas de stock</TableEmptyRow>
+          ) : (
+            data.low_stock_products.map((product) => (
+              <tr key={product.id} className="hover:bg-app-surface-muted">
+                <TableCell className="font-medium text-text-strong">{product.name}</TableCell>
+                <TableCell>{product.stock}</TableCell>
+                <TableCell>
+                  <Badge variant={product.stock <= 0 ? "danger" : "warning"}>
+                    {product.stock <= 0 ? "Sin stock" : "Bajo"}
+                  </Badge>
+                </TableCell>
+              </tr>
+            ))
+          )}
+        </tbody>
+      </Table>
+    </section>
+  );
+}
+
+function ExchangeRatesPanel({ rates }: { rates: DashboardExchangeRate[] }) {
+  return (
+    <section className="rounded-lg border border-app-border bg-app-surface p-4 shadow-panel">
+      <SectionHeading
+        title="Tasas"
+        description="Referencia disponible para operaciones."
+        icon={CircleDollarSign}
+      />
+      {rates.length === 0 ? (
+        <p className="mt-4 text-sm text-text-muted">Sin tasas registradas.</p>
+      ) : (
+        <div className="mt-4 grid gap-3">
+          {rates.map((rate, index) => (
+            <div
+              key={exchangeRateKey(rate, index)}
+              className="flex items-center justify-between gap-3 rounded-md border border-app-border bg-app-surface-muted px-3 py-2"
+            >
+              <div>
+                <p className="text-sm font-semibold text-text-strong">{rate.source}</p>
+                <p className="text-xs text-text-muted">Compra / venta</p>
+              </div>
+              <p className="text-sm font-semibold text-text-strong">
+                {rate.buy_price ?? "N/A"} / {rate.sell_price ?? "N/A"}
+              </p>
+            </div>
+          ))}
+        </div>
+      )}
     </section>
   );
 }
@@ -180,6 +276,10 @@ function StoreDaySection({
   return <StoreDayStatusPanel storeDay={storeDay.data} role={role} actions="link" />;
 }
 
+function exchangeRateKey(rate: DashboardExchangeRate, index: number) {
+  return rate.id || `${rate.source}-${rate.buy_price ?? "buy"}-${rate.sell_price ?? "sell"}-${index}`;
+}
+
 function formatSaleProducts(sale: DashboardSale) {
   if (!sale.items || sale.items.length === 0) return "Sin producto";
 
@@ -199,42 +299,82 @@ function formatDate(value: string) {
   }).format(new Date(value));
 }
 
-function PageTitle() {
-  return (
-    <div>
-      <h1 className="text-2xl font-semibold tracking-normal text-slate-950">
-        Dashboard
-      </h1>
-      <p className="mt-1 text-sm text-slate-600">
-        Resumen operativo de ventas, productos y alertas de inventario.
-      </p>
-    </div>
-  );
-}
-
 function MetricCard({
   label,
   value,
+  helper,
   icon: Icon,
   tone = "default",
 }: {
   label: string;
   value: string;
+  helper: string;
   icon: React.ComponentType<{ className?: string; "aria-hidden"?: boolean }>;
-  tone?: "default" | "warning";
+  tone?: "brand" | "default" | "success" | "warning";
 }) {
+  const toneClasses = {
+    brand: "border-brand-100 bg-brand-50 text-brand-700",
+    default: "border-app-border bg-app-surface-muted text-text-muted",
+    success: "border-status-successBorder bg-status-successBg text-status-success",
+    warning: "border-status-warningBorder bg-status-warningBg text-status-warning",
+  }[tone];
+
   return (
-    <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+    <div className="rounded-lg border border-app-border bg-app-surface p-4 shadow-panel">
       <div className="flex items-center justify-between gap-3">
-        <p className="text-sm font-medium text-slate-600">{label}</p>
+        <p className="text-sm font-medium text-text-muted">{label}</p>
         <Icon
-          className={`h-4 w-4 ${
-            tone === "warning" ? "text-amber-600" : "text-slate-400"
-          }`}
+          className={`h-9 w-9 rounded-md border p-2 ${toneClasses}`}
           aria-hidden={true}
         />
       </div>
-      <p className="mt-3 text-2xl font-semibold text-slate-950">{value}</p>
+      <p className="mt-3 text-2xl font-semibold text-text-strong">{value}</p>
+      <p className="mt-1 text-xs text-text-muted">{helper}</p>
     </div>
   );
+}
+
+function SectionHeading({
+  action,
+  description,
+  icon: Icon,
+  title,
+}: {
+  action?: React.ReactNode;
+  description: string;
+  icon: React.ComponentType<{ className?: string; "aria-hidden"?: boolean }>;
+  title: string;
+}) {
+  return (
+    <div className="flex items-start justify-between gap-3">
+      <div className="flex min-w-0 items-start gap-3">
+        <Icon className="mt-0.5 h-5 w-5 shrink-0 text-text-muted" aria-hidden />
+        <div className="min-w-0">
+          <h2 className="text-base font-semibold text-text-strong">{title}</h2>
+          <p className="mt-1 text-sm text-text-muted">{description}</p>
+        </div>
+      </div>
+      {action ? <div className="shrink-0">{action}</div> : null}
+    </div>
+  );
+}
+
+function periodLabel(data: DashboardSummary) {
+  if (!data.from_date || !data.to_date) {
+    return data.scope === "month" ? "Mes actual" : "Jornada actual";
+  }
+
+  if (data.from_date === data.to_date) {
+    return formatBusinessDate(data.from_date);
+  }
+
+  return `${formatBusinessDate(data.from_date)} - ${formatBusinessDate(data.to_date)}`;
+}
+
+function formatBusinessDate(value: string) {
+  return new Intl.DateTimeFormat("es-BO", {
+    day: "2-digit",
+    month: "short",
+    timeZone: "UTC",
+  }).format(new Date(`${value}T00:00:00.000Z`));
 }

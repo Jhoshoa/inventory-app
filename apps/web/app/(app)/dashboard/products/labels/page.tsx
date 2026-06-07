@@ -1,6 +1,6 @@
-import Link from "next/link";
+import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
+import { PageHeader } from "@/components/layout/PageHeader";
 import { Alert } from "@/components/ui/Alert";
-import { Button } from "@/components/ui/Button";
 import { ForbiddenState } from "@/components/ui/ForbiddenState";
 import { listProductCategories } from "@/features/product-categories/api";
 import { listProducts } from "@/features/products/api";
@@ -39,19 +39,20 @@ export default async function ProductLabelsPage({
 
   return (
     <section className="space-y-6">
-      <div className="print-hidden flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-normal text-slate-950">
-            Imprimir etiquetas
-          </h1>
-          <p className="mt-1 text-sm text-slate-600">
-            Selecciona productos con codigo escaneable y genera una hoja imprimible.
-          </p>
-        </div>
-        <Button variant="secondary" asChild>
-          <Link href="/dashboard/products">Volver a productos</Link>
-        </Button>
-      </div>
+      <PageHeader
+        className="print-hidden"
+        breadcrumbs={
+          <Breadcrumbs
+            items={[
+              { label: "Dashboard", href: "/dashboard" },
+              { label: "Productos", href: "/dashboard/products" },
+              { label: "Imprimir etiquetas" },
+            ]}
+          />
+        }
+        title="Imprimir etiquetas"
+        description="Selecciona productos con codigo escaneable y genera una hoja imprimible."
+      />
 
       {!products.ok ? (
         <Alert variant="error">

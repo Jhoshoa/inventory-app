@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Download, Plus, Printer, Search, Trash2 } from "lucide-react";
+import { ResponsiveToolbar } from "@/components/layout/ResponsiveToolbar";
 import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -149,11 +150,11 @@ export function ProductLabelPage({
 
   return (
     <div className="space-y-6">
-      <section className="print-hidden space-y-4 rounded-lg border border-slate-200 bg-white p-4">
-        <div className="grid gap-3 lg:grid-cols-[1fr_190px_150px_auto_auto]">
+      <section className="print-hidden space-y-4 rounded-lg border border-app-border bg-app-surface p-4 shadow-panel">
+        <ResponsiveToolbar className="shadow-none lg:grid lg:grid-cols-[minmax(220px,1fr)_190px_150px_auto_auto]">
           <label className="relative block">
             <span className="sr-only">Buscar productos</span>
-            <Search className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-slate-400" aria-hidden />
+            <Search className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-text-muted" aria-hidden />
             <Input
               className="pl-9"
               aria-describedby="product-label-search-help"
@@ -165,8 +166,8 @@ export function ProductLabelPage({
               id="product-label-search-help"
               className={`mt-1 block min-h-4 text-xs ${
                 query.trim() && query.trim().length < MIN_PRODUCT_SEARCH_LENGTH
-                  ? "text-amber-700"
-                  : "text-slate-500"
+                  ? "text-status-warning"
+                  : "text-text-muted"
               }`}
             >
               Escribe al menos {MIN_PRODUCT_SEARCH_LENGTH} caracteres para buscar.
@@ -209,17 +210,17 @@ export function ProductLabelPage({
             <Download className="h-4 w-4" aria-hidden="true" />
             SVG
           </Button>
-        </div>
+        </ResponsiveToolbar>
 
         <div
-          className={`grid gap-4 rounded-lg border border-slate-200 bg-slate-50 p-4 xl:grid-cols-[minmax(0,1fr)_220px] ${
+          className={`grid gap-4 rounded-lg border border-app-border bg-app-surface-muted p-4 xl:grid-cols-[minmax(0,1fr)_220px] ${
             hasSelection ? "" : "opacity-60"
           }`}
         >
           <div className="space-y-4">
             <div className="grid gap-3 md:grid-cols-2">
               <label className="min-w-0 space-y-2">
-                <span className="text-xs font-medium uppercase text-slate-500">Hoja</span>
+                <span className="text-xs font-medium uppercase text-text-muted">Hoja</span>
                 <Select
                   className="w-full truncate"
                   aria-label="Tamano de hoja"
@@ -235,7 +236,7 @@ export function ProductLabelPage({
                 </Select>
               </label>
               <label className="min-w-0 space-y-2">
-                <span className="text-xs font-medium uppercase text-slate-500">Etiqueta</span>
+                <span className="text-xs font-medium uppercase text-text-muted">Etiqueta</span>
                 <Select
                   className="w-full truncate"
                   aria-label="Tamano de etiqueta"
@@ -253,8 +254,8 @@ export function ProductLabelPage({
             </div>
 
             <div>
-              <p className="text-xs font-medium uppercase text-slate-500">Datos visibles</p>
-              <div className="mt-2 grid gap-2 text-sm text-slate-700 sm:grid-cols-3 lg:grid-cols-5">
+              <p className="text-xs font-medium uppercase text-text-muted">Datos visibles</p>
+              <div className="mt-2 grid gap-2 text-sm text-text-body sm:grid-cols-3 lg:grid-cols-5">
                 <LabelToggle
                   label="Nombre"
                   checked={labelSettings.showName}
@@ -289,8 +290,8 @@ export function ProductLabelPage({
             </div>
           </div>
 
-          <div className="rounded-md bg-white p-3 text-sm text-slate-700">
-            <p className="font-medium text-slate-950">Resumen</p>
+          <div className="rounded-md border border-app-border bg-app-surface p-3 text-sm text-text-body">
+            <p className="font-medium text-text-strong">Resumen</p>
             <dl className="mt-2 grid grid-cols-2 gap-x-3 gap-y-1">
               <dt>Hoja</dt>
               <dd className="text-right">{labelSettings.pageSize}</dd>
@@ -316,34 +317,34 @@ export function ProductLabelPage({
         ) : null}
 
         <div className="grid items-start gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(420px,0.9fr)]">
-          <section className="min-h-[260px] overflow-hidden rounded-lg border border-slate-200 bg-white">
-            <div className="border-b border-slate-200 px-4 py-3">
+          <section className="min-h-[260px] overflow-hidden rounded-lg border border-app-border bg-app-surface">
+            <div className="border-b border-app-border px-4 py-3">
               <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between">
                 <div>
-                  <h2 className="text-sm font-semibold text-slate-950">Resultados</h2>
-                  <p className="text-xs text-slate-500">Busca por nombre, SKU o codigo y agrega productos a la seleccion.</p>
+                  <h2 className="text-sm font-semibold text-text-strong">Resultados</h2>
+                  <p className="text-xs text-text-muted">Busca por nombre, SKU o codigo y agrega productos a la seleccion.</p>
                 </div>
-                <span className="min-h-4 text-xs text-slate-500" aria-live="polite">
+                <span className="min-h-4 text-xs text-text-muted" aria-live="polite">
                   {isLoading ? "Actualizando..." : ""}
                 </span>
               </div>
             </div>
             {!hasAppliedSearch ? (
-              <div className="p-6 text-center text-sm text-slate-600">
+              <div className="p-6 text-center text-sm text-text-muted">
                 Escribe al menos {MIN_PRODUCT_SEARCH_LENGTH} caracteres para buscar productos.
               </div>
             ) : products.items.length === 0 ? (
-              <div className="p-6 text-center text-sm text-slate-600">No hay productos para la busqueda actual.</div>
+              <div className="p-6 text-center text-sm text-text-muted">No hay productos para la busqueda actual.</div>
             ) : (
-              <div className="divide-y divide-slate-200">
+              <div className="divide-y divide-app-border">
                 {products.items.map((product) => {
                   const isSelected = Boolean(selected[product.id]);
                   const hasCode = Boolean(product.qr_code?.trim());
                   return (
                     <div key={product.id} className="flex flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
                       <div className="min-w-0">
-                        <p className="truncate font-medium text-slate-950">{product.name}</p>
-                        <p className="truncate text-xs text-slate-500">
+                        <p className="truncate font-medium text-text-strong">{product.name}</p>
+                        <p className="truncate text-xs text-text-muted">
                           SKU: {product.sku || "Sin SKU"} · Codigo: {product.qr_code || "Sin codigo"}
                         </p>
                       </div>
@@ -363,22 +364,22 @@ export function ProductLabelPage({
             )}
           </section>
 
-          <section className="overflow-hidden rounded-lg border border-slate-200 bg-white">
-            <div className="border-b border-slate-200 px-4 py-3">
-              <h2 className="text-sm font-semibold text-slate-950">Seleccionados</h2>
-              <p className="text-xs text-slate-500">{totalLabels} etiquetas en total.</p>
+          <section className="overflow-hidden rounded-lg border border-app-border bg-app-surface">
+            <div className="border-b border-app-border px-4 py-3">
+              <h2 className="text-sm font-semibold text-text-strong">Seleccionados</h2>
+              <p className="text-xs text-text-muted">{totalLabels} etiquetas en total.</p>
             </div>
             {selectedProducts.length === 0 ? (
-              <div className="p-6 text-center text-sm text-slate-600">
+              <div className="p-6 text-center text-sm text-text-muted">
                 Agrega productos desde los resultados para configurar cantidades e imprimir.
               </div>
             ) : (
-              <div className="divide-y divide-slate-200">
+              <div className="divide-y divide-app-border">
                 {selectedProducts.map(({ product, quantity }) => (
                   <div key={product.id} className="grid gap-3 px-4 py-3 sm:grid-cols-[minmax(0,1fr)_96px_auto] sm:items-center">
                     <div className="min-w-0">
-                      <p className="truncate font-medium text-slate-950">{product.name}</p>
-                      <p className="truncate font-mono text-xs text-slate-500">{product.qr_code}</p>
+                      <p className="truncate font-medium text-text-strong">{product.name}</p>
+                      <p className="truncate font-mono text-xs text-text-muted">{product.qr_code}</p>
                     </div>
                     <Input
                       type="number"
@@ -419,7 +420,7 @@ function LabelToggle({
     <label className="flex items-center gap-2">
       <input
         type="checkbox"
-        className="h-4 w-4 rounded border-slate-300"
+        className="h-4 w-4 rounded border-app-borderStrong text-brand-700 focus:ring-focus"
         checked={checked}
         disabled={disabled}
         onChange={(event) => onChange(event.target.checked)}

@@ -5,8 +5,8 @@ test("imports page renders upload entry point", async ({ context, page }) => {
   await addSession(context);
   await page.goto("/dashboard/imports");
 
-  await expect(page.getByRole("heading", { name: "Importaciones" })).toBeVisible();
-  await expect(page.getByRole("heading", { name: "Subir foto" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Import Image" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Upload image" })).toBeVisible();
 });
 
 test("upload photo redirects to import review", async ({ context, page }) => {
@@ -30,7 +30,7 @@ test("upload photo redirects to import review", async ({ context, page }) => {
   });
 
   await page.goto("/dashboard/imports");
-  await page.getByLabel("Foto para importacion").setInputFiles({
+  await page.getByLabel("Imagen para Import Image").setInputFiles({
     name: "lista.png",
     mimeType: "image/png",
     buffer: Buffer.from("fake-image"),
@@ -42,7 +42,7 @@ test("upload photo redirects to import review", async ({ context, page }) => {
         response.url().includes("/api/inventory-imports/from-photo") &&
         response.status() === 201,
     ),
-    page.getByRole("button", { name: "Procesar" }).click(),
+    page.getByRole("button", { name: "Procesar imagen" }).click(),
   ]);
 
   await expect(page).toHaveURL(/\/dashboard\/imports\/import-123$/, { timeout: 15_000 });

@@ -21,7 +21,7 @@ describe("CashMovementsReportControls", () => {
     expect(screen.getByLabelText("Tipo de movimiento de caja")).toHaveValue("expense");
     expect(screen.getByRole("link", { name: /exportar csv/i })).toHaveAttribute(
       "href",
-      "/api/exports/cash-movements?from=2026-05-01T00%3A00%3A00.000Z&to=2026-05-22T23%3A59%3A59.999Z&type=expense",
+      "/api/exports/cash-movements?from_date=2026-05-01&to_date=2026-05-22&type=expense",
     );
   });
 
@@ -38,11 +38,11 @@ describe("CashMovementsReportControls", () => {
 describe("buildCashMovementsExportQuery", () => {
   it("maps page filters to backend export query names", () => {
     expect(buildCashMovementsExportQuery({ from_date: "2026-05-01", to_date: "2026-05-22", type: "cash_in" })).toBe(
-      "from=2026-05-01T00%3A00%3A00.000Z&to=2026-05-22T23%3A59%3A59.999Z&type=cash_in",
+      "from_date=2026-05-01&to_date=2026-05-22&type=cash_in",
     );
   });
 
   it("omits all type from export query", () => {
-    expect(buildCashMovementsExportQuery({ from_date: "2026-05-01", type: "all" })).toBe("from=2026-05-01T00%3A00%3A00.000Z");
+    expect(buildCashMovementsExportQuery({ from_date: "2026-05-01", type: "all" })).toBe("from_date=2026-05-01");
   });
 });

@@ -1,7 +1,8 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
+import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
+import { PageHeader } from "@/components/layout/PageHeader";
+import { PageSection } from "@/components/layout/PageSection";
 import { Alert } from "@/components/ui/Alert";
-import { Button } from "@/components/ui/Button";
 import { ForbiddenState } from "@/components/ui/ForbiddenState";
 import { listProductCategories } from "@/features/product-categories/api";
 import { getProduct } from "@/features/products/api";
@@ -27,25 +28,28 @@ export default async function EditProductPage({
   if (!product.ok && product.error.status === 404) notFound();
 
   return (
-    <section className="space-y-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold text-slate-950">Editar producto</h1>
-          <p className="mt-1 text-sm text-slate-600">
-            Actualiza datos comerciales sin perder auditoria de stock.
-          </p>
-        </div>
-        <Button variant="secondary" asChild>
-          <Link href={`/dashboard/products/${productId}`}>Volver</Link>
-        </Button>
-      </div>
+    <PageSection className="space-y-6">
+      <PageHeader
+        breadcrumbs={
+          <Breadcrumbs
+            items={[
+              { label: "Dashboard", href: "/dashboard" },
+              { label: "Productos", href: "/dashboard/products" },
+              { label: "Detalle", href: `/dashboard/products/${productId}` },
+              { label: "Editar" },
+            ]}
+          />
+        }
+        title="Editar producto"
+        description="Actualiza datos comerciales sin perder auditoria de stock."
+      />
       {!product.ok ? (
         <Alert variant="error">No se pudo cargar el producto: {product.error.message}</Alert>
       ) : (
-        <div className="rounded-lg border border-slate-200 bg-white p-5">
+        <div className="rounded-lg border border-app-border bg-app-surface p-5 shadow-panel">
           <ProductForm mode="edit" product={product.data} categories={categories.ok ? categories.data.items : []} />
         </div>
       )}
-    </section>
+    </PageSection>
   );
 }

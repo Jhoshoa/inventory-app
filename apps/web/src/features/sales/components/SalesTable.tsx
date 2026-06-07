@@ -1,5 +1,7 @@
 import Link from "next/link";
+import { Eye } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { Tooltip } from "@/components/ui/Tooltip";
 import {
   Table,
   TableCell,
@@ -28,7 +30,7 @@ export function SalesTable({ sales }: { sales: Sale[] }) {
           <TableEmptyRow colSpan={6}>Sin ventas registradas</TableEmptyRow>
         ) : (
           sales.map((sale) => (
-            <tr key={sale.id} className="border-t border-slate-100">
+            <tr key={sale.id} className="border-t border-app-border hover:bg-app-surface-muted">
               <TableCell>{formatDate(sale.created_at)}</TableCell>
               <TableCell>
                 <SaleStatusBadge status={sale.status} />
@@ -37,9 +39,13 @@ export function SalesTable({ sales }: { sales: Sale[] }) {
               <TableCell>{sale.items.length}</TableCell>
               <TableCell>{formatCurrency(sale.total)}</TableCell>
               <TableCell>
-                <Button variant="secondary" asChild>
-                  <Link href={`/dashboard/sales/${sale.id}`}>Ver</Link>
-                </Button>
+                <Tooltip content="Ver venta">
+                  <Button variant="icon" asChild>
+                    <Link href={`/dashboard/sales/${sale.id}`} aria-label="Ver venta">
+                      <Eye className="h-4 w-4" aria-hidden="true" />
+                    </Link>
+                  </Button>
+                </Tooltip>
               </TableCell>
             </tr>
           ))

@@ -1,7 +1,7 @@
-import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
+import { PageHeader } from "@/components/layout/PageHeader";
+import { PageSection } from "@/components/layout/PageSection";
 import { Alert } from "@/components/ui/Alert";
-import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ForbiddenState } from "@/components/ui/ForbiddenState";
 import { Pagination } from "@/components/ui/Pagination";
@@ -28,21 +28,20 @@ export default async function CashMovementsPage({
   const movements = await listCashMovements(params);
 
   return (
-    <section className="space-y-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold text-slate-950">Movimientos de caja</h1>
-          <p className="mt-1 text-sm text-slate-600">
-            Entradas, gastos, depositos y retiros operativos por jornada.
-          </p>
-        </div>
-        <Button variant="secondary" asChild>
-          <Link href="/dashboard/reports">
-            <ArrowLeft className="h-4 w-4" aria-hidden />
-            Volver a reportes
-          </Link>
-        </Button>
-      </div>
+    <PageSection className="space-y-6">
+      <PageHeader
+        breadcrumbs={
+          <Breadcrumbs
+            items={[
+              { label: "Dashboard", href: "/dashboard" },
+              { label: "Reportes", href: "/dashboard/reports" },
+              { label: "Movimientos de caja" },
+            ]}
+          />
+        }
+        title="Movimientos de caja"
+        description="Entradas, gastos, depositos y retiros operativos por jornada."
+      />
 
       <CashMovementsReportControls params={params} />
 
@@ -54,7 +53,7 @@ export default async function CashMovementsPage({
           description="Registra movimientos desde Ajustes cuando la tienda este abierta."
         />
       ) : (
-        <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
+        <div className="overflow-hidden rounded-lg border border-app-border bg-app-surface shadow-panel">
           <CashMovementsTable items={movements.data.items} />
           <Pagination
             basePath="/dashboard/reports/cash-movements"
@@ -65,7 +64,7 @@ export default async function CashMovementsPage({
           />
         </div>
       )}
-    </section>
+    </PageSection>
   );
 }
 

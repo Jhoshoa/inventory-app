@@ -1,3 +1,5 @@
+import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
+import { PageHeader } from "@/components/layout/PageHeader";
 import { Alert } from "@/components/ui/Alert";
 import { Badge } from "@/components/ui/Badge";
 import { CollapsibleSection } from "@/components/ui/CollapsibleSection";
@@ -27,18 +29,24 @@ export function SettingsOverview({
 }) {
   return (
     <section className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold text-slate-950">Ajustes</h1>
-        <p className="mt-1 text-sm text-slate-600">
-          Configuracion de tienda, usuarios y permisos.
-        </p>
-      </div>
+      <PageHeader
+        breadcrumbs={
+          <Breadcrumbs
+            items={[
+              { label: "Dashboard", href: "/dashboard" },
+              { label: "Ajustes" },
+            ]}
+          />
+        }
+        title="Ajustes"
+        description="Configuracion de tienda, usuarios y permisos."
+      />
 
-      <div className="grid gap-4 rounded-lg border border-slate-200 bg-white p-4 sm:grid-cols-3">
+      <div className="grid gap-4 rounded-lg border border-app-border bg-app-surface p-4 shadow-panel sm:grid-cols-3">
         <InfoItem label="Usuario" value={session.email} />
         <InfoItem label="Tienda" value={session.storeName} />
         <div>
-          <p className="text-xs font-medium uppercase text-slate-500">Rol</p>
+          <p className="text-xs font-medium uppercase text-text-muted">Rol</p>
           <div className="mt-2">
             <Badge variant={session.role === "owner" ? "success" : "default"}>
               {session.role}
@@ -127,8 +135,8 @@ function StoreDayManagement({
 function InfoItem({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <p className="text-xs font-medium uppercase text-slate-500">{label}</p>
-      <p className="mt-2 text-sm font-medium text-slate-950">{value}</p>
+      <p className="text-xs font-medium uppercase text-text-muted">{label}</p>
+      <p className="mt-2 text-sm font-medium text-text-strong">{value}</p>
     </div>
   );
 }

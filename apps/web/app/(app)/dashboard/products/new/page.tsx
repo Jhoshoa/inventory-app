@@ -1,5 +1,6 @@
-import Link from "next/link";
-import { Button } from "@/components/ui/Button";
+import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
+import { PageHeader } from "@/components/layout/PageHeader";
+import { PageSection } from "@/components/layout/PageSection";
 import { ForbiddenState } from "@/components/ui/ForbiddenState";
 import { listProductCategories } from "@/features/product-categories/api";
 import { ProductForm } from "@/features/products/components/ProductForm";
@@ -14,21 +15,23 @@ export default async function NewProductPage() {
   const categories = await listProductCategories();
 
   return (
-    <section className="space-y-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold text-slate-950">Nuevo producto</h1>
-          <p className="mt-1 text-sm text-slate-600">
-            Registra datos basicos, precio y stock inicial.
-          </p>
-        </div>
-        <Button variant="secondary" asChild>
-          <Link href="/dashboard/products">Volver</Link>
-        </Button>
-      </div>
-      <div className="rounded-lg border border-slate-200 bg-white p-5">
+    <PageSection className="space-y-6">
+      <PageHeader
+        breadcrumbs={
+          <Breadcrumbs
+            items={[
+              { label: "Dashboard", href: "/dashboard" },
+              { label: "Productos", href: "/dashboard/products" },
+              { label: "Nuevo producto" },
+            ]}
+          />
+        }
+        title="Nuevo producto"
+        description="Registra datos basicos, precio y stock inicial."
+      />
+      <div className="rounded-lg border border-app-border bg-app-surface p-5 shadow-panel">
         <ProductForm mode="create" categories={categories.ok ? categories.data.items : []} />
       </div>
-    </section>
+    </PageSection>
   );
 }

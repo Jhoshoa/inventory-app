@@ -15,7 +15,7 @@ export default function GlobalError({
 
   return (
     <html lang="es">
-      <body className="bg-slate-50 text-slate-950 antialiased">
+      <body className="bg-app-background text-text-strong antialiased">
         <main className="mx-auto flex min-h-screen max-w-3xl items-center px-4 py-10">
           <ErrorState
             title="La app encontro un error"

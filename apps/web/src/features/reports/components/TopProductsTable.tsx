@@ -10,7 +10,7 @@ import type { TopProduct } from "../types";
 export function TopProductsTable({ products }: { products: TopProduct[] }) {
   return (
     <section className="space-y-3">
-      <h2 className="text-base font-semibold text-slate-950">Productos destacados</h2>
+      <h2 className="text-base font-semibold text-text-strong">Productos destacados</h2>
       <Table>
         <thead>
           <tr>
@@ -25,7 +25,7 @@ export function TopProductsTable({ products }: { products: TopProduct[] }) {
             <TableEmptyRow colSpan={4}>Sin productos vendidos</TableEmptyRow>
           ) : (
             products.map((product, index) => (
-              <tr key={product.product_id} className="border-t border-slate-100">
+              <tr key={product.product_id} className="border-t border-app-border">
                 <TableCell>{index + 1}</TableCell>
                 <TableCell>{product.product_name}</TableCell>
                 <TableCell>{product.quantity}</TableCell>

@@ -40,12 +40,12 @@ function MetricCard({
   icon: React.ComponentType<{ className?: string; "aria-hidden"?: boolean }>;
 }) {
   return (
-    <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+    <div className="rounded-lg border border-app-border bg-app-surface p-4 shadow-panel">
       <div className="flex items-center justify-between gap-3">
-        <p className="text-sm font-medium text-slate-600">{label}</p>
-        <Icon className="h-4 w-4 text-slate-400" aria-hidden={true} />
+        <p className="text-sm font-medium text-text-muted">{label}</p>
+        <Icon className="h-4 w-4 text-text-muted" aria-hidden={true} />
       </div>
-      <p className="mt-3 text-2xl font-semibold text-slate-950">{value}</p>
+      <p className="mt-3 text-2xl font-semibold text-text-strong">{value}</p>
     </div>
   );
 }

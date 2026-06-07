@@ -1,5 +1,6 @@
-import Link from "next/link";
-import { Button } from "@/components/ui/Button";
+import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
+import { PageHeader } from "@/components/layout/PageHeader";
+import { PageSection } from "@/components/layout/PageSection";
 import { ForbiddenState } from "@/components/ui/ForbiddenState";
 import {
   Table,
@@ -31,30 +32,33 @@ export default async function StoreDayCloseReportPage({
   ]);
 
   return (
-    <section className="space-y-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold text-slate-950">Reporte de cierre</h1>
-          <p className="mt-1 text-sm text-slate-600">
-            Snapshot operativo de ventas y caja de la jornada.
-          </p>
-        </div>
-        <Button variant="secondary" asChild>
-          <Link href="/dashboard/reports/store-days">Ver cierres</Link>
-        </Button>
-      </div>
+    <PageSection className="space-y-6">
+      <PageHeader
+        breadcrumbs={
+          <Breadcrumbs
+            items={[
+              { label: "Dashboard", href: "/dashboard" },
+              { label: "Reportes", href: "/dashboard/reports" },
+              { label: "Cierres diarios", href: "/dashboard/reports/store-days" },
+              { label: "Reporte de cierre" },
+            ]}
+          />
+        }
+        title="Reporte de cierre"
+        description="Snapshot operativo de ventas y caja de la jornada."
+      />
 
       <StoreDayCloseReportView report={report} />
       <CashMovementsSection movements={cashMovements.ok ? cashMovements.data.items : []} />
-    </section>
+    </PageSection>
   );
 }
 
 function CashMovementsSection({ movements }: { movements: CashMovement[] }) {
   return (
-    <section className="rounded-lg border border-slate-200 bg-white p-4">
-      <h2 className="text-base font-semibold text-slate-950">Libro de caja</h2>
-      <div className="mt-4 overflow-hidden rounded-lg border border-slate-200">
+    <section className="rounded-lg border border-app-border bg-app-surface p-4 shadow-panel">
+      <h2 className="text-base font-semibold text-text-strong">Libro de caja</h2>
+      <div className="mt-4 overflow-hidden rounded-lg border border-app-border">
         <Table>
           <thead>
             <tr>
@@ -69,10 +73,10 @@ function CashMovementsSection({ movements }: { movements: CashMovement[] }) {
               <TableEmptyRow colSpan={4}>Sin movimientos de caja</TableEmptyRow>
             ) : (
               movements.map((movement) => (
-                <tr key={movement.id} className="border-t border-slate-100">
+                <tr key={movement.id} className="border-t border-app-border">
                   <TableCell>{formatDateTime(movement.occurred_at)}</TableCell>
                   <TableCell>{cashMovementLabel(movement.movement_type)}</TableCell>
-                  <TableCell className={movement.direction === "in" ? "text-emerald-700" : "text-red-700"}>
+                  <TableCell className={movement.direction === "in" ? "text-status-success" : "text-status-danger"}>
                     {movement.direction === "in" ? "+" : "-"}{formatCurrency(movement.amount)}
                   </TableCell>
                   <TableCell>{movement.note ?? "Sin nota"}</TableCell>

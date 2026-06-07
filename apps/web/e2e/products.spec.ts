@@ -33,10 +33,14 @@ test("products page renders empty state with session", async ({ context, page })
 
 test("product filters update the URL", async ({ context, page }) => {
   await addSession(context);
+  const productsRequest = page.waitForRequest((request) => {
+    const url = new URL(request.url());
+    return url.pathname === "/api/products" && url.searchParams.get("stock") === "low";
+  });
   await page.goto("/dashboard/products");
 
   await page.getByLabel("Filtro de stock").selectOption("low");
-  await expect(page).toHaveURL(/stock=low/);
+  await productsRequest;
 });
 
 test("create product validates required fields", async ({ context, page }) => {

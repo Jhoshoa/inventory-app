@@ -91,10 +91,16 @@ export function PosProductSearch({
   }
 
   return (
-    <section className="space-y-4">
+    <section className="space-y-4 rounded-lg border border-app-border bg-app-surface p-4 shadow-panel">
+      <div>
+        <h2 className="text-base font-semibold text-text-strong">Buscar productos</h2>
+        <p className="mt-1 text-sm text-text-muted">
+          Escanea un codigo o busca por nombre para agregar al carrito.
+        </p>
+      </div>
       <label className="relative block">
         <span className="sr-only">Buscar producto</span>
-        <Search className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-slate-400" aria-hidden />
+        <Search className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-text-muted" aria-hidden />
         <Input
           ref={inputRef}
           autoFocus
@@ -111,7 +117,7 @@ export function PosProductSearch({
         />
       </label>
       {!query.trim() ? (
-        <div className="rounded-lg border border-dashed border-slate-300 bg-white p-6 text-center text-sm text-slate-600">
+        <div className="rounded-lg border border-dashed border-app-borderStrong bg-app-surface-muted p-6 text-center text-sm text-text-muted">
           Escribe para buscar productos disponibles.
         </div>
       ) : null}

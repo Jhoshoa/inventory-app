@@ -1,6 +1,7 @@
 "use client";
 
 import { Search } from "lucide-react";
+import { ResponsiveToolbar } from "@/components/layout/ResponsiveToolbar";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import type { ProductCategory } from "@/features/product-categories/types";
@@ -30,10 +31,10 @@ export function ProductFilters({
     trimmedQuery.length > 0 && trimmedQuery.length < MIN_PRODUCT_SEARCH_LENGTH;
 
   return (
-    <div className="grid gap-3 rounded-lg border border-slate-200 bg-white p-4 md:grid-cols-[1fr_180px_160px_160px_160px]">
+    <ResponsiveToolbar className="md:grid md:grid-cols-[minmax(220px,1fr)_180px_160px_160px_160px]">
       <label className="relative block">
         <span className="sr-only">Buscar productos</span>
-        <Search className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-slate-400" aria-hidden />
+        <Search className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-text-muted" aria-hidden />
         <Input
           className="pl-9"
           placeholder="Buscar por nombre"
@@ -41,7 +42,7 @@ export function ProductFilters({
           onChange={(event) => onQueryChange(event.target.value)}
         />
         {isSearchPending ? (
-          <span className="mt-1 block text-xs text-slate-500">
+          <span className="mt-1 block text-xs text-text-muted">
             Escribe al menos {MIN_PRODUCT_SEARCH_LENGTH} caracteres para buscar.
           </span>
         ) : null}
@@ -97,6 +98,6 @@ export function ProductFilters({
         <option value="asc">Ascendente</option>
         <option value="desc">Descendente</option>
       </Select>
-    </div>
+    </ResponsiveToolbar>
   );
 }
