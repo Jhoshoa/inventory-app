@@ -139,15 +139,4 @@ store exists -> create product -> create sale
 
 ## Multipart Endpoints
 
-These endpoints use `multipart/form-data`, not JSON:
-
-| Method | Path | Form field |
-|---|---|---|
-| `POST` | `/photos/upload` | `file` |
-| `POST` | `/photos/ocr` | `file` |
-
-PowerShell example:
-
-```powershell
-curl.exe -X POST http://localhost:8000/api/v1/photos/upload -F "file=@C:\path\to\image.jpg"
-```
+There are no multipart endpoints in the current MVP API. Product photo upload will be added as a dedicated product feature in a future sprint.

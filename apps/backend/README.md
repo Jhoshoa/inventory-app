@@ -25,7 +25,6 @@ Implemented endpoint groups:
 - `sales`: create, list, get, stock reduction on sale
 - `store`: get and update current store
 - `exchange-rates`: upsert and list rates
-- `photos`: upload metadata and OCR fallback behavior
 - `sync`: push/pull product changes and pull sale updates
 
 ## Setup
@@ -136,7 +135,7 @@ src/
 |-- config/          # Pydantic settings and service config
 |-- domain/          # Entities, value objects, repository interfaces
 |-- application/     # Use cases, DTOs, ports, application exceptions
-|-- infrastructure/  # SQLAlchemy models/repos, Celery, Cloudinary, OCR, auth
+|-- infrastructure/  # SQLAlchemy models/repos, Celery, Cloudinary, auth
 |-- presentation/    # FastAPI routers, dependencies, middleware
 `-- main.py          # FastAPI app entry point
 ```
