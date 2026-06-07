@@ -1,6 +1,8 @@
+import { PageSection } from "@/components/layout/PageSection";
+
 export default function LoadingReports() {
   return (
-    <section className="space-y-6">
+    <PageSection className="space-y-6">
       <div className="h-16 rounded-lg bg-app-surface-muted" />
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {Array.from({ length: 4 }).map((_, index) => (
@@ -11,6 +13,6 @@ export default function LoadingReports() {
         <div className="h-72 rounded-lg bg-app-surface-muted" />
         <div className="h-72 rounded-lg bg-app-surface-muted" />
       </div>
-    </section>
+    </PageSection>
   );
 }

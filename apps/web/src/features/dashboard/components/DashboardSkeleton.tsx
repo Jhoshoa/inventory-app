@@ -1,6 +1,8 @@
+import { PageSection } from "@/components/layout/PageSection";
+
 export function DashboardSkeleton() {
   return (
-    <section className="space-y-6" aria-label="Cargando dashboard">
+    <PageSection className="space-y-6" aria-label="Cargando dashboard">
       <div className="space-y-2">
         <div className="h-3 w-24 animate-pulse rounded bg-app-borderStrong" />
         <div className="h-8 w-full max-w-xs animate-pulse rounded-md bg-app-border" />
@@ -21,6 +23,6 @@ export function DashboardSkeleton() {
           <div className="h-40 animate-pulse rounded-lg border border-app-border bg-app-surface shadow-panel" />
         </div>
       </div>
-    </section>
+    </PageSection>
   );
 }

@@ -1,5 +1,6 @@
 import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
 import { PageHeader } from "@/components/layout/PageHeader";
+import { PageSection } from "@/components/layout/PageSection";
 import { Alert } from "@/components/ui/Alert";
 import { Badge } from "@/components/ui/Badge";
 import { CollapsibleSection } from "@/components/ui/CollapsibleSection";
@@ -28,7 +29,7 @@ export function SettingsOverview({
   productCategories?: ProductCategoryListResult;
 }) {
   return (
-    <section className="space-y-6">
+    <PageSection className="space-y-6">
       <PageHeader
         breadcrumbs={
           <Breadcrumbs
@@ -77,20 +78,20 @@ export function SettingsOverview({
         description="Apertura y cierre de la jornada de ventas."
       >
         <div className="space-y-3">
-        {storeDay ? (
-          <StoreDayManagement
-            storeDay={storeDay}
-            role={session.role}
-            closingPreview={closingPreview}
-            cashMovements={cashMovements}
-          />
-        ) : null}
-        {storeDayEvents ? (
-          <StoreDayEventTimeline
-            events={storeDayEvents}
-            timezone={storeDay?.ok ? storeDay.data.timezone : undefined}
-          />
-        ) : null}
+          {storeDay ? (
+            <StoreDayManagement
+              storeDay={storeDay}
+              role={session.role}
+              closingPreview={closingPreview}
+              cashMovements={cashMovements}
+            />
+          ) : null}
+          {storeDayEvents ? (
+            <StoreDayEventTimeline
+              events={storeDayEvents}
+              timezone={storeDay?.ok ? storeDay.data.timezone : undefined}
+            />
+          ) : null}
         </div>
       </CollapsibleSection>
 
@@ -98,7 +99,7 @@ export function SettingsOverview({
         title="Gestion de usuarios pendiente"
         description="Invitaciones, cambio de roles y administracion de usuarios quedan para un sprint dedicado."
       />
-    </section>
+    </PageSection>
   );
 }
 

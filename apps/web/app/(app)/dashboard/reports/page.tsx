@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Activity } from "lucide-react";
 import { PageHeader } from "@/components/layout/PageHeader";
+import { PageSection } from "@/components/layout/PageSection";
 import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -27,7 +28,7 @@ export default async function ReportsPage({
   ]);
 
   return (
-    <section className="space-y-6">
+    <PageSection className="space-y-6">
       <PageHeader
         title="Reportes"
         description="Ventas, productos destacados y exportes administrativos."
@@ -81,6 +82,6 @@ export default async function ReportsPage({
       )}
 
       <ExportPanel role={session.role} reportParams={params} />
-    </section>
+    </PageSection>
   );
 }

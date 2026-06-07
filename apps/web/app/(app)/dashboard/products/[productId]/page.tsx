@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { PageSection } from "@/components/layout/PageSection";
 import { Alert } from "@/components/ui/Alert";
 import { getProduct, listProductStockMovements } from "@/features/products/api";
 import { ProductDetail } from "@/features/products/components/ProductDetail";
@@ -20,7 +21,7 @@ export default async function ProductDetailPage({
   if (!product.ok && product.error.status === 404) notFound();
 
   return (
-    <section className="space-y-6">
+    <PageSection className="space-y-6">
       {!product.ok ? (
         <Alert variant="error">No se pudo cargar el producto: {product.error.message}</Alert>
       ) : (
@@ -35,6 +36,6 @@ export default async function ProductDetailPage({
           )}
         </>
       )}
-    </section>
+    </PageSection>
   );
 }

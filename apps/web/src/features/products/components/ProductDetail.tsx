@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
 import { PageHeader } from "@/components/layout/PageHeader";
+import { PageSection } from "@/components/layout/PageSection";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { canAdjustStock, canManageProducts } from "@/lib/auth/permissions";
@@ -12,7 +13,7 @@ import type { Product } from "../types";
 
 export function ProductDetail({ product, role }: { product: Product; role: UserRole }) {
   return (
-    <section className="space-y-6">
+    <PageSection className="space-y-6">
       <PageHeader
         breadcrumbs={
           <Breadcrumbs
@@ -27,14 +28,14 @@ export function ProductDetail({ product, role }: { product: Product; role: UserR
         description="Detalle operativo, codigos y auditoria de stock."
         actions={
           <>
-          {canManageProducts(role) ? (
-            <Button variant="secondary" asChild>
-              <Link href={`/dashboard/products/${product.id}/edit`}>Editar</Link>
-            </Button>
-          ) : null}
-          {canAdjustStock(role) ? (
-            <ProductStockDialog productId={product.id} productName={product.name} />
-          ) : null}
+            {canManageProducts(role) ? (
+              <Button variant="secondary" asChild>
+                <Link href={`/dashboard/products/${product.id}/edit`}>Editar</Link>
+              </Button>
+            ) : null}
+            {canAdjustStock(role) ? (
+              <ProductStockDialog productId={product.id} productName={product.name} />
+            ) : null}
           </>
         }
       />
@@ -70,7 +71,7 @@ export function ProductDetail({ product, role }: { product: Product; role: UserR
           </div>
         </div>
       </div>
-    </section>
+    </PageSection>
   );
 }
 

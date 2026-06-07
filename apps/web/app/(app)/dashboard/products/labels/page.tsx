@@ -1,5 +1,6 @@
 import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
 import { PageHeader } from "@/components/layout/PageHeader";
+import { PageSection } from "@/components/layout/PageSection";
 import { Alert } from "@/components/ui/Alert";
 import { ForbiddenState } from "@/components/ui/ForbiddenState";
 import { listProductCategories } from "@/features/product-categories/api";
@@ -38,7 +39,7 @@ export default async function ProductLabelsPage({
   ]);
 
   return (
-    <section className="space-y-6">
+    <PageSection className="space-y-6">
       <PageHeader
         className="print-hidden"
         breadcrumbs={
@@ -65,6 +66,6 @@ export default async function ProductLabelsPage({
           categories={categories.ok ? categories.data.items : []}
         />
       )}
-    </section>
+    </PageSection>
   );
 }

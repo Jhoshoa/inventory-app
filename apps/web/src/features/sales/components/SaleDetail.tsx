@@ -1,5 +1,6 @@
 import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
 import { PageHeader } from "@/components/layout/PageHeader";
+import { PageSection } from "@/components/layout/PageSection";
 import { SummaryRow } from "@/components/ui/SummaryRow";
 import {
   Table,
@@ -16,7 +17,7 @@ import type { Sale } from "../types";
 
 export function SaleDetail({ sale, role }: { sale: Sale; role: UserRole }) {
   return (
-    <section className="space-y-6">
+    <PageSection className="space-y-6">
       <PageHeader
         breadcrumbs={
           <Breadcrumbs
@@ -72,7 +73,7 @@ export function SaleDetail({ sale, role }: { sale: Sale; role: UserRole }) {
       <div className="ml-auto w-full max-w-sm rounded-lg border border-app-border bg-app-surface p-4 shadow-panel">
         <SummaryRow label="Total" value={formatCurrency(sale.total)} strong />
       </div>
-    </section>
+    </PageSection>
   );
 }
 

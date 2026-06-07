@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { PageSection } from "@/components/layout/PageSection";
 import { Alert } from "@/components/ui/Alert";
 import { getSale } from "@/features/sales/api";
 import { SaleDetail } from "@/features/sales/components/SaleDetail";
@@ -15,12 +16,12 @@ export default async function SaleDetailPage({
   if (!sale.ok && sale.error.status === 404) notFound();
 
   return (
-    <section className="space-y-6">
+    <PageSection className="space-y-6">
       {!sale.ok ? (
         <Alert variant="error">No se pudo cargar la venta: {sale.error.message}</Alert>
       ) : (
         <SaleDetail sale={sale.data} role={session.role} />
       )}
-    </section>
+    </PageSection>
   );
 }
