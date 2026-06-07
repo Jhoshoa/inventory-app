@@ -18,7 +18,7 @@ export function PaymentMethodBreakdown({
   const total = Number(totalSales);
 
   return (
-    <section className="space-y-3">
+    <section className="min-w-0 space-y-3">
       <h2 className="text-base font-semibold text-text-strong">Metodo de pago</h2>
       <Table density="compact">
         <thead>

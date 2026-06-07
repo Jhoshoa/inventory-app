@@ -35,7 +35,7 @@ Crear una linea base visual verificable para las rutas principales del MVP 1, co
 ## Entregables
 
 - Spec Playwright de QA visual: `apps/web/e2e/visual-baseline.spec.ts`.
-- Screenshots generados en `docs/last-features-for-mvp-1/sprint-1-screenshots/`.
+- Screenshots generados como artefactos en `apps/web/test-results/visual-baseline/`.
 - Reporte de ejecucion y hallazgos: `docs/last-features-for-mvp-1/sprint-1-qa-visual-report.md`.
 
 ## Criterios de aceptacion

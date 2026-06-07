@@ -31,7 +31,7 @@ export function ProductFilters({
     trimmedQuery.length > 0 && trimmedQuery.length < MIN_PRODUCT_SEARCH_LENGTH;
 
   return (
-    <ResponsiveToolbar className="md:grid md:grid-cols-[minmax(220px,1fr)_180px_160px_160px_160px]">
+    <ResponsiveToolbar className="xl:grid xl:grid-cols-[minmax(220px,1fr)_180px_160px_160px_160px]">
       <label className="relative block">
         <span className="sr-only">Buscar productos</span>
         <Search className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-text-muted" aria-hidden />

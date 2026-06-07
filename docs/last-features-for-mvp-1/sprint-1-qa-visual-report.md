@@ -11,10 +11,10 @@ Sprint 1 completado para las rutas principales del MVP 1. Se agrego baseline vis
 Directorio:
 
 ```text
-docs/last-features-for-mvp-1/sprint-1-screenshots/
+apps/web/test-results/visual-baseline/
 ```
 
-Total de screenshots generados: 35.
+Total de screenshots generados: 35. Desde Sprint 2.5 estos PNG son artefactos de prueba ignorados por git; `docs` conserva solo planes y reportes.
 
 Cobertura:
 
@@ -68,4 +68,4 @@ Resultado:
 
 - Las tablas siguen siendo scrollables en mobile; Sprint 6 debe decidir cuales conviene convertir a cards operativas.
 - POS y tablas ya pasan baseline visual, pero el refinamiento de uso intensivo queda para Sprint 2 y Sprint 3.
-- El baseline actual usa sesion Playwright y estados fallback cuando no hay backend real con datos sembrados. Para Sprint 9 conviene repetir QA con datos extremos y fixtures realistas.
+- El baseline fue endurecido en Sprint 2.5 con fixtures mockeados para happy path. Para Sprint 9 conviene ampliar esos fixtures con datos extremos.

@@ -10,6 +10,15 @@ import { FieldError } from "@/components/ui/FieldError";
 import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
 import {
+  Table,
+  TableActionGroup,
+  TableCell,
+  TableEmptyRow,
+  TableHeaderCell,
+  TableRow,
+  TableText,
+} from "@/components/ui/Table";
+import {
   createProductCategoryAction,
   deactivateProductCategoryAction,
 } from "../actions";
@@ -125,49 +134,47 @@ export function ProductCategorySettings({ categories }: { categories: ProductCat
         </Button>
       </form>
 
-      <div className="overflow-hidden rounded-lg border border-app-border">
-        <table className="min-w-full divide-y divide-app-border text-sm">
-          <thead className="bg-app-surface-muted text-left text-xs font-semibold uppercase text-text-muted">
-            <tr>
-              <th className="px-4 py-3">Nombre</th>
-              <th className="px-4 py-3">Prefijo SKU</th>
-              <th className="px-4 py-3">Estado</th>
-              <th className="px-4 py-3 text-right">Accion</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-app-border bg-app-surface">
-            {visibleCategories.length === 0 ? (
-              <tr>
-                <td className="px-4 py-6 text-center text-text-muted" colSpan={4}>
-                  Sin categorias configuradas.
-                </td>
-              </tr>
-            ) : (
-              visibleCategories.map((category) => (
-                <tr key={category.id}>
-                  <td className="px-4 py-3 font-medium text-text-strong">{category.name}</td>
-                  <td className="px-4 py-3 text-text-body">{category.sku_prefix}</td>
-                  <td className="px-4 py-3">
-                    <Badge variant={category.is_active ? "success" : "default"}>
-                      {category.is_active ? "Activa" : "Inactiva"}
-                    </Badge>
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    {category.is_active ? (
-                      <form onSubmit={onDeactivateSubmit}>
-                        <input type="hidden" name="category_id" value={category.id} />
+      <Table density="compact">
+        <thead>
+          <tr>
+            <TableHeaderCell>Nombre</TableHeaderCell>
+            <TableHeaderCell>Prefijo SKU</TableHeaderCell>
+            <TableHeaderCell>Estado</TableHeaderCell>
+            <TableHeaderCell align="right">Accion</TableHeaderCell>
+          </tr>
+        </thead>
+        <tbody>
+          {visibleCategories.length === 0 ? (
+            <TableEmptyRow colSpan={4}>Sin categorias configuradas.</TableEmptyRow>
+          ) : (
+            visibleCategories.map((category) => (
+              <TableRow key={category.id} tone={category.is_active ? "default" : "muted"}>
+                <TableCell>
+                  <TableText className="font-medium text-text-strong">{category.name}</TableText>
+                </TableCell>
+                <TableCell className="font-mono text-xs">{category.sku_prefix}</TableCell>
+                <TableCell>
+                  <Badge variant={category.is_active ? "success" : "default"}>
+                    {category.is_active ? "Activa" : "Inactiva"}
+                  </Badge>
+                </TableCell>
+                <TableCell align="right">
+                  {category.is_active ? (
+                    <form onSubmit={onDeactivateSubmit}>
+                      <input type="hidden" name="category_id" value={category.id} />
+                      <TableActionGroup>
                         <Button type="submit" variant="ghost" disabled={deactivatingCategoryId === category.id}>
                           {deactivatingCategoryId === category.id ? "Desactivando..." : "Desactivar"}
                         </Button>
-                      </form>
-                    ) : null}
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+                      </TableActionGroup>
+                    </form>
+                  ) : null}
+                </TableCell>
+              </TableRow>
+            ))
+          )}
+        </tbody>
+      </Table>
     </CollapsibleSection>
   );
 }

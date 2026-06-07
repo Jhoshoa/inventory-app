@@ -3,6 +3,7 @@
 import type { FormEvent } from "react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { PackagePlus } from "lucide-react";
 import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
 import { DialogSurface } from "@/components/ui/Dialog";
@@ -21,9 +22,11 @@ const initialProductActionState: ProductActionState = {
 export function ProductStockDialog({
   productId,
   productName,
+  trigger = "text",
 }: {
   productId: string;
   productName: string;
+  trigger?: "icon" | "text";
 }) {
   const [open, setOpen] = useState(false);
   const [state, setState] = useState<ProductActionState>(initialProductActionState);
@@ -53,9 +56,15 @@ export function ProductStockDialog({
 
   return (
     <>
-      <Button variant="ghost" onClick={() => setOpen(true)}>
-        Ajustar stock
-      </Button>
+      {trigger === "icon" ? (
+        <Button variant="icon" onClick={() => setOpen(true)} aria-label="Ajustar stock">
+          <PackagePlus className="h-4 w-4" aria-hidden="true" />
+        </Button>
+      ) : (
+        <Button variant="ghost" onClick={() => setOpen(true)}>
+          Ajustar stock
+        </Button>
+      )}
       {open ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-text-strong/30 p-4">
           <DialogSurface className="w-full max-w-md">

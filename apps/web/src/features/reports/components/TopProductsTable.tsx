@@ -11,7 +11,7 @@ import type { TopProduct } from "../types";
 
 export function TopProductsTable({ products }: { products: TopProduct[] }) {
   return (
-    <section className="space-y-3">
+    <section className="min-w-0 space-y-3">
       <h2 className="text-base font-semibold text-text-strong">Productos destacados</h2>
       <Table density="compact">
         <thead>

@@ -82,10 +82,14 @@ export function ProductTable({ products, role }: { products: Product[]; role: Us
                     </Tooltip>
                   ) : null}
                   {canAdjustStock(role) ? (
-                    <ProductStockDialog productId={product.id} productName={product.name} />
+                    <Tooltip content="Ajustar stock">
+                      <ProductStockDialog productId={product.id} productName={product.name} trigger="icon" />
+                    </Tooltip>
                   ) : null}
                   {canDeleteProduct(role) ? (
-                    <ProductDeleteDialog productId={product.id} productName={product.name} />
+                    <Tooltip content="Eliminar">
+                      <ProductDeleteDialog productId={product.id} productName={product.name} trigger="icon" />
+                    </Tooltip>
                   ) : null}
                 </TableActionGroup>
               </TableCell>

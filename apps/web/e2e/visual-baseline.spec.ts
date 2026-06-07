@@ -2,10 +2,11 @@ import { expect, test } from "@playwright/test";
 import { mkdirSync } from "node:fs";
 import path from "node:path";
 import { addSession } from "./helpers";
+import { startVisualMockBackend } from "./visual-fixtures";
 
 const evidenceDir = path.resolve(
   process.cwd(),
-  "../../docs/last-features-for-mvp-1/sprint-1-screenshots",
+  "test-results/visual-baseline",
 );
 
 const routes = [
@@ -27,8 +28,15 @@ const viewports = [
 ] as const;
 
 test.describe("Sprint 1 visual baseline", () => {
-  test.beforeAll(() => {
+  let mockBackend: Awaited<ReturnType<typeof startVisualMockBackend>>;
+
+  test.beforeAll(async () => {
     mkdirSync(evidenceDir, { recursive: true });
+    mockBackend = await startVisualMockBackend();
+  });
+
+  test.afterAll(async () => {
+    await mockBackend.close();
   });
 
   for (const viewport of viewports) {
@@ -42,8 +50,18 @@ test.describe("Sprint 1 visual baseline", () => {
         }) => {
           await addSession(context);
           await page.goto(route.path);
+          await page.addStyleTag({
+            content: `
+              [aria-label="Open Next.js Dev Tools"],
+              [data-nextjs-dev-tools-button],
+              nextjs-portal {
+                display: none !important;
+              }
+            `,
+          });
           await expect(page.locator("main")).toBeVisible();
           await expect(page.getByText("Application error")).toHaveCount(0);
+          await expect(page.getByText(/fetch failed/i)).toHaveCount(0);
 
           const visualIssues = await page.evaluate(() => {
             const tolerance = 1;
@@ -71,6 +89,22 @@ test.describe("Sprint 1 visual baseline", () => {
               );
             };
 
+            const hasHorizontalScrollContainer = (element: Element) => {
+              let current: Element | null = element.parentElement;
+
+              while (current && current !== document.body) {
+                const style = window.getComputedStyle(current);
+                const scrollsHorizontally =
+                  ["auto", "scroll"].includes(style.overflowX) &&
+                  current.scrollWidth > current.clientWidth + tolerance;
+
+                if (scrollsHorizontally) return true;
+                current = current.parentElement;
+              }
+
+              return false;
+            };
+
             const selector = [
               "a",
               "button",
@@ -83,6 +117,7 @@ test.describe("Sprint 1 visual baseline", () => {
 
             document.querySelectorAll(selector).forEach((element, index) => {
               if (!isVisible(element)) return;
+              if (hasHorizontalScrollContainer(element)) return;
 
               const rect = element.getBoundingClientRect();
               const leftOverflow = rect.left < -tolerance;
