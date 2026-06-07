@@ -75,9 +75,9 @@ export function DashboardOverview({
         />
       ) : null}
 
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1.3fr)_minmax(360px,0.7fr)]">
+      <div className="grid min-w-0 gap-6 xl:grid-cols-[minmax(0,1.3fr)_minmax(360px,0.7fr)]">
         <LatestSalesPanel sales={data.latest_sales} />
-        <div className="space-y-6">
+        <div className="min-w-0 space-y-6">
           <LowStockPanel data={data} />
           <ExchangeRatesPanel rates={data.exchange_rates} />
         </div>
@@ -137,7 +137,7 @@ function MetricGrid({ data }: { data: DashboardSummary }) {
 
 function LatestSalesPanel({ sales }: { sales: DashboardSale[] }) {
   return (
-    <section className="space-y-3">
+    <section className="min-w-0 space-y-3">
       <SectionHeading
         title="Ultimas ventas"
         description="Actividad reciente del punto de venta."
@@ -181,7 +181,7 @@ function LatestSalesPanel({ sales }: { sales: DashboardSale[] }) {
 
 function LowStockPanel({ data }: { data: DashboardSummary }) {
   return (
-    <section className="space-y-3">
+    <section className="min-w-0 space-y-3">
       <SectionHeading
         title="Stock bajo"
         description={`${data.low_stock_count} productos bajo minimo`}
@@ -346,7 +346,7 @@ function SectionHeading({
   title: string;
 }) {
   return (
-    <div className="flex items-start justify-between gap-3">
+    <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
       <div className="flex min-w-0 items-start gap-3">
         <Icon className="mt-0.5 h-5 w-5 shrink-0 text-text-muted" aria-hidden />
         <div className="min-w-0">

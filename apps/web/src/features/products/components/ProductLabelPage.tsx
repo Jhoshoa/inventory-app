@@ -151,7 +151,7 @@ export function ProductLabelPage({
   return (
     <div className="space-y-6">
       <section className="print-hidden space-y-4 rounded-lg border border-app-border bg-app-surface p-4 shadow-panel">
-        <ResponsiveToolbar className="shadow-none lg:grid lg:grid-cols-[minmax(220px,1fr)_190px_150px_auto_auto]">
+        <ResponsiveToolbar className="shadow-none xl:grid xl:grid-cols-[minmax(220px,1fr)_190px_150px_auto_auto]">
           <label className="relative block">
             <span className="sr-only">Buscar productos</span>
             <Search className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-text-muted" aria-hidden />
