@@ -54,7 +54,7 @@ export function StoreDayStatusPanel({
 
   return (
     <section className="rounded-lg border border-app-border bg-app-surface p-4 shadow-panel">
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+      <div className="flex flex-col gap-4">
         <div className="flex gap-3">
           <div
             className={`flex h-10 w-10 items-center justify-center rounded-md border ${
@@ -148,7 +148,7 @@ function StoreDayActionForm({
   }
 
   return (
-    <div className="min-w-full space-y-3 lg:min-w-80">
+    <div className="w-full min-w-0 space-y-3">
       {isOpen ? <StoreDayClosingPreview preview={closingPreview} /> : null}
       {isOpen ? <CashMovementPanel cashMovements={cashMovements} /> : null}
       <form onSubmit={onSubmit} className="space-y-2">
@@ -315,8 +315,8 @@ function CashMovementRow({ movement }: { movement: CashMovement }) {
   }
 
   return (
-    <div className="flex items-center justify-between gap-2 rounded-md bg-app-surface p-2 text-sm">
-      <div>
+    <div className="flex flex-wrap items-center justify-between gap-2 rounded-md bg-app-surface p-2 text-sm">
+      <div className="min-w-0">
         <p className="font-medium text-text-strong">{cashMovementLabel(movement.movement_type)}</p>
         <p className={movement.direction === "in" ? "text-status-success" : "text-status-danger"}>
           {movement.direction === "in" ? "+" : "-"}{formatCurrency(movement.amount)}

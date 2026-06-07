@@ -60,17 +60,17 @@ class SaleRepository(ISaleRepository):
         self,
         store_id: UUID,
         *,
-        from_date: date | None = None,
-        to_date: date | None = None,
+        start_at: datetime | None = None,
+        end_at: datetime | None = None,
         status: str = "all",
         limit: int = 50,
         offset: int = 0,
     ) -> tuple[list[Sale], int]:
         filters = [SaleModel.store_id == store_id, SaleModel.deleted_at.is_(None)]
-        if from_date is not None:
-            filters.append(SaleModel.business_date >= from_date)
-        if to_date is not None:
-            filters.append(SaleModel.business_date <= to_date)
+        if start_at is not None:
+            filters.append(SaleModel.created_at >= start_at)
+        if end_at is not None:
+            filters.append(SaleModel.created_at < end_at)
         if status != "all":
             filters.append(SaleModel.status == status)
 

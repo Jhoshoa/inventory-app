@@ -39,6 +39,7 @@ export interface TopProduct {
 export interface SalesReport {
   from_date: string;
   to_date: string;
+  first_business_date: string | null;
   total_sales: string;
   sales_count: number;
   items_count: number;

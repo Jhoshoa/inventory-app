@@ -57,8 +57,8 @@ class ListSalesUseCase:
 
         sales, total = await self._repo.list_by_store(
             input.store_id,
-            from_date=date_range.from_date,
-            to_date=date_range.to_date,
+            start_at=date_range.start_at_utc,
+            end_at=date_range.end_at_utc,
             status=input.status,
             limit=input.limit,
             offset=input.offset,

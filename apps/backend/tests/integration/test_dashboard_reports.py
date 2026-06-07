@@ -113,7 +113,7 @@ async def test_sales_report_by_range_groups_and_top_products(client):
     assert data["top_products"][0]["quantity"] == 3
 
 
-async def test_sales_report_clamps_range_to_first_business_date(client):
+async def test_sales_report_rejects_range_starting_before_first_business_date(client):
     product = await client.post("/api/v1/products", json={"name": "Arroz", "price": "12.50", "stock": 20})
     opened_day = await _open_store_day(client)
     opened_date = opened_day["first_business_date"]
@@ -126,17 +126,12 @@ async def test_sales_report_clamps_range_to_first_business_date(client):
     month_start = opened_date[:8] + "01"
     response = await client.get(f"/api/v1/reports/sales?from_date={month_start}&to_date={opened_date}")
 
-    assert response.status_code == 200
-    data = response.json()
-    assert data["from_date"] == opened_date
-    assert data["to_date"] == opened_date
-    assert data["sales_count"] == 1
+    assert response.status_code == 400
 
 
-async def test_sales_report_uses_business_date_not_created_at_hours(client, db_session):
+async def test_sales_report_filters_by_calendar_created_date(client, db_session):
     product = await client.post("/api/v1/products", json={"name": "Arroz", "price": "12.50", "stock": 20})
-    opened_day = await _open_store_day(client)
-    business_date = opened_day["business_date"]
+    await _open_store_day(client)
 
     sale_response = await client.post(
         "/api/v1/sales",
@@ -144,19 +139,58 @@ async def test_sales_report_uses_business_date_not_created_at_hours(client, db_s
     )
     assert sale_response.status_code == 201
 
+    store = await db_session.get(StoreModel, dependencies.DEV_STORE_ID)
+    store.first_business_date = datetime(2026, 5, 21).date()
     await db_session.execute(
         update(SaleModel)
         .where(SaleModel.id == sale_response.json()["id"])
-        .values(created_at=datetime.fromisoformat(f"{business_date}T23:59:59+00:00") + timedelta(days=1))
+        .values(
+            business_date=datetime(2026, 6, 3).date(),
+            created_at=datetime(2026, 6, 7, 16, 0, tzinfo=UTC),
+        )
     )
     await db_session.commit()
 
-    response = await client.get(f"/api/v1/reports/sales?from_date={business_date}&to_date={business_date}")
+    response = await client.get("/api/v1/reports/sales?from_date=2026-06-07&to_date=2026-06-07")
+    business_day_response = await client.get("/api/v1/reports/sales?from_date=2026-06-03&to_date=2026-06-03")
 
     assert response.status_code == 200
     data = response.json()
-    assert data["from_date"] == business_date
-    assert data["to_date"] == business_date
+    assert data["from_date"] == "2026-06-07"
+    assert data["to_date"] == "2026-06-07"
+    assert data["sales_count"] == 1
+    assert business_day_response.status_code == 200
+    assert business_day_response.json()["sales_count"] == 0
+
+
+async def test_sales_report_includes_sales_created_inside_selected_range(client, db_session):
+    product = await client.post("/api/v1/products", json={"name": "Arroz", "price": "12.50", "stock": 20})
+    await _open_store_day(client)
+
+    sale_response = await client.post(
+        "/api/v1/sales",
+        json={"items": [{"product_id": product.json()["id"], "quantity": 1}], "payment_method": "efectivo"},
+    )
+    assert sale_response.status_code == 201
+
+    store = await db_session.get(StoreModel, dependencies.DEV_STORE_ID)
+    store.first_business_date = datetime(2026, 5, 21).date()
+    await db_session.execute(
+        update(SaleModel)
+        .where(SaleModel.id == sale_response.json()["id"])
+        .values(
+            business_date=datetime(2026, 6, 7).date(),
+            created_at=datetime(2026, 6, 3, 18, 0, tzinfo=UTC),
+        )
+    )
+    await db_session.commit()
+
+    response = await client.get("/api/v1/reports/sales?from_date=2026-06-01&to_date=2026-06-04")
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["from_date"] == "2026-06-01"
+    assert data["to_date"] == "2026-06-04"
     assert data["sales_count"] == 1
 
 

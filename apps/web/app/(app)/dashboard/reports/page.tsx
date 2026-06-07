@@ -54,7 +54,10 @@ export default async function ReportsPage({
         }
       />
 
-      <DateRangeFilter params={params} />
+      <DateRangeFilter
+        params={params}
+        firstBusinessDate={report.ok ? report.data.first_business_date : null}
+      />
 
       {!report.ok ? (
         <Alert variant="error">

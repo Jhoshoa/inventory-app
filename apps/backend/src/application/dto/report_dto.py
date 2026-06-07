@@ -21,6 +21,7 @@ class TopProductDTO(BaseModel):
 class SalesReportDTO(BaseModel):
     from_date: date | datetime
     to_date: date | datetime
+    first_business_date: date | None = None
     total_sales: Decimal
     sales_count: int
     items_count: int

@@ -6,6 +6,7 @@ import type { SalesReport } from "../types";
 const report: SalesReport = {
   from_date: "2026-05-01T00:00:00Z",
   to_date: "2026-05-20T23:59:59Z",
+  first_business_date: "2026-05-01",
   total_sales: "120",
   sales_count: 3,
   items_count: 9,

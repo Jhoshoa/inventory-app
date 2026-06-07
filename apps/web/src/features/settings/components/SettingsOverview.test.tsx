@@ -18,7 +18,7 @@ const session: Session = {
 };
 
 describe("SettingsOverview", () => {
-  it("renders session role and permission matrix", () => {
+  it("renders settings as an administrative center", () => {
     render(
       <SettingsOverview
         session={session}
@@ -40,12 +40,32 @@ describe("SettingsOverview", () => {
       />,
     );
 
-    expect(screen.getByText("owner")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Tienda" })).toBeInTheDocument();
+    expect(screen.getByText("Mi tienda")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Usuario actual" })).toBeInTheDocument();
+    expect(screen.getByText("owner@example.com")).toBeInTheDocument();
+    expect(screen.getAllByText("Owner").length).toBeGreaterThan(0);
+    expect(screen.getByText("Permisos")).toBeInTheDocument();
     expect(screen.getByText("Exportar CSV")).toBeInTheDocument();
     expect(screen.getByText("Operacion diaria")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Abrir tienda" })).toBeInTheDocument();
     expect(screen.getByText("Apertura")).toBeInTheDocument();
-    expect(screen.getByText("Gestion de usuarios pendiente")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Gestion de usuarios" })).toBeInTheDocument();
+    expect(screen.getByText("Planificado")).toBeInTheDocument();
+    expect(screen.getByText("Owner tendra acceso")).toBeInTheDocument();
+  });
+
+  it("renders planned users as read-only context for cashiers", () => {
+    render(
+      <SettingsOverview
+        session={{ ...session, role: "cashier" }}
+        storeDay={{ ok: true, data: storeDay }}
+      />,
+    );
+
+    expect(screen.getAllByText("Cashier").length).toBeGreaterThan(0);
+    expect(screen.getByRole("heading", { name: "Gestion de usuarios" })).toBeInTheDocument();
+    expect(screen.getByText("Solo lectura")).toBeInTheDocument();
   });
 });
 

@@ -17,7 +17,14 @@ const permissions = [
 
 export function PermissionMatrix() {
   return (
-    <div className="overflow-hidden rounded-lg border border-app-border">
+    <div className="space-y-3">
+      <div className="rounded-md border border-app-border bg-app-surface-muted px-3 py-2">
+        <p className="text-sm font-medium text-text-strong">Roles operativos del MVP</p>
+        <p className="mt-1 text-xs text-text-muted">
+          Owner administra la tienda; cashier opera ventas y consultas diarias.
+        </p>
+      </div>
+      <div className="overflow-hidden rounded-lg border border-app-border">
       <Table density="compact">
         <thead>
           <tr>
@@ -36,6 +43,7 @@ export function PermissionMatrix() {
           ))}
         </tbody>
       </Table>
+      </div>
     </div>
   );
 }

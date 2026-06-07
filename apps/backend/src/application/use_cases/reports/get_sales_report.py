@@ -44,24 +44,23 @@ class GetSalesReportUseCase:
                 to_date,
                 store.timezone,
                 first_business_date=store.first_business_date,
-                clamp_to_first_business_date=True,
             )
             response_from = date_range.from_date
             response_to = date_range.to_date
-            summary = await self._sale_repo.sales_summary_for_business_date_range(
+            summary = await self._sale_repo.sales_summary_for_range(
                 input.store_id,
-                response_from,
-                response_to,
+                date_range.start_at_utc,
+                date_range.end_at_utc,
             )
-            by_payment_method = await self._sale_repo.totals_by_payment_method_for_business_date_range(
+            by_payment_method = await self._sale_repo.totals_by_payment_method(
                 input.store_id,
-                response_from,
-                response_to,
+                date_range.start_at_utc,
+                date_range.end_at_utc,
             )
-            top_products = await self._sale_repo.top_products_for_business_date_range(
+            top_products = await self._sale_repo.top_products(
                 input.store_id,
-                response_from,
-                response_to,
+                date_range.start_at_utc,
+                date_range.end_at_utc,
                 limit=10,
             )
         elif input.legacy_from or input.legacy_to:
@@ -81,26 +80,27 @@ class GetSalesReportUseCase:
             date_range = self._date_ranges.month(store.timezone, first_business_date=store.first_business_date)
             response_from = date_range.from_date
             response_to = date_range.to_date
-            summary = await self._sale_repo.sales_summary_for_business_date_range(
+            summary = await self._sale_repo.sales_summary_for_range(
                 input.store_id,
-                response_from,
-                response_to,
+                date_range.start_at_utc,
+                date_range.end_at_utc,
             )
-            by_payment_method = await self._sale_repo.totals_by_payment_method_for_business_date_range(
+            by_payment_method = await self._sale_repo.totals_by_payment_method(
                 input.store_id,
-                response_from,
-                response_to,
+                date_range.start_at_utc,
+                date_range.end_at_utc,
             )
-            top_products = await self._sale_repo.top_products_for_business_date_range(
+            top_products = await self._sale_repo.top_products(
                 input.store_id,
-                response_from,
-                response_to,
+                date_range.start_at_utc,
+                date_range.end_at_utc,
                 limit=10,
             )
 
         return SalesReportDTO(
             from_date=response_from,
             to_date=response_to,
+            first_business_date=store.first_business_date,
             total_sales=summary["total_sales"],
             sales_count=summary["sales_count"],
             items_count=summary["items_count"],

@@ -257,7 +257,7 @@ export async function startVisualMockBackend(port = 8001) {
 
   await new Promise<void>((resolve, reject) => {
     server.once("error", reject);
-    server.listen(port, "127.0.0.1", () => {
+    server.listen(port, () => {
       server.off("error", reject);
       resolve();
     });
@@ -281,7 +281,7 @@ function resolvePayload(url: URL) {
   if (path === "/products") return productList(url);
   if (path === "/products/pos") return productList(url);
   if (path.startsWith("/products/qr/")) return products[0];
-  if (path === "/sales") return saleList();
+  if (path === "/sales") return saleList(url);
   if (path === "/reports/sales") return salesReport();
   if (path === "/stock-movements") return movementList(stockMovements, url);
   if (path === "/cash-movements") return movementList(cashMovements, url);
@@ -417,14 +417,26 @@ function productList(url: URL) {
   };
 }
 
-function saleList() {
+function saleList(url: URL) {
+  const fromDate = url.searchParams.get("from_date") ?? businessDate;
+  const toDate = url.searchParams.get("to_date") ?? businessDate;
+  const status = url.searchParams.get("status") ?? "all";
+  const limit = Number(url.searchParams.get("limit") ?? 25);
+  const offset = Number(url.searchParams.get("offset") ?? 0);
+  const filtered = sales.filter((sale) => {
+    const matchesDate =
+      sale.business_date >= fromDate && sale.business_date <= toDate;
+    const matchesStatus = status === "all" || sale.status === status;
+    return matchesDate && matchesStatus;
+  });
+
   return {
-    items: sales,
-    total: sales.length,
-    limit: 25,
-    offset: 0,
-    from_date: businessDate,
-    to_date: businessDate,
+    items: filtered.slice(offset, offset + limit),
+    total: filtered.length,
+    limit,
+    offset,
+    from_date: fromDate,
+    to_date: toDate,
     timezone: "America/La_Paz",
     first_business_date: "2026-06-01",
   };

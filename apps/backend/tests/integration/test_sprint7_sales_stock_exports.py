@@ -1,9 +1,9 @@
 import csv
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, date, datetime, timedelta
 from io import StringIO
 from uuid import uuid4
 
-from src.infrastructure.database.models import StoreModel, UserModel
+from src.infrastructure.database.models import SaleModel, StoreBusinessDayModel, StoreModel, UserModel
 from src.main import app
 from src.presentation import dependencies
 
@@ -130,6 +130,68 @@ async def test_stock_movements_filters_by_type_and_range(client):
     assert response.status_code == 200
     assert response.json()["total"] == 1
     assert response.json()["items"][0]["movement_type"] == "sale_void"
+
+
+async def test_list_sales_filters_by_calendar_created_date_range(client, db_session):
+    _product, sale = await _create_product_and_sale(client)
+    sale_model = await db_session.get(SaleModel, sale["id"])
+    sale_model.business_date = date(2026, 6, 3)
+    sale_model.created_at = datetime(2026, 6, 7, 16, 0, tzinfo=UTC)
+    store = await db_session.get(StoreModel, dependencies.DEV_STORE_ID)
+    store.first_business_date = date(2026, 6, 1)
+    await db_session.commit()
+
+    same_day_response = await client.get(
+        "/api/v1/sales",
+        params={"from_date": "2026-06-07", "to_date": "2026-06-07"},
+    )
+    business_day_response = await client.get(
+        "/api/v1/sales",
+        params={"from_date": "2026-06-03", "to_date": "2026-06-03"},
+    )
+
+    assert same_day_response.status_code == 200
+    assert same_day_response.json()["total"] == 1
+    assert same_day_response.json()["items"][0]["id"] == sale["id"]
+    assert business_day_response.status_code == 200
+    assert business_day_response.json()["from_date"] == "2026-06-03"
+    assert business_day_response.json()["to_date"] == "2026-06-03"
+    assert business_day_response.json()["items"] == []
+    assert business_day_response.json()["total"] == 0
+
+
+async def test_list_sales_rejects_range_starting_before_first_business_date(client, db_session):
+    store = await db_session.get(StoreModel, dependencies.DEV_STORE_ID)
+    store.first_business_date = date(2026, 6, 1)
+    await db_session.commit()
+
+    response = await client.get(
+        "/api/v1/sales",
+        params={"from_date": "2026-05-31", "to_date": "2026-06-01"},
+    )
+
+    assert response.status_code == 400
+
+
+async def test_list_sales_defaults_to_calendar_today_even_with_old_open_business_day(client, db_session):
+    _product, sale = await _create_product_and_sale(client)
+    open_day = await db_session.get(StoreBusinessDayModel, sale["business_day_id"])
+    sale_model = await db_session.get(SaleModel, sale["id"])
+    store = await db_session.get(StoreModel, dependencies.DEV_STORE_ID)
+    store.first_business_date = date(2026, 6, 1)
+    open_day.business_date = date(2026, 6, 3)
+    sale_model.business_date = date(2026, 6, 3)
+    sale_model.created_at = datetime(2026, 6, 7, 16, 0, tzinfo=UTC)
+    await db_session.commit()
+
+    response = await client.get("/api/v1/sales")
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["from_date"] == "2026-06-07"
+    assert data["to_date"] == "2026-06-07"
+    assert data["total"] == 1
+    assert data["items"][0]["id"] == sale["id"]
 
 
 async def test_export_products_csv_returns_expected_columns(client):
