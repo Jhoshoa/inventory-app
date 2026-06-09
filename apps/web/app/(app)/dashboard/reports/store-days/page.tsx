@@ -1,25 +1,14 @@
-import Link from "next/link";
-import { Eye } from "lucide-react";
 import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { PageSection } from "@/components/layout/PageSection";
 import { Alert } from "@/components/ui/Alert";
-import { Button } from "@/components/ui/Button";
 import { ForbiddenState } from "@/components/ui/ForbiddenState";
 import { Pagination } from "@/components/ui/Pagination";
-import { Tooltip } from "@/components/ui/Tooltip";
-import {
-  Table,
-  TableCell,
-  TableEmptyRow,
-  TableHeaderCell,
-} from "@/components/ui/Table";
 import { listCloseReports } from "@/features/store-day/api";
+import { StoreDayCloseReportsTable } from "@/features/store-day/components/StoreDayCloseReportsTable";
 import { StoreDayReportsDateFilter } from "@/features/store-day/components/StoreDayReportsDateFilter";
-import type { StoreDayCloseReport } from "@/features/store-day/types";
 import { canViewStoreDayReports } from "@/lib/auth/permissions";
 import { requireSession } from "@/lib/auth/session";
-import { formatCurrency } from "@/lib/format/currency";
 
 const DEFAULT_LIMIT = 50;
 
@@ -59,7 +48,7 @@ export default async function StoreDayReportsPage({
         <Alert variant="error">No se pudieron cargar cierres: {reports.error.message}</Alert>
       ) : (
         <>
-          <CloseReportsTable items={reports.data.items} />
+          <StoreDayCloseReportsTable items={reports.data.items} />
           <Pagination
             basePath="/dashboard/reports/store-days"
             searchParams={new URLSearchParams(rawParamsToStringEntries(rawParams))}
@@ -70,47 +59,6 @@ export default async function StoreDayReportsPage({
         </>
       )}
     </PageSection>
-  );
-}
-
-function CloseReportsTable({ items }: { items: StoreDayCloseReport[] }) {
-  return (
-    <Table>
-      <thead>
-        <tr>
-          <TableHeaderCell>Fecha</TableHeaderCell>
-          <TableHeaderCell>Ventas</TableHeaderCell>
-          <TableHeaderCell>Efectivo esperado</TableHeaderCell>
-          <TableHeaderCell>Efectivo contado</TableHeaderCell>
-          <TableHeaderCell>Diferencia</TableHeaderCell>
-          <TableHeaderCell>Acciones</TableHeaderCell>
-        </tr>
-      </thead>
-      <tbody>
-        {items.length === 0 ? (
-          <TableEmptyRow colSpan={6}>Sin cierres registrados</TableEmptyRow>
-        ) : (
-          items.map((item) => (
-            <tr key={item.business_day_id} className="border-t border-app-border">
-              <TableCell>{formatBusinessDate(item.business_date)}</TableCell>
-              <TableCell>{formatCurrency(item.sales_total)}</TableCell>
-              <TableCell>{formatCurrency(item.expected_cash_amount)}</TableCell>
-              <TableCell>{item.counted_cash_amount ? formatCurrency(item.counted_cash_amount) : "Sin conteo"}</TableCell>
-              <TableCell>{item.cash_difference_amount ? formatCurrency(item.cash_difference_amount) : "No calculada"}</TableCell>
-              <TableCell>
-                <Tooltip content="Ver cierre">
-                  <Button variant="icon" asChild>
-                    <Link href={`/dashboard/reports/store-days/${item.business_day_id}`} aria-label="Ver cierre">
-                      <Eye className="h-4 w-4" aria-hidden="true" />
-                    </Link>
-                  </Button>
-                </Tooltip>
-              </TableCell>
-            </tr>
-          ))
-        )}
-      </tbody>
-    </Table>
   );
 }
 
@@ -142,6 +90,3 @@ function rawParamsToStringEntries(
   });
 }
 
-function formatBusinessDate(value: string) {
-  return new Intl.DateTimeFormat("es-BO", { dateStyle: "medium" }).format(new Date(`${value}T00:00:00`));
-}

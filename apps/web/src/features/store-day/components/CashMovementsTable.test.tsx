@@ -20,6 +20,15 @@ describe("CashMovementsTable", () => {
     expect(screen.getByText((content) => content.includes("-Bs") && content.includes("12"))).toBeInTheDocument();
   });
 
+  it("renders mobile card labels for movement fields", () => {
+    render(<CashMovementsTable items={[movement({ note: "Cambio" })]} />);
+
+    expect(screen.getAllByText("Fecha").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Tipo").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Monto").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Nota").length).toBeGreaterThan(0);
+  });
+
   it("renders empty state", () => {
     render(<CashMovementsTable items={[]} />);
 

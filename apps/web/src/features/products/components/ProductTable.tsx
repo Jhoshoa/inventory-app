@@ -25,7 +25,7 @@ import type { Product } from "../types";
 
 export function ProductTable({ products, role }: { products: Product[]; role: UserRole }) {
   return (
-    <Table density="compact">
+    <Table density="compact" mobile="cards">
       <thead>
         <tr>
           <TableHeaderCell>Producto</TableHeaderCell>
@@ -43,27 +43,27 @@ export function ProductTable({ products, role }: { products: Product[]; role: Us
         ) : (
           products.map((product) => (
             <TableRow key={product.id} tone={productRowTone(product)}>
-              <TableCell>
+              <TableCell mobileLabel="Producto">
                 <TableText className="font-medium text-text-strong">{product.name}</TableText>
                 <TableText muted>{product.unit}</TableText>
               </TableCell>
-              <TableCell>
+              <TableCell mobileLabel="Codigo">
                 <TableText>{product.sku ?? "Sin SKU"}</TableText>
                 <TableText muted>{product.qr_code ?? "Sin QR"}</TableText>
               </TableCell>
-              <TableCell>
+              <TableCell mobileLabel="Categoria">
                 <TableText>{product.category ?? "Sin categoria"}</TableText>
               </TableCell>
-              <TableCell align="right" className="font-medium text-text-strong">
+              <TableCell align="right" mobileLabel="Precio" className="font-medium text-text-strong">
                 {formatCurrency(product.price)}
               </TableCell>
-              <TableCell align="right">
+              <TableCell align="right" mobileLabel="Stock">
                 {product.stock} / min {product.min_stock}
               </TableCell>
-              <TableCell>
+              <TableCell mobileLabel="Estado">
                 <StockBadge product={product} />
               </TableCell>
-              <TableCell align="right">
+              <TableCell align="right" mobileLabel="Acciones">
                 <TableActionGroup>
                   <Tooltip content="Ver">
                     <Button variant="icon" asChild>

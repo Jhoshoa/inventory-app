@@ -11,7 +11,7 @@ import type { CashMovement } from "../types";
 
 export function CashMovementsTable({ items }: { items: CashMovement[] }) {
   return (
-    <Table density="compact">
+    <Table density="compact" mobile="cards">
       <thead>
         <tr>
           <TableHeaderCell>Fecha</TableHeaderCell>
@@ -26,15 +26,16 @@ export function CashMovementsTable({ items }: { items: CashMovement[] }) {
         ) : (
           items.map((item) => (
             <TableRow key={item.id} tone={item.direction === "out" ? "warning" : "success"}>
-              <TableCell>{formatDateTime(item.occurred_at)}</TableCell>
-              <TableCell>{cashMovementLabel(item.movement_type)}</TableCell>
+              <TableCell mobileLabel="Fecha">{formatDateTime(item.occurred_at)}</TableCell>
+              <TableCell mobileLabel="Tipo">{cashMovementLabel(item.movement_type)}</TableCell>
               <TableCell
                 align="right"
+                mobileLabel="Monto"
                 className={`font-semibold ${item.direction === "in" ? "text-status-success" : "text-status-danger"}`}
               >
                 {item.direction === "in" ? "+" : "-"}{formatCurrency(item.amount)}
               </TableCell>
-              <TableCell>
+              <TableCell mobileLabel="Nota">
                 <TableText>{item.note ?? "Sin nota"}</TableText>
               </TableCell>
             </TableRow>

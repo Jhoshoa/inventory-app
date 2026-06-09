@@ -17,7 +17,7 @@ import type { Sale } from "../types";
 
 export function SalesTable({ sales }: { sales: Sale[] }) {
   return (
-    <Table density="compact">
+    <Table density="compact" mobile="cards">
       <thead>
         <tr>
           <TableHeaderCell>Fecha</TableHeaderCell>
@@ -46,16 +46,16 @@ export function SalesTable({ sales }: { sales: Sale[] }) {
         ) : (
           sales.map((sale) => (
             <TableRow key={sale.id} tone={sale.status === "voided" ? "muted" : "default"}>
-              <TableCell>{formatDate(sale.created_at)}</TableCell>
-              <TableCell>
+              <TableCell mobileLabel="Fecha">{formatDate(sale.created_at)}</TableCell>
+              <TableCell mobileLabel="Estado">
                 <SaleStatusBadge status={sale.status} />
               </TableCell>
-              <TableCell>{sale.payment_method}</TableCell>
-              <TableCell align="right">{sale.items.length}</TableCell>
-              <TableCell align="right" className="font-semibold text-text-strong">
+              <TableCell mobileLabel="Metodo">{sale.payment_method}</TableCell>
+              <TableCell align="right" mobileLabel="Items">{sale.items.length}</TableCell>
+              <TableCell align="right" mobileLabel="Total" className="font-semibold text-text-strong">
                 {formatCurrency(sale.total)}
               </TableCell>
-              <TableCell align="right">
+              <TableCell align="right" mobileLabel="Acciones">
                 <TableActionGroup>
                   <Tooltip content="Ver venta">
                     <Button variant="icon" asChild>

@@ -38,6 +38,14 @@ describe("SalesTable", () => {
     );
   });
 
+  it("renders mobile card labels for key sale fields", () => {
+    render(<SalesTable sales={[sale]} />);
+
+    expect(screen.getAllByText("Fecha").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Estado").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Total").length).toBeGreaterThan(0);
+  });
+
   it("renders an empty state", () => {
     render(<SalesTable sales={[]} />);
 

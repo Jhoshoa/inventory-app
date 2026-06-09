@@ -2,12 +2,14 @@ import type { HTMLAttributes, TableHTMLAttributes } from "react";
 
 interface TableProps extends TableHTMLAttributes<HTMLTableElement> {
   density?: "compact" | "comfortable";
+  mobile?: "scroll" | "cards";
   wrapperClassName?: string;
 }
 
 export function Table({
   className = "",
   density = "comfortable",
+  mobile = "scroll",
   wrapperClassName = "",
   ...props
 }: TableProps) {
@@ -15,9 +17,13 @@ export function Table({
     compact: "text-xs sm:text-sm",
     comfortable: "text-sm",
   }[density];
+  const mobileClasses =
+    mobile === "cards"
+      ? "[&_table]:block md:[&_table]:table [&_thead]:hidden md:[&_thead]:table-header-group [&_tbody]:grid [&_tbody]:gap-3 md:[&_tbody]:table-row-group [&_tr]:block md:[&_tr]:table-row [&_td]:flex [&_td]:items-start [&_td]:justify-between [&_td]:gap-4 md:[&_td]:table-cell"
+      : "";
 
   return (
-    <div className={`min-w-0 overflow-hidden rounded-lg border border-app-border bg-app-surface shadow-panel ${wrapperClassName}`}>
+    <div className={`min-w-0 overflow-hidden rounded-lg border border-app-border bg-app-surface shadow-panel ${mobileClasses} ${wrapperClassName}`}>
       <div className="w-full overflow-x-auto">
         <table className={`min-w-full border-separate border-spacing-0 text-left text-text-body ${densityClasses} ${className}`} {...props} />
       </div>
@@ -80,16 +86,26 @@ export function TableCell({
   align = "left",
   className = "",
   density = "comfortable",
+  mobileLabel,
+  children,
   ...props
 }: HTMLAttributes<HTMLTableCellElement> & {
   align?: TableAlign;
   density?: "compact" | "comfortable";
+  mobileLabel?: string;
 }) {
   return (
     <td
       className={`border-t border-app-border align-middle ${tablePadding(density)} ${alignClasses[align]} ${className}`}
       {...props}
-    />
+    >
+      {mobileLabel ? (
+        <span className="shrink-0 pr-3 text-xs font-semibold uppercase text-text-muted md:hidden">
+          {mobileLabel}
+        </span>
+      ) : null}
+      <div className={`min-w-0 ${alignClasses[align]}`}>{children}</div>
+    </td>
   );
 }
 
