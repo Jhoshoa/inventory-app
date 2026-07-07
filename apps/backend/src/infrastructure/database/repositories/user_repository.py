@@ -63,6 +63,8 @@ class UserRepository(IUserRepository):
         model.is_active = user.is_active
         model.last_login_at = user.last_login_at
         model.updated_at = datetime.now(timezone.utc)
+        if user.password_hash is not None:
+            model.password_hash = user.password_hash
         await self._session.flush()
         return self._to_entity(model)
 
@@ -109,4 +111,5 @@ class UserRepository(IUserRepository):
             is_active=model.is_active,
             last_login_at=model.last_login_at,
             updated_at=model.updated_at,
+            password_hash=model.password_hash,
         )

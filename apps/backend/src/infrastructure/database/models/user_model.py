@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 
-from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Index, String
+from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Index, String, Text
 
 from src.infrastructure.database.models.product_model import Base
 from src.infrastructure.database.types import GUID
@@ -18,6 +18,7 @@ class UserModel(Base):
     created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
     updated_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
     last_login_at = Column(DateTime(timezone=True))
+    password_hash = Column(Text, nullable=True)
 
     __table_args__ = (
         Index("ix_users_store_id", "store_id"),

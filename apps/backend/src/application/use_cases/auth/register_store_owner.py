@@ -14,6 +14,7 @@ class RegisterStoreOwnerInput:
     full_name: str
     store_name: str
     store_id: UUID | None = None
+    password_hash: str | None = None
 
 
 @dataclass
@@ -38,6 +39,7 @@ class RegisterStoreOwnerUseCase:
                 full_name=input.full_name,
                 role="owner",
                 is_active=True,
+                password_hash=input.password_hash,
             )
         )
         return RegisterStoreOwnerResult(store=store, user=user)

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
 import { FieldError } from "@/components/ui/FieldError";
@@ -18,16 +17,18 @@ interface RegisterFormState {
 
 type RegisterFormErrors = Partial<Record<keyof RegisterFormState | "form", string>>;
 
+const INITIAL_STATE: RegisterFormState = {
+  full_name: "",
+  email: "",
+  store_name: "",
+  password: "",
+};
+
 export default function RegisterPage() {
-  const router = useRouter();
-  const [values, setValues] = useState<RegisterFormState>({
-    full_name: "",
-    email: "",
-    store_name: "",
-    password: "",
-  });
+  const [values, setValues] = useState<RegisterFormState>(INITIAL_STATE);
   const [errors, setErrors] = useState<RegisterFormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -45,17 +46,37 @@ export default function RegisterPage() {
       });
 
       if (!response.ok) {
-        setErrors({ form: "No se pudo crear la cuenta. Intenta de nuevo." });
+        const err = await response.json().catch(() => ({}));
+        setErrors({ form: err.message || "No se pudo crear la cuenta. Intenta de nuevo." });
         return;
       }
 
-      router.replace("/dashboard");
-      router.refresh();
+      setValues(INITIAL_STATE);
+      setIsSuccess(true);
     } catch {
       setErrors({ form: "No se pudo conectar con el servidor." });
     } finally {
       setIsSubmitting(false);
     }
+  }
+
+  if (isSuccess) {
+    return (
+      <AuthShell
+        title="Tienda creada"
+        description="Tu tienda se ha creado exitosamente. Ahora puedes iniciar sesion."
+        footerText=""
+        footerHref="/login"
+        footerLinkLabel="Iniciar sesion"
+      >
+        <Alert variant="success">
+          Tu cuenta ha sido creada. Revisa tu email para confirmarla (si es necesario) o inicia sesion ahora.
+        </Alert>
+        <Button className="w-full" onClick={() => window.location.href = "/login"}>
+          Ir a iniciar sesion
+        </Button>
+      </AuthShell>
+    );
   }
 
   return (

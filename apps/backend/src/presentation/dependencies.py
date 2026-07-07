@@ -51,7 +51,19 @@ DEV_ACCESS_TOKEN = "dev-token-123"
 DEV_CASHIER_ACCESS_TOKEN = "dev-cashier-token-123"
 
 
-async def get_current_user(token: str = Depends(security_scheme)) -> dict:
+async def get_db_session():
+    async with get_session() as session:
+        yield session
+
+
+def get_user_repo(session: AsyncSession = Depends(get_db_session)) -> UserRepository:
+    return UserRepository(session)
+
+
+async def get_current_user(
+    token: str = Depends(security_scheme),
+    user_repo: UserRepository = Depends(get_user_repo),
+) -> dict:
     if settings.DEBUG and token is None:
         return {
             "id": DEV_USER_ID,
@@ -82,16 +94,15 @@ async def get_current_user(token: str = Depends(security_scheme)) -> dict:
         payload = verify_jwt(token.credentials)
         if payload.get("store_id") is not None:
             payload["store_id"] = UUID(str(payload["store_id"]))
+        elif payload.get("id") is not None:
+            user = await user_repo.get_by_id(UUID(str(payload["id"])))
+            if user is not None and user.store_id is not None:
+                payload["store_id"] = user.store_id
         if payload.get("id") is not None:
             payload["id"] = UUID(str(payload["id"]))
         return payload
     except Exception:
         raise HTTPException(status_code=401, detail="Token inválido")
-
-
-async def get_db_session():
-    async with get_session() as session:
-        yield session
 
 
 def get_product_repo(session: AsyncSession = Depends(get_db_session)) -> ProductRepository:
@@ -122,10 +133,6 @@ def get_store_business_day_event_repo(session: AsyncSession = Depends(get_db_ses
     return StoreBusinessDayEventRepository(session)
 
 
-def get_user_repo(session: AsyncSession = Depends(get_db_session)) -> UserRepository:
-    return UserRepository(session)
-
-
 def get_exchange_rate_repo(session: AsyncSession = Depends(get_db_session)) -> ExchangeRateRepository:
     return ExchangeRateRepository(session)
 
@@ -148,14 +155,28 @@ async def get_current_user_context(
     except UnauthorizedError as exc:
         if not settings.DEBUG or exc.detail != "Usuario local no encontrado":
             raise
-        store = await store_repo.get_by_id(UUID(str(raw_user["store_id"])))
+        user_id = UUID(str(raw_user["id"]))
+        user = await user_repo.get_by_id(user_id)
+        if user is not None:
+            return CurrentUserContext(
+                id=user.id,
+                email=user.email,
+                store_id=user.store_id,
+                full_name=user.full_name,
+                role=user.role,
+                is_active=user.is_active,
+            )
+        store_id = raw_user.get("store_id")
+        if store_id is None:
+            store_id = DEV_STORE_ID
+        store = await store_repo.get_by_id(UUID(str(store_id)))
         if store is None:
-            await store_repo.save(Store(id=UUID(str(raw_user["store_id"])), name="Dev Store"))
+            await store_repo.save(Store(id=UUID(str(store_id)), name="Dev Store"))
         user = await EnsureLocalUserUseCase(user_repo, store_repo).execute(
             EnsureLocalUserInput(
-                user_id=UUID(str(raw_user["id"])),
+                user_id=user_id,
                 email=str(raw_user.get("email") or "dev@local.dev"),
-                store_id=UUID(str(raw_user["store_id"])),
+                store_id=UUID(str(store_id)),
                 full_name=raw_user.get("full_name"),
                 role=str(raw_user.get("role") or "owner"),
             )

@@ -23,6 +23,11 @@ class OAuthCallbackDTO(BaseModel):
     code: str
 
 
+class RegisterSuccessDTO(BaseModel):
+    success: bool = True
+    message: str
+
+
 class AuthResponseDTO(BaseModel):
     access_token: str
     refresh_token: str

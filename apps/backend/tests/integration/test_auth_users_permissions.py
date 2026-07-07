@@ -1,6 +1,6 @@
 from uuid import uuid4
 
-from sqlalchemy import delete
+from sqlalchemy import select
 
 from src.infrastructure.database.models import StoreModel, UserModel
 from src.main import app
@@ -20,47 +20,69 @@ async def test_register_creates_store_and_owner_user(client, db_session):
 
     assert response.status_code == 201
     data = response.json()
-    assert data["user"]["role"] == "owner"
+    assert data["success"] is True
+    assert "creada" in data["message"]
 
-    store = await db_session.get(StoreModel, data["user"]["store_id"])
-    user = await db_session.get(UserModel, data["user"]["id"])
-    assert store.name == "Owner Store"
+    result = await db_session.execute(
+        select(UserModel).where(UserModel.email == "owner@example.com")
+    )
+    user = result.scalar_one_or_none()
+    assert user is not None
     assert user.email == "owner@example.com"
-    assert user.store_id == store.id
     assert user.role == "owner"
+    store = await db_session.get(StoreModel, user.store_id)
+    assert store.name == "Owner Store"
 
 
-async def test_login_creates_missing_local_dev_user(client, db_session):
-    await db_session.execute(delete(UserModel).where(UserModel.id == dependencies.DEV_USER_ID))
-    await db_session.commit()
-
+async def test_login_rejects_unregistered_user(client, db_session):
     response = await client.post(
         "/api/v1/auth/login",
-        json={"email": "dev-login@example.com", "password": "password123"},
+        json={"email": "unknown@example.com", "password": "password123"},
     )
 
-    assert response.status_code == 200
-    user = await db_session.get(UserModel, dependencies.DEV_USER_ID)
-    assert user.email == "dev-login@example.com"
-    assert user.store_id == dependencies.DEV_STORE_ID
-    assert user.last_login_at is not None
+    assert response.status_code == 401
 
 
-async def test_debug_login_with_cashier_email_returns_cashier(client, db_session):
+async def test_login_rejects_wrong_password_for_registered_user(client, db_session):
+    await client.post(
+        "/api/v1/auth/register",
+        json={
+            "email": "owner@login-test.com",
+            "password": "correct-password",
+            "full_name": "Owner",
+            "store_name": "Login Test Store",
+        },
+    )
+
     response = await client.post(
         "/api/v1/auth/login",
-        json={"email": "cashier@local.dev", "password": "password123"},
+        json={"email": "owner@login-test.com", "password": "wrong-password"},
+    )
+
+    assert response.status_code == 401
+
+
+async def test_login_succeeds_with_correct_password(client, db_session):
+    await client.post(
+        "/api/v1/auth/register",
+        json={
+            "email": "owner@login-ok.com",
+            "password": "secret123",
+            "full_name": "Owner",
+            "store_name": "Login Ok Store",
+        },
+    )
+
+    response = await client.post(
+        "/api/v1/auth/login",
+        json={"email": "owner@login-ok.com", "password": "secret123"},
     )
 
     assert response.status_code == 200
     data = response.json()
-    assert data["access_token"] == dependencies.DEV_CASHIER_ACCESS_TOKEN
-    assert data["user"]["id"] == str(dependencies.DEV_CASHIER_USER_ID)
-    assert data["user"]["role"] == "cashier"
-
-    user = await db_session.get(UserModel, dependencies.DEV_CASHIER_USER_ID)
-    assert user.email == "cashier@local.dev"
-    assert user.role == "cashier"
+    assert data["access_token"] is not None
+    assert data["user"]["email"] == "owner@login-ok.com"
+    assert data["user"]["role"] == "owner"
 
 
 async def test_dev_login_can_return_cashier_context(client):

@@ -22,6 +22,11 @@ export async function POST(request: NextRequest) {
     }
 
     const data = await res.json();
+
+    if (data.success) {
+      return NextResponse.json({ success: true, message: data.message });
+    }
+
     const response = NextResponse.json({ user: data.user });
     setAuthCookies(response, data);
 

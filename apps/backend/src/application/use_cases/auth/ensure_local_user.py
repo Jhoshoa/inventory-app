@@ -16,6 +16,7 @@ class EnsureLocalUserInput:
     full_name: str | None = None
     role: str = "cashier"
     touch_login: bool = False
+    password_hash: str | None = None
 
 
 class EnsureLocalUserUseCase:
@@ -40,6 +41,7 @@ class EnsureLocalUserUseCase:
                 role=input.role,
                 is_active=True,
                 last_login_at=now if input.touch_login else None,
+                password_hash=input.password_hash,
             )
         else:
             user.email = input.email
@@ -47,4 +49,6 @@ class EnsureLocalUserUseCase:
             user.full_name = input.full_name or user.full_name
             if input.touch_login:
                 user.last_login_at = now
+            if input.password_hash is not None:
+                user.password_hash = input.password_hash
         return await self._user_repo.save(user)

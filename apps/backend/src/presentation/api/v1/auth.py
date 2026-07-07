@@ -10,6 +10,7 @@ from src.application.dto.auth_dto import (
     OAuthCallbackDTO,
     RefreshTokenDTO,
     RegisterDTO,
+    RegisterSuccessDTO,
 )
 from src.application.exceptions import UnauthorizedError
 from src.application.use_cases.auth.ensure_local_user import (
@@ -21,6 +22,7 @@ from src.application.use_cases.auth.register_store_owner import (
     RegisterStoreOwnerUseCase,
 )
 from src.config.settings import settings
+from src.infrastructure.auth.password import hash_password, verify_password
 from src.infrastructure.database.repositories.store_repository import StoreRepository
 from src.infrastructure.database.repositories.user_repository import UserRepository
 from src.presentation.dependencies import (
@@ -101,21 +103,32 @@ async def login(
     store_repo: StoreRepository = Depends(get_store_repo),
 ):
     if settings.DEBUG:
-        is_cashier_login = dto.email.lower() == "cashier@local.dev"
-        user_id = DEV_CASHIER_USER_ID if is_cashier_login else DEV_USER_ID
-        role = "cashier" if is_cashier_login else "owner"
-        full_name = "Demo Cashier" if is_cashier_login else "Dev User"
-        await EnsureLocalUserUseCase(user_repo, store_repo).execute(
+        existing = await user_repo.get_by_email(dto.email)
+        if not existing or not existing.password_hash:
+            raise HTTPException(status_code=401, detail="Credenciales invalidas")
+        if not verify_password(dto.password, existing.password_hash):
+            raise HTTPException(status_code=401, detail="Credenciales invalidas")
+        local_user = await EnsureLocalUserUseCase(user_repo, store_repo).execute(
             EnsureLocalUserInput(
-                user_id=user_id,
-                email=dto.email,
-                store_id=DEV_STORE_ID,
-                full_name=full_name,
-                role=role,
+                user_id=existing.id,
+                email=existing.email,
+                store_id=existing.store_id,
+                full_name=existing.full_name,
+                role=existing.role,
                 touch_login=True,
             )
         )
-        return _dev_auth_response(dto.email, user_id=user_id, role=role, full_name=full_name)
+        store = await store_repo.get_by_id(local_user.store_id)
+        return _auth_response(
+            str(local_user.id),
+            "dev-refresh-123",
+            user_id=local_user.id,
+            email=local_user.email,
+            store_id=local_user.store_id,
+            store_name=store.name if store else None,
+            full_name=local_user.full_name,
+            role=local_user.role,
+        )
 
     supabase = create_client(settings.SUPABASE_URL, settings.SUPABASE_ANON_KEY)
     response = supabase.auth.sign_in_with_password(
@@ -153,22 +166,23 @@ async def login(
     )
 
 
-@router.post("/register", response_model=AuthResponseDTO, status_code=201)
+@router.post("/register", status_code=201)
 async def register(
     dto: RegisterDTO,
     user_repo: UserRepository = Depends(get_user_repo),
     store_repo: StoreRepository = Depends(get_store_repo),
 ):
     if settings.DEBUG:
-        result = await RegisterStoreOwnerUseCase(store_repo, user_repo).execute(
+        await RegisterStoreOwnerUseCase(store_repo, user_repo).execute(
             RegisterStoreOwnerInput(
                 user_id=uuid4(),
                 email=dto.email,
                 full_name=dto.full_name,
                 store_name=dto.store_name,
+                password_hash=hash_password(dto.password),
             )
         )
-        return _dev_auth_response(dto.email, result.store.id, result.user.id, result.user.role, store_name=result.store.name)
+        return RegisterSuccessDTO(message="Tienda creada exitosamente. Ahora puedes iniciar sesion.")
 
     store_id = str(uuid4())
     supabase = create_client(settings.SUPABASE_URL, settings.SUPABASE_ANON_KEY)

@@ -7,6 +7,12 @@ from src.config.settings import settings
 
 def verify_jwt(token: str) -> dict:
     if settings.DEBUG:
+        # Si el token es un UUID válido, es un usuario real registrado localmente
+        try:
+            user_id = UUID(token)
+            return {"id": user_id, "email": None, "store_id": None}
+        except ValueError:
+            pass
         return {
             "id": UUID("00000000-0000-0000-0000-000000000001"),
             "email": "dev@local.dev",
