@@ -82,6 +82,30 @@ export function LoginForm() {
       <Button className="w-full" type="submit" disabled={isSubmitting}>
         {isSubmitting ? "Ingresando..." : "Iniciar sesion"}
       </Button>
+      <div className="relative">
+        <div className="absolute inset-0 flex items-center">
+          <span className="w-full border-t" />
+        </div>
+        <div className="relative flex justify-center text-xs uppercase">
+          <span className="bg-card px-2 text-muted-foreground">O continúa con</span>
+        </div>
+      </div>
+      <Button
+        type="button"
+        variant="secondary"
+        className="w-full"
+        onClick={async () => {
+          try {
+            const res = await fetch("/api/auth/oauth/google", { method: "POST" });
+            const { url } = await res.json();
+            if (url) window.location.href = url;
+          } catch {
+            setErrors({ form: "No se pudo conectar con Google" });
+          }
+        }}
+      >
+        Continuar con Google
+      </Button>
     </form>
   );
 }

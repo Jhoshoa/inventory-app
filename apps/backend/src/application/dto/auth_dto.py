@@ -15,6 +15,14 @@ class RegisterDTO(BaseModel):
     store_name: str = Field(..., min_length=1, max_length=100)
 
 
+class RefreshTokenDTO(BaseModel):
+    refresh_token: str
+
+
+class OAuthCallbackDTO(BaseModel):
+    code: str
+
+
 class AuthResponseDTO(BaseModel):
     access_token: str
     refresh_token: str

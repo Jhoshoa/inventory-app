@@ -4,6 +4,7 @@ export interface AuthUser {
   id: string;
   email: string;
   store_id?: string;
+  store_name?: string | null;
   full_name?: string | null;
   role?: UserRole;
   is_active?: boolean;

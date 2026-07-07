@@ -1,30 +1,151 @@
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { Alert } from "@/components/ui/Alert";
+import { Button } from "@/components/ui/Button";
+import { FieldError } from "@/components/ui/FieldError";
 import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
-import { Button } from "@/components/ui/Button";
 import { AuthShell } from "@/features/auth/components/AuthShell";
 
+interface RegisterFormState {
+  full_name: string;
+  email: string;
+  store_name: string;
+  password: string;
+}
+
+type RegisterFormErrors = Partial<Record<keyof RegisterFormState | "form", string>>;
+
 export default function RegisterPage() {
+  const router = useRouter();
+  const [values, setValues] = useState<RegisterFormState>({
+    full_name: "",
+    email: "",
+    store_name: "",
+    password: "",
+  });
+  const [errors, setErrors] = useState<RegisterFormErrors>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const nextErrors = validateRegister(values);
+    setErrors(nextErrors);
+
+    if (Object.keys(nextErrors).length > 0) return;
+
+    setIsSubmitting(true);
+    try {
+      const response = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(values),
+      });
+
+      if (!response.ok) {
+        setErrors({ form: "No se pudo crear la cuenta. Intenta de nuevo." });
+        return;
+      }
+
+      router.replace("/dashboard");
+      router.refresh();
+    } catch {
+      setErrors({ form: "No se pudo conectar con el servidor." });
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
   return (
     <AuthShell
       title="Crear tienda"
-      description="El registro completo se conectara al backend despues de cerrar la base de auth."
+      description="Completa tus datos para empezar."
       footerText="Ya tienes cuenta?"
       footerHref="/login"
       footerLinkLabel="Inicia sesion"
     >
-      <form className="space-y-4">
+      <form className="space-y-4" onSubmit={onSubmit} noValidate>
+        {errors.form ? <Alert variant="error">{errors.form}</Alert> : null}
         <div className="space-y-2">
-          <Label htmlFor="store-name">Nombre de tienda</Label>
-          <Input id="store-name" name="storeName" disabled />
+          <Label htmlFor="full_name">Nombre completo</Label>
+          <Input
+            id="full_name"
+            name="full_name"
+            value={values.full_name}
+            error={Boolean(errors.full_name)}
+            onChange={(e) => setValues({ ...values, full_name: e.target.value })}
+          />
+          <FieldError message={errors.full_name} />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="store_name">Nombre de tienda</Label>
+          <Input
+            id="store_name"
+            name="store_name"
+            value={values.store_name}
+            error={Boolean(errors.store_name)}
+            onChange={(e) => setValues({ ...values, store_name: e.target.value })}
+          />
+          <FieldError message={errors.store_name} />
         </div>
         <div className="space-y-2">
           <Label htmlFor="email">Email</Label>
-          <Input id="email" name="email" type="email" disabled />
+          <Input
+            id="email"
+            name="email"
+            type="email"
+            autoComplete="email"
+            value={values.email}
+            error={Boolean(errors.email)}
+            onChange={(e) => setValues({ ...values, email: e.target.value })}
+          />
+          <FieldError message={errors.email} />
         </div>
-        <Button className="w-full" disabled>
-          Registro en Sprint posterior
+        <div className="space-y-2">
+          <Label htmlFor="password">Password</Label>
+          <Input
+            id="password"
+            name="password"
+            type="password"
+            autoComplete="new-password"
+            value={values.password}
+            error={Boolean(errors.password)}
+            onChange={(e) => setValues({ ...values, password: e.target.value })}
+          />
+          <FieldError message={errors.password} />
+        </div>
+        <Button className="w-full" type="submit" disabled={isSubmitting}>
+          {isSubmitting ? "Creando cuenta..." : "Crear tienda"}
         </Button>
       </form>
     </AuthShell>
   );
+}
+
+function validateRegister(values: RegisterFormState): RegisterFormErrors {
+  const errors: RegisterFormErrors = {};
+
+  if (!values.full_name.trim()) {
+    errors.full_name = "Nombre completo es requerido";
+  }
+
+  if (!values.store_name.trim()) {
+    errors.store_name = "Nombre de tienda es requerido";
+  }
+
+  if (!values.email.trim()) {
+    errors.email = "Email es requerido";
+  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.email)) {
+    errors.email = "Email invalido";
+  }
+
+  if (!values.password) {
+    errors.password = "Password es requerido";
+  } else if (values.password.length < 6) {
+    errors.password = "Password debe tener al menos 6 caracteres";
+  }
+
+  return errors;
 }

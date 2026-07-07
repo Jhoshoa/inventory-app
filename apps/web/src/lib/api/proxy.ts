@@ -1,4 +1,4 @@
-import { getAuthToken } from "@/lib/auth/session";
+import { getAuthToken, getRefreshToken } from "@/lib/auth/session";
 import { getBackendApiUrl } from "@/lib/env/server";
 
 const FORWARDED_REQUEST_HEADERS = ["accept", "content-type"] as const;
@@ -12,12 +12,33 @@ export async function proxyRequest(
   const headers = await buildProxyHeaders(request.headers);
   const body = await getProxyBody(request);
 
-  const response = await fetch(target, {
+  let response = await fetch(target, {
     method: request.method,
     headers,
     body,
     cache: "no-store",
   });
+
+  if (response.status === 401) {
+    const refreshToken = await getRefreshToken();
+    if (refreshToken) {
+      const refreshRes = await fetch(`${getBackendApiUrl()}/api/v1/auth/refresh`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ refresh_token: refreshToken }),
+      });
+      if (refreshRes.ok) {
+        const data = await refreshRes.json();
+        headers.set("authorization", `Bearer ${data.access_token}`);
+        response = await fetch(target, {
+          method: request.method,
+          headers,
+          body,
+          cache: "no-store",
+        });
+      }
+    }
+  }
 
   const responseHeaders = new Headers();
   for (const header of FORWARDED_RESPONSE_HEADERS) {

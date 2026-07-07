@@ -20,6 +20,11 @@ export async function getAuthToken() {
   return cookieStore.get(ACCESS_TOKEN_COOKIE)?.value ?? null;
 }
 
+export async function getRefreshToken() {
+  const cookieStore = await cookies();
+  return cookieStore.get(REFRESH_TOKEN_COOKIE)?.value ?? null;
+}
+
 export async function getSession(): Promise<Session | null> {
   const cookieStore = await cookies();
   const rawSession = cookieStore.get(SESSION_COOKIE)?.value;
@@ -28,6 +33,25 @@ export async function getSession(): Promise<Session | null> {
 
   try {
     return sessionFromUser(JSON.parse(Buffer.from(rawSession, "base64url").toString("utf8")));
+  } catch {
+    return null;
+  }
+}
+
+export async function tryRefreshToken(): Promise<string | null> {
+  const refreshToken = await getRefreshToken();
+  if (!refreshToken) return null;
+
+  try {
+    const backendUrl = process.env.BACKEND_API_URL || "http://localhost:8001";
+    const res = await fetch(`${backendUrl}/api/v1/auth/refresh`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ refresh_token: refreshToken }),
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data.access_token as string;
   } catch {
     return null;
   }
@@ -48,7 +72,7 @@ function sessionFromUser(user: AuthUser): Session {
     userId: user.id,
     email: user.email,
     storeId: user.store_id ?? null,
-    storeName: "Mi tienda",
+    storeName: user.store_name ?? "Mi tienda",
     fullName: user.full_name ?? null,
     role: user.role ?? "cashier",
   };
