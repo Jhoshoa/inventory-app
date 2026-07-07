@@ -19,8 +19,7 @@ dependencies = [
     "httpx>=0.28",
     "supabase>=2.30",
     "cloudinary>=1.42",
-    "celery>=5.4",
-    "redis>=5.2",
+
     "python-multipart>=0.0.18",
     "qrcode[pil]>=7.4",
     "sentry-sdk>=2.20",

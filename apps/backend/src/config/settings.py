@@ -19,13 +19,10 @@ class Settings(BaseSettings):
     CLOUDINARY_API_KEY: str = "local"
     CLOUDINARY_API_SECRET: str = "local"
 
-    REDIS_URL: str = "redis://localhost:6379/0"
-
     JWT_SECRET: str = "local-jwt-secret"
 
     SENTRY_DSN: str | None = None
     CORS_ALLOWED_ORIGINS: str = "http://localhost:3000,http://localhost:8081"
-    REQUIRE_REDIS_READY: bool = False
     EXPOSE_ERROR_DETAILS: bool | None = None
 
     @property

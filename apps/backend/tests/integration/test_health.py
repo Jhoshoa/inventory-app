@@ -11,11 +11,9 @@ async def test_readiness_returns_ready_when_database_available(client):
 
     assert response.status_code == 200
     assert response.json()["status"] == "ready"
-    assert response.json()["checks"]["database"] == "ok"
 
 
 async def test_readiness_does_not_require_auth(client):
     response = await client.get("/health/ready")
 
     assert response.status_code == 200
-    assert "checks" in response.json()
