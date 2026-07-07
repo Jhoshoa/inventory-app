@@ -2,8 +2,12 @@ from dataclasses import dataclass
 from uuid import UUID
 
 from src.application.dto.product_category_dto import ProductCategoryListResponseDTO
-from src.application.use_cases.product_categories.create_product_category import _to_response
-from src.domain.repositories.product_category_repository import IProductCategoryRepository
+from src.application.use_cases.product_categories.create_product_category import (
+    _to_response,
+)
+from src.domain.repositories.product_category_repository import (
+    IProductCategoryRepository,
+)
 
 
 @dataclass

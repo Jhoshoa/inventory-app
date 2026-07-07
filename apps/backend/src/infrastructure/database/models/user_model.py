@@ -1,5 +1,7 @@
-from sqlalchemy import Column, String, Boolean, DateTime, ForeignKey, Index
 from datetime import datetime, timezone
+
+from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Index, String
+
 from src.infrastructure.database.models.product_model import Base
 from src.infrastructure.database.types import GUID
 

@@ -4,7 +4,9 @@ from uuid import UUID
 from src.application.dto.product_category_dto import ProductCategoryResponseDTO
 from src.application.exceptions import ConflictError
 from src.domain.entities.product_category import ProductCategory
-from src.domain.repositories.product_category_repository import IProductCategoryRepository
+from src.domain.repositories.product_category_repository import (
+    IProductCategoryRepository,
+)
 
 
 @dataclass

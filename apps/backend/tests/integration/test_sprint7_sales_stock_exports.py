@@ -3,7 +3,12 @@ from datetime import UTC, date, datetime, timedelta
 from io import StringIO
 from uuid import uuid4
 
-from src.infrastructure.database.models import SaleModel, StoreBusinessDayModel, StoreModel, UserModel
+from src.infrastructure.database.models import (
+    SaleModel,
+    StoreBusinessDayModel,
+    StoreModel,
+    UserModel,
+)
 from src.main import app
 from src.presentation import dependencies
 

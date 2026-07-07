@@ -1,25 +1,47 @@
 from uuid import UUID
+
 from fastapi import Depends, HTTPException
 from fastapi.security import HTTPBearer
 from sqlalchemy.ext.asyncio import AsyncSession
+
 from src.application.exceptions import ForbiddenError, UnauthorizedError
-from src.application.use_cases.auth.ensure_local_user import EnsureLocalUserInput, EnsureLocalUserUseCase
-from src.application.use_cases.auth.get_current_user_context import CurrentUserContext, GetCurrentUserContextUseCase
+from src.application.use_cases.auth.ensure_local_user import (
+    EnsureLocalUserInput,
+    EnsureLocalUserUseCase,
+)
+from src.application.use_cases.auth.get_current_user_context import (
+    CurrentUserContext,
+    GetCurrentUserContextUseCase,
+)
 from src.config.settings import settings
 from src.domain.entities.store import Store
-from src.infrastructure.database.session import get_session
-from src.infrastructure.database.repositories.product_repository import ProductRepository
-from src.infrastructure.database.repositories.product_category_repository import ProductCategoryRepository
-from src.infrastructure.database.repositories.sale_repository import SaleRepository
-from src.infrastructure.database.repositories.sync_repository import SyncRepository
-from src.infrastructure.database.repositories.store_repository import StoreRepository
-from src.infrastructure.database.repositories.store_business_day_event_repository import StoreBusinessDayEventRepository
-from src.infrastructure.database.repositories.store_business_day_repository import StoreBusinessDayRepository
-from src.infrastructure.database.repositories.exchange_rate_repository import ExchangeRateRepository
-from src.infrastructure.database.repositories.stock_movement_repository import StockMovementRepository
-from src.infrastructure.database.repositories.cash_movement_repository import CashMovementRepository
-from src.infrastructure.database.repositories.user_repository import UserRepository
 from src.infrastructure.auth.supabase_auth import verify_jwt
+from src.infrastructure.database.repositories.cash_movement_repository import (
+    CashMovementRepository,
+)
+from src.infrastructure.database.repositories.exchange_rate_repository import (
+    ExchangeRateRepository,
+)
+from src.infrastructure.database.repositories.product_category_repository import (
+    ProductCategoryRepository,
+)
+from src.infrastructure.database.repositories.product_repository import (
+    ProductRepository,
+)
+from src.infrastructure.database.repositories.sale_repository import SaleRepository
+from src.infrastructure.database.repositories.stock_movement_repository import (
+    StockMovementRepository,
+)
+from src.infrastructure.database.repositories.store_business_day_event_repository import (
+    StoreBusinessDayEventRepository,
+)
+from src.infrastructure.database.repositories.store_business_day_repository import (
+    StoreBusinessDayRepository,
+)
+from src.infrastructure.database.repositories.store_repository import StoreRepository
+from src.infrastructure.database.repositories.sync_repository import SyncRepository
+from src.infrastructure.database.repositories.user_repository import UserRepository
+from src.infrastructure.database.session import get_session
 
 security_scheme = HTTPBearer(auto_error=False)
 DEV_USER_ID = UUID("00000000-0000-0000-0000-000000000001")

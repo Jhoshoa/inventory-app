@@ -2,23 +2,37 @@ from datetime import date
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query
-from src.application.dto.sale_dto import CreateSaleDTO, SaleListResponseDTO, SaleResponseDTO, VoidSaleDTO
-from src.application.use_cases.sales.create_sale import CreateSaleUseCase, CreateSaleInput, SaleItemInput
-from src.application.use_cases.sales.list_sales import ListSalesInput, ListSalesUseCase
+
+from src.application.dto.sale_dto import (
+    CreateSaleDTO,
+    SaleListResponseDTO,
+    SaleResponseDTO,
+    VoidSaleDTO,
+)
+from src.application.use_cases.sales.create_sale import (
+    CreateSaleInput,
+    CreateSaleUseCase,
+    SaleItemInput,
+)
 from src.application.use_cases.sales.get_sale import GetSaleUseCase
+from src.application.use_cases.sales.list_sales import ListSalesInput, ListSalesUseCase
 from src.application.use_cases.sales.void_sale import VoidSaleInput, VoidSaleUseCase
+from src.infrastructure.database.repositories.product_repository import (
+    ProductRepository,
+)
+from src.infrastructure.database.repositories.sale_repository import SaleRepository
+from src.infrastructure.database.repositories.store_business_day_repository import (
+    StoreBusinessDayRepository,
+)
+from src.infrastructure.database.repositories.store_repository import StoreRepository
 from src.presentation.dependencies import (
     get_current_user,
     get_product_repo,
     get_sale_repo,
-    get_store_repo,
     get_store_business_day_repo,
+    get_store_repo,
     require_owner,
 )
-from src.infrastructure.database.repositories.product_repository import ProductRepository
-from src.infrastructure.database.repositories.sale_repository import SaleRepository
-from src.infrastructure.database.repositories.store_repository import StoreRepository
-from src.infrastructure.database.repositories.store_business_day_repository import StoreBusinessDayRepository
 
 router = APIRouter(prefix="/sales", tags=["sales"])
 

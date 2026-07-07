@@ -6,8 +6,8 @@ from sqlalchemy import select
 from src.infrastructure.database.models import UserModel
 from src.infrastructure.database.models.stock_movement_model import StockMovementModel
 from src.infrastructure.database.models.store_model import StoreModel
-from src.presentation import dependencies
 from src.main import app
+from src.presentation import dependencies
 
 
 async def _open_store_day(client):

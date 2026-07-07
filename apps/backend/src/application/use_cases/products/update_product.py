@@ -1,11 +1,14 @@
 from dataclasses import dataclass
 from decimal import Decimal
 from uuid import UUID
-from src.domain.entities.product import Product
-from src.domain.repositories.product_category_repository import IProductCategoryRepository
-from src.domain.repositories.product_repository import IProductRepository
+
 from src.application.exceptions import ConflictError, NotFoundError
 from src.application.use_cases.products.name_normalizer import normalize_product_name
+from src.domain.entities.product import Product
+from src.domain.repositories.product_category_repository import (
+    IProductCategoryRepository,
+)
+from src.domain.repositories.product_repository import IProductRepository
 
 
 @dataclass

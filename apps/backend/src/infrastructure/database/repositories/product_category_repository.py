@@ -5,9 +5,13 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.domain.entities.product_category import ProductCategory
+from src.domain.repositories.product_category_repository import (
+    IProductCategoryRepository,
+)
+from src.infrastructure.database.models.product_category_model import (
+    ProductCategoryModel,
+)
 from src.infrastructure.database.models.product_model import ProductModel
-from src.domain.repositories.product_category_repository import IProductCategoryRepository
-from src.infrastructure.database.models.product_category_model import ProductCategoryModel
 
 
 class ProductCategoryRepository(IProductCategoryRepository):

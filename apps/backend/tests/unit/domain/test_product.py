@@ -1,5 +1,6 @@
 from decimal import Decimal
 from uuid import uuid4
+
 from src.domain.entities.product import Product
 
 

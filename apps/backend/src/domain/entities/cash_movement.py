@@ -3,7 +3,6 @@ from datetime import datetime, timezone
 from decimal import Decimal
 from uuid import UUID, uuid4
 
-
 CASH_MOVEMENT_TYPES = {"cash_in", "cash_out", "expense", "deposit", "withdrawal"}
 CASH_MOVEMENT_OUT_TYPES = {"cash_out", "expense", "deposit", "withdrawal"}
 

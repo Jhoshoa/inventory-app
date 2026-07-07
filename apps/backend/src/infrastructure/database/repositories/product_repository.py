@@ -1,10 +1,12 @@
-from uuid import UUID
 from datetime import datetime, timezone
+from uuid import UUID
+
 from sqlalchemy import func, or_, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from src.application.exceptions import StockConflictError
 from src.domain.entities.product import Product
 from src.domain.repositories.product_repository import IProductRepository
-from src.application.exceptions import StockConflictError
 from src.infrastructure.database.models.product_model import ProductModel
 from src.infrastructure.database.models.stock_movement_model import StockMovementModel
 

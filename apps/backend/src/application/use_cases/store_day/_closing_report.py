@@ -1,6 +1,9 @@
 from decimal import Decimal
 
-from src.application.dto.store_day_dto import StoreDayCloseReportDTO, StoreDayClosingPreviewDTO
+from src.application.dto.store_day_dto import (
+    StoreDayCloseReportDTO,
+    StoreDayClosingPreviewDTO,
+)
 from src.domain.entities.store_business_day import StoreBusinessDay
 
 

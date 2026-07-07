@@ -15,21 +15,38 @@ from src.application.dto.product_dto import (
     UpdateProductDTO,
 )
 from src.application.dto.stock_movement_dto import StockMovementListResponseDTO
-from src.application.use_cases.products.create_product import CreateProductInput, CreateProductUseCase
+from src.application.use_cases.products.create_product import (
+    CreateProductInput,
+    CreateProductUseCase,
+)
 from src.application.use_cases.products.delete_product import DeleteProductUseCase
 from src.application.use_cases.products.get_product import GetProductUseCase
 from src.application.use_cases.products.get_product_by_qr import GetProductByQRUseCase
-from src.application.use_cases.products.list_low_stock_products import ListLowStockProductsUseCase
-from src.application.use_cases.products.search_products import SearchProductsInput, SearchProductsUseCase
-from src.application.use_cases.products.update_product import UpdateProductInput, UpdateProductUseCase
+from src.application.use_cases.products.list_low_stock_products import (
+    ListLowStockProductsUseCase,
+)
+from src.application.use_cases.products.search_products import (
+    SearchProductsInput,
+    SearchProductsUseCase,
+)
+from src.application.use_cases.products.update_product import (
+    UpdateProductInput,
+    UpdateProductUseCase,
+)
 from src.application.use_cases.products.update_stock import UpdateStockUseCase
 from src.application.use_cases.stock_movements.list_product_stock_movements import (
     ListProductStockMovementsInput,
     ListProductStockMovementsUseCase,
 )
-from src.infrastructure.database.repositories.product_repository import ProductRepository
-from src.infrastructure.database.repositories.product_category_repository import ProductCategoryRepository
-from src.infrastructure.database.repositories.stock_movement_repository import StockMovementRepository
+from src.infrastructure.database.repositories.product_category_repository import (
+    ProductCategoryRepository,
+)
+from src.infrastructure.database.repositories.product_repository import (
+    ProductRepository,
+)
+from src.infrastructure.database.repositories.stock_movement_repository import (
+    StockMovementRepository,
+)
 from src.presentation.dependencies import (
     get_product_category_repo,
     get_product_repo,

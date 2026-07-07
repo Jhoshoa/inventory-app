@@ -1,6 +1,6 @@
 from dataclasses import dataclass
-from uuid import UUID
 from datetime import datetime
+from uuid import UUID
 
 from src.application.dto.sync_dto import SyncPullChangeDTO
 from src.domain.repositories.sync_repository import ISyncRepository

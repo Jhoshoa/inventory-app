@@ -1,4 +1,5 @@
 from uuid import UUID
+
 from src.domain.entities.product import Product
 from src.domain.repositories.product_repository import IProductRepository
 

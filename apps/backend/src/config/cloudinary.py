@@ -1,4 +1,5 @@
 import cloudinary
+
 from src.config.settings import settings
 
 cloudinary.config(

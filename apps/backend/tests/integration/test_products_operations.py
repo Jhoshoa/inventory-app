@@ -1,7 +1,7 @@
 from uuid import uuid4
 
-from src.main import app
 from src.infrastructure.database.models import StoreModel, UserModel
+from src.main import app
 from src.presentation import dependencies
 
 

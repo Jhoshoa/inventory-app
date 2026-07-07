@@ -5,7 +5,9 @@ from src.application.dto.store_day_dto import StoreDayResponseDTO
 from src.application.exceptions import NotFoundError
 from src.application.use_cases.store_day._business_date import local_business_date
 from src.domain.entities.store_business_day import StoreBusinessDay
-from src.domain.repositories.store_business_day_repository import IStoreBusinessDayRepository
+from src.domain.repositories.store_business_day_repository import (
+    IStoreBusinessDayRepository,
+)
 from src.domain.repositories.store_repository import IStoreRepository
 
 

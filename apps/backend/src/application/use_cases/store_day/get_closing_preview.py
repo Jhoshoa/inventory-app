@@ -3,10 +3,14 @@ from uuid import UUID
 
 from src.application.dto.store_day_dto import StoreDayClosingPreviewDTO
 from src.application.exceptions import ConflictError, NotFoundError
-from src.application.use_cases.store_day._closing_report import closing_preview_from_summary
-from src.domain.repositories.sale_repository import ISaleRepository
+from src.application.use_cases.store_day._closing_report import (
+    closing_preview_from_summary,
+)
 from src.domain.repositories.cash_movement_repository import ICashMovementRepository
-from src.domain.repositories.store_business_day_repository import IStoreBusinessDayRepository
+from src.domain.repositories.sale_repository import ISaleRepository
+from src.domain.repositories.store_business_day_repository import (
+    IStoreBusinessDayRepository,
+)
 from src.domain.repositories.store_repository import IStoreRepository
 
 

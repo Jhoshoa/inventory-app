@@ -25,7 +25,9 @@ from src.application.use_cases.product_categories.update_product_category import
     UpdateProductCategoryInput,
     UpdateProductCategoryUseCase,
 )
-from src.infrastructure.database.repositories.product_category_repository import ProductCategoryRepository
+from src.infrastructure.database.repositories.product_category_repository import (
+    ProductCategoryRepository,
+)
 from src.presentation.dependencies import get_product_category_repo, require_owner
 
 router = APIRouter(prefix="/product-categories", tags=["product-categories"])

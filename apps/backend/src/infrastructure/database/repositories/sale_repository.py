@@ -1,13 +1,14 @@
-from uuid import UUID
 from datetime import date, datetime, timezone
 from decimal import Decimal
+from uuid import UUID
 
 from sqlalchemy import func, select
-from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
+
 from src.domain.entities.sale import Sale, SaleItem
 from src.domain.repositories.sale_repository import ISaleRepository
-from src.infrastructure.database.models.sale_model import SaleModel, SaleItemModel
+from src.infrastructure.database.models.sale_model import SaleItemModel, SaleModel
 
 
 class SaleRepository(ISaleRepository):

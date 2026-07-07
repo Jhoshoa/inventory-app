@@ -1,10 +1,13 @@
 from dataclasses import dataclass
 from uuid import UUID
-from src.domain.entities.sale import Sale, SaleItem
-from src.domain.repositories.sale_repository import ISaleRepository
-from src.domain.repositories.product_repository import IProductRepository
-from src.domain.repositories.store_business_day_repository import IStoreBusinessDayRepository
+
 from src.application.exceptions import ConflictError, NotFoundError, StockConflictError
+from src.domain.entities.sale import Sale, SaleItem
+from src.domain.repositories.product_repository import IProductRepository
+from src.domain.repositories.sale_repository import ISaleRepository
+from src.domain.repositories.store_business_day_repository import (
+    IStoreBusinessDayRepository,
+)
 
 
 @dataclass

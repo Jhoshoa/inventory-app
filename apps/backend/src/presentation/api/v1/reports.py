@@ -4,10 +4,17 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, Query
 
 from src.application.dto.report_dto import SalesReportDTO
-from src.application.use_cases.reports.get_sales_report import GetSalesReportInput, GetSalesReportUseCase
+from src.application.use_cases.reports.get_sales_report import (
+    GetSalesReportInput,
+    GetSalesReportUseCase,
+)
 from src.infrastructure.database.repositories.sale_repository import SaleRepository
 from src.infrastructure.database.repositories.store_repository import StoreRepository
-from src.presentation.dependencies import get_current_user, get_sale_repo, get_store_repo
+from src.presentation.dependencies import (
+    get_current_user,
+    get_sale_repo,
+    get_store_repo,
+)
 
 router = APIRouter(prefix="/reports", tags=["reports"])
 

@@ -1,6 +1,10 @@
 from decimal import Decimal
 from uuid import uuid4
-from src.application.use_cases.products.create_product import CreateProductUseCase, CreateProductInput
+
+from src.application.use_cases.products.create_product import (
+    CreateProductInput,
+    CreateProductUseCase,
+)
 
 
 class MockProductRepo:

@@ -3,18 +3,29 @@ from uuid import UUID, uuid4
 from fastapi import APIRouter, Depends
 from supabase import create_client
 
-from src.application.dto.auth_dto import AuthResponseDTO, CurrentUserDTO, LoginDTO, RegisterDTO
+from src.application.dto.auth_dto import (
+    AuthResponseDTO,
+    CurrentUserDTO,
+    LoginDTO,
+    RegisterDTO,
+)
 from src.application.exceptions import UnauthorizedError
-from src.application.use_cases.auth.ensure_local_user import EnsureLocalUserInput, EnsureLocalUserUseCase
-from src.application.use_cases.auth.register_store_owner import RegisterStoreOwnerInput, RegisterStoreOwnerUseCase
+from src.application.use_cases.auth.ensure_local_user import (
+    EnsureLocalUserInput,
+    EnsureLocalUserUseCase,
+)
+from src.application.use_cases.auth.register_store_owner import (
+    RegisterStoreOwnerInput,
+    RegisterStoreOwnerUseCase,
+)
 from src.config.settings import settings
 from src.infrastructure.database.repositories.store_repository import StoreRepository
 from src.infrastructure.database.repositories.user_repository import UserRepository
 from src.presentation.dependencies import (
+    DEV_ACCESS_TOKEN,
     DEV_CASHIER_ACCESS_TOKEN,
     DEV_CASHIER_USER_ID,
     DEV_STORE_ID,
-    DEV_ACCESS_TOKEN,
     DEV_USER_ID,
     get_current_user_context,
     get_store_repo,

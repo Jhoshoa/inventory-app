@@ -22,9 +22,17 @@ from src.application.use_cases.cash_movements.void_cash_movement import (
     VoidCashMovementInput,
     VoidCashMovementUseCase,
 )
-from src.infrastructure.database.repositories.cash_movement_repository import CashMovementRepository
-from src.infrastructure.database.repositories.store_business_day_repository import StoreBusinessDayRepository
-from src.presentation.dependencies import get_cash_movement_repo, get_store_business_day_repo, require_owner
+from src.infrastructure.database.repositories.cash_movement_repository import (
+    CashMovementRepository,
+)
+from src.infrastructure.database.repositories.store_business_day_repository import (
+    StoreBusinessDayRepository,
+)
+from src.presentation.dependencies import (
+    get_cash_movement_repo,
+    get_store_business_day_repo,
+    require_owner,
+)
 
 router = APIRouter(prefix="/cash-movements", tags=["cash-movements"])
 

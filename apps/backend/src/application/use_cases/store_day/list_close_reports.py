@@ -4,9 +4,13 @@ from uuid import UUID
 
 from src.application.dto.store_day_dto import StoreDayCloseReportListDTO
 from src.application.exceptions import NotFoundError
-from src.application.use_cases.store_day._closing_report import close_report_from_business_day
 from src.application.use_cases.date_ranges import BusinessDateRangeService
-from src.domain.repositories.store_business_day_repository import IStoreBusinessDayRepository
+from src.application.use_cases.store_day._closing_report import (
+    close_report_from_business_day,
+)
+from src.domain.repositories.store_business_day_repository import (
+    IStoreBusinessDayRepository,
+)
 from src.domain.repositories.store_repository import IStoreRepository
 
 

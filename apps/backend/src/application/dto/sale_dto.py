@@ -1,8 +1,9 @@
+from datetime import date, datetime
 from decimal import Decimal
 from enum import StrEnum
 from uuid import UUID
+
 from pydantic import BaseModel, Field
-from datetime import date, datetime
 
 
 class PaymentMethodDTO(StrEnum):

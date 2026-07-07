@@ -1,7 +1,8 @@
 import cloudinary
 import cloudinary.uploader
-from src.config.settings import settings
+
 from src.application.ports.photo_storage import IPhotoStorage
+from src.config.settings import settings
 
 
 class CloudinaryPhotoStorage(IPhotoStorage):

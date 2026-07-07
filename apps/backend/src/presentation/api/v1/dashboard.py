@@ -4,12 +4,25 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, Query
 
 from src.application.dto.dashboard_dto import DashboardSummaryDTO
-from src.application.use_cases.dashboard.get_dashboard_summary import GetDashboardSummaryInput, GetDashboardSummaryUseCase
-from src.infrastructure.database.repositories.exchange_rate_repository import ExchangeRateRepository
-from src.infrastructure.database.repositories.product_repository import ProductRepository
+from src.application.use_cases.dashboard.get_dashboard_summary import (
+    GetDashboardSummaryInput,
+    GetDashboardSummaryUseCase,
+)
+from src.infrastructure.database.repositories.exchange_rate_repository import (
+    ExchangeRateRepository,
+)
+from src.infrastructure.database.repositories.product_repository import (
+    ProductRepository,
+)
 from src.infrastructure.database.repositories.sale_repository import SaleRepository
 from src.infrastructure.database.repositories.store_repository import StoreRepository
-from src.presentation.dependencies import get_current_user, get_exchange_rate_repo, get_product_repo, get_sale_repo, get_store_repo
+from src.presentation.dependencies import (
+    get_current_user,
+    get_exchange_rate_repo,
+    get_product_repo,
+    get_sale_repo,
+    get_store_repo,
+)
 
 router = APIRouter(prefix="/dashboard", tags=["dashboard"])
 

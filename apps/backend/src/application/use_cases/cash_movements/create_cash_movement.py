@@ -6,7 +6,9 @@ from src.application.dto.cash_movement_dto import CashMovementResponseDTO
 from src.application.exceptions import ConflictError
 from src.domain.entities.cash_movement import CashMovement
 from src.domain.repositories.cash_movement_repository import ICashMovementRepository
-from src.domain.repositories.store_business_day_repository import IStoreBusinessDayRepository
+from src.domain.repositories.store_business_day_repository import (
+    IStoreBusinessDayRepository,
+)
 
 
 @dataclass

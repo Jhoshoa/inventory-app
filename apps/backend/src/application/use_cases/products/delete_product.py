@@ -1,6 +1,7 @@
 from uuid import UUID
-from src.domain.repositories.product_repository import IProductRepository
+
 from src.application.exceptions import NotFoundError
+from src.domain.repositories.product_repository import IProductRepository
 
 
 class DeleteProductUseCase:

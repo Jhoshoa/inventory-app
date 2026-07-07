@@ -4,8 +4,12 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.domain.entities.store_business_day_event import StoreBusinessDayEvent
-from src.domain.repositories.store_business_day_event_repository import IStoreBusinessDayEventRepository
-from src.infrastructure.database.models.store_business_day_event_model import StoreBusinessDayEventModel
+from src.domain.repositories.store_business_day_event_repository import (
+    IStoreBusinessDayEventRepository,
+)
+from src.infrastructure.database.models.store_business_day_event_model import (
+    StoreBusinessDayEventModel,
+)
 
 
 class StoreBusinessDayEventRepository(IStoreBusinessDayEventRepository):

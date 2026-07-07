@@ -5,8 +5,12 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.domain.entities.store_business_day import StoreBusinessDay
-from src.domain.repositories.store_business_day_repository import IStoreBusinessDayRepository
-from src.infrastructure.database.models.store_business_day_model import StoreBusinessDayModel
+from src.domain.repositories.store_business_day_repository import (
+    IStoreBusinessDayRepository,
+)
+from src.infrastructure.database.models.store_business_day_model import (
+    StoreBusinessDayModel,
+)
 
 
 class StoreBusinessDayRepository(IStoreBusinessDayRepository):

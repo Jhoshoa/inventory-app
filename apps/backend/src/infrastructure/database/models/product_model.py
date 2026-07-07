@@ -1,7 +1,20 @@
 import uuid
-from sqlalchemy import Column, String, Integer, Numeric, Boolean, DateTime, JSON, ForeignKey, Index, UniqueConstraint
-from sqlalchemy.orm import DeclarativeBase
 from datetime import datetime, timezone
+
+from sqlalchemy import (
+    JSON,
+    Boolean,
+    Column,
+    DateTime,
+    ForeignKey,
+    Index,
+    Integer,
+    Numeric,
+    String,
+    UniqueConstraint,
+)
+from sqlalchemy.orm import DeclarativeBase
+
 from src.infrastructure.database.types import GUID
 
 

@@ -4,7 +4,6 @@ from uuid import uuid4
 
 from fastapi import FastAPI, Request
 
-
 logger = logging.getLogger("inventory.request")
 
 

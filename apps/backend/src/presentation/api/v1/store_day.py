@@ -12,26 +12,51 @@ from src.application.dto.store_day_dto import (
     StoreDayEventResponseDTO,
     StoreDayResponseDTO,
 )
-from src.application.use_cases.store_day.close_store_day import CloseStoreDayInput, CloseStoreDayUseCase
+from src.application.use_cases.auth.get_current_user_context import CurrentUserContext
+from src.application.use_cases.store_day.close_store_day import (
+    CloseStoreDayInput,
+    CloseStoreDayUseCase,
+)
 from src.application.use_cases.store_day.get_close_report import (
     GetCloseReportInput,
     GetCloseReportUseCase,
     GetCurrentCloseReportInput,
     GetCurrentCloseReportUseCase,
 )
-from src.application.use_cases.store_day.get_closing_preview import GetClosingPreviewInput, GetClosingPreviewUseCase
-from src.application.use_cases.store_day.get_current_store_day import GetCurrentStoreDayInput, GetCurrentStoreDayUseCase
-from src.application.use_cases.store_day.list_close_reports import ListCloseReportsInput, ListCloseReportsUseCase
+from src.application.use_cases.store_day.get_closing_preview import (
+    GetClosingPreviewInput,
+    GetClosingPreviewUseCase,
+)
+from src.application.use_cases.store_day.get_current_store_day import (
+    GetCurrentStoreDayInput,
+    GetCurrentStoreDayUseCase,
+)
+from src.application.use_cases.store_day.list_close_reports import (
+    ListCloseReportsInput,
+    ListCloseReportsUseCase,
+)
 from src.application.use_cases.store_day.list_current_store_day_events import (
     ListCurrentStoreDayEventsInput,
     ListCurrentStoreDayEventsUseCase,
 )
-from src.application.use_cases.store_day.open_store_day import OpenStoreDayInput, OpenStoreDayUseCase
-from src.application.use_cases.store_day.reopen_store_day import ReopenStoreDayInput, ReopenStoreDayUseCase
-from src.infrastructure.database.repositories.cash_movement_repository import CashMovementRepository
+from src.application.use_cases.store_day.open_store_day import (
+    OpenStoreDayInput,
+    OpenStoreDayUseCase,
+)
+from src.application.use_cases.store_day.reopen_store_day import (
+    ReopenStoreDayInput,
+    ReopenStoreDayUseCase,
+)
+from src.infrastructure.database.repositories.cash_movement_repository import (
+    CashMovementRepository,
+)
 from src.infrastructure.database.repositories.sale_repository import SaleRepository
-from src.infrastructure.database.repositories.store_business_day_event_repository import StoreBusinessDayEventRepository
-from src.infrastructure.database.repositories.store_business_day_repository import StoreBusinessDayRepository
+from src.infrastructure.database.repositories.store_business_day_event_repository import (
+    StoreBusinessDayEventRepository,
+)
+from src.infrastructure.database.repositories.store_business_day_repository import (
+    StoreBusinessDayRepository,
+)
 from src.infrastructure.database.repositories.store_repository import StoreRepository
 from src.presentation.dependencies import (
     get_cash_movement_repo,
@@ -42,7 +67,6 @@ from src.presentation.dependencies import (
     require_active_user,
     require_owner,
 )
-from src.application.use_cases.auth.get_current_user_context import CurrentUserContext
 
 router = APIRouter(prefix="/store-day", tags=["store-day"])
 

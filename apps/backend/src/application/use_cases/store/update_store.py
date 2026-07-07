@@ -1,8 +1,9 @@
 from dataclasses import dataclass
 from uuid import UUID
+
+from src.application.exceptions import NotFoundError
 from src.domain.entities.store import Store
 from src.domain.repositories.store_repository import IStoreRepository
-from src.application.exceptions import NotFoundError
 
 
 @dataclass

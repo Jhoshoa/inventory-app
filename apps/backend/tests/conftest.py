@@ -5,11 +5,11 @@ from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.pool import StaticPool
 
+from src.config.settings import settings
 from src.infrastructure.database import models as _models
 from src.infrastructure.database.models import StoreModel, UserModel
 from src.infrastructure.database.models.product_model import Base
 from src.main import app
-from src.config.settings import settings
 from src.presentation import dependencies
 
 TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"

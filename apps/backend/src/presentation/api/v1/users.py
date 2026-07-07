@@ -9,8 +9,14 @@ from src.application.dto.user_dto import (
     UserResponseDTO,
 )
 from src.application.use_cases.users.list_users import ListUsersInput, ListUsersUseCase
-from src.application.use_cases.users.update_user_role import UpdateUserRoleInput, UpdateUserRoleUseCase
-from src.application.use_cases.users.update_user_status import UpdateUserStatusInput, UpdateUserStatusUseCase
+from src.application.use_cases.users.update_user_role import (
+    UpdateUserRoleInput,
+    UpdateUserRoleUseCase,
+)
+from src.application.use_cases.users.update_user_status import (
+    UpdateUserStatusInput,
+    UpdateUserStatusUseCase,
+)
 from src.infrastructure.database.repositories.user_repository import UserRepository
 from src.presentation.dependencies import get_user_repo, require_owner
 

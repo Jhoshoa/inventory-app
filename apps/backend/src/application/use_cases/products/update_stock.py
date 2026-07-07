@@ -1,7 +1,8 @@
 from uuid import UUID
+
+from src.application.exceptions import NotFoundError
 from src.domain.entities.product import Product
 from src.domain.repositories.product_repository import IProductRepository
-from src.application.exceptions import NotFoundError
 
 
 class UpdateStockUseCase:

@@ -4,7 +4,12 @@ from src.infrastructure.database.models.exchange_rate_model import ExchangeRateM
 from src.infrastructure.database.models.product_model import ProductModel
 from src.infrastructure.database.models.store_model import StoreModel
 from src.infrastructure.database.models.user_model import UserModel
-from src.infrastructure.database.seed.dev_seed import DEV_CASHIER_USER_ID, DEV_STORE_ID, DEV_USER_ID, seed_dev_data
+from src.infrastructure.database.seed.dev_seed import (
+    DEV_CASHIER_USER_ID,
+    DEV_STORE_ID,
+    DEV_USER_ID,
+    seed_dev_data,
+)
 
 
 async def test_seed_dev_data_is_idempotent(db_session):

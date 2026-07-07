@@ -1,7 +1,13 @@
 from fastapi import APIRouter, Depends
-from src.application.dto.exchange_rate_dto import ExchangeRateResponseDTO, ExchangeRateUpsertDTO
+
+from src.application.dto.exchange_rate_dto import (
+    ExchangeRateResponseDTO,
+    ExchangeRateUpsertDTO,
+)
+from src.infrastructure.database.repositories.exchange_rate_repository import (
+    ExchangeRateRepository,
+)
 from src.presentation.dependencies import get_current_user, get_exchange_rate_repo
-from src.infrastructure.database.repositories.exchange_rate_repository import ExchangeRateRepository
 
 router = APIRouter(prefix="/exchange-rates", tags=["exchange-rates"])
 

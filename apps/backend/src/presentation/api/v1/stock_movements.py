@@ -8,7 +8,9 @@ from src.application.use_cases.stock_movements.list_stock_movements import (
     ListStockMovementsInput,
     ListStockMovementsUseCase,
 )
-from src.infrastructure.database.repositories.stock_movement_repository import StockMovementRepository
+from src.infrastructure.database.repositories.stock_movement_repository import (
+    StockMovementRepository,
+)
 from src.presentation.dependencies import get_stock_movement_repo, require_active_user
 
 router = APIRouter(prefix="/stock-movements", tags=["stock-movements"])

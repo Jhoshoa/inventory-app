@@ -1,7 +1,8 @@
 from uuid import UUID
+
+from src.application.exceptions import NotFoundError
 from src.domain.entities.sale import Sale
 from src.domain.repositories.sale_repository import ISaleRepository
-from src.application.exceptions import NotFoundError
 
 
 class GetSaleUseCase:

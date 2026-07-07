@@ -1,7 +1,6 @@
 from datetime import datetime
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
-
 DEFAULT_STORE_TIMEZONE = "America/La_Paz"
 
 

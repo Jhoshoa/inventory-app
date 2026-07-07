@@ -9,7 +9,9 @@ from src.application.use_cases.date_ranges import BusinessDateRangeService
 from src.domain.repositories.product_repository import IProductRepository
 from src.domain.repositories.sale_repository import ISaleRepository
 from src.domain.repositories.store_repository import IStoreRepository
-from src.infrastructure.database.repositories.exchange_rate_repository import ExchangeRateRepository
+from src.infrastructure.database.repositories.exchange_rate_repository import (
+    ExchangeRateRepository,
+)
 
 
 @dataclass
