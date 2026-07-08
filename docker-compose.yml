@@ -39,7 +39,7 @@ services:
       context: apps/web
       args:
         NEXT_PUBLIC_APP_NAME: ${APP_NAME:-Inventory App}
-        NEXT_PUBLIC_APP_URL: ${APP_URL:-http://localhost:3000}
+        NEXT_PUBLIC_APP_URL: ${APP_URL:-http://localhost:3010}
         NEXT_PUBLIC_SENTRY_DSN: ${SENTRY_DSN:-}
         BACKEND_API_URL: ${BACKEND_API_URL:-http://api:8001}
         SENTRY_DSN: ${SENTRY_DSN:-}
@@ -50,10 +50,10 @@ services:
       BACKEND_API_URL: ${BACKEND_API_URL:-http://api:8001}
       SENTRY_DSN: ${SENTRY_DSN:-}
       NEXT_PUBLIC_APP_NAME: ${APP_NAME:-Inventory App}
-      NEXT_PUBLIC_APP_URL: ${APP_URL:-http://localhost:3000}
+      NEXT_PUBLIC_APP_URL: ${APP_URL:-http://localhost:3010}
       NEXT_PUBLIC_SENTRY_DSN: ${SENTRY_DSN:-}
     ports:
-      - "127.0.0.1:3000:3000"
+      - "127.0.0.1:3010:3010"
     logging:
       driver: "json-file"
       options:

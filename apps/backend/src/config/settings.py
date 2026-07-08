@@ -22,8 +22,8 @@ class Settings(BaseSettings):
     JWT_SECRET: str = "local-jwt-secret"
 
     SENTRY_DSN: str | None = None
-    FRONTEND_URL: str = "http://localhost:3000"
-    CORS_ALLOWED_ORIGINS: str = "http://localhost:3000,http://localhost:8081"
+    FRONTEND_URL: str = "http://localhost:3010"
+    CORS_ALLOWED_ORIGINS: str = "http://localhost:3010,http://localhost:8081"
     EXPOSE_ERROR_DETAILS: bool | None = None
 
     @property

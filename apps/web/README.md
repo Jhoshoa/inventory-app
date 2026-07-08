@@ -31,7 +31,7 @@ Default local values:
 ```env
 BACKEND_API_URL=http://localhost:8001
 NEXT_PUBLIC_APP_NAME=Inventory App
-NEXT_PUBLIC_APP_URL=http://localhost:3000
+NEXT_PUBLIC_APP_URL=http://localhost:3010
 NEXT_PUBLIC_SENTRY_DSN=
 SENTRY_DSN=
 ```
@@ -53,7 +53,7 @@ corepack pnpm dev
 Open:
 
 ```text
-http://localhost:3000
+http://localhost:3010
 ```
 
 ## Run in Production Mode

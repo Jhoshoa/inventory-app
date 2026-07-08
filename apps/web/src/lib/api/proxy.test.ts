@@ -4,7 +4,7 @@ import { buildBackendUrl } from "./proxy";
 describe("buildBackendUrl", () => {
   it("forwards path and query to the backend API", () => {
     const url = buildBackendUrl(
-      "http://localhost:3000/api/products?limit=10&search=rice",
+      "http://localhost:3010/api/products?limit=10&search=rice",
       ["products"],
     );
 

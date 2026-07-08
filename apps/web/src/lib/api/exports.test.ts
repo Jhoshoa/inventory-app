@@ -4,7 +4,7 @@ import { buildExportBackendUrl } from "./exports";
 describe("buildExportBackendUrl", () => {
   it("forwards query params to the backend export endpoint", () => {
     const url = buildExportBackendUrl(
-      "http://localhost:3000/api/exports/sales?from=2026-05-01&to=2026-05-20",
+      "http://localhost:3010/api/exports/sales?from=2026-05-01&to=2026-05-20",
       "sales.csv",
     );
 
@@ -15,7 +15,7 @@ describe("buildExportBackendUrl", () => {
 
   it("builds cash movement export urls", () => {
     const url = buildExportBackendUrl(
-      "http://localhost:3000/api/exports/cash-movements?from=2026-05-01&to=2026-05-20&type=expense",
+      "http://localhost:3010/api/exports/cash-movements?from=2026-05-01&to=2026-05-20&type=expense",
       "cash-movements.csv",
     );
 
