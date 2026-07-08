@@ -5,7 +5,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends curl && \
     rm -rf /var/lib/apt/lists/*
 
 COPY pyproject.toml .
-RUN pip install --no-cache-dir -e .[prod]
+COPY src/ src/
+RUN pip install --no-cache-dir .[prod]
 
 COPY . .
 
