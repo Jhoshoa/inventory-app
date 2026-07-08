@@ -1,7 +1,10 @@
+import asyncio
+import logging
 from uuid import UUID, uuid4
 
 from fastapi import APIRouter, Depends, HTTPException
 from supabase import create_client
+from supabase_auth.errors import AuthApiError
 
 from src.application.dto.auth_dto import (
     AuthResponseDTO,
@@ -22,6 +25,7 @@ from src.application.use_cases.auth.register_store_owner import (
     RegisterStoreOwnerUseCase,
 )
 from src.config.settings import settings
+from src.domain.entities.store import Store
 from src.infrastructure.auth.password import hash_password, verify_password
 from src.infrastructure.database.repositories.store_repository import StoreRepository
 from src.infrastructure.database.repositories.user_repository import UserRepository
@@ -36,7 +40,11 @@ from src.presentation.dependencies import (
     get_user_repo,
 )
 
+logger = logging.getLogger(__name__)
+
 router = APIRouter(prefix="/auth", tags=["auth"])
+
+_pkce_verifiers: dict[str, str] = {}
 
 
 def _auth_response_from_supabase(response) -> AuthResponseDTO:
@@ -293,7 +301,8 @@ async def dev_login(
 async def oauth_google():
     if settings.DEBUG:
         return {"url": f"{settings.FRONTEND_URL}/login?oauth=dev"}
-    redirect_to = f"{settings.FRONTEND_URL}/auth/callback"
+    state = str(uuid4())
+    redirect_to = f"{settings.FRONTEND_URL}/auth/callback?state={state}"
     supabase = create_client(settings.SUPABASE_URL, settings.SUPABASE_ANON_KEY)
     response = supabase.auth.sign_in_with_oauth(
         {
@@ -301,6 +310,10 @@ async def oauth_google():
             "options": {"redirect_to": redirect_to},
         }
     )
+    verifier_key = f"{supabase.auth._storage_key}-code-verifier"
+    code_verifier = supabase.auth._storage.get_item(verifier_key)
+    if code_verifier:
+        _pkce_verifiers[state] = code_verifier
     return {"url": response.url}
 
 
@@ -312,14 +325,37 @@ async def oauth_callback(
 ):
     if settings.DEBUG:
         return _dev_auth_response()
+
+    code_verifier = _pkce_verifiers.pop(dto.state, None)
+
     supabase = create_client(settings.SUPABASE_URL, settings.SUPABASE_ANON_KEY)
-    session = supabase.auth.exchange_code_for_session({"auth_code": dto.code})
+    try:
+        exchange_params = {"auth_code": dto.code}
+        if code_verifier:
+            exchange_params["code_verifier"] = code_verifier
+        auth_resp = await asyncio.wait_for(
+            asyncio.to_thread(supabase.auth.exchange_code_for_session, exchange_params),
+            timeout=30,
+        )
+    except asyncio.TimeoutError:
+        logger.error("OAuth callback: timeout al intercambiar codigo con Supabase")
+        raise HTTPException(status_code=502, detail="Supabase no respondio a tiempo")
+    except AuthApiError as e:
+        logger.error("OAuth callback: error de autenticacion con Supabase: %s", e)
+        raise HTTPException(status_code=401, detail=str(e))
+    except Exception as e:
+        logger.exception("OAuth callback: error inesperado al intercambiar codigo")
+        raise HTTPException(status_code=500, detail=f"Error al intercambiar codigo: {e}")
+
+    supabase_session = auth_resp.session
+    supabase_user = auth_resp.user
+
     user_data = {
-        "id": session.user.id,
-        "email": session.user.email,
-        "store_id": session.user.user_metadata.get("store_id"),
-        "full_name": session.user.user_metadata.get("full_name") or session.user.user_metadata.get("name"),
-        "role": session.user.user_metadata.get("role", "cashier"),
+        "id": supabase_user.id,
+        "email": supabase_user.email,
+        "store_id": supabase_user.user_metadata.get("store_id"),
+        "full_name": supabase_user.user_metadata.get("full_name") or supabase_user.user_metadata.get("name"),
+        "role": supabase_user.user_metadata.get("role", "cashier"),
     }
 
     if not user_data["store_id"]:
@@ -327,10 +363,10 @@ async def oauth_callback(
         if existing and existing.store_id:
             user_data["store_id"] = str(existing.store_id)
         else:
-            raise HTTPException(
-                status_code=400,
-                detail="Debes completar el registro de tu tienda primero",
-            )
+            store_name = f"{user_data.get('full_name') or user_data['email'].split('@')[0]}'s Store"
+            new_store = Store.create(store_name)
+            new_store = await store_repo.save(new_store)
+            user_data["store_id"] = str(new_store.id)
 
     local_user = await EnsureLocalUserUseCase(user_repo, store_repo).execute(
         EnsureLocalUserInput(
@@ -345,8 +381,8 @@ async def oauth_callback(
 
     store = await store_repo.get_by_id(local_user.store_id)
     return _auth_response(
-        session.access_token,
-        session.refresh_token,
+        supabase_session.access_token,
+        supabase_session.refresh_token,
         user_id=local_user.id,
         email=local_user.email,
         store_id=local_user.store_id,

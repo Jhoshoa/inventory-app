@@ -4,7 +4,7 @@ import { setAuthCookies } from "@/lib/auth/server";
 
 export async function POST(request: NextRequest) {
   try {
-    const { code } = await request.json();
+    const { code, state } = await request.json();
 
     if (!code) {
       return NextResponse.json({ message: "code requerido" }, { status: 400 });
@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
     const res = await fetch(`${getBackendApiUrl()}/api/v1/auth/oauth/callback`, {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ code }),
+      body: JSON.stringify({ code, state }),
     });
 
     if (!res.ok) {

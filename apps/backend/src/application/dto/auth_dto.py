@@ -21,6 +21,7 @@ class RefreshTokenDTO(BaseModel):
 
 class OAuthCallbackDTO(BaseModel):
     code: str
+    state: str | None = None
 
 
 class RegisterSuccessDTO(BaseModel):
