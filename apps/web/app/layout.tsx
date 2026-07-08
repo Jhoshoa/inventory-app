@@ -8,6 +8,9 @@ export const metadata: Metadata = {
     template: "%s | Inventory App",
   },
   description: "Herramienta operativa para inventario, ventas, reportes e importacion asistida.",
+  icons: {
+    icon: "/favicon.svg",
+  },
   robots: {
     index: false,
     follow: false,

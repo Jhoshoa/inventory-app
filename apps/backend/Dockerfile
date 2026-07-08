@@ -6,7 +6,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends curl && \
 
 COPY pyproject.toml .
 COPY src/ src/
-RUN pip install --no-cache-dir .[prod]
+RUN pip install --no-cache-dir --root-user-action=ignore .[prod]
 
 COPY . .
 
