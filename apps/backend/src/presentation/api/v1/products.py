@@ -1,15 +1,18 @@
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile
 
 from src.application.dto.product_dto import (
     CreateProductDTO,
+    ImportJobListResponseDTO,
+    ImportJobResponseDTO,
     ProductCompactListResponseDTO,
     ProductCompactResponseDTO,
     ProductListResponseDTO,
     ProductResponseDTO,
     ProductSortField,
     ProductStockFilter,
+    RowErrorDTO,
     SortDirection,
     StockAdjustmentDTO,
     UpdateProductDTO,
@@ -22,6 +25,9 @@ from src.application.use_cases.products.create_product import (
 from src.application.use_cases.products.delete_product import DeleteProductUseCase
 from src.application.use_cases.products.get_product import GetProductUseCase
 from src.application.use_cases.products.get_product_by_qr import GetProductByQRUseCase
+from src.application.use_cases.products.import_products_csv import (
+    ImportProductsCsvUseCase,
+)
 from src.application.use_cases.products.list_low_stock_products import (
     ListLowStockProductsUseCase,
 )
@@ -38,6 +44,9 @@ from src.application.use_cases.stock_movements.list_product_stock_movements impo
     ListProductStockMovementsInput,
     ListProductStockMovementsUseCase,
 )
+from src.infrastructure.database.repositories.import_job_repository import (
+    ImportJobRepository,
+)
 from src.infrastructure.database.repositories.product_category_repository import (
     ProductCategoryRepository,
 )
@@ -47,7 +56,9 @@ from src.infrastructure.database.repositories.product_repository import (
 from src.infrastructure.database.repositories.stock_movement_repository import (
     StockMovementRepository,
 )
+from src.infrastructure.database.session import get_session
 from src.presentation.dependencies import (
+    get_import_job_repo,
     get_product_category_repo,
     get_product_repo,
     get_stock_movement_repo,
@@ -249,3 +260,61 @@ async def delete_product(
     repo: ProductRepository = Depends(get_product_repo),
 ):
     await DeleteProductUseCase(repo).execute(user.store_id, product_id)
+
+
+@router.post("/import", response_model=ImportJobResponseDTO, status_code=201)
+async def import_products_csv(
+    file: UploadFile = File(...),
+    user=Depends(require_owner),
+    product_repo: ProductRepository = Depends(get_product_repo),
+    category_repo: ProductCategoryRepository = Depends(get_product_category_repo),
+    job_repo: ImportJobRepository = Depends(get_import_job_repo),
+):
+    if file.content_type not in {"text/csv", "application/vnd.ms-excel", "application/octet-stream"}:
+        raise HTTPException(status_code=415, detail="Solo se aceptan archivos CSV")
+
+    content = (await file.read()).decode("utf-8", errors="replace")
+
+    async with get_session() as session:
+        use_case = ImportProductsCsvUseCase(session, product_repo, category_repo, job_repo)
+        job = await use_case.execute(user.store_id, user.id, file.filename or "productos.csv", content)
+
+    return _job_to_response(job)
+
+
+@router.get("/import", response_model=ImportJobListResponseDTO)
+async def list_import_jobs(
+    limit: int = Query(default=50, ge=1, le=100),
+    user=Depends(require_owner),
+    job_repo: ImportJobRepository = Depends(get_import_job_repo),
+):
+    jobs = await job_repo.list_by_store(user.store_id, limit)
+    return ImportJobListResponseDTO(
+        items=[_job_to_response(j) for j in jobs]
+    )
+
+
+@router.get("/import/{job_id}", response_model=ImportJobResponseDTO)
+async def get_import_job(
+    job_id: UUID,
+    user=Depends(require_owner),
+    job_repo: ImportJobRepository = Depends(get_import_job_repo),
+):
+    job = await job_repo.get_by_id(user.store_id, job_id)
+    if job is None:
+        raise HTTPException(status_code=404, detail="Import job no encontrado")
+    return _job_to_response(job)
+
+
+def _job_to_response(job) -> ImportJobResponseDTO:
+    return ImportJobResponseDTO(
+        id=job.id,
+        status=job.status,
+        total_rows=job.total_rows,
+        imported_count=job.imported_count,
+        error_count=job.error_count,
+        errors=[RowErrorDTO(row=e.row, field=e.field, message=e.message) for e in job.errors],
+        filename=job.filename,
+        created_at=job.created_at,
+        completed_at=job.completed_at,
+    )

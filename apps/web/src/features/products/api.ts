@@ -1,11 +1,14 @@
 import { apiRequest } from "@/lib/api/client";
 import { ApiError } from "@/lib/api/errors";
 import { getAuthToken } from "@/lib/auth/session";
+import { getBackendApiUrl } from "@/lib/env/server";
 import {
   buildProductQueryString,
   DEFAULT_PRODUCT_LIMIT,
 } from "./schemas";
 import type {
+  ImportJob,
+  ImportJobListResponse,
   Product,
   ProductListResponse,
   ProductSearchParams,
@@ -61,4 +64,60 @@ function emptyProductList(limit: number, offset: number) {
       offset,
     },
   };
+}
+
+export async function importProductsCsv(file: File): Promise<ImportJob> {
+  const token = await getAuthToken();
+  if (!token) {
+    throw new ApiError({
+      status: 401,
+      code: "unauthorized",
+      message: "No session",
+    });
+  }
+
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const response = await fetch(`${getBackendApiUrl()}/api/v1/products/import`, {
+    method: "POST",
+    headers: { authorization: `Bearer ${token}` },
+    body: formData,
+  });
+
+  if (!response.ok) {
+    const body = await response.json().catch(() => ({}));
+    throw new ApiError({
+      status: response.status,
+      code: "import_error",
+      message: body.detail || body.message || "Error al importar productos",
+    });
+  }
+
+  return response.json();
+}
+
+export async function getImportJob(jobId: string): Promise<ImportJob | null> {
+  const token = await getAuthToken();
+  if (!token) return null;
+
+  const response = await fetch(`${getBackendApiUrl()}/api/v1/products/import/${jobId}`, {
+    headers: { authorization: `Bearer ${token}` },
+  });
+
+  if (!response.ok) return null;
+  return response.json();
+}
+
+export async function listImportJobs(): Promise<ImportJob[]> {
+  const token = await getAuthToken();
+  if (!token) return [];
+
+  const response = await fetch(`${getBackendApiUrl()}/api/v1/products/import`, {
+    headers: { authorization: `Bearer ${token}` },
+  });
+
+  if (!response.ok) return [];
+  const data: ImportJobListResponse = await response.json();
+  return data.items;
 }

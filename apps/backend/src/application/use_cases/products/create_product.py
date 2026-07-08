@@ -50,7 +50,9 @@ class CreateProductUseCase:
         if sku and await self._repo.sku_exists(input.store_id, sku):
             raise ConflictError("El SKU ya esta en uso por otro producto")
 
-        qr_code = input.qr_code or self._generate_qr_code()
+        qr_code = input.qr_code
+        if not qr_code:
+            qr_code = self._generate_qr_code(sku)
         if await self._repo.qr_code_exists(qr_code):
             raise ConflictError("El codigo escaneable ya esta en uso por otro producto")
 
@@ -70,5 +72,7 @@ class CreateProductUseCase:
         )
         return await self._repo.save(product)
 
-    def _generate_qr_code(self) -> str:
+    def _generate_qr_code(self, sku: str | None) -> str:
+        if sku:
+            return f"QR-{sku}"
         return f"P-{uuid4().hex[:12].upper()}"

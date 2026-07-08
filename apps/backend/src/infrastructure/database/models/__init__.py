@@ -1,5 +1,6 @@
 from src.infrastructure.database.models.cash_movement_model import CashMovementModel
 from src.infrastructure.database.models.exchange_rate_model import ExchangeRateModel
+from src.infrastructure.database.models.import_job_model import ImportJobModel
 from src.infrastructure.database.models.product_category_model import (
     ProductCategoryModel,
 )
@@ -29,4 +30,5 @@ __all__ = [
     "StockMovementModel",
     "CashMovementModel",
     "SyncChangeModel",
+    "ImportJobModel",
 ]

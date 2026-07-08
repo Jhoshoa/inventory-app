@@ -1,3 +1,4 @@
+from datetime import datetime
 from decimal import Decimal
 from enum import StrEnum
 from uuid import UUID
@@ -100,3 +101,25 @@ class ProductCompactListResponseDTO(BaseModel):
     total: int
     limit: int
     offset: int
+
+
+class RowErrorDTO(BaseModel):
+    row: int
+    field: str
+    message: str
+
+
+class ImportJobResponseDTO(BaseModel):
+    id: UUID
+    status: str
+    total_rows: int
+    imported_count: int
+    error_count: int
+    errors: list[RowErrorDTO]
+    filename: str
+    created_at: datetime
+    completed_at: datetime | None = None
+
+
+class ImportJobListResponseDTO(BaseModel):
+    items: list[ImportJobResponseDTO]

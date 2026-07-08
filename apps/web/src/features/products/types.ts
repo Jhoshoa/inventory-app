@@ -82,3 +82,27 @@ export interface ProductActionState {
 export type ProductListResult = ApiResult<ProductListResponse>;
 export type ProductResult = ApiResult<Product>;
 export type StockMovementListResult = ApiResult<StockMovementListResponse>;
+
+export type ImportJobStatus = "validating" | "inserting" | "completed";
+
+export interface RowError {
+  row: number;
+  field: string;
+  message: string;
+}
+
+export interface ImportJob {
+  id: string;
+  status: ImportJobStatus;
+  total_rows: number;
+  imported_count: number;
+  error_count: number;
+  errors: RowError[];
+  filename: string;
+  created_at: string;
+  completed_at: string | null;
+}
+
+export interface ImportJobListResponse {
+  items: ImportJob[];
+}

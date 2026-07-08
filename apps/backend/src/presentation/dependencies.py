@@ -22,6 +22,9 @@ from src.infrastructure.database.repositories.cash_movement_repository import (
 from src.infrastructure.database.repositories.exchange_rate_repository import (
     ExchangeRateRepository,
 )
+from src.infrastructure.database.repositories.import_job_repository import (
+    ImportJobRepository,
+)
 from src.infrastructure.database.repositories.product_category_repository import (
     ProductCategoryRepository,
 )
@@ -135,6 +138,10 @@ def get_store_business_day_event_repo(session: AsyncSession = Depends(get_db_ses
 
 def get_exchange_rate_repo(session: AsyncSession = Depends(get_db_session)) -> ExchangeRateRepository:
     return ExchangeRateRepository(session)
+
+
+def get_import_job_repo(session: AsyncSession = Depends(get_db_session)) -> ImportJobRepository:
+    return ImportJobRepository(session)
 
 
 def get_stock_movement_repo(session: AsyncSession = Depends(get_db_session)) -> StockMovementRepository:

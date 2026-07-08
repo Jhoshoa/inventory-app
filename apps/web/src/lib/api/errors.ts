@@ -6,7 +6,8 @@ export type ApiErrorCode =
   | "conflict"
   | "validation_error"
   | "server_error"
-  | "network_error";
+  | "network_error"
+  | "import_error";
 
 export class ApiError extends Error {
   readonly status: number;
