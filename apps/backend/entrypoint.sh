@@ -6,7 +6,7 @@ alembic upgrade head
 exec gunicorn src.main:app \
     --worker-class uvicorn.workers.UvicornWorker \
     --workers "${WORKERS:-4}" \
-    --bind "0.0.0.0:${PORT:-8000}" \
+    --bind "0.0.0.0:${PORT:-8001}" \
     --timeout 120 \
     --graceful-timeout 30 \
     --keep-alive 5 \

@@ -1,33 +1,29 @@
 services:
-  db:
-    image: postgres:16-alpine
-    restart: unless-stopped
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-    env_file: apps/backend/.env
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-inventory} -d ${POSTGRES_DB:-inventory_prod}"]
-      interval: 5s
-      timeout: 3s
-      retries: 5
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
-
   api:
     build:
       context: apps/backend
     restart: unless-stopped
-    depends_on:
-      db:
-        condition: service_healthy
-    env_file: apps/backend/.env
+    environment:
+      APP_NAME: ${APP_NAME:-Inventory API}
+      ENVIRONMENT: production
+      DEBUG: "false"
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      DATABASE_URL: ${DATABASE_URL:?DATABASE_URL is required — use your Supabase PostgreSQL connection string}
+      SUPABASE_URL: ${SUPABASE_URL:?SUPABASE_URL is required}
+      SUPABASE_ANON_KEY: ${SUPABASE_ANON_KEY:?SUPABASE_ANON_KEY is required}
+      SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY:?SUPABASE_SERVICE_ROLE_KEY is required}
+      CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME:?CLOUDINARY_CLOUD_NAME is required}
+      CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY:?CLOUDINARY_API_KEY is required}
+      CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET:?CLOUDINARY_API_SECRET is required}
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET is required}
+      FRONTEND_URL: ${FRONTEND_URL:?FRONTEND_URL is required}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:?CORS_ALLOWED_ORIGINS is required}
+      WORKERS: ${WORKERS:-4}
+      SENTRY_DSN: ${SENTRY_DSN:-}
     ports:
-      - "127.0.0.1:8000:8000"
+      - "127.0.0.1:8001:8001"
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health/live"]
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health/live"]
       interval: 10s
       timeout: 3s
       start_period: 15s
@@ -41,10 +37,21 @@ services:
   web:
     build:
       context: apps/web
+      args:
+        NEXT_PUBLIC_APP_NAME: ${APP_NAME:-Inventory App}
+        NEXT_PUBLIC_APP_URL: ${APP_URL:-http://localhost:3000}
+        NEXT_PUBLIC_SENTRY_DSN: ${SENTRY_DSN:-}
+        BACKEND_API_URL: ${BACKEND_API_URL:-http://api:8001}
+        SENTRY_DSN: ${SENTRY_DSN:-}
     restart: unless-stopped
     depends_on:
       - api
-    env_file: apps/web/.env
+    environment:
+      BACKEND_API_URL: ${BACKEND_API_URL:-http://api:8001}
+      SENTRY_DSN: ${SENTRY_DSN:-}
+      NEXT_PUBLIC_APP_NAME: ${APP_NAME:-Inventory App}
+      NEXT_PUBLIC_APP_URL: ${APP_URL:-http://localhost:3000}
+      NEXT_PUBLIC_SENTRY_DSN: ${SENTRY_DSN:-}
     ports:
       - "127.0.0.1:3000:3000"
     logging:
@@ -52,6 +59,3 @@ services:
       options:
         max-size: "10m"
         max-file: "3"
-
-volumes:
-  pgdata:

@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { getBackendApiUrl } from "@/lib/env/server";
 import type { AuthUser, UserRole } from "./types";
 
 export const ACCESS_TOKEN_COOKIE = "inventory_access_token";
@@ -43,8 +44,7 @@ export async function tryRefreshToken(): Promise<string | null> {
   if (!refreshToken) return null;
 
   try {
-    const backendUrl = process.env.BACKEND_API_URL || "http://localhost:8001";
-    const res = await fetch(`${backendUrl}/api/v1/auth/refresh`, {
+    const res = await fetch(`${getBackendApiUrl()}/api/v1/auth/refresh`, {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ refresh_token: refreshToken }),

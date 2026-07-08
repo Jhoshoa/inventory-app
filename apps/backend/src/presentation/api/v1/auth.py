@@ -292,9 +292,15 @@ async def dev_login(
 @router.post("/oauth/google")
 async def oauth_google():
     if settings.DEBUG:
-        return {"url": "http://localhost:3000/login?oauth=dev"}
+        return {"url": f"{settings.FRONTEND_URL}/login?oauth=dev"}
+    redirect_to = f"{settings.FRONTEND_URL}/auth/callback"
     supabase = create_client(settings.SUPABASE_URL, settings.SUPABASE_ANON_KEY)
-    response = supabase.auth.sign_in_with_oauth({"provider": "google"})
+    response = supabase.auth.sign_in_with_oauth(
+        {
+            "provider": "google",
+            "options": {"redirect_to": redirect_to},
+        }
+    )
     return {"url": response.url}
 
 

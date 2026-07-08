@@ -23,7 +23,11 @@ export async function getCurrentStoreDay(): Promise<StoreDayResult> {
       data: createClosedStoreDay(),
     };
   }
-  return apiRequest<StoreDay>("/store-day/current", { token });
+  const result = await apiRequest<StoreDay>("/store-day/current", { token });
+  if (!result.ok && result.error.code === "network_error") {
+    return { ok: true, data: createClosedStoreDay() };
+  }
+  return result;
 }
 
 export async function getCurrentStoreDayEvents(): Promise<StoreDayEventListResult> {

@@ -18,7 +18,7 @@ Backend:
 ```bash
 cd apps/backend
 py -m pip install -e .[dev]
-py -m uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload
+py -m uvicorn src.main:app --host 0.0.0.0 --port 8001 --reload
 py -m pytest tests -q -p no:cacheprovider
 py -m ruff check src tests --no-cache
 py -m alembic upgrade head

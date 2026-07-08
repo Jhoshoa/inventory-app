@@ -1,7 +1,7 @@
 import multiprocessing
 import os
 
-bind = f"0.0.0.0:{os.getenv('PORT', '8000')}"
+bind = f"0.0.0.0:{os.getenv('PORT', '8001')}"
 workers = int(os.getenv('WORKERS', multiprocessing.cpu_count() * 2 + 1))
 worker_class = "uvicorn.workers.UvicornWorker"
 timeout = 120

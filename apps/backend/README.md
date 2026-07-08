@@ -67,8 +67,8 @@ py -m uvicorn src.main:app --host 0.0.0.0 --port 8001 --reload
 
 API docs:
 
-- Swagger UI: http://localhost:8000/docs
-- OpenAPI JSON: http://localhost:8000/openapi.json
+- Swagger UI: http://localhost:8001/docs
+- OpenAPI JSON: http://localhost:8001/openapi.json
 
 ## Verify
 

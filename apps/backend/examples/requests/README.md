@@ -5,7 +5,7 @@ Use these JSON files from `apps/backend/examples/requests` when testing the Fast
 Base URL for local development:
 
 ```text
-http://localhost:8000/api/v1
+http://localhost:8001/api/v1
 ```
 
 When `DEBUG=true`, protected endpoints can be called without an `Authorization` header. In non-debug environments, send:

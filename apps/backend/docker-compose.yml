@@ -2,15 +2,15 @@ services:
   api:
     build: .
     ports:
-      - "8000:8000"
+      - "8001:8001"
     env_file: .env
     depends_on:
       db:
         condition: service_healthy
-    command: uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload
+    command: uvicorn src.main:app --host 0.0.0.0 --port 8001 --reload
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health/live')"]
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8001/health/live')"]
       interval: 10s
       timeout: 3s
       retries: 5
