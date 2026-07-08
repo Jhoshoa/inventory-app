@@ -1,18 +1,46 @@
+import re
 from uuid import UUID
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
+
+_EMAIL_RE = re.compile(r"^[^\s@]+@[^\s@]+\.[^\s@]+$")
+_PASSWORD_RE = re.compile(r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':\"\\|,.<>\/?]).{8,}$")
 
 
 class LoginDTO(BaseModel):
     email: str = Field(..., max_length=255)
-    password: str = Field(..., min_length=6)
+    password: str = Field(..., min_length=1)
+
+    @field_validator("email")
+    @classmethod
+    def validate_email(cls, v: str) -> str:
+        if not _EMAIL_RE.match(v):
+            raise ValueError("Email invalido")
+        return v
 
 
 class RegisterDTO(BaseModel):
     email: str = Field(..., max_length=255)
-    password: str = Field(..., min_length=6)
+    password: str = Field(..., min_length=1)
     full_name: str = Field(..., min_length=1, max_length=100)
     store_name: str = Field(..., min_length=1, max_length=100)
+
+    @field_validator("email")
+    @classmethod
+    def validate_email(cls, v: str) -> str:
+        if not _EMAIL_RE.match(v):
+            raise ValueError("Email invalido")
+        return v
+
+    @field_validator("password")
+    @classmethod
+    def validate_password(cls, v: str) -> str:
+        if not _PASSWORD_RE.match(v):
+            raise ValueError(
+                "Password debe tener al menos 8 caracteres, una mayuscula, "
+                "una minuscula, un numero y un caracter especial"
+            )
+        return v
 
 
 class RefreshTokenDTO(BaseModel):

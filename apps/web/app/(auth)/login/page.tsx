@@ -1,7 +1,8 @@
 import { AuthShell } from "@/features/auth/components/AuthShell";
 import { LoginForm } from "@/features/auth/components/LoginForm";
 
-export default function LoginPage() {
+export default async function LoginPage(props: { searchParams: Promise<{ verified?: string }> }) {
+  const searchParams = await props.searchParams;
   return (
     <AuthShell
       title="Iniciar sesion"
@@ -10,7 +11,7 @@ export default function LoginPage() {
       footerHref="/register"
       footerLinkLabel="Crea una tienda"
     >
-      <LoginForm />
+      <LoginForm verified={searchParams.verified === "true"} />
     </AuthShell>
   );
 }

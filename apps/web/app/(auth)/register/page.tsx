@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Eye, EyeOff } from "lucide-react";
 import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
 import { FieldError } from "@/components/ui/FieldError";
@@ -27,6 +28,7 @@ const INITIAL_STATE: RegisterFormState = {
 export default function RegisterPage() {
   const [values, setValues] = useState<RegisterFormState>(INITIAL_STATE);
   const [errors, setErrors] = useState<RegisterFormErrors>({});
+  const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
 
@@ -126,15 +128,29 @@ export default function RegisterPage() {
         </div>
         <div className="space-y-2">
           <Label htmlFor="password">Password</Label>
-          <Input
-            id="password"
-            name="password"
-            type="password"
-            autoComplete="new-password"
-            value={values.password}
-            error={Boolean(errors.password)}
-            onChange={(e) => setValues({ ...values, password: e.target.value })}
-          />
+          <div className="relative">
+            <Input
+              id="password"
+              name="password"
+              type={showPassword ? "text" : "password"}
+              autoComplete="new-password"
+              value={values.password}
+              error={Boolean(errors.password)}
+              onChange={(e) => setValues({ ...values, password: e.target.value })}
+              className="pr-10"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-strong"
+              tabIndex={-1}
+            >
+              {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+            </button>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Minimo 8 caracteres, una mayuscula, una minuscula, un numero y un caracter especial.
+          </p>
           <FieldError message={errors.password} />
         </div>
         <Button className="w-full" type="submit" disabled={isSubmitting}>
@@ -164,8 +180,16 @@ function validateRegister(values: RegisterFormState): RegisterFormErrors {
 
   if (!values.password) {
     errors.password = "Password es requerido";
-  } else if (values.password.length < 6) {
-    errors.password = "Password debe tener al menos 6 caracteres";
+  } else if (values.password.length < 8) {
+    errors.password = "Password debe tener al menos 8 caracteres";
+  } else if (!/(?=.*[a-z])/.test(values.password)) {
+    errors.password = "Password debe tener al menos una minuscula";
+  } else if (!/(?=.*[A-Z])/.test(values.password)) {
+    errors.password = "Password debe tener al menos una mayuscula";
+  } else if (!/(?=.*\d)/.test(values.password)) {
+    errors.password = "Password debe tener al menos un numero";
+  } else if (!/(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?])/.test(values.password)) {
+    errors.password = "Password debe tener al menos un caracter especial";
   }
 
   return errors;

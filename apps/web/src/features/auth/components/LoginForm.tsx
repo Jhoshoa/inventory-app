@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { Eye, EyeOff } from "lucide-react";
 import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
 import { FieldError } from "@/components/ui/FieldError";
@@ -15,9 +16,10 @@ interface LoginFormState {
 
 type LoginFormErrors = Partial<Record<keyof LoginFormState | "form", string>>;
 
-export function LoginForm() {
+export function LoginForm({ verified }: { verified?: boolean }) {
   const router = useRouter();
   const [values, setValues] = useState<LoginFormState>({ email: "", password: "" });
+  const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState<LoginFormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -51,8 +53,9 @@ export function LoginForm() {
   }
 
   return (
-    <form className="space-y-4" onSubmit={onSubmit} noValidate>
-      {errors.form ? <Alert variant="error">{errors.form}</Alert> : null}
+      <form className="space-y-4" onSubmit={onSubmit} noValidate>
+        {verified ? <Alert variant="success">Email confirmado. Ahora puedes iniciar sesion.</Alert> : null}
+        {errors.form ? <Alert variant="error">{errors.form}</Alert> : null}
       <div className="space-y-2">
         <Label htmlFor="email">Email</Label>
         <Input
@@ -68,15 +71,26 @@ export function LoginForm() {
       </div>
       <div className="space-y-2">
         <Label htmlFor="password">Password</Label>
-        <Input
-          id="password"
-          name="password"
-          type="password"
-          autoComplete="current-password"
-          value={values.password}
-          error={Boolean(errors.password)}
-          onChange={(event) => setValues({ ...values, password: event.target.value })}
-        />
+        <div className="relative">
+          <Input
+            id="password"
+            name="password"
+            type={showPassword ? "text" : "password"}
+            autoComplete="current-password"
+            value={values.password}
+            error={Boolean(errors.password)}
+            onChange={(event) => setValues({ ...values, password: event.target.value })}
+            className="pr-10"
+          />
+          <button
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+            className="absolute right-2 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-strong"
+            tabIndex={-1}
+          >
+            {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+          </button>
+        </div>
         <FieldError message={errors.password} />
       </div>
       <Button className="w-full" type="submit" disabled={isSubmitting}>

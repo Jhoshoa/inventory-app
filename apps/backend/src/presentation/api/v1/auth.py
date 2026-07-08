@@ -144,11 +144,22 @@ async def login(
     )
     auth_response = _auth_response_from_supabase(response)
     raw_user = auth_response.user
-    if not raw_user.get("store_id"):
+
+    store_id = raw_user.get("store_id")
+    if not store_id:
         existing = await user_repo.get_by_email(dto.email)
         if existing is None or existing.store_id is None:
             raise UnauthorizedError("No se pudo resolver la tienda del usuario")
         raw_user["store_id"] = str(existing.store_id)
+    else:
+        existing_store = await store_repo.get_by_id(UUID(str(store_id)))
+        if existing_store is None:
+            store = Store(
+                id=UUID(str(store_id)),
+                name=raw_user.get("store_name", raw_user.get("full_name", "Mi Tienda")),
+            )
+            await store_repo.save(store)
+
     local_user = await EnsureLocalUserUseCase(user_repo, store_repo).execute(
         EnsureLocalUserInput(
             user_id=UUID(str(raw_user["id"])),
@@ -194,20 +205,32 @@ async def register(
 
     store_id = str(uuid4())
     supabase = create_client(settings.SUPABASE_URL, settings.SUPABASE_ANON_KEY)
-    response = supabase.auth.sign_up(
-        {
-            "email": dto.email,
-            "password": dto.password,
-            "options": {
-                "data": {
-                    "full_name": dto.full_name,
-                    "store_name": dto.store_name,
-                    "store_id": store_id,
-                    "role": "owner",
-                }
-            },
-        }
-    )
+    try:
+        response = supabase.auth.sign_up(
+            {
+                "email": dto.email,
+                "password": dto.password,
+                "options": {
+                    "data": {
+                        "full_name": dto.full_name,
+                        "store_name": dto.store_name,
+                        "store_id": store_id,
+                        "role": "owner",
+                    },
+                    "redirect_to": f"{settings.FRONTEND_URL}/login?verified=true",
+                },
+            }
+        )
+    except AuthApiError as e:
+        if "already registered" in str(e).lower():
+            raise HTTPException(status_code=409, detail="Este email ya esta registrado")
+        raise HTTPException(status_code=400, detail=str(e))
+
+    if not response.session:
+        return RegisterSuccessDTO(
+            message="Revisa tu email para confirmar tu cuenta. Luego inicia sesion."
+        )
+
     auth_response = _auth_response_from_supabase(response)
     result = await RegisterStoreOwnerUseCase(store_repo, user_repo).execute(
         RegisterStoreOwnerInput(
