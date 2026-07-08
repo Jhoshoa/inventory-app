@@ -10,7 +10,7 @@ class Product:
     name: str
     price: Decimal
     stock: int
-    min_stock: int = 5
+    min_stock: int = 1
     category_id: UUID | None = None
     category: str | None = None
     sku: str | None = None

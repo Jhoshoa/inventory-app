@@ -39,6 +39,9 @@ class IProductRepository(ABC):
     async def sku_exists(self, store_id: UUID, sku: str, exclude_product_id: UUID | None = None) -> bool: ...
 
     @abstractmethod
+    async def product_name_exists(self, store_id: UUID, name: str, unit: str, exclude_product_id: UUID | None = None) -> bool: ...
+
+    @abstractmethod
     async def list_low_stock(self, store_id: UUID, limit: int = 20) -> list[Product]: ...
 
     @abstractmethod

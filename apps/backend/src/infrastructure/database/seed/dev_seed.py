@@ -62,7 +62,7 @@ async def seed_dev_data(session: AsyncSession) -> None:
             "price": Decimal("12.50"),
             "cost_price": Decimal("10.00"),
             "stock": 50,
-            "min_stock": 5,
+            "min_stock": 1,
             "unit": "unidad",
             "qr_code": "DEMO-ARR-001",
             "extra_data": {"brand": "Favorito"},

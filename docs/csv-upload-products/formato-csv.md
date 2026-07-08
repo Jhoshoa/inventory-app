@@ -26,7 +26,7 @@ name,price,stock,category,sku,unit,min_stock,cost_price,qr_code,photo_url
 | `category_id` | UUID | `null` | `"550e8400-e29b-41d4-a716-446655440000"` |
 | `sku` | Texto (1-50) | Auto-generado | `"LAC-001"` |
 | `unit` | Texto (1-20) | `"unidad"` | `"kg"` |
-| `min_stock` | Entero (>=0) | `5` | `20` |
+| `min_stock` | Entero (>=0) | `1` | `20` |
 | `cost_price` | Decimal (>=0) | `null` | `3.20` |
 | `qr_code` | Texto (1-100) | Auto-generado | `"QR-LAC001"` |
 | `photo_url` | Texto (max 500) | `null` | `"https://ejemplo.com/foto.jpg"` |
@@ -38,6 +38,8 @@ name,price,stock,category,sku,unit,min_stock,cost_price,qr_code,photo_url
 - **`sku`**: si se omite y hay categoría, se auto-genera secuencialmente (ej: `LAC-000001`, `LAC-000002`). Si se provee, se usa el valor tal cual (validando que no exista otro producto con el mismo SKU en tu tienda).
 - **`qr_code`**: si se omite y hay SKU (propio o auto-generado), se genera como `QR-{sku}`. Si no hay SKU, se genera como `P-{codigo}`.
 - **`category_id`** gana sobre `category`, si solo se pasa `category` se busca por nombre (case-insensitive).
+- **`name` + `unit`**: la combinación de nombre y unidad debe ser única por tienda. No puedes tener dos productos con el mismo nombre y la misma unidad (ej: dos "Arroz 1kg" en "unidad"). Si necesitas el mismo nombre con diferente presentación, cambia la unidad (ej: "Arroz 1kg" en "unidad" vs "Arroz 1kg" en "kg").
+- **`min_stock`**: si no se especifica, se asigna `1` como valor por defecto.
 
 ## Ejemplos
 

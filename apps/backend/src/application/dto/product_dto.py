@@ -31,7 +31,7 @@ class CreateProductDTO(BaseModel):
     stock: int = Field(..., ge=0)
     category: str | None = None
     category_id: UUID | None = None
-    min_stock: int = Field(default=5, ge=0)
+    min_stock: int = Field(default=1, ge=0)
     unit: str = "unidad"
     sku: str | None = Field(default=None, max_length=50)
     cost_price: Decimal | None = None

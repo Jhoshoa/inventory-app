@@ -159,6 +159,18 @@ class ProductRepository(IProductRepository):
         result = await self._session.execute(select(func.count()).select_from(ProductModel).where(*filters))
         return int(result.scalar_one()) > 0
 
+    async def product_name_exists(self, store_id: UUID, name: str, unit: str, exclude_product_id: UUID | None = None) -> bool:
+        filters = [
+            ProductModel.store_id == store_id,
+            ProductModel.name == name,
+            ProductModel.unit == unit,
+            ProductModel.deleted_at.is_(None),
+        ]
+        if exclude_product_id is not None:
+            filters.append(ProductModel.id != exclude_product_id)
+        result = await self._session.execute(select(func.count()).select_from(ProductModel).where(*filters))
+        return int(result.scalar_one()) > 0
+
     async def list_low_stock(self, store_id: UUID, limit: int = 20) -> list[Product]:
         result = await self._session.execute(
             select(ProductModel)

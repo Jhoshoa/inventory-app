@@ -4,7 +4,7 @@ from dataclasses import dataclass
 @dataclass(frozen=True)
 class Stock:
     quantity: int
-    min_stock: int = 5
+    min_stock: int = 1
 
     def __post_init__(self):
         if self.quantity < 0:

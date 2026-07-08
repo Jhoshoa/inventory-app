@@ -38,6 +38,16 @@ class UpdateProductUseCase:
             raise NotFoundError("Producto no encontrado")
         if input.name is not None:
             product.name = normalize_product_name(input.name)
+
+        if input.unit is not None:
+            product.unit = input.unit
+
+        if input.name is not None or input.unit is not None:
+            if await self._repo.product_name_exists(
+                input.store_id, product.name, product.unit, exclude_product_id=product.id
+            ):
+                raise ConflictError(f"Ya existe un producto con el nombre '{product.name}' y unidad '{product.unit}'")
+
         if input.price is not None:
             product.price = input.price
         if input.category_id is not None:
@@ -52,8 +62,7 @@ class UpdateProductUseCase:
             product.category = input.category
         if input.min_stock is not None:
             product.min_stock = input.min_stock
-        if input.unit is not None:
-            product.unit = input.unit
+
         if input.sku is not None:
             if await self._repo.sku_exists(input.store_id, input.sku, exclude_product_id=product.id):
                 raise ConflictError("El SKU ya esta en uso por otro producto")

@@ -19,7 +19,7 @@ class CreateProductInput:
     stock: int
     category_id: UUID | None = None
     category: str | None = None
-    min_stock: int = 5
+    min_stock: int = 1
     unit: str = "unidad"
     sku: str | None = None
     cost_price: Decimal | None = None
@@ -49,6 +49,9 @@ class CreateProductUseCase:
 
         if sku and await self._repo.sku_exists(input.store_id, sku):
             raise ConflictError("El SKU ya esta en uso por otro producto")
+
+        if await self._repo.product_name_exists(input.store_id, normalize_product_name(input.name), input.unit):
+            raise ConflictError(f"Ya existe un producto con el nombre '{input.name}' y unidad '{input.unit}'")
 
         qr_code = input.qr_code
         if not qr_code:

@@ -85,7 +85,7 @@ class ProductSyncPayloadDTO(BaseModel):
     price: Decimal = Field(..., gt=0)
     stock: int = Field(default=0, ge=0)
     category: str | None = None
-    min_stock: int = Field(default=5, ge=0)
+    min_stock: int = Field(default=1, ge=0)
     unit: str = "unidad"
     sku: str | None = None
     cost_price: Decimal | None = None

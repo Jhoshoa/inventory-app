@@ -266,7 +266,7 @@ class ImportProductsCsvUseCase:
             if row.category_id:
                 category_id = UUID(row.category_id)
 
-            min_stock = 5
+            min_stock = 1
             if row.min_stock is not None:
                 min_stock = int(row.min_stock)
 
@@ -336,6 +336,19 @@ class ImportProductsCsvUseCase:
                 if not row.category_id:
                     row.category_id = cat_by_name.get(resolved_name.lower())
 
+        name_unit_map: dict[tuple[str, str], list[int]] = {}
+        for row in rows:
+            key = (normalize_product_name(row.name or ""), row.unit)
+            if key in name_unit_map:
+                name_unit_map[key].append(row.row_number)
+            else:
+                name_unit_map[key] = [row.row_number]
+
+        for (name, unit), row_numbers in name_unit_map.items():
+            if len(row_numbers) > 1:
+                rows_str = ", ".join(str(r) for r in row_numbers)
+                errors.append(RowError(row=row_numbers[0], field="name", message=f"Nombre duplicado en filas: {rows_str}"))
+
         sku_map: dict[str, list[int]] = {}
         for row in rows:
             if row.sku:
@@ -375,6 +388,10 @@ class ImportProductsCsvUseCase:
                 exists = await self._product_repo.qr_code_exists(row.qr_code)
                 if exists:
                     errors.append(RowError(row=row.row_number, field="qr_code", message=f"El codigo escaneable {row.qr_code} ya esta en uso por otro producto"))
+
+            exists = await self._product_repo.product_name_exists(store_id, normalize_product_name(row.name), row.unit)
+            if exists:
+                errors.append(RowError(row=row.row_number, field="name", message=f"Ya existe un producto con el nombre '{row.name}' y unidad '{row.unit}'"))
 
         return errors
 

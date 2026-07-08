@@ -34,7 +34,7 @@ class ProductModel(Base):
     price = Column(Numeric(10, 2), nullable=False)
     cost_price = Column(Numeric(10, 2))
     stock = Column(Integer, default=0)
-    min_stock = Column(Integer, default=5)
+    min_stock = Column(Integer, default=1)
     unit = Column(String(20), default="unidad")
     photo_url = Column(String(500))
     qr_code = Column(String(100), unique=True)
@@ -56,4 +56,5 @@ class ProductModel(Base):
         Index("ix_products_store_stock", "store_id", "stock"),
         Index("ix_products_updated_at", "updated_at"),
         UniqueConstraint("store_id", "sku", name="uq_products_store_sku"),
+        UniqueConstraint("store_id", "name", "unit", name="uq_products_store_name_unit"),
     )

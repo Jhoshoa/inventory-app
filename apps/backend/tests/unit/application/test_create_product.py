@@ -11,6 +11,12 @@ class MockProductRepo:
     async def qr_code_exists(self, qr_code, exclude_product_id=None):
         return False
 
+    async def sku_exists(self, store_id, sku, exclude_product_id=None):
+        return False
+
+    async def product_name_exists(self, store_id, name, unit, exclude_product_id=None):
+        return False
+
     async def save(self, product):
         return product
 
