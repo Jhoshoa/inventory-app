@@ -41,7 +41,10 @@ Pero dentro de un contenedor Docker fallan porque Docker no enruta IPv6.
 
 ## Solución
 
-Habilitar IPv6 en el daemon de Docker del VPS.
+Se requieren **dos cambios**:
+1. Habilitar IPv6 en el daemon de Docker del VPS
+2. Habilitar IPv6 en la red de Docker Compose (opcional pero necesario si el
+   contenedor no usa la red `docker0` por defecto)
 
 ### Paso a paso
 
@@ -69,8 +72,7 @@ Ejemplo con configuración existente (como en este proyecto):
 ```
 
 `2001:db8:1::/64` es un bloque reservado para documentación (RFC 3849) y no
-entrará en conflicto con redes reales. Es el único requisito para que Docker
-asigne direcciones IPv6 internas a los contenedores.
+entrará en conflicto con redes reales.
 
 **2. Aplicar cambios (elegir una opción):**
 
@@ -107,7 +109,35 @@ docker run --rm alpine ip addr show
 Debería mostrar una interfaz con una dirección en el rango
 `2001:db8:1::/64`.
 
-**4. Re-desplegar la aplicación con Dokploy o docker compose.**
+**4. Habilitar IPv6 en la red de Docker Compose:**
+
+El paso 1 activa IPv6 en la red `docker0` (usada por `docker run`). Pero
+Docker Compose crea **su propia red bridge** (`<proyecto>_default`) que **no
+hereda** el IPv6 del daemon automáticamente.
+
+Para que los contenedores del `docker-compose.yml` tengan IPv6, agregar al
+final del archivo:
+
+```yaml
+networks:
+  default:
+    enable_ipv6: true
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+        - subnet: 2001:db8:2::/64
+```
+
+**5. Re-desplegar la aplicación con Dokploy o docker compose.**
+
+Para que el cambio de red surta efecto, Docker Compose debe **recrear** los
+contenedores (no solo reiniciarlos):
+
+```bash
+docker compose -f docker-compose.yml up -d --force-recreate
+```
+
+En Dokploy, con hacer redeploy es suficiente porque recrea los contenedores.
 
 ## Riesgos y mitigaciones
 
