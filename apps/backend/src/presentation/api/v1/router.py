@@ -2,6 +2,7 @@ from fastapi import APIRouter
 
 from src.presentation.api.v1 import (
     auth,
+    billing,
     cash_movements,
     dashboard,
     exchange_rates,
@@ -31,4 +32,5 @@ api_v1_router.include_router(reports.router)
 api_v1_router.include_router(users.router)
 api_v1_router.include_router(stock_movements.router)
 api_v1_router.include_router(cash_movements.router)
+api_v1_router.include_router(billing.router)
 api_v1_router.include_router(exports.router)

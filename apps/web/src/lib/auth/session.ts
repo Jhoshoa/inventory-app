@@ -16,6 +16,8 @@ export interface Session {
   role: UserRole;
   trialExpiresAt: string | null;
   daysUntilTrialEnds: number | null;
+  subscriptionStatus: string | null;
+  accessStatus: string | null;
 }
 
 export async function getAuthToken() {
@@ -79,5 +81,7 @@ function sessionFromUser(user: AuthUser): Session {
     role: user.role ?? "cashier",
     trialExpiresAt: user.trial_expires_at ?? null,
     daysUntilTrialEnds: user.days_until_trial_ends ?? null,
+    subscriptionStatus: user.subscription_status ?? null,
+    accessStatus: user.access_status ?? null,
   };
 }

@@ -20,6 +20,8 @@ describe("AppShell", () => {
     role: "owner",
     trialExpiresAt: null,
     daysUntilTrialEnds: null,
+    subscriptionStatus: null,
+    accessStatus: null,
   };
 
   beforeEach(() => {

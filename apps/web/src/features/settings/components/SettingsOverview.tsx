@@ -1,4 +1,6 @@
 import type { ReactNode } from "react";
+import Link from "next/link";
+import { ChevronRight } from "lucide-react";
 import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { PageSection } from "@/components/layout/PageSection";
@@ -43,7 +45,7 @@ export function SettingsOverview({
         description="Centro administrativo para tienda, permisos y operacion diaria."
       />
 
-      <div className="grid gap-4 xl:grid-cols-[minmax(0,1.1fr)_minmax(340px,0.9fr)]">
+      <div className="grid min-w-0 gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(360px,420px)]">
         <AdminSummaryCard
           title="Tienda"
           description="Datos base del negocio activo."
@@ -60,6 +62,22 @@ export function SettingsOverview({
             { label: "ID usuario", value: shortId(session.userId) },
           ]}
           badge={<RoleBadge role={session.role} />}
+        />
+        <AdminSummaryCard
+          title="Suscripcion"
+          description="Plan, facturacion y estado de cuenta."
+          items={[
+            { label: "Estado", value: subscriptionLabel(session.subscriptionStatus) },
+            { label: "Acceso", value: accessLabel(session.accessStatus) },
+          ]}
+          action={
+            <Link
+              href="/dashboard/settings/billing"
+              className="inline-flex items-center gap-1 text-sm font-medium text-accent-primary hover:text-accent-primary-hover"
+            >
+              Gestionar <ChevronRight className="h-4 w-4" />
+            </Link>
+          }
         />
       </div>
 
@@ -128,11 +146,13 @@ export function SettingsOverview({
 }
 
 function AdminSummaryCard({
+  action,
   badge,
   description,
   items,
   title,
 }: {
+  action?: ReactNode;
   badge?: ReactNode;
   description: string;
   items: Array<{ label: string; value: string }>;
@@ -146,7 +166,10 @@ function AdminSummaryCard({
           <h2 className="mt-1 text-lg font-semibold text-text-strong">{title}</h2>
           <p className="mt-1 text-sm text-text-muted">{description}</p>
         </div>
-        {badge ? <div className="shrink-0">{badge}</div> : null}
+        <div className="flex shrink-0 items-center gap-2">
+          {action}
+          {badge ? <div>{badge}</div> : null}
+        </div>
       </div>
       <div className="mt-4 grid gap-3 sm:grid-cols-2">
         {items.map((item) => (
@@ -245,4 +268,27 @@ function RoleBadge({ role }: { role: Session["role"] }) {
 
 function shortId(value: string) {
   return value.slice(0, 8);
+}
+
+const SUBSCRIPTION_LABELS: Record<string, string> = {
+  trial: "Prueba gratuita",
+  active: "Activo",
+  past_due: "Vencido",
+  expired: "Suspendido",
+  canceled: "Cancelado",
+};
+
+const ACCESS_LABELS: Record<string, string> = {
+  active: "Activo",
+  suspended: "Suspendido",
+  archived: "Archivado",
+  purged: "Eliminado",
+};
+
+function subscriptionLabel(status: string | null) {
+  return status ? SUBSCRIPTION_LABELS[status] ?? status : "—";
+}
+
+function accessLabel(status: string | null) {
+  return status ? ACCESS_LABELS[status] ?? status : "—";
 }

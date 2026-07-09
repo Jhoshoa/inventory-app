@@ -23,6 +23,7 @@ class Settings(BaseSettings):
 
     TRIAL_DAYS: int = 30
     TRIAL_WARN_DAYS: int = 5
+    GRACE_PERIOD_DAYS: int = 15
     PURCHASE_URL: str = "https://tusitio.com/planes"
 
     SENTRY_DSN: str | None = None

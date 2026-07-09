@@ -73,5 +73,7 @@ class CurrentUserDTO(BaseModel):
     is_active: bool
     trial_expires_at: datetime | None = None
     days_until_trial_ends: int | None = None
+    subscription_status: str = "trial"
+    access_status: str = "active"
 
     model_config = {"from_attributes": True}

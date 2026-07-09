@@ -10,6 +10,8 @@ export interface AuthUser {
   is_active?: boolean;
   trial_expires_at?: string | null;
   days_until_trial_ends?: number | null;
+  subscription_status?: string | null;
+  access_status?: string | null;
 }
 
 export interface AuthResponse {

@@ -17,7 +17,12 @@ export function AppShell({
       <div className="min-h-screen lg:pl-64">
         <AppHeader session={session} />
         <div className="mx-auto max-w-7xl px-4 py-2 sm:px-6 lg:px-8">
-          <TrialBanner daysUntilTrialEnds={session.daysUntilTrialEnds} />
+          <TrialBanner
+            subscriptionStatus={session.subscriptionStatus}
+            daysUntilTrialEnds={session.daysUntilTrialEnds}
+            daysUntilNextBilling={null}
+            graceDaysRemaining={null}
+          />
         </div>
         <PageContainer>{children}</PageContainer>
       </div>

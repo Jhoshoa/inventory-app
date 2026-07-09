@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from datetime import datetime, timezone
 from uuid import UUID
 
 from src.application.exceptions import UnauthorizedError
@@ -39,11 +38,9 @@ class GetCurrentUserContextUseCase:
             store = await self._store_repo.get_by_id(user.store_id)
             if store is None:
                 raise UnauthorizedError("Tienda no encontrada")
-            if store.trial_expires_at is not None and datetime.now(timezone.utc) >= store.trial_expires_at:
-                raise UnauthorizedError(
-                    "Tu periodo de prueba ha expirado. "
-                    "Adquiere un plan para continuar usando la aplicacion."
-                )
+
+            if store.access_status != "active":
+                raise UnauthorizedError("Tu cuenta ha sido suspendida. Contacta a soporte.")
 
         if not user.is_active:
             raise UnauthorizedError("Usuario inactivo")

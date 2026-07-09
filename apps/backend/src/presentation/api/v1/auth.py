@@ -1,6 +1,6 @@
 import asyncio
 import logging
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from uuid import UUID, uuid4
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -26,7 +26,7 @@ from src.application.use_cases.auth.register_store_owner import (
     RegisterStoreOwnerUseCase,
 )
 from src.application.use_cases.trials.expire_trials import ExpireTrialsUseCase
-from src.application.use_cases.trials.trial_status import TrialStatusUseCase
+from src.application.use_cases.trials.trial_status import BillingStatusUseCase
 from src.config.settings import settings
 from src.domain.entities.store import Store
 from src.infrastructure.auth.password import hash_password, verify_password
@@ -81,6 +81,8 @@ def _auth_response(
     store_name: str | None = None,
     trial_expires_at: datetime | None = None,
     days_until_trial_ends: int | None = None,
+    subscription_status: str = "trial",
+    access_status: str = "active",
 ) -> AuthResponseDTO:
     return AuthResponseDTO(
         access_token=access_token,
@@ -94,6 +96,8 @@ def _auth_response(
             "role": role,
             "trial_expires_at": trial_expires_at.isoformat() if trial_expires_at else None,
             "days_until_trial_ends": days_until_trial_ends,
+            "subscription_status": subscription_status,
+            "access_status": access_status,
         },
     )
 
@@ -141,29 +145,32 @@ async def login(
             raise HTTPException(status_code=401, detail="Credenciales invalidas")
         if not verify_password(dto.password, existing.password_hash):
             raise HTTPException(status_code=401, detail="Credenciales invalidas")
-    local_user = await EnsureLocalUserUseCase(user_repo, store_repo).execute(
-        EnsureLocalUserInput(
-            user_id=existing.id,
-            email=existing.email,
-            store_id=existing.store_id,
-            full_name=existing.full_name,
-            role=existing.role,
-            touch_login=True,
+
+        local_user = await EnsureLocalUserUseCase(user_repo, store_repo).execute(
+            EnsureLocalUserInput(
+                user_id=existing.id,
+                email=existing.email,
+                store_id=existing.store_id,
+                full_name=existing.full_name,
+                role=existing.role,
+                touch_login=True,
+            )
         )
-    )
-    store = await store_repo.get_by_id(local_user.store_id)
-    return _auth_response(
-        str(local_user.id),
-        "dev-refresh-123",
-        user_id=local_user.id,
-        email=local_user.email,
-        store_id=local_user.store_id,
-        store_name=store.name if store else None,
-        full_name=local_user.full_name,
-        role=local_user.role,
-        trial_expires_at=store.trial_expires_at if store else None,
-        days_until_trial_ends=store.days_until_trial_ends if store else None,
-    )
+        store = await store_repo.get_by_id(local_user.store_id)
+        return _auth_response(
+            str(local_user.id),
+            "dev-refresh-123",
+            user_id=local_user.id,
+            email=local_user.email,
+            store_id=local_user.store_id,
+            store_name=store.name if store else None,
+            full_name=local_user.full_name,
+            role=local_user.role,
+            trial_expires_at=store.trial_expires_at if store else None,
+            days_until_trial_ends=store.days_until_trial_ends if store else None,
+            subscription_status=store.subscription_status if store else "trial",
+            access_status=store.access_status if store else "active",
+        )
 
     supabase = create_client(settings.SUPABASE_URL, settings.SUPABASE_ANON_KEY)
     response = supabase.auth.sign_in_with_password(
@@ -199,12 +206,32 @@ async def login(
         )
     )
     store = await store_repo.get_by_id(local_user.store_id)
-    if store is not None and store.trial_expires_at is not None and datetime.now(timezone.utc) >= store.trial_expires_at:
-        raise HTTPException(
-            status_code=401,
-            detail="Tu periodo de prueba ha expirado. "
-            "Adquiere un plan para continuar usando la aplicacion.",
-        )
+    if store is not None:
+        now = datetime.now(timezone.utc)
+        if store.access_status != "active":
+            raise HTTPException(status_code=401, detail="Tu cuenta ha sido suspendida. Contacta a soporte.")
+        if (store.subscription_status == "trial"
+                and store.trial_expires_at is not None
+                and now >= store.trial_expires_at):
+            raise HTTPException(
+                status_code=401,
+                detail="Tu periodo de prueba ha expirado. "
+                "Adquiere un plan para continuar usando la aplicacion.",
+            )
+        if (store.subscription_status == "past_due"
+                and store.grace_period_started_at is not None
+                and now >= store.grace_period_started_at + timedelta(days=settings.GRACE_PERIOD_DAYS)):
+            raise HTTPException(
+                status_code=401,
+                detail="Tu suscripcion ha sido suspendida por falta de pago. "
+                "Contacta a soporte para reactivar.",
+            )
+        if store.subscription_status == "expired":
+            raise HTTPException(
+                status_code=401,
+                detail="Tu suscripcion ha expirado. "
+                "Contacta a soporte para reactivar.",
+            )
     if not local_user.is_active:
         raise UnauthorizedError("Usuario inactivo")
     return _auth_response(
@@ -218,6 +245,8 @@ async def login(
         role=local_user.role,
         trial_expires_at=store.trial_expires_at if store else None,
         days_until_trial_ends=store.days_until_trial_ends if store else None,
+        subscription_status=store.subscription_status if store else "trial",
+        access_status=store.access_status if store else "active",
     )
 
 
@@ -288,6 +317,8 @@ async def register(
         role=result.user.role,
         trial_expires_at=result.store.trial_expires_at,
         days_until_trial_ends=result.store.days_until_trial_ends,
+        subscription_status=result.store.subscription_status,
+        access_status=result.store.access_status,
     )
 
 
@@ -330,6 +361,8 @@ async def refresh_token(
         role=local_user.role,
         trial_expires_at=store.trial_expires_at if store else None,
         days_until_trial_ends=store.days_until_trial_ends if store else None,
+        subscription_status=store.subscription_status if store else "trial",
+        access_status=store.access_status if store else "active",
     )
 
 
@@ -456,6 +489,8 @@ async def oauth_callback(
         role=local_user.role,
         trial_expires_at=store.trial_expires_at if store else None,
         days_until_trial_ends=store.days_until_trial_ends if store else None,
+        subscription_status=store.subscription_status if store else "trial",
+        access_status=store.access_status if store else "active",
     )
 
 
@@ -464,18 +499,17 @@ async def trial_status(
     user=Depends(get_current_user_context),
     store_repo: StoreRepository = Depends(get_store_repo),
 ):
-    uc = TrialStatusUseCase(store_repo)
+    uc = BillingStatusUseCase(store_repo)
     return await uc.execute(user.store_id)
 
 
 @router.post("/admin/expire-trials")
 async def expire_trials(
-    user_repo: UserRepository = Depends(get_user_repo),
     store_repo: StoreRepository = Depends(get_store_repo),
 ):
     if not settings.DEBUG:
         raise HTTPException(status_code=403, detail="Solo disponible en modo debug")
-    uc = ExpireTrialsUseCase(store_repo, user_repo)
+    uc = ExpireTrialsUseCase(store_repo)
     count = await uc.execute()
     return {"deactivated": count}
 
@@ -495,4 +529,6 @@ async def me(
         is_active=user.is_active,
         trial_expires_at=store.trial_expires_at if store else None,
         days_until_trial_ends=store.days_until_trial_ends if store else None,
+        subscription_status=store.subscription_status if store else "trial",
+        access_status=store.access_status if store else "active",
     )

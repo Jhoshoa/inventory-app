@@ -15,9 +15,11 @@ const session: Session = {
   storeName: "Mi tienda",
   fullName: null,
   role: "owner",
-  trialExpiresAt: null,
-  daysUntilTrialEnds: null,
-};
+    trialExpiresAt: null,
+    daysUntilTrialEnds: null,
+    subscriptionStatus: null,
+    accessStatus: null,
+  };
 
 describe("SettingsOverview", () => {
   it("renders settings as an administrative center", () => {

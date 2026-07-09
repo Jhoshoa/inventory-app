@@ -1,13 +1,14 @@
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
+from src.config.settings import settings
 from src.domain.repositories.store_repository import IStoreRepository
 
 
-class ExpireTrialsUseCase:
-    """Suspende tiendas cuyo trial expiro.
+class ProcessGracePeriodUseCase:
+    """Suspende tiendas en past_due que superaron el periodo de gracia.
 
-    Solo cambia store.access_status = 'suspended' (y subscription_status = 'expired').
-    No toca user.is_active — el bloqueo se maneja desde el store check en cada request.
+    Solo cambia store.access_status = 'suspended' y subscription_status = 'expired'.
+    No toca user.is_active.
 
     Se ejecuta una vez al dia via cron (8:00 AM UTC).
     """
@@ -17,7 +18,8 @@ class ExpireTrialsUseCase:
 
     async def execute(self) -> int:
         now = datetime.now(timezone.utc)
-        expired_stores = await self._store_repo.list_by_expired_trial(now)
+        cutoff = now - timedelta(days=settings.GRACE_PERIOD_DAYS)
+        expired_stores = await self._store_repo.list_by_past_due_expired(cutoff)
         total = 0
 
         for store in expired_stores:
