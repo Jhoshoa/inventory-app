@@ -1,5 +1,6 @@
 import asyncio
 import logging
+from datetime import datetime, timezone
 from uuid import UUID, uuid4
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -24,6 +25,8 @@ from src.application.use_cases.auth.register_store_owner import (
     RegisterStoreOwnerInput,
     RegisterStoreOwnerUseCase,
 )
+from src.application.use_cases.trials.expire_trials import ExpireTrialsUseCase
+from src.application.use_cases.trials.trial_status import TrialStatusUseCase
 from src.config.settings import settings
 from src.domain.entities.store import Store
 from src.infrastructure.auth.password import hash_password, verify_password
@@ -66,7 +69,19 @@ def _auth_response_from_supabase(response) -> AuthResponseDTO:
     )
 
 
-def _auth_response(access_token: str, refresh_token: str, *, user_id, email, store_id, full_name, role: str, store_name: str | None = None) -> AuthResponseDTO:
+def _auth_response(
+    access_token: str,
+    refresh_token: str,
+    *,
+    user_id,
+    email,
+    store_id,
+    full_name,
+    role: str,
+    store_name: str | None = None,
+    trial_expires_at: datetime | None = None,
+    days_until_trial_ends: int | None = None,
+) -> AuthResponseDTO:
     return AuthResponseDTO(
         access_token=access_token,
         refresh_token=refresh_token,
@@ -77,8 +92,18 @@ def _auth_response(access_token: str, refresh_token: str, *, user_id, email, sto
             "store_name": store_name,
             "full_name": full_name,
             "role": role,
+            "trial_expires_at": trial_expires_at.isoformat() if trial_expires_at else None,
+            "days_until_trial_ends": days_until_trial_ends,
         },
     )
+
+
+def _enrich_with_trial(response: AuthResponseDTO, store: Store | None) -> None:
+    """Agrega datos de trial al dict user de la respuesta."""
+    if store is None:
+        return
+    response.user["trial_expires_at"] = store.trial_expires_at.isoformat() if store.trial_expires_at else None
+    response.user["days_until_trial_ends"] = store.days_until_trial_ends
 
 
 def _dev_auth_response(
@@ -116,27 +141,29 @@ async def login(
             raise HTTPException(status_code=401, detail="Credenciales invalidas")
         if not verify_password(dto.password, existing.password_hash):
             raise HTTPException(status_code=401, detail="Credenciales invalidas")
-        local_user = await EnsureLocalUserUseCase(user_repo, store_repo).execute(
-            EnsureLocalUserInput(
-                user_id=existing.id,
-                email=existing.email,
-                store_id=existing.store_id,
-                full_name=existing.full_name,
-                role=existing.role,
-                touch_login=True,
-            )
+    local_user = await EnsureLocalUserUseCase(user_repo, store_repo).execute(
+        EnsureLocalUserInput(
+            user_id=existing.id,
+            email=existing.email,
+            store_id=existing.store_id,
+            full_name=existing.full_name,
+            role=existing.role,
+            touch_login=True,
         )
-        store = await store_repo.get_by_id(local_user.store_id)
-        return _auth_response(
-            str(local_user.id),
-            "dev-refresh-123",
-            user_id=local_user.id,
-            email=local_user.email,
-            store_id=local_user.store_id,
-            store_name=store.name if store else None,
-            full_name=local_user.full_name,
-            role=local_user.role,
-        )
+    )
+    store = await store_repo.get_by_id(local_user.store_id)
+    return _auth_response(
+        str(local_user.id),
+        "dev-refresh-123",
+        user_id=local_user.id,
+        email=local_user.email,
+        store_id=local_user.store_id,
+        store_name=store.name if store else None,
+        full_name=local_user.full_name,
+        role=local_user.role,
+        trial_expires_at=store.trial_expires_at if store else None,
+        days_until_trial_ends=store.days_until_trial_ends if store else None,
+    )
 
     supabase = create_client(settings.SUPABASE_URL, settings.SUPABASE_ANON_KEY)
     response = supabase.auth.sign_in_with_password(
@@ -158,6 +185,7 @@ async def login(
                 id=UUID(str(store_id)),
                 name=raw_user.get("store_name", raw_user.get("full_name", "Mi Tienda")),
             )
+            store.trial_expires_at = Store.calculate_trial_expiry()
             await store_repo.save(store)
 
     local_user = await EnsureLocalUserUseCase(user_repo, store_repo).execute(
@@ -170,9 +198,15 @@ async def login(
             touch_login=True,
         )
     )
+    store = await store_repo.get_by_id(local_user.store_id)
+    if store is not None and store.trial_expires_at is not None and datetime.now(timezone.utc) >= store.trial_expires_at:
+        raise HTTPException(
+            status_code=401,
+            detail="Tu periodo de prueba ha expirado. "
+            "Adquiere un plan para continuar usando la aplicacion.",
+        )
     if not local_user.is_active:
         raise UnauthorizedError("Usuario inactivo")
-    store = await store_repo.get_by_id(local_user.store_id)
     return _auth_response(
         auth_response.access_token,
         auth_response.refresh_token,
@@ -182,6 +216,8 @@ async def login(
         store_name=store.name if store else None,
         full_name=local_user.full_name,
         role=local_user.role,
+        trial_expires_at=store.trial_expires_at if store else None,
+        days_until_trial_ends=store.days_until_trial_ends if store else None,
     )
 
 
@@ -250,6 +286,8 @@ async def register(
         store_name=result.store.name,
         full_name=result.user.full_name,
         role=result.user.role,
+        trial_expires_at=result.store.trial_expires_at,
+        days_until_trial_ends=result.store.days_until_trial_ends,
     )
 
 
@@ -290,6 +328,8 @@ async def refresh_token(
         store_name=store.name if store else None,
         full_name=local_user.full_name,
         role=local_user.role,
+        trial_expires_at=store.trial_expires_at if store else None,
+        days_until_trial_ends=store.days_until_trial_ends if store else None,
     )
 
 
@@ -388,8 +428,10 @@ async def oauth_callback(
         else:
             store_name = f"{user_data.get('full_name') or user_data['email'].split('@')[0]}'s Store"
             new_store = Store.create(store_name)
+            new_store.trial_expires_at = Store.calculate_trial_expiry()
             new_store = await store_repo.save(new_store)
             user_data["store_id"] = str(new_store.id)
+            user_data["role"] = "owner"
 
     local_user = await EnsureLocalUserUseCase(user_repo, store_repo).execute(
         EnsureLocalUserInput(
@@ -412,9 +454,45 @@ async def oauth_callback(
         store_name=store.name if store else None,
         full_name=local_user.full_name,
         role=local_user.role,
+        trial_expires_at=store.trial_expires_at if store else None,
+        days_until_trial_ends=store.days_until_trial_ends if store else None,
     )
 
 
+@router.get("/trial-status")
+async def trial_status(
+    user=Depends(get_current_user_context),
+    store_repo: StoreRepository = Depends(get_store_repo),
+):
+    uc = TrialStatusUseCase(store_repo)
+    return await uc.execute(user.store_id)
+
+
+@router.post("/admin/expire-trials")
+async def expire_trials(
+    user_repo: UserRepository = Depends(get_user_repo),
+    store_repo: StoreRepository = Depends(get_store_repo),
+):
+    if not settings.DEBUG:
+        raise HTTPException(status_code=403, detail="Solo disponible en modo debug")
+    uc = ExpireTrialsUseCase(store_repo, user_repo)
+    count = await uc.execute()
+    return {"deactivated": count}
+
+
 @router.get("/me", response_model=CurrentUserDTO)
-async def me(user=Depends(get_current_user_context)):
-    return user
+async def me(
+    user=Depends(get_current_user_context),
+    store_repo: StoreRepository = Depends(get_store_repo),
+):
+    store = await store_repo.get_by_id(user.store_id)
+    return CurrentUserDTO(
+        id=user.id,
+        email=user.email,
+        store_id=user.store_id,
+        full_name=user.full_name,
+        role=user.role,
+        is_active=user.is_active,
+        trial_expires_at=store.trial_expires_at if store else None,
+        days_until_trial_ends=store.days_until_trial_ends if store else None,
+    )

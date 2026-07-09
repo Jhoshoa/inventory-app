@@ -12,7 +12,7 @@ async def test_register_creates_store_and_owner_user(client, db_session):
         "/api/v1/auth/register",
         json={
             "email": "owner@example.com",
-            "password": "password123",
+            "password": "Password1!",
             "full_name": "Owner User",
             "store_name": "Owner Store",
         },
@@ -37,7 +37,7 @@ async def test_register_creates_store_and_owner_user(client, db_session):
 async def test_login_rejects_unregistered_user(client, db_session):
     response = await client.post(
         "/api/v1/auth/login",
-        json={"email": "unknown@example.com", "password": "password123"},
+        json={"email": "unknown@example.com", "password": "Password1!"},
     )
 
     assert response.status_code == 401
@@ -48,7 +48,7 @@ async def test_login_rejects_wrong_password_for_registered_user(client, db_sessi
         "/api/v1/auth/register",
         json={
             "email": "owner@login-test.com",
-            "password": "correct-password",
+            "password": "Correct1!",
             "full_name": "Owner",
             "store_name": "Login Test Store",
         },
@@ -56,7 +56,7 @@ async def test_login_rejects_wrong_password_for_registered_user(client, db_sessi
 
     response = await client.post(
         "/api/v1/auth/login",
-        json={"email": "owner@login-test.com", "password": "wrong-password"},
+        json={"email": "owner@login-test.com", "password": "Wrong1!"},
     )
 
     assert response.status_code == 401
@@ -67,7 +67,7 @@ async def test_login_succeeds_with_correct_password(client, db_session):
         "/api/v1/auth/register",
         json={
             "email": "owner@login-ok.com",
-            "password": "secret123",
+            "password": "Secret1!",
             "full_name": "Owner",
             "store_name": "Login Ok Store",
         },
@@ -75,7 +75,7 @@ async def test_login_succeeds_with_correct_password(client, db_session):
 
     response = await client.post(
         "/api/v1/auth/login",
-        json={"email": "owner@login-ok.com", "password": "secret123"},
+        json={"email": "owner@login-ok.com", "password": "Secret1!"},
     )
 
     assert response.status_code == 200

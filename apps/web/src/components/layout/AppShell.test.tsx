@@ -18,6 +18,8 @@ describe("AppShell", () => {
     storeName: "Mi tienda",
     fullName: null,
     role: "owner",
+    trialExpiresAt: null,
+    daysUntilTrialEnds: null,
   };
 
   beforeEach(() => {

@@ -15,6 +15,8 @@ const session: Session = {
   storeName: "Mi tienda",
   fullName: null,
   role: "owner",
+  trialExpiresAt: null,
+  daysUntilTrialEnds: null,
 };
 
 describe("SettingsOverview", () => {

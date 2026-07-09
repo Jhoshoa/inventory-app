@@ -21,6 +21,10 @@ class Settings(BaseSettings):
 
     JWT_SECRET: str = "local-jwt-secret"
 
+    TRIAL_DAYS: int = 30
+    TRIAL_WARN_DAYS: int = 5
+    PURCHASE_URL: str = "https://tusitio.com/planes"
+
     SENTRY_DSN: str | None = None
     FRONTEND_URL: str = "http://localhost:3010"
     CORS_ALLOWED_ORIGINS: str = "http://localhost:3010,http://localhost:8081"

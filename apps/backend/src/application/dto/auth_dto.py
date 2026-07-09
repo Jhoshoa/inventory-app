@@ -1,4 +1,5 @@
 import re
+from datetime import datetime
 from uuid import UUID
 
 from pydantic import BaseModel, Field, field_validator
@@ -70,5 +71,7 @@ class CurrentUserDTO(BaseModel):
     full_name: str | None = None
     role: str
     is_active: bool
+    trial_expires_at: datetime | None = None
+    days_until_trial_ends: int | None = None
 
     model_config = {"from_attributes": True}

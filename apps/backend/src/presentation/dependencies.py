@@ -158,7 +158,11 @@ async def get_current_user_context(
     store_repo: StoreRepository = Depends(get_store_repo),
 ) -> CurrentUserContext:
     try:
-        return await GetCurrentUserContextUseCase(user_repo).execute(raw_user)
+        use_case = GetCurrentUserContextUseCase(
+            user_repo,
+            store_repo if not settings.DEBUG else None,
+        )
+        return await use_case.execute(raw_user)
     except UnauthorizedError as exc:
         if not settings.DEBUG or exc.detail != "Usuario local no encontrado":
             raise

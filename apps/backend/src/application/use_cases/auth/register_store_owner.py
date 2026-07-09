@@ -29,7 +29,11 @@ class RegisterStoreOwnerUseCase:
         self._user_repo = user_repo
 
     async def execute(self, input: RegisterStoreOwnerInput) -> RegisterStoreOwnerResult:
-        store = Store(id=input.store_id, name=input.store_name) if input.store_id else Store.create(input.store_name)
+        if input.store_id:
+            store = Store(id=input.store_id, name=input.store_name)
+        else:
+            store = Store.create(input.store_name)
+        store.trial_expires_at = Store.calculate_trial_expiry()
         store = await self._store_repo.save(store)
         user = await self._user_repo.save(
             User(

@@ -8,6 +8,8 @@ export interface AuthUser {
   full_name?: string | null;
   role?: UserRole;
   is_active?: boolean;
+  trial_expires_at?: string | null;
+  days_until_trial_ends?: number | null;
 }
 
 export interface AuthResponse {

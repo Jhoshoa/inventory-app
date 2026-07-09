@@ -21,6 +21,9 @@ class IUserRepository(ABC):
     async def count_active_owners(self, store_id: UUID) -> int: ...
 
     @abstractmethod
+    async def list_active_by_store(self, store_id: UUID) -> list[User]: ...
+
+    @abstractmethod
     async def save(self, user: User) -> User: ...
 
     @abstractmethod

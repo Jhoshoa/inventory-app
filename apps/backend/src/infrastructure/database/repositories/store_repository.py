@@ -1,7 +1,7 @@
-from datetime import date
+from datetime import date, datetime, timezone
 from uuid import UUID
 
-from sqlalchemy import update
+from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.domain.entities.store import Store
@@ -24,6 +24,10 @@ class StoreRepository(IStoreRepository):
         model.is_active = store.is_active
         model.timezone = store.timezone
         model.first_business_date = store.first_business_date
+        trial = store.trial_expires_at
+        if trial is not None and trial.tzinfo is not None:
+            trial = trial.replace(tzinfo=None)
+        model.trial_expires_at = trial
         await self._session.flush()
         return store
 
@@ -31,15 +35,7 @@ class StoreRepository(IStoreRepository):
         model = await self._session.get(StoreModel, store_id)
         if model is None or not model.is_active:
             return None
-        return Store(
-            id=model.id,
-            name=model.name,
-            address=model.address,
-            phone=model.phone,
-            is_active=model.is_active,
-            timezone=model.timezone or "America/La_Paz",
-            first_business_date=model.first_business_date,
-        )
+        return self._to_entity(model)
 
     async def set_first_business_date(self, store_id: UUID, first_business_date: date) -> None:
         await self._session.execute(
@@ -48,3 +44,28 @@ class StoreRepository(IStoreRepository):
             .values(first_business_date=first_business_date)
         )
         await self._session.flush()
+
+    async def list_by_expired_trial(self, cutoff: datetime) -> list[Store]:
+        stmt = select(StoreModel).where(
+            StoreModel.trial_expires_at.isnot(None),
+            StoreModel.trial_expires_at < cutoff,
+            StoreModel.is_active.is_(True),
+        )
+        result = await self._session.execute(stmt)
+        return [self._to_entity(row) for row in result.scalars()]
+
+    @staticmethod
+    def _to_entity(model: StoreModel) -> Store:
+        trial = model.trial_expires_at
+        if trial is not None and trial.tzinfo is None:
+            trial = trial.replace(tzinfo=timezone.utc)
+        return Store(
+            id=model.id,
+            name=model.name,
+            address=model.address,
+            phone=model.phone,
+            is_active=model.is_active,
+            timezone=model.timezone or "America/La_Paz",
+            first_business_date=model.first_business_date,
+            trial_expires_at=trial,
+        )

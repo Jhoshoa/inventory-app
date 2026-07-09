@@ -39,7 +39,8 @@ export function LoginForm({ verified }: { verified?: boolean }) {
       });
 
       if (!response.ok) {
-        setErrors({ form: "Credenciales invalidas o backend no disponible." });
+        const body = await response.json().catch(() => ({}));
+        setErrors({ form: body.message ?? "Credenciales invalidas o backend no disponible." });
         return;
       }
 

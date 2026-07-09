@@ -2,6 +2,7 @@ import type { Session } from "@/lib/auth/session";
 import { AppHeader } from "./AppHeader";
 import { AppSidebar } from "./AppSidebar";
 import { PageContainer } from "./PageContainer";
+import { TrialBanner } from "@/features/trial/components/TrialBanner";
 
 export function AppShell({
   children,
@@ -15,6 +16,9 @@ export function AppShell({
       <AppSidebar role={session.role} />
       <div className="min-h-screen lg:pl-64">
         <AppHeader session={session} />
+        <div className="mx-auto max-w-7xl px-4 py-2 sm:px-6 lg:px-8">
+          <TrialBanner daysUntilTrialEnds={session.daysUntilTrialEnds} />
+        </div>
         <PageContainer>{children}</PageContainer>
       </div>
     </div>

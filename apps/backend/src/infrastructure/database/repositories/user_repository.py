@@ -95,6 +95,15 @@ class UserRepository(IUserRepository):
         await self._session.flush()
         return self._to_entity(model)
 
+    async def list_active_by_store(self, store_id: UUID) -> list[User]:
+        result = await self._session.execute(
+            select(UserModel).where(
+                UserModel.store_id == store_id,
+                UserModel.is_active.is_(True),
+            )
+        )
+        return [self._to_entity(model) for model in result.scalars().all()]
+
     async def _get_model_by_store(self, store_id: UUID, user_id: UUID) -> UserModel | None:
         result = await self._session.execute(
             select(UserModel).where(UserModel.store_id == store_id, UserModel.id == user_id)

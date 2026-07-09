@@ -14,6 +14,8 @@ export interface Session {
   storeName: string;
   fullName: string | null;
   role: UserRole;
+  trialExpiresAt: string | null;
+  daysUntilTrialEnds: number | null;
 }
 
 export async function getAuthToken() {
@@ -75,5 +77,7 @@ function sessionFromUser(user: AuthUser): Session {
     storeName: user.store_name ?? "Mi tienda",
     fullName: user.full_name ?? null,
     role: user.role ?? "cashier",
+    trialExpiresAt: user.trial_expires_at ?? null,
+    daysUntilTrialEnds: user.days_until_trial_ends ?? null,
   };
 }

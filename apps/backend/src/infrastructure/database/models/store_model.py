@@ -17,5 +17,6 @@ class StoreModel(Base):
     is_active = Column(Boolean, default=True)
     timezone = Column(String(64), nullable=False, default="America/La_Paz")
     first_business_date = Column(Date)
+    trial_expires_at = Column(DateTime(timezone=True), nullable=True)
     created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
     updated_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
