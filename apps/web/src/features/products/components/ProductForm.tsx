@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useMemo, useRef, useState } from "react";
+import { useActionState, useEffect, useMemo, useState } from "react";
 import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
 import { FieldError } from "@/components/ui/FieldError";
@@ -43,7 +43,6 @@ export function ProductForm({
   const [sku, setSku] = useState(values.sku);
   const [scanCode, setScanCode] = useState(values.qr_code);
   const [isQrPreviewOpen, setIsQrPreviewOpen] = useState(false);
-  const photoRef = useRef<File | null>(null);
   const selectedCategory = useMemo(
     () => categories.find((category) => category.id === categoryId),
     [categories, categoryId],
@@ -64,18 +63,8 @@ export function ProductForm({
     setFormValues((current) => ({ ...current, [name]: value }));
   }
 
-  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const form = event.currentTarget;
-    const formData = new FormData(form);
-    if (photoRef.current) {
-      formData.set("photo", photoRef.current, photoRef.current.name);
-    }
-    formAction(formData);
-  }
-
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form action={formAction} className="space-y-6">
       {state.message ? <Alert variant={state.ok ? "info" : "error"}>{state.message}</Alert> : null}
       {product ? <input type="hidden" name="product_id" value={product.id} /> : null}
 
