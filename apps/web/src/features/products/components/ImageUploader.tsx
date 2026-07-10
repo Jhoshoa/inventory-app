@@ -15,7 +15,6 @@ interface ImageUploaderProps {
   productId?: string;
   productVersion?: number;
   onPhotoChange: (photoUrl: string | null) => void;
-  onFileSelected?: (file: File | null) => void;
   disabled?: boolean;
 }
 
@@ -24,7 +23,6 @@ export function ImageUploader({
   productId,
   productVersion,
   onPhotoChange,
-  onFileSelected,
   disabled = false,
 }: ImageUploaderProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -156,11 +154,10 @@ export function ImageUploader({
 
       if (productId) {
         handleUpload(file);
-      } else {
-        onFileSelected?.(file);
       }
+      // In create mode the file is already assigned to the input[name="photo"]
     },
-    [validateFile, previewUrl, productId, handleUpload, onFileSelected],
+    [validateFile, previewUrl, productId, handleUpload],
   );
 
   const handleFileInputChange = useCallback(
@@ -206,10 +203,12 @@ export function ImageUploader({
       URL.revokeObjectURL(previewUrl);
       setPreviewUrl(null);
     }
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
     setErrorMessage("");
     setState("idle");
-    onFileSelected?.(null);
-  }, [previewUrl, onFileSelected]);
+  }, [previewUrl]);
 
   const handleRemove = useCallback(async () => {
     if (!productId) {
@@ -413,6 +412,7 @@ export function ImageUploader({
       <input
         ref={fileInputRef}
         type="file"
+        name="photo"
         accept="image/jpeg,image/png,image/webp"
         onChange={handleFileInputChange}
         className="hidden"
@@ -420,6 +420,7 @@ export function ImageUploader({
       <input
         ref={cameraInputRef}
         type="file"
+        name="photo"
         accept="image/*"
         capture
         onChange={handleCameraChange}
