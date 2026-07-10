@@ -20,7 +20,6 @@ export function AppShell({
           <TrialBanner
             subscriptionStatus={session.subscriptionStatus}
             daysUntilTrialEnds={session.daysUntilTrialEnds}
-            daysUntilNextBilling={null}
             graceDaysRemaining={null}
           />
         </div>

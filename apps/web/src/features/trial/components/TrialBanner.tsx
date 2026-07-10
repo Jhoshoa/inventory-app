@@ -3,14 +3,12 @@
 interface TrialBannerProps {
   subscriptionStatus: string | null;
   daysUntilTrialEnds: number | null;
-  daysUntilNextBilling: number | null;
   graceDaysRemaining: number | null;
 }
 
 export function TrialBanner({
   subscriptionStatus,
   daysUntilTrialEnds,
-  daysUntilNextBilling,
   graceDaysRemaining,
 }: TrialBannerProps) {
   if (subscriptionStatus === "active") return null;
