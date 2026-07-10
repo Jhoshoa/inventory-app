@@ -26,12 +26,10 @@ export function ProductForm({
   mode,
   product,
   categories = [],
-  accessToken,
 }: {
   mode: "create" | "edit";
   product?: Product;
   categories?: ProductCategory[];
-  accessToken: string;
 }) {
   const action = mode === "create" ? createProductAction : updateProductAction;
   const [state, formAction, isPending] = useActionState(
@@ -242,7 +240,6 @@ export function ProductForm({
       <div className="col-span-full max-w-64">
         {mode === "edit" && product ? (
           <ImageUploader
-            accessToken={accessToken}
             currentUrl={product.photo_url}
             productId={product.id}
             productVersion={product.version}
@@ -252,7 +249,6 @@ export function ProductForm({
           />
         ) : (
           <ImageUploader
-            accessToken={accessToken}
             onPhotoChange={() => {}}
             onFileSelected={(file) => {
               if (file && photoInputRef.current) {

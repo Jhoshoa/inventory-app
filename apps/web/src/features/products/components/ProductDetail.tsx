@@ -15,7 +15,7 @@ import { ProductStockDialog } from "./ProductStockDialog";
 import { StockBadge } from "./ProductTable";
 import type { Product } from "../types";
 
-export function ProductDetail({ product, role, accessToken }: { product: Product; role: UserRole; accessToken: string }) {
+export function ProductDetail({ product, role }: { product: Product; role: UserRole }) {
   const router = useRouter();
 
   return (
@@ -62,7 +62,6 @@ export function ProductDetail({ product, role, accessToken }: { product: Product
           <h2 className="text-base font-semibold text-text-strong">Foto</h2>
           <div className="mt-4">
             <ImageUploader
-              accessToken={accessToken}
               currentUrl={product.photo_url}
               productId={product.id}
               productVersion={product.version}

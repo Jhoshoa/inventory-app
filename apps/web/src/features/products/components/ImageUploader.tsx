@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
-import { getBackendApiUrl } from "@/lib/env/server";
 import { errorFromResponse } from "@/lib/api/errors";
 
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
@@ -12,7 +11,6 @@ const MAX_SIZE = 5 * 1024 * 1024;
 type UploadState = "idle" | "selected" | "uploading" | "error";
 
 interface ImageUploaderProps {
-  accessToken: string;
   currentUrl?: string | null;
   productId?: string;
   productVersion?: number;
@@ -22,7 +20,6 @@ interface ImageUploaderProps {
 }
 
 export function ImageUploader({
-  accessToken,
   currentUrl,
   productId,
   productVersion,
@@ -71,25 +68,16 @@ export function ImageUploader({
         throw new Error("Producto no disponible");
       }
 
-      const token = accessToken;
-      if (!token) {
-        throw new Error("Sesion no disponible");
-      }
-
       const formData = new FormData();
       formData.append("file", file);
       if (productVersion !== undefined) {
         formData.append("version", String(productVersion));
       }
 
-      const response = await fetch(
-        `${getBackendApiUrl()}/api/v1/products/${productId}/photo`,
-        {
-          method: "POST",
-          headers: { authorization: `Bearer ${token}` },
-          body: formData,
-        },
-      );
+      const response = await fetch(`/api/products/${productId}/photo`, {
+        method: "POST",
+        body: formData,
+      });
 
       if (!response.ok) {
         const err = await errorFromResponse(response);
@@ -107,18 +95,9 @@ export function ImageUploader({
         throw new Error("Producto no disponible");
       }
 
-      const token = accessToken;
-      if (!token) {
-        throw new Error("Sesion no disponible");
-      }
-
-      const response = await fetch(
-        `${getBackendApiUrl()}/api/v1/products/${productId}/photo`,
-        {
-          method: "DELETE",
-          headers: { authorization: `Bearer ${token}` },
-        },
-      );
+      const response = await fetch(`/api/products/${productId}/photo`, {
+        method: "DELETE",
+      });
 
       if (!response.ok) {
         const err = await errorFromResponse(response);

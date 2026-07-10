@@ -4,7 +4,7 @@ import { Alert } from "@/components/ui/Alert";
 import { getProduct, listProductStockMovements } from "@/features/products/api";
 import { ProductDetail } from "@/features/products/components/ProductDetail";
 import { ProductStockMovements } from "@/features/products/components/ProductStockMovements";
-import { getAuthToken, requireSession } from "@/lib/auth/session";
+import { requireSession } from "@/lib/auth/session";
 
 export default async function ProductDetailPage({
   params,
@@ -12,11 +12,10 @@ export default async function ProductDetailPage({
   params: Promise<{ productId: string }>;
 }) {
   const { productId } = await params;
-  const [session, product, movements, accessToken] = await Promise.all([
+  const [session, product, movements] = await Promise.all([
     requireSession(),
     getProduct(productId),
     listProductStockMovements(productId),
-    getAuthToken(),
   ]);
 
   if (!product.ok && product.error.status === 404) notFound();
@@ -27,7 +26,7 @@ export default async function ProductDetailPage({
         <Alert variant="error">No se pudo cargar el producto: {product.error.message}</Alert>
       ) : (
         <>
-          <ProductDetail product={product.data} role={session.role} accessToken={accessToken ?? ""} />
+          <ProductDetail product={product.data} role={session.role} />
           {!movements.ok ? (
             <Alert variant="error">
               No se pudo cargar el historial: {movements.error.message}
