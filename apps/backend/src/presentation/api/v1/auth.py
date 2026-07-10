@@ -4,6 +4,8 @@ from datetime import datetime, timedelta, timezone
 from uuid import UUID, uuid4
 
 from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy import delete, select
+from sqlalchemy.ext.asyncio import AsyncSession
 from supabase import create_client
 from supabase_auth.errors import AuthApiError
 
@@ -30,6 +32,7 @@ from src.application.use_cases.trials.trial_status import BillingStatusUseCase
 from src.config.settings import settings
 from src.domain.entities.store import Store
 from src.infrastructure.auth.password import hash_password, verify_password
+from src.infrastructure.database.models.pkce_verifier_model import PkceVerifierModel
 from src.infrastructure.database.repositories.store_repository import StoreRepository
 from src.infrastructure.database.repositories.user_repository import UserRepository
 from src.presentation.dependencies import (
@@ -39,6 +42,7 @@ from src.presentation.dependencies import (
     DEV_STORE_ID,
     DEV_USER_ID,
     get_current_user_context,
+    get_db_session,
     get_store_repo,
     get_user_repo,
 )
@@ -47,7 +51,7 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
-_pkce_verifiers: dict[str, str] = {}
+_PKCE_VERIFIER_TTL = timedelta(minutes=10)
 
 
 def _auth_response_from_supabase(response) -> AuthResponseDTO:
@@ -394,7 +398,9 @@ async def dev_login(
 
 
 @router.post("/oauth/google")
-async def oauth_google():
+async def oauth_google(
+    session: AsyncSession = Depends(get_db_session),
+):
     if settings.DEBUG or settings.ENVIRONMENT == "local":
         return {"url": f"{settings.FRONTEND_URL}/login?oauth=dev"}
     state = str(uuid4())
@@ -409,22 +415,49 @@ async def oauth_google():
     verifier_key = f"{supabase.auth._storage_key}-code-verifier"
     code_verifier = supabase.auth._storage.get_item(verifier_key)
     if code_verifier:
-        _pkce_verifiers[state] = code_verifier
+        try:
+            session.add(PkceVerifierModel(state=state, code_verifier=code_verifier))
+        except Exception:
+            logger.exception("OAuth/google: error al guardar PKCE verifier en DB")
     return {"url": response.url}
 
 
 @router.post("/oauth/callback", response_model=AuthResponseDTO)
 async def oauth_callback(
     dto: OAuthCallbackDTO,
+    session: AsyncSession = Depends(get_db_session),
     user_repo: UserRepository = Depends(get_user_repo),
     store_repo: StoreRepository = Depends(get_store_repo),
 ):
     if settings.DEBUG or settings.ENVIRONMENT == "local":
         return _dev_auth_response()
 
-    code_verifier = _pkce_verifiers.pop(dto.state, None)
-
     supabase = create_client(settings.SUPABASE_URL, settings.SUPABASE_ANON_KEY)
+
+    code_verifier = None
+    if dto.state:
+        try:
+            cutoff = datetime.now(timezone.utc) - _PKCE_VERIFIER_TTL
+            await session.execute(
+                delete(PkceVerifierModel).where(PkceVerifierModel.created_at < cutoff)
+            )
+            result = await session.execute(
+                select(PkceVerifierModel).where(PkceVerifierModel.state == dto.state)
+            )
+            verifier_row = result.scalar_one_or_none()
+            if verifier_row:
+                code_verifier = verifier_row.code_verifier
+                await session.delete(verifier_row)
+        except Exception:
+            logger.exception("OAuth callback: error al buscar PKCE verifier en DB")
+            raise HTTPException(
+                status_code=503,
+                detail="Error de conexion con la base de datos. Intente de nuevo mas tarde.",
+            )
+
+    if not code_verifier:
+        logger.warning("OAuth callback: no se encontro PKCE verifier para state=%s", dto.state)
+
     try:
         exchange_params = {"auth_code": dto.code}
         if code_verifier:
