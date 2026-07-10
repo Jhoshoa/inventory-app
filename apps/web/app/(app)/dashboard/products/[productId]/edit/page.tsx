@@ -8,7 +8,7 @@ import { listProductCategories } from "@/features/product-categories/api";
 import { getProduct } from "@/features/products/api";
 import { ProductForm } from "@/features/products/components/ProductForm";
 import { canManageProducts } from "@/lib/auth/permissions";
-import { requireSession } from "@/lib/auth/session";
+import { getAuthToken, requireSession } from "@/lib/auth/session";
 
 export default async function EditProductPage({
   params,
@@ -20,9 +20,10 @@ export default async function EditProductPage({
   if (!canManageProducts(session.role)) {
     return <ForbiddenState description="Editar productos requiere permisos de owner." />;
   }
-  const [product, categories] = await Promise.all([
+  const [product, categories, accessToken] = await Promise.all([
     getProduct(productId),
     listProductCategories(true),
+    getAuthToken(),
   ]);
 
   if (!product.ok && product.error.status === 404) notFound();
@@ -47,7 +48,7 @@ export default async function EditProductPage({
         <Alert variant="error">No se pudo cargar el producto: {product.error.message}</Alert>
       ) : (
         <div className="rounded-lg border border-app-border bg-app-surface p-5 shadow-panel">
-          <ProductForm mode="edit" product={product.data} categories={categories.ok ? categories.data.items : []} />
+          <ProductForm mode="edit" product={product.data} categories={categories.ok ? categories.data.items : []} accessToken={accessToken ?? ""} />
         </div>
       )}
     </PageSection>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useMemo, useState } from "react";
+import { useActionState, useEffect, useMemo, useRef, useState } from "react";
 import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
 import { FieldError } from "@/components/ui/FieldError";
@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/Label";
 import { Select } from "@/components/ui/Select";
 import type { ProductCategory } from "@/features/product-categories/types";
 import { QrPreviewDialog } from "./QrPreviewDialog";
+import { ImageUploader } from "./ImageUploader";
 import {
   createProductAction,
   updateProductAction,
@@ -25,10 +26,12 @@ export function ProductForm({
   mode,
   product,
   categories = [],
+  accessToken,
 }: {
   mode: "create" | "edit";
   product?: Product;
   categories?: ProductCategory[];
+  accessToken: string;
 }) {
   const action = mode === "create" ? createProductAction : updateProductAction;
   const [state, formAction, isPending] = useActionState(
@@ -42,6 +45,7 @@ export function ProductForm({
   const [sku, setSku] = useState(values.sku);
   const [scanCode, setScanCode] = useState(values.qr_code);
   const [isQrPreviewOpen, setIsQrPreviewOpen] = useState(false);
+  const photoInputRef = useRef<HTMLInputElement>(null);
   const selectedCategory = useMemo(
     () => categories.find((category) => category.id === categoryId),
     [categories, categoryId],
@@ -233,17 +237,42 @@ export function ProductForm({
             </div>
           </div>
         </Field>
-        <Field name="photo_url" label="URL foto" error={state.fieldErrors.photo_url}>
-          <Input
-            name="photo_url"
-            id="photo_url"
-            type="url"
-            value={formValues.photo_url}
-            onChange={(event) => updateField("photo_url", event.target.value)}
-            error={Boolean(state.fieldErrors.photo_url)}
-          />
-        </Field>
       </div>
+
+      <div className="col-span-full max-w-64">
+        {mode === "edit" && product ? (
+          <ImageUploader
+            accessToken={accessToken}
+            currentUrl={product.photo_url}
+            productId={product.id}
+            productVersion={product.version}
+            onPhotoChange={(photoUrl) => {
+              updateField("photo_url", photoUrl ?? "");
+            }}
+          />
+        ) : (
+          <ImageUploader
+            accessToken={accessToken}
+            onPhotoChange={() => {}}
+            onFileSelected={(file) => {
+              if (file && photoInputRef.current) {
+                const dt = new DataTransfer();
+                dt.items.add(file);
+                photoInputRef.current.files = dt.files;
+              } else if (photoInputRef.current) {
+                photoInputRef.current.files = null;
+              }
+            }}
+          />
+        )}
+      </div>
+
+      <input
+        ref={photoInputRef}
+        type="file"
+        name="photo"
+        className="hidden"
+      />
 
       {mode === "edit" ? (
         <Alert>

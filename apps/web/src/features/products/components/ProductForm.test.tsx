@@ -31,14 +31,14 @@ describe("ProductForm", () => {
   });
 
   it("shows field errors", () => {
-    render(<ProductForm mode="create" />);
+    render(<ProductForm mode="create" accessToken="test-token" />);
 
     expect(screen.getByText("Nombre es requerido")).toBeInTheDocument();
     expect(screen.getByText("Precio debe ser mayor a 0")).toBeInTheDocument();
   });
 
   it("keeps QR preview disabled when scan code is empty", () => {
-    render(<ProductForm mode="create" />);
+    render(<ProductForm mode="create" accessToken="test-token" />);
 
     expect(screen.getByRole("button", { name: "Ver QR" })).toBeDisabled();
   });
@@ -47,6 +47,7 @@ describe("ProductForm", () => {
     render(
       <ProductForm
         mode="edit"
+        accessToken="test-token"
         product={{
           id: "product-1",
           name: "Cafe molido",
@@ -77,6 +78,7 @@ describe("ProductForm", () => {
     render(
       <ProductForm
         mode="create"
+        accessToken="test-token"
         categories={[
           {
             id: "category-1",
@@ -117,7 +119,7 @@ describe("ProductForm", () => {
       },
     };
 
-    render(<ProductForm mode="create" />);
+    render(<ProductForm mode="create" accessToken="test-token" />);
 
     expect(screen.getByLabelText("Nombre")).toHaveValue("Cemento cola");
     expect(screen.getByLabelText("SKU")).toHaveValue("CEM000001");

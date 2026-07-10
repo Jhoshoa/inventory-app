@@ -36,7 +36,11 @@ export async function proxyRequest(
           body,
           cache: "no-store",
         });
+      } else {
+        return Response.redirect(new URL("/login", request.url));
       }
+    } else {
+      return Response.redirect(new URL("/login", request.url));
     }
   }
 

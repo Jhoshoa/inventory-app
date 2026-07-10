@@ -31,14 +31,14 @@ const product: Product = {
 
 describe("ProductDetail", () => {
   it("shows administrative actions for owner", () => {
-    render(<ProductDetail product={product} role="owner" />);
+    render(<ProductDetail product={product} role="owner" accessToken="test-token" />);
 
     expect(screen.getByRole("link", { name: "Editar" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Ajustar stock" })).toBeInTheDocument();
   });
 
   it("hides administrative actions for cashier", () => {
-    render(<ProductDetail product={product} role="cashier" />);
+    render(<ProductDetail product={product} role="cashier" accessToken="test-token" />);
 
     expect(screen.queryByRole("link", { name: "Editar" })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Ajustar stock" })).not.toBeInTheDocument();

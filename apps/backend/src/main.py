@@ -49,6 +49,7 @@ app = FastAPI(
     title=settings.APP_NAME,
     version=settings.APP_VERSION,
     lifespan=lifespan,
+    max_form_memory_size=5 * 1024 * 1024,
 )
 
 app.openapi = custom_openapi

@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { apiRequest } from "@/lib/api/client";
 import { getAuthToken } from "@/lib/auth/session";
+import { getBackendApiUrl } from "@/lib/env/server";
 import {
   formDataToProductValues,
   validateProductForm,
@@ -37,8 +38,27 @@ export async function createProductAction(
     };
   }
 
+  const photoFile = formData.get("photo");
+  if (photoFile instanceof File && photoFile.size > 0) {
+    const photoFormData = new FormData();
+    photoFormData.append("file", photoFile);
+    try {
+      await fetch(
+        `${getBackendApiUrl()}/api/v1/products/${result.data.id}/photo`,
+        {
+          method: "POST",
+          headers: { authorization: `Bearer ${token}` },
+          body: photoFormData,
+        },
+      );
+    } catch {
+      // photo upload failure is non-blocking; product was already created
+    }
+  }
+
   revalidatePath("/dashboard/products");
-  redirect("/dashboard/products");
+  revalidatePath(`/dashboard/products/${result.data.id}`);
+  redirect(`/dashboard/products/${result.data.id}`);
 }
 
 export async function updateProductAction(
@@ -138,7 +158,7 @@ function createPayload(values: ReturnType<typeof formDataToProductValues>) {
     unit: values.unit || "unidad",
     sku: nullable(values.sku),
     cost_price: values.cost_price ? values.cost_price : null,
-    photo_url: nullable(values.photo_url),
+    photo_url: null,
     qr_code: nullable(values.qr_code),
   };
 }
@@ -153,7 +173,7 @@ function updatePayload(values: ReturnType<typeof formDataToProductValues>) {
     unit: values.unit || "unidad",
     sku: nullable(values.sku),
     cost_price: values.cost_price ? values.cost_price : null,
-    photo_url: nullable(values.photo_url),
+    photo_url: null,
     qr_code: nullable(values.qr_code),
   };
 }

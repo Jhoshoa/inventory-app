@@ -45,6 +45,11 @@ from src.infrastructure.database.repositories.store_repository import StoreRepos
 from src.infrastructure.database.repositories.sync_repository import SyncRepository
 from src.infrastructure.database.repositories.user_repository import UserRepository
 from src.infrastructure.database.session import get_session
+from src.infrastructure.services.cloudinary.photo_storage import (
+    CloudinaryPhotoStorage,
+)
+
+from src.application.ports.photo_storage import IPhotoStorage
 
 security_scheme = HTTPBearer(auto_error=False)
 DEV_USER_ID = UUID("00000000-0000-0000-0000-000000000001")
@@ -212,3 +217,7 @@ async def require_owner(user: CurrentUserContext = Depends(require_active_user))
     if user.role != "owner":
         raise ForbiddenError("Permiso requerido: owner")
     return user
+
+
+def get_photo_storage() -> IPhotoStorage:
+    return CloudinaryPhotoStorage()

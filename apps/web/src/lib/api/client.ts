@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation";
 import { getBackendApiUrl } from "@/lib/env/server";
 import { tryRefreshToken } from "@/lib/auth/session";
 import { ApiError, errorFromResponse } from "./errors";
@@ -18,7 +19,7 @@ export async function apiRequest<T>(
 ): Promise<ApiResult<T>> {
   const headers = new Headers(options.headers);
 
-  if (options.body !== undefined && !headers.has("content-type")) {
+  if (options.body !== undefined && !headers.has("content-type") && !(options.body instanceof FormData)) {
     headers.set("content-type", "application/json");
   }
 
@@ -68,6 +69,8 @@ export async function apiRequest<T>(
       headers.set("authorization", `Bearer ${newToken}`);
       options = { ...options, token: newToken };
       result = await doFetch();
+    } else {
+      redirect("/login");
     }
   }
 

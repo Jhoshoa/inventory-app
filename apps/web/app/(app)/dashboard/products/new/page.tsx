@@ -5,14 +5,17 @@ import { ForbiddenState } from "@/components/ui/ForbiddenState";
 import { listProductCategories } from "@/features/product-categories/api";
 import { ProductForm } from "@/features/products/components/ProductForm";
 import { canManageProducts } from "@/lib/auth/permissions";
-import { requireSession } from "@/lib/auth/session";
+import { getAuthToken, requireSession } from "@/lib/auth/session";
 
 export default async function NewProductPage() {
   const session = await requireSession();
   if (!canManageProducts(session.role)) {
     return <ForbiddenState description="Crear productos requiere permisos de owner." />;
   }
-  const categories = await listProductCategories();
+  const [categories, accessToken] = await Promise.all([
+    listProductCategories(),
+    getAuthToken(),
+  ]);
 
   return (
     <PageSection className="space-y-6">
@@ -30,7 +33,7 @@ export default async function NewProductPage() {
         description="Registra datos basicos, precio y stock inicial."
       />
       <div className="rounded-lg border border-app-border bg-app-surface p-5 shadow-panel">
-        <ProductForm mode="create" categories={categories.ok ? categories.data.items : []} />
+        <ProductForm mode="create" categories={categories.ok ? categories.data.items : []} accessToken={accessToken ?? ""} />
       </div>
     </PageSection>
   );

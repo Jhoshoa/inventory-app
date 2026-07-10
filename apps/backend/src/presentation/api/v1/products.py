@@ -1,6 +1,7 @@
+import time
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile
 
 from src.application.dto.product_dto import (
     CreateProductDTO,
@@ -16,6 +17,15 @@ from src.application.dto.product_dto import (
     SortDirection,
     StockAdjustmentDTO,
     UpdateProductDTO,
+)
+from src.application.ports.image_validator import (
+    ALLOWED_MIME_TYPES,
+    validate_image_magic_bytes,
+)
+from src.application.ports.photo_storage import IPhotoStorage
+from src.config.settings import settings
+from src.infrastructure.services.cloudinary.photo_storage import (
+    parse_public_id_from_url,
 )
 from src.application.dto.stock_movement_dto import StockMovementListResponseDTO
 from src.application.use_cases.products.create_product import (
@@ -59,6 +69,7 @@ from src.infrastructure.database.repositories.stock_movement_repository import (
 from src.infrastructure.database.session import get_session
 from src.presentation.dependencies import (
     get_import_job_repo,
+    get_photo_storage,
     get_product_category_repo,
     get_product_repo,
     get_stock_movement_repo,
@@ -251,6 +262,108 @@ async def adjust_stock(
     repo: ProductRepository = Depends(get_product_repo),
 ):
     return await UpdateStockUseCase(repo).execute(user.store_id, product_id, dto.quantity, dto.reason)
+
+
+@router.post("/{product_id}/photo", response_model=ProductResponseDTO)
+async def upload_product_photo(
+    product_id: UUID,
+    file: UploadFile = File(...),
+    version: int | None = Form(default=None),
+    user=Depends(require_owner),
+    repo: ProductRepository = Depends(get_product_repo),
+    storage: IPhotoStorage = Depends(get_photo_storage),
+):
+    product = await repo.get_by_id(user.store_id, product_id)
+    if not product:
+        raise HTTPException(status_code=404, detail="Producto no encontrado")
+
+    if version is not None and product.version != version:
+        raise HTTPException(
+            status_code=409,
+            detail="El producto fue modificado por otro usuario. Recarga la pagina.",
+        )
+
+    if not file.content_type or file.content_type not in ALLOWED_MIME_TYPES:
+        raise HTTPException(
+            status_code=415,
+            detail=f"Formato no soportado. Usar: {', '.join(sorted(ALLOWED_MIME_TYPES))}",
+        )
+
+    image_bytes = await file.read()
+
+    if len(image_bytes) == 0:
+        raise HTTPException(status_code=400, detail="El archivo esta vacio")
+
+    if len(image_bytes) > settings.MAX_IMAGE_SIZE_BYTES:
+        raise HTTPException(
+            status_code=400,
+            detail=f"La imagen no debe superar los {settings.MAX_IMAGE_SIZE_MB} MB",
+        )
+
+    if not validate_image_magic_bytes(image_bytes):
+        raise HTTPException(
+            status_code=415,
+            detail="El archivo no es una imagen valida (JPEG, PNG o WebP)",
+        )
+
+    if product.photo_url:
+        old_public_id = parse_public_id_from_url(product.photo_url)
+        if old_public_id:
+            try:
+                await storage.delete(old_public_id)
+            except Exception:
+                pass
+
+    timestamp = int(time.time())
+    public_id = f"products/{user.store_id}/{product_id}_{timestamp}"
+
+    try:
+        secure_url = await storage.upload(image_bytes, public_id)
+    except Exception as exc:
+        raise HTTPException(
+            status_code=502,
+            detail=f"Error al subir imagen a Cloudinary: {exc}",
+        ) from exc
+
+    product.photo_url = secure_url
+    product.version += 1
+    updated = await repo.save(product)
+
+    return updated
+
+
+@router.delete("/{product_id}/photo", response_model=ProductResponseDTO)
+async def delete_product_photo(
+    product_id: UUID,
+    user=Depends(require_owner),
+    repo: ProductRepository = Depends(get_product_repo),
+    storage: IPhotoStorage = Depends(get_photo_storage),
+):
+    product = await repo.get_by_id(user.store_id, product_id)
+    if not product:
+        raise HTTPException(status_code=404, detail="Producto no encontrado")
+
+    if not product.photo_url:
+        product.version += 1
+        return await repo.save(product)
+
+    if not product.photo_url.startswith("https://res.cloudinary.com/"):
+        product.photo_url = None
+        product.version += 1
+        return await repo.save(product)
+
+    public_id = parse_public_id_from_url(product.photo_url)
+    if public_id:
+        try:
+            await storage.delete(public_id)
+        except Exception:
+            pass
+
+    product.photo_url = None
+    product.version += 1
+    updated = await repo.save(product)
+
+    return updated
 
 
 @router.delete("/{product_id}", status_code=204)

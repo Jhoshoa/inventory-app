@@ -29,6 +29,12 @@ class Settings(BaseSettings):
     SENTRY_DSN: str | None = None
     FRONTEND_URL: str = "http://localhost:3010"
     CORS_ALLOWED_ORIGINS: str = "http://localhost:3010,http://localhost:8081"
+    MAX_IMAGE_SIZE_MB: int = 5
+
+    @property
+    def MAX_IMAGE_SIZE_BYTES(self) -> int:
+        return self.MAX_IMAGE_SIZE_MB * 1024 * 1024
+
     EXPOSE_ERROR_DETAILS: bool | None = None
 
     @property

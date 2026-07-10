@@ -395,7 +395,7 @@ async def dev_login(
 
 @router.post("/oauth/google")
 async def oauth_google():
-    if settings.DEBUG:
+    if settings.DEBUG or settings.ENVIRONMENT == "local":
         return {"url": f"{settings.FRONTEND_URL}/login?oauth=dev"}
     state = str(uuid4())
     redirect_to = f"{settings.FRONTEND_URL}/auth/callback?state={state}"
@@ -419,7 +419,7 @@ async def oauth_callback(
     user_repo: UserRepository = Depends(get_user_repo),
     store_repo: StoreRepository = Depends(get_store_repo),
 ):
-    if settings.DEBUG:
+    if settings.DEBUG or settings.ENVIRONMENT == "local":
         return _dev_auth_response()
 
     code_verifier = _pkce_verifiers.pop(dto.state, None)
@@ -443,55 +443,62 @@ async def oauth_callback(
         logger.exception("OAuth callback: error inesperado al intercambiar codigo")
         raise HTTPException(status_code=500, detail=f"Error al intercambiar codigo: {e}")
 
-    supabase_session = auth_resp.session
-    supabase_user = auth_resp.user
+    try:
+        supabase_session = auth_resp.session
+        supabase_user = auth_resp.user
 
-    user_data = {
-        "id": supabase_user.id,
-        "email": supabase_user.email,
-        "store_id": supabase_user.user_metadata.get("store_id"),
-        "full_name": supabase_user.user_metadata.get("full_name") or supabase_user.user_metadata.get("name"),
-        "role": supabase_user.user_metadata.get("role", "cashier"),
-    }
+        user_data = {
+            "id": supabase_user.id,
+            "email": supabase_user.email,
+            "store_id": supabase_user.user_metadata.get("store_id"),
+            "full_name": supabase_user.user_metadata.get("full_name") or supabase_user.user_metadata.get("name"),
+            "role": supabase_user.user_metadata.get("role", "cashier"),
+        }
 
-    if not user_data["store_id"]:
-        existing = await user_repo.get_by_email(user_data["email"])
-        if existing and existing.store_id:
-            user_data["store_id"] = str(existing.store_id)
-        else:
-            store_name = f"{user_data.get('full_name') or user_data['email'].split('@')[0]}'s Store"
-            new_store = Store.create(store_name)
-            new_store.trial_expires_at = Store.calculate_trial_expiry()
-            new_store = await store_repo.save(new_store)
-            user_data["store_id"] = str(new_store.id)
-            user_data["role"] = "owner"
+        if not user_data["store_id"]:
+            existing = await user_repo.get_by_email(user_data["email"])
+            if existing and existing.store_id:
+                user_data["store_id"] = str(existing.store_id)
+            else:
+                store_name = f"{user_data.get('full_name') or user_data['email'].split('@')[0]}'s Store"
+                new_store = Store.create(store_name)
+                new_store.trial_expires_at = Store.calculate_trial_expiry()
+                new_store = await store_repo.save(new_store)
+                user_data["store_id"] = str(new_store.id)
+                user_data["role"] = "owner"
 
-    local_user = await EnsureLocalUserUseCase(user_repo, store_repo).execute(
-        EnsureLocalUserInput(
-            user_id=UUID(user_data["id"]),
-            email=user_data["email"],
-            store_id=UUID(str(user_data["store_id"])),
-            full_name=user_data.get("full_name"),
-            role=str(user_data.get("role") or "cashier"),
-            touch_login=True,
+        local_user = await EnsureLocalUserUseCase(user_repo, store_repo).execute(
+            EnsureLocalUserInput(
+                user_id=UUID(user_data["id"]),
+                email=user_data["email"],
+                store_id=UUID(str(user_data["store_id"])),
+                full_name=user_data.get("full_name"),
+                role=str(user_data.get("role") or "cashier"),
+                touch_login=True,
+            )
         )
-    )
 
-    store = await store_repo.get_by_id(local_user.store_id)
-    return _auth_response(
-        supabase_session.access_token,
-        supabase_session.refresh_token,
-        user_id=local_user.id,
-        email=local_user.email,
-        store_id=local_user.store_id,
-        store_name=store.name if store else None,
-        full_name=local_user.full_name,
-        role=local_user.role,
-        trial_expires_at=store.trial_expires_at if store else None,
-        days_until_trial_ends=store.days_until_trial_ends if store else None,
-        subscription_status=store.subscription_status if store else "trial",
-        access_status=store.access_status if store else "active",
-    )
+        store = await store_repo.get_by_id(local_user.store_id)
+        return _auth_response(
+            supabase_session.access_token,
+            supabase_session.refresh_token,
+            user_id=local_user.id,
+            email=local_user.email,
+            store_id=local_user.store_id,
+            store_name=store.name if store else None,
+            full_name=local_user.full_name,
+            role=local_user.role,
+            trial_expires_at=store.trial_expires_at if store else None,
+            days_until_trial_ends=store.days_until_trial_ends if store else None,
+            subscription_status=store.subscription_status if store else "trial",
+            access_status=store.access_status if store else "active",
+        )
+    except Exception:
+        logger.exception("OAuth callback: error al acceder a base de datos")
+        raise HTTPException(
+            status_code=503,
+            detail="Error de conexion con la base de datos. Intente de nuevo mas tarde.",
+        )
 
 
 @router.get("/trial-status")
