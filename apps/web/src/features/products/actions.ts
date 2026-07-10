@@ -37,25 +37,22 @@ export async function createProductAction(
     };
   }
 
-  const photoEntry = formData.get("photo");
-  if (photoEntry instanceof File && photoEntry.size > 0) {
-    const photoBytes = await photoEntry.bytes();
-    if (photoBytes.length > 0) {
-      try {
-        const baseUrl = process.env.BACKEND_API_URL || "http://localhost:8001";
-        const uploadForm = new FormData();
-        uploadForm.append("file", new Blob([photoBytes], { type: photoEntry.type || "image/jpeg" }), "photo.jpg");
-        await fetch(
-          `${baseUrl}/api/v1/products/${result.data.id}/photo`,
-          {
-            method: "POST",
-            headers: { authorization: `Bearer ${token}` },
-            body: uploadForm,
-          },
-        );
-      } catch {
-        // photo upload failure is non-blocking; product was already created
-      }
+  const photoEntry = findPhotoFile(formData);
+  if (photoEntry) {
+    try {
+      const baseUrl = process.env.BACKEND_API_URL || "http://localhost:8001";
+      const uploadForm = new FormData();
+      uploadForm.append("file", new Blob([await photoEntry.bytes()], { type: photoEntry.type || "image/jpeg" }), "photo.jpg");
+      await fetch(
+        `${baseUrl}/api/v1/products/${result.data.id}/photo`,
+        {
+          method: "POST",
+          headers: { authorization: `Bearer ${token}` },
+          body: uploadForm,
+        },
+      );
+    } catch {
+      // photo upload failure is non-blocking; product was already created
     }
   }
 
@@ -188,4 +185,13 @@ function nullable(value: string) {
 function stringValue(formData: FormData, key: string) {
   const value = formData.get(key);
   return typeof value === "string" ? value.trim() : "";
+}
+
+function findPhotoFile(formData: FormData): File | null {
+  for (const [, value] of formData.entries()) {
+    if (value instanceof File && value.size > 0 && value.name) {
+      return value;
+    }
+  }
+  return null;
 }

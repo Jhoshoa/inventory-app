@@ -15,6 +15,7 @@ interface ImageUploaderProps {
   productId?: string;
   productVersion?: number;
   onPhotoChange: (photoUrl: string | null) => void;
+  photoRef?: React.MutableRefObject<File | null>;
   disabled?: boolean;
 }
 
@@ -23,6 +24,7 @@ export function ImageUploader({
   productId,
   productVersion,
   onPhotoChange,
+  photoRef,
   disabled = false,
 }: ImageUploaderProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -155,7 +157,9 @@ export function ImageUploader({
       if (productId) {
         handleUpload(file);
       }
-      // In create mode the file is already assigned to the input[name="photo"]
+      if (photoRef) {
+        photoRef.current = file;
+      }
     },
     [validateFile, previewUrl, productId, handleUpload],
   );
@@ -206,9 +210,12 @@ export function ImageUploader({
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
+    if (photoRef) {
+      photoRef.current = null;
+    }
     setErrorMessage("");
     setState("idle");
-  }, [previewUrl]);
+  }, [previewUrl, photoRef]);
 
   const handleRemove = useCallback(async () => {
     if (!productId) {
@@ -420,7 +427,6 @@ export function ImageUploader({
       <input
         ref={cameraInputRef}
         type="file"
-        name="photo"
         accept="image/*"
         capture
         onChange={handleCameraChange}
