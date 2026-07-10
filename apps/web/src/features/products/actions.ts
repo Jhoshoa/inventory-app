@@ -4,7 +4,6 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { apiRequest } from "@/lib/api/client";
 import { getAuthToken } from "@/lib/auth/session";
-import { getBackendApiUrl } from "@/lib/env/server";
 import {
   formDataToProductValues,
   validateProductForm,
@@ -43,8 +42,9 @@ export async function createProductAction(
     const photoFormData = new FormData();
     photoFormData.append("file", photoFile);
     try {
+      const baseUrl = process.env.BACKEND_API_URL || "http://localhost:8001";
       await fetch(
-        `${getBackendApiUrl()}/api/v1/products/${result.data.id}/photo`,
+        `${baseUrl}/api/v1/products/${result.data.id}/photo`,
         {
           method: "POST",
           headers: { authorization: `Bearer ${token}` },

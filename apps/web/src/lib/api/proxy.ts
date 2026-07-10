@@ -10,13 +10,17 @@ export async function proxyRequest(
 ) {
   const target = buildBackendUrl(request.url, params.path);
   const headers = await buildProxyHeaders(request.headers);
-  const body = await getProxyBody(request);
+  const body = request.method === "GET" || request.method === "HEAD"
+    ? undefined
+    : request.body;
 
   let response = await fetch(target, {
     method: request.method,
     headers,
     body,
     cache: "no-store",
+    // @ts-expect-error - duplex is required for streaming body in undici/Node 18+
+    duplex: body ? "half" : undefined,
   });
 
   if (response.status === 401) {
@@ -30,11 +34,17 @@ export async function proxyRequest(
       if (refreshRes.ok) {
         const data = await refreshRes.json();
         headers.set("authorization", `Bearer ${data.access_token}`);
+
+        const retryBody = request.method === "GET" || request.method === "HEAD"
+          ? undefined
+          : request.body;
         response = await fetch(target, {
           method: request.method,
           headers,
-          body,
+          body: retryBody,
           cache: "no-store",
+          // @ts-expect-error - duplex: "half" for streaming body
+          duplex: retryBody ? "half" : undefined,
         });
       } else {
         return Response.redirect(new URL("/login", request.url));
@@ -81,7 +91,4 @@ async function buildProxyHeaders(source: Headers) {
   return headers;
 }
 
-async function getProxyBody(request: Request) {
-  if (request.method === "GET" || request.method === "HEAD") return undefined;
-  return request.arrayBuffer();
-}
+
