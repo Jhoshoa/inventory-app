@@ -48,7 +48,7 @@ export function PosCheckoutPanel({
       <input type="hidden" name="items" value={serializeCartItems(items)} />
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h2 className="text-base font-semibold text-text-strong">Checkout</h2>
+          <h2 className="text-base font-semibold text-text-strong">Cobro</h2>
           <p className="mt-1 text-sm text-text-muted">
             {isReady ? "Venta lista para confirmar." : "Agrega productos para habilitar el cobro."}
           </p>

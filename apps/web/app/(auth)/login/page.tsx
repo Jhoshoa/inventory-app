@@ -5,9 +5,9 @@ export default async function LoginPage(props: { searchParams: Promise<{ verifie
   const searchParams = await props.searchParams;
   return (
     <AuthShell
-      title="Iniciar sesion"
+      title="Iniciar sesión"
       description="Ingresa para administrar tu tienda."
-      footerText="No tienes cuenta?"
+      footerText="¿No tienes cuenta?"
       footerHref="/register"
       footerLinkLabel="Crea una tienda"
     >

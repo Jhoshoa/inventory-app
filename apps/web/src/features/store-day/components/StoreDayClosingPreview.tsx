@@ -7,7 +7,7 @@ export function StoreDayClosingPreview({ preview }: { preview?: StoreDayClosingP
 
   return (
     <div className="rounded-lg border border-app-border bg-app-surface-muted p-3">
-      <p className="text-sm font-semibold text-text-strong">Preview de cierre</p>
+      <p className="text-sm font-semibold text-text-strong">Vista previa de cierre</p>
       <dl className="mt-3 grid gap-2 text-sm sm:grid-cols-2">
         <Item label="Caja inicial" value={formatCurrency(data.opening_cash_amount)} />
         <Item label="Efectivo esperado" value={formatCurrency(data.expected_cash_amount)} />

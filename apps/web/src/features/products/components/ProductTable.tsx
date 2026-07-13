@@ -58,7 +58,7 @@ export function ProductTable({ products, role }: { products: Product[]; role: Us
                 {formatCurrency(product.price)}
               </TableCell>
               <TableCell align="right" mobileLabel="Stock">
-                {product.stock} / min {product.min_stock}
+                {product.stock} / mín {product.min_stock}
               </TableCell>
               <TableCell mobileLabel="Estado">
                 <StockBadge product={product} />

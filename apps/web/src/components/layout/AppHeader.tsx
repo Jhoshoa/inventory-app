@@ -37,7 +37,7 @@ export function AppHeader({ session }: { session: Session }) {
               <span className="truncate">{session.storeName}</span>
             </p>
             <p className="mt-0.5 flex items-center gap-1.5 truncate text-xs text-text-muted">
-              <span>{session.email} - {session.role}</span>
+              <span>{session.email} - {session.role === "owner" ? "Propietario" : "Cajero"}</span>
               {subLabel ? <Badge variant={subVariant}>{subLabel}</Badge> : null}
             </p>
           </div>

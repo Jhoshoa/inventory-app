@@ -48,7 +48,7 @@ export function SalesTableSkeleton() {
             <TableHeaderCell>Fecha</TableHeaderCell>
             <TableHeaderCell>Estado</TableHeaderCell>
             <TableHeaderCell>Metodo</TableHeaderCell>
-            <TableHeaderCell align="right">Items</TableHeaderCell>
+            <TableHeaderCell align="right">Artículos</TableHeaderCell>
             <TableHeaderCell align="right">Total</TableHeaderCell>
             <TableHeaderCell align="right">Acciones</TableHeaderCell>
           </tr>

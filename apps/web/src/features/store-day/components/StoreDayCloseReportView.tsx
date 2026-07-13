@@ -38,10 +38,10 @@ export function StoreDayCloseReportView({ report }: { report: StoreDayCloseRepor
         <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2 xl:grid-cols-3">
           <Item label="Fecha operativa" value={formatBusinessDate(data.business_date)} />
           <Item label="Cerrada" value={formatDateTime(data.closed_at)} />
-          <Item label="Snapshot" value={formatDateTime(data.closing_snapshot_at)} />
+          <Item label="Instantánea" value={formatDateTime(data.closing_snapshot_at)} />
           <Item label="Ventas completadas" value={data.sales_count.toString()} />
           <Item label="Ventas anuladas" value={data.voided_sales_count.toString()} />
-          <Item label="Items vendidos" value={data.items_count.toString()} />
+          <Item label="Artículos vendidos" value={data.items_count.toString()} />
           <Item label="Caja inicial" value={formatCurrency(data.opening_cash_amount)} />
           <Item label="Efectivo" value={formatCurrency(data.cash_sales_total)} />
           <Item label="Entradas caja" value={formatCurrency(data.cash_movements_in_total)} />

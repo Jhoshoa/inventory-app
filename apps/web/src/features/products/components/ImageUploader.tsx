@@ -327,7 +327,7 @@ export function ImageUploader({
                 setErrorMessage("");
               }}
             >
-              Ok
+              Aceptar
             </Button>
           )}
         </div>
@@ -383,7 +383,7 @@ export function ImageUploader({
               Arrastra una imagen aqui o haz clic para seleccionar
             </p>
             <p className="text-xs text-text-muted">
-              JPEG, PNG o WebP &middot; Max 5 MB
+              JPEG, PNG o WebP &middot; Máx 5 MB
             </p>
           </div>
           <Button

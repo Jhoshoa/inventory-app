@@ -13,8 +13,8 @@ vi.mock("next/navigation", () => ({
 describe("validateLogin", () => {
   it("validates required fields", () => {
     expect(validateLogin({ email: "", password: "" })).toEqual({
-      email: "Email es requerido",
-      password: "Password es requerido",
+      email: "Correo electrónico es requerido",
+      password: "Contraseña es requerida",
     });
   });
 });
@@ -23,12 +23,12 @@ describe("LoginForm", () => {
   it("shows validation errors before submit", async () => {
     render(<LoginForm />);
 
-    await userEvent.click(screen.getByRole("button", { name: /iniciar sesion/i }));
+    await userEvent.click(screen.getByRole("button", { name: /iniciar sesión/i }));
 
-    expect(screen.getByText("Email es requerido")).toBeInTheDocument();
-    expect(screen.getByText("Password es requerido")).toBeInTheDocument();
-    expect(screen.getByText("Email es requerido")).toHaveClass("text-status-danger");
-    expect(screen.getByText("Password es requerido")).toHaveClass("text-status-danger");
+    expect(screen.getByText("Correo electrónico es requerido")).toBeInTheDocument();
+    expect(screen.getByText("Contraseña es requerida")).toBeInTheDocument();
+    expect(screen.getByText("Correo electrónico es requerido")).toHaveClass("text-status-danger");
+    expect(screen.getByText("Contraseña es requerida")).toHaveClass("text-status-danger");
   });
 
   it("shows invalid credentials errors", async () => {
@@ -39,9 +39,9 @@ describe("LoginForm", () => {
 
     render(<LoginForm />);
 
-    await userEvent.type(screen.getByLabelText("Email"), "owner@example.com");
-    await userEvent.type(screen.getByLabelText("Password"), "secret1");
-    await userEvent.click(screen.getByRole("button", { name: /iniciar sesion/i }));
+    await userEvent.type(screen.getByLabelText("Correo electrónico"), "owner@example.com");
+    await userEvent.type(screen.getByLabelText("Contraseña"), "secret1");
+    await userEvent.click(screen.getByRole("button", { name: /iniciar sesión/i }));
 
     expect(
       await screen.findByText("Credenciales invalidas o backend no disponible."),

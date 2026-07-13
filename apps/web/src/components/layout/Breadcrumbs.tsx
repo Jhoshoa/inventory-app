@@ -10,7 +10,7 @@ export function Breadcrumbs({ items }: { items: BreadcrumbItem[] }) {
   if (items.length === 0) return null;
 
   return (
-    <nav aria-label="Ruta de navegacion" className="min-w-0">
+    <nav aria-label="Ruta de navegación" className="min-w-0">
       <ol className="flex min-w-0 items-center gap-1 overflow-hidden text-xs font-medium text-text-muted">
         {items.map((item, index) => {
           const isCurrent = index === items.length - 1 || !item.href;

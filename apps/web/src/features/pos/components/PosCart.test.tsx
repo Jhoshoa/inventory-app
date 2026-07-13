@@ -36,7 +36,7 @@ describe("PosCart", () => {
     expect(screen.getByText("+")).toBeInTheDocument();
     expect(screen.getAllByText(/Bs\s+25,00/)).toHaveLength(2);
     expect(screen.getByText("Total venta")).toBeInTheDocument();
-    expect(screen.getByText("2 items")).toBeInTheDocument();
+    expect(screen.getByText("2 artículos")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Disminuir cantidad" })).toHaveClass("text-text-strong");
     expect(screen.getByRole("button", { name: "Aumentar cantidad" })).toHaveClass("text-text-strong");
   });

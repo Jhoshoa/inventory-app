@@ -30,7 +30,7 @@ Default local values:
 
 ```env
 BACKEND_API_URL=http://localhost:8001
-NEXT_PUBLIC_APP_NAME=Inventory App
+NEXT_PUBLIC_APP_NAME=App Inventario
 NEXT_PUBLIC_APP_URL=http://localhost:3010
 NEXT_PUBLIC_SENTRY_DSN=
 SENTRY_DSN=

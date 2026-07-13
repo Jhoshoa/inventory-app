@@ -162,7 +162,7 @@ function StoreDayActionForm({
               onInput={sanitizeMoneyInput}
               pattern="\d+(\.\d{1,2})?"
               placeholder="Caja inicial"
-              title="Use solo numeros con maximo 2 decimales"
+              title="Use solo números con máximo 2 decimales"
             />
             <FieldError message={state.fieldErrors.opening_cash_amount} />
           </>
@@ -188,7 +188,7 @@ function StoreDayActionForm({
               pattern="\d+(\.\d{1,2})?"
               placeholder={skipCashCount ? "Sin conteo" : "Efectivo contado"}
               required={!skipCashCount}
-              title="Use solo numeros con maximo 2 decimales"
+              title="Use solo números con máximo 2 decimales"
             />
             <FieldError message={state.fieldErrors.counted_cash_amount} />
           </>
@@ -263,7 +263,7 @@ function CashMovementPanel({ cashMovements }: { cashMovements?: CashMovementList
           pattern="\d+(\.\d{1,2})?"
           placeholder="Monto"
           required
-          title="Use solo numeros con maximo 2 decimales"
+          title="Use solo números con máximo 2 decimales"
         />
         <FieldError message={state.fieldErrors.amount} />
         <Input aria-label="Nota de movimiento" name="note" maxLength={255} placeholder="Nota opcional" />
@@ -340,7 +340,7 @@ function cashMovementLabel(type: string) {
     cash_in: "Entrada",
     cash_out: "Salida",
     expense: "Gasto",
-    deposit: "Deposito",
+    deposit: "Depósito",
     withdrawal: "Retiro",
   };
   return labels[type] ?? type;
@@ -366,7 +366,7 @@ function formatBusinessDate(value: string) {
 }
 
 function formatDateTime(value: string, timezone: string) {
-  const parts = new Intl.DateTimeFormat("en-GB", {
+  const parts = new Intl.DateTimeFormat("es-BO", {
     timeZone: timezone,
     year: "2-digit",
     month: "2-digit",

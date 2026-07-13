@@ -23,7 +23,7 @@ export function SalesTable({ sales }: { sales: Sale[] }) {
           <TableHeaderCell>Fecha</TableHeaderCell>
           <TableHeaderCell>Estado</TableHeaderCell>
           <TableHeaderCell>Metodo</TableHeaderCell>
-          <TableHeaderCell align="right">Items</TableHeaderCell>
+          <TableHeaderCell align="right">Artículos</TableHeaderCell>
           <TableHeaderCell align="right">Total</TableHeaderCell>
           <TableHeaderCell align="right">Acciones</TableHeaderCell>
         </tr>
@@ -51,7 +51,7 @@ export function SalesTable({ sales }: { sales: Sale[] }) {
                 <SaleStatusBadge status={sale.status} />
               </TableCell>
               <TableCell mobileLabel="Metodo">{sale.payment_method}</TableCell>
-              <TableCell align="right" mobileLabel="Items">{sale.items.length}</TableCell>
+              <TableCell align="right" mobileLabel="Artículos">{sale.items.length}</TableCell>
               <TableCell align="right" mobileLabel="Total" className="font-semibold text-text-strong">
                 {formatCurrency(sale.total)}
               </TableCell>

@@ -33,7 +33,7 @@ export function ReportsPageSkeleton() {
       </ResponsiveToolbar>
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        {["Total vendido", "Ventas", "Items vendidos", "Ticket promedio"].map((label) => (
+        {["Total vendido", "Ventas", "Artículos vendidos", "Ticket promedio"].map((label) => (
           <div
             key={label}
             className="rounded-lg border border-app-border bg-app-surface p-4 shadow-panel"

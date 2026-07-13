@@ -36,7 +36,7 @@ describe("PageHeader", () => {
       />,
     );
 
-    const breadcrumbs = screen.getByRole("navigation", { name: "Ruta de navegacion" });
+    const breadcrumbs = screen.getByRole("navigation", { name: "Ruta de navegación" });
     expect(breadcrumbs).toBeInTheDocument();
     expect(within(breadcrumbs).getByRole("link", { name: "Dashboard" })).toHaveAttribute(
       "href",

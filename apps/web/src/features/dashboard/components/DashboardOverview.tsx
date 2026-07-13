@@ -73,8 +73,8 @@ export function DashboardOverview({
       {isEmpty ? (
         <EmptyState
           icon={PackagePlus}
-          title="Tu tienda aun no tiene actividad"
-          description="Agrega productos para comenzar a vender y ver metricas reales del negocio."
+          title="Tu tienda aún no tiene actividad"
+          description="Agrega productos para comenzar a vender y ver métricas reales del negocio."
           actionLabel="Ir a productos"
           actionHref="/dashboard/products"
         />
@@ -98,7 +98,7 @@ function DashboardHeader({
 }) {
   return (
     <PageHeader
-      eyebrow="Operacion"
+      eyebrow="Operación"
       title="Dashboard"
       description="Resumen operativo de ventas, productos y alertas de inventario."
       actions={<DashboardScopeTabs scope={scope} />}
@@ -132,7 +132,7 @@ function MetricGrid({ data }: { data: DashboardSummary }) {
       <MetricCard
         label="Stock bajo"
         value={data.low_stock_count.toString()}
-        helper={data.low_stock_count > 0 ? "Requiere reposicion" : "Inventario estable"}
+        helper={data.low_stock_count > 0 ? "Requiere reposición" : "Inventario estable"}
         icon={AlertTriangle}
         tone={data.low_stock_count > 0 ? "warning" : "success"}
       />
@@ -144,7 +144,7 @@ function LatestSalesPanel({ sales }: { sales: DashboardSale[] }) {
   return (
     <section className="min-w-0 space-y-3">
       <SectionHeading
-        title="Ultimas ventas"
+        title="Últimas ventas"
         description="Actividad reciente del punto de venta."
         icon={ReceiptText}
       />
@@ -153,7 +153,7 @@ function LatestSalesPanel({ sales }: { sales: DashboardSale[] }) {
           <tr>
             <TableHeaderCell>Producto</TableHeaderCell>
             <TableHeaderCell align="right">Cantidad</TableHeaderCell>
-            <TableHeaderCell>Metodo</TableHeaderCell>
+            <TableHeaderCell>Método</TableHeaderCell>
             <TableHeaderCell align="right">Total</TableHeaderCell>
             <TableHeaderCell>Fecha</TableHeaderCell>
           </tr>
@@ -170,7 +170,7 @@ function LatestSalesPanel({ sales }: { sales: DashboardSale[] }) {
                   </TableText>
                 </TableCell>
                 <TableCell align="right">{saleQuantity(sale)}</TableCell>
-                <TableCell>{sale.payment_method ?? "Sin metodo"}</TableCell>
+                <TableCell>{sale.payment_method ?? "Sin método"}</TableCell>
                 <TableCell align="right" className="font-semibold text-text-strong">
                   {formatCurrency(sale.total)}
                 </TableCell>
@@ -191,7 +191,7 @@ function LowStockPanel({ data }: { data: DashboardSummary }) {
     <section className="min-w-0 space-y-3">
       <SectionHeading
         title="Stock bajo"
-        description={`${data.low_stock_count} productos bajo minimo`}
+        description={`${data.low_stock_count} productos bajo mínimo`}
         icon={PackageCheck}
         action={
           <Link

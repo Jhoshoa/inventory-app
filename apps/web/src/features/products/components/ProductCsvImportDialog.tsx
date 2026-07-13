@@ -206,7 +206,7 @@ function IdleForm({
           target="_blank"
           rel="noreferrer"
         >
-          Descargar template CSV
+          Descargar plantilla CSV
         </a>
         <div className="flex items-center gap-2">
           <Button variant="secondary" onClick={onClose}>Cancelar</Button>

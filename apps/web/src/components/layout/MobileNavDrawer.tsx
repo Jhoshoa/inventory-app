@@ -90,7 +90,7 @@ export function MobileNavDrawer({ role }: { role: UserRole }) {
         ref={triggerButtonRef}
         type="button"
         className="inline-flex h-10 w-10 items-center justify-center rounded-md text-text-body hover:bg-app-surface-muted hover:text-text-strong focus:outline-none focus:ring-2 focus:ring-focus focus:ring-offset-2 lg:hidden"
-        aria-label="Abrir menu de navegacion"
+        aria-label="Abrir menú de navegación"
         aria-expanded={isOpen}
         onClick={() => setIsOpen(true)}
       >
@@ -102,7 +102,7 @@ export function MobileNavDrawer({ role }: { role: UserRole }) {
           <button
             type="button"
             className="absolute inset-0 bg-text-strong/40"
-            aria-label="Cerrar menu de navegacion"
+            aria-label="Cerrar menú de navegación"
             onClick={() => setIsOpen(false)}
           />
           <aside
@@ -110,24 +110,24 @@ export function MobileNavDrawer({ role }: { role: UserRole }) {
             className="fixed inset-y-0 left-0 z-10 flex w-80 max-w-[85vw] flex-col overflow-y-auto border-r border-app-border bg-app-surface shadow-floating"
             role="dialog"
             aria-modal="true"
-            aria-label="Menu de navegacion"
+            aria-label="Menú de navegación"
             tabIndex={-1}
           >
             <div className="flex h-16 items-center justify-between border-b border-app-border px-5">
               <Link href="/dashboard" className="text-base font-semibold text-text-strong">
-                Inventory App
+                App Inventario
               </Link>
               <button
                 ref={closeButtonRef}
                 type="button"
                 className="inline-flex h-9 w-9 items-center justify-center rounded-md text-text-body hover:bg-app-surface-muted hover:text-text-strong focus:outline-none focus:ring-2 focus:ring-focus focus:ring-offset-2"
-                aria-label="Cerrar menu"
+                aria-label="Cerrar menú"
                 onClick={() => setIsOpen(false)}
               >
                 <X className="h-5 w-5" aria-hidden="true" />
               </button>
             </div>
-            <nav className="flex-1 space-y-1 px-3 py-4" aria-label="Principal mobile">
+            <nav className="flex-1 space-y-1 px-3 py-4" aria-label="Principal móvil">
               {visibleNavItems(role).map((item) => {
                 const Icon = item.icon;
                 const isActive = isNavItemActive(pathname, item.href);

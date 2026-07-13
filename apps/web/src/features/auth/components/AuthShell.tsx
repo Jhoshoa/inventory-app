@@ -23,7 +23,7 @@ export function AuthShell({
       <section className="w-full max-w-md rounded-lg border border-app-border bg-app-surface p-6 shadow-panel">
         <div className="mb-6 text-center">
           <p className="text-xs font-semibold uppercase tracking-wide text-brand-700">
-            Inventory App
+            App Inventario
           </p>
           <h1 className="mt-2 text-2xl font-semibold text-text-strong">{title}</h1>
           <p className="mt-2 text-sm text-text-muted">{description}</p>

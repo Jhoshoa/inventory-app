@@ -66,16 +66,16 @@ export default function RegisterPage() {
     return (
       <AuthShell
         title="Tienda creada"
-        description="Tu tienda se ha creado exitosamente. Ahora puedes iniciar sesion."
+        description="Tu tienda se ha creado exitosamente. Ahora puedes iniciar sesión."
         footerText=""
         footerHref="/login"
-        footerLinkLabel="Iniciar sesion"
+        footerLinkLabel="Iniciar sesión"
       >
         <Alert variant="success">
-          Tu cuenta ha sido creada. Revisa tu email para confirmarla (si es necesario) o inicia sesion ahora.
+          Tu cuenta ha sido creada. Revisa tu correo electrónico para confirmarla (si es necesario) o inicia sesion ahora.
         </Alert>
         <Button className="w-full" onClick={() => window.location.href = "/login"}>
-          Ir a iniciar sesion
+          Ir a iniciar sesión
         </Button>
       </AuthShell>
     );
@@ -85,9 +85,9 @@ export default function RegisterPage() {
     <AuthShell
       title="Crear tienda"
       description="Completa tus datos para empezar."
-      footerText="Ya tienes cuenta?"
+      footerText="¿Ya tienes cuenta?"
       footerHref="/login"
-      footerLinkLabel="Inicia sesion"
+      footerLinkLabel="Inicia sesión"
     >
       <form className="space-y-4" onSubmit={onSubmit} noValidate>
         {errors.form ? <Alert variant="error">{errors.form}</Alert> : null}
@@ -116,7 +116,7 @@ export default function RegisterPage() {
           <FieldError message={errors.store_name} />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="email">Email</Label>
+          <Label htmlFor="email">Correo electrónico</Label>
           <Input
             id="email"
             name="email"
@@ -130,7 +130,7 @@ export default function RegisterPage() {
           <FieldError message={errors.email} />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="password">Password</Label>
+          <Label htmlFor="password">Contraseña</Label>
           <div className="relative">
             <Input
               id="password"
@@ -152,7 +152,7 @@ export default function RegisterPage() {
             </button>
           </div>
           <p className="text-xs text-muted-foreground">
-            Minimo 8 caracteres, una mayuscula, una minuscula, un numero y un caracter especial.
+            Mínimo 8 caracteres, una mayúscula, una minúscula, un número y un carácter especial.
           </p>
           <FieldError message={errors.password} />
         </div>
@@ -176,23 +176,23 @@ function validateRegister(values: RegisterFormState): RegisterFormErrors {
   }
 
   if (!values.email.trim()) {
-    errors.email = "Email es requerido";
+    errors.email = "Correo electrónico es requerido";
   } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.email)) {
-    errors.email = "Email invalido";
+    errors.email = "Correo electrónico inválido";
   }
 
   if (!values.password) {
-    errors.password = "Password es requerido";
+    errors.password = "Contraseña es requerida";
   } else if (values.password.length < 8) {
-    errors.password = "Password debe tener al menos 8 caracteres";
+    errors.password = "La contraseña debe tener al menos 8 caracteres";
   } else if (!/(?=.*[a-z])/.test(values.password)) {
-    errors.password = "Password debe tener al menos una minuscula";
+    errors.password = "La contraseña debe tener al menos una minúscula";
   } else if (!/(?=.*[A-Z])/.test(values.password)) {
-    errors.password = "Password debe tener al menos una mayuscula";
+    errors.password = "La contraseña debe tener al menos una mayúscula";
   } else if (!/(?=.*\d)/.test(values.password)) {
-    errors.password = "Password debe tener al menos un numero";
+    errors.password = "La contraseña debe tener al menos un número";
   } else if (!/(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?])/.test(values.password)) {
-    errors.password = "Password debe tener al menos un caracter especial";
+    errors.password = "La contraseña debe tener al menos un carácter especial";
   }
 
   return errors;

@@ -19,7 +19,7 @@ export function StockMovementsTable({ movements }: { movements: StockMovement[] 
           <TableHeaderCell>Fecha</TableHeaderCell>
           <TableHeaderCell>Tipo</TableHeaderCell>
           <TableHeaderCell>Producto</TableHeaderCell>
-          <TableHeaderCell align="right">Delta</TableHeaderCell>
+          <TableHeaderCell align="right">Variación</TableHeaderCell>
           <TableHeaderCell align="right">Stock</TableHeaderCell>
           <TableHeaderCell>Razon</TableHeaderCell>
           <TableHeaderCell>Venta</TableHeaderCell>

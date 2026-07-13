@@ -2,10 +2,10 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  applicationName: "Inventory App",
+  applicationName: "App Inventario",
   title: {
-    default: "Inventory App",
-    template: "%s | Inventory App",
+    default: "App Inventario",
+    template: "%s | App Inventario",
   },
   description: "Herramienta operativa para inventario, ventas, reportes e importacion asistida.",
   icons: {

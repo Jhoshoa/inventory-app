@@ -12,7 +12,7 @@ describe("ExportPanel", () => {
   it("disables export actions for cashier", () => {
     render(<ExportPanel role="cashier" reportParams={params} />);
 
-    expect(screen.getByText(/requieren rol owner/i)).toBeInTheDocument();
+    expect(screen.getByText(/requieren rol de propietario/i)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /productos/i })).toBeDisabled();
   });
 
@@ -28,7 +28,7 @@ describe("ExportPanel", () => {
       "/api/exports/cash-movements?from_date=2026-04-21&to_date=2026-05-20",
     );
     expect(screen.getByText("Ventas del POS.")).toBeInTheDocument();
-    expect(screen.getByText("Cambios de stock.")).toBeInTheDocument();
+    expect(screen.getByText("Cambios de inventario.")).toBeInTheDocument();
     expect(screen.getByText("Entradas/salidas manuales de efectivo.")).toBeInTheDocument();
   });
 });

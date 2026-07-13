@@ -34,7 +34,7 @@ export function PosCart({
             </p>
           </div>
           <div className="rounded-md border border-brand-100 bg-app-surface px-2.5 py-1 text-xs font-medium text-brand-700">
-            {itemCount} items
+            {itemCount} artículos
           </div>
         </div>
       </div>

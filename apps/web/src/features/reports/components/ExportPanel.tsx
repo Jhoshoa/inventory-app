@@ -26,7 +26,7 @@ export function ExportPanel({
       </div>
       {!allowed ? (
         <Alert>
-          Los exportes requieren rol owner. Puedes ver reportes, pero no extraer
+          Los exportes requieren rol de propietario. Puedes ver reportes, pero no extraer
           datos masivos.
         </Alert>
       ) : null}
@@ -45,7 +45,7 @@ export function ExportPanel({
         />
         <ExportOption
           allowed={allowed}
-          description="Cambios de stock."
+          description="Cambios de inventario."
           href={`/api/exports/stock-movements?${exportQuery}`}
           label="Movimientos"
         />

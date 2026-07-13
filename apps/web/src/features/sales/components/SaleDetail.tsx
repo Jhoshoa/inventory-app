@@ -58,7 +58,7 @@ export function SaleDetail({ sale, role }: { sale: Sale; role: UserRole }) {
         </thead>
         <tbody>
           {sale.items.length === 0 ? (
-            <TableEmptyRow colSpan={4}>Sin items</TableEmptyRow>
+            <TableEmptyRow colSpan={4}>Sin artículos</TableEmptyRow>
         ) : (
           sale.items.map((item) => (
               <TableRow key={item.product_id}>

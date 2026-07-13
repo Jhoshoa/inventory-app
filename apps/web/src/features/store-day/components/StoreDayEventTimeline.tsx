@@ -53,7 +53,7 @@ export function StoreDayEventTimeline({
 }
 
 function formatDateTime(value: string, timezone: string) {
-  const parts = new Intl.DateTimeFormat("en-GB", {
+  const parts = new Intl.DateTimeFormat("es-BO", {
     timeZone: timezone,
     year: "2-digit",
     month: "2-digit",

@@ -55,10 +55,10 @@ export function LoginForm({ verified }: { verified?: boolean }) {
 
   return (
       <form className="space-y-4" onSubmit={onSubmit} noValidate>
-        {verified ? <Alert variant="success">Email confirmado. Ahora puedes iniciar sesion.</Alert> : null}
+        {verified ? <Alert variant="success">Email confirmado. Ahora puedes iniciar sesión.</Alert> : null}
         {errors.form ? <Alert variant="error">{errors.form}</Alert> : null}
       <div className="space-y-2">
-        <Label htmlFor="email">Email</Label>
+        <Label htmlFor="email">Correo electrónico</Label>
         <Input
           id="email"
           name="email"
@@ -72,7 +72,7 @@ export function LoginForm({ verified }: { verified?: boolean }) {
         <FieldError message={errors.email} />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="password">Password</Label>
+        <Label htmlFor="password">Contraseña</Label>
         <div className="relative">
           <Input
             id="password"
@@ -96,7 +96,7 @@ export function LoginForm({ verified }: { verified?: boolean }) {
         <FieldError message={errors.password} />
       </div>
       <Button className="w-full" type="submit" disabled={isSubmitting}>
-        {isSubmitting ? "Ingresando..." : "Iniciar sesion"}
+        {isSubmitting ? "Ingresando..." : "Iniciar sesión"}
       </Button>
       <div className="relative">
         <div className="absolute inset-0 flex items-center">
@@ -130,15 +130,15 @@ export function validateLogin(values: LoginFormState): LoginFormErrors {
   const errors: LoginFormErrors = {};
 
   if (!values.email.trim()) {
-    errors.email = "Email es requerido";
+    errors.email = "Correo electrónico es requerido";
   } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.email)) {
-    errors.email = "Email invalido";
+    errors.email = "Correo electrónico inválido";
   }
 
   if (!values.password) {
-    errors.password = "Password es requerido";
+    errors.password = "Contraseña es requerida";
   } else if (values.password.length < 6) {
-    errors.password = "Password debe tener al menos 6 caracteres";
+    errors.password = "La contraseña debe tener al menos 6 caracteres";
   }
 
   return errors;

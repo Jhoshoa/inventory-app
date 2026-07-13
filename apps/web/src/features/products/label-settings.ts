@@ -40,7 +40,7 @@ export const DEFAULT_LABEL_SETTINGS: ProductLabelSettings = {
 };
 
 export const PAGE_SIZE_OPTIONS: Record<LabelPageSize, { label: string; widthMm: number; heightMm: number }> = {
-  Letter: { label: "Letter / Carta (21.59 x 27.94 cm)", widthMm: 215.9, heightMm: 279.4 },
+  Letter: { label: "Carta (21.59 x 27.94 cm)", widthMm: 215.9, heightMm: 279.4 },
   A4: { label: "A4 (21.00 x 29.70 cm)", widthMm: 210, heightMm: 297 },
 };
 

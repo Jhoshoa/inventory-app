@@ -48,7 +48,7 @@ describe("SettingsOverview", () => {
     expect(screen.getByText("Mi tienda")).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Usuario actual" })).toBeInTheDocument();
     expect(screen.getByText("owner@example.com")).toBeInTheDocument();
-    expect(screen.getAllByText("Owner").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Propietario").length).toBeGreaterThan(0);
     expect(screen.getByText("Permisos")).toBeInTheDocument();
     expect(screen.getByText("Exportar CSV")).toBeInTheDocument();
     expect(screen.getByText("Operacion diaria")).toBeInTheDocument();
@@ -56,7 +56,7 @@ describe("SettingsOverview", () => {
     expect(screen.getByText("Apertura")).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Gestion de usuarios" })).toBeInTheDocument();
     expect(screen.getByText("Planificado")).toBeInTheDocument();
-    expect(screen.getByText("Owner tendra acceso")).toBeInTheDocument();
+    expect(screen.getByText("Propietario tendrá acceso")).toBeInTheDocument();
   });
 
   it("renders planned users as read-only context for cashiers", () => {
@@ -67,7 +67,7 @@ describe("SettingsOverview", () => {
       />,
     );
 
-    expect(screen.getAllByText("Cashier").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Cajero").length).toBeGreaterThan(0);
     expect(screen.getByRole("heading", { name: "Gestion de usuarios" })).toBeInTheDocument();
     expect(screen.getByText("Solo lectura")).toBeInTheDocument();
   });

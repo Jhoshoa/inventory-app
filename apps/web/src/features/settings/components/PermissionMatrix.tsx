@@ -29,8 +29,8 @@ export function PermissionMatrix() {
         <thead>
           <tr>
             <TableHeaderCell>Accion</TableHeaderCell>
-            <TableHeaderCell align="center">Cashier</TableHeaderCell>
-            <TableHeaderCell align="center">Owner</TableHeaderCell>
+            <TableHeaderCell align="center">Cajero</TableHeaderCell>
+            <TableHeaderCell align="center">Propietario</TableHeaderCell>
           </tr>
         </thead>
         <tbody>

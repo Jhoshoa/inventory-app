@@ -81,16 +81,16 @@ describe("AppShell", () => {
       </AppShell>,
     );
 
-    fireEvent.click(screen.getByRole("button", { name: /abrir menu/i }));
+    fireEvent.click(screen.getByRole("button", { name: /abrir menú/i }));
 
-    expect(screen.getByRole("dialog", { name: /menu de navegacion/i })).toBeInTheDocument();
+    expect(screen.getByRole("dialog", { name: /menú de navegación/i })).toBeInTheDocument();
     expect(screen.getAllByRole("link", { name: /productos/i })[1]).toHaveAttribute("aria-current", "page");
-    expect(screen.getByRole("button", { name: /^cerrar menu$/i })).toHaveFocus();
+    expect(screen.getByRole("button", { name: /^cerrar menú$/i })).toHaveFocus();
 
-    fireEvent.click(screen.getByRole("button", { name: /^cerrar menu$/i }));
+    fireEvent.click(screen.getByRole("button", { name: /^cerrar menú$/i }));
 
-    expect(screen.queryByRole("dialog", { name: /menu de navegacion/i })).not.toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /abrir menu/i })).toHaveFocus();
+    expect(screen.queryByRole("dialog", { name: /menú de navegación/i })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /abrir menú/i })).toHaveFocus();
   });
 
   it("closes the mobile navigation drawer with Escape", () => {
@@ -100,11 +100,11 @@ describe("AppShell", () => {
       </AppShell>,
     );
 
-    fireEvent.click(screen.getByRole("button", { name: /abrir menu/i }));
+    fireEvent.click(screen.getByRole("button", { name: /abrir menú/i }));
     fireEvent.keyDown(window, { key: "Escape" });
 
-    expect(screen.queryByRole("dialog", { name: /menu de navegacion/i })).not.toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /abrir menu/i })).toHaveFocus();
+    expect(screen.queryByRole("dialog", { name: /menú de navegación/i })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /abrir menú/i })).toHaveFocus();
   });
 
   it("keeps keyboard focus inside the mobile navigation drawer", () => {
@@ -114,9 +114,9 @@ describe("AppShell", () => {
       </AppShell>,
     );
 
-    fireEvent.click(screen.getByRole("button", { name: /abrir menu/i }));
+    fireEvent.click(screen.getByRole("button", { name: /abrir menú/i }));
 
-    const mobileHomeLink = screen.getAllByRole("link", { name: /inventory app/i })[1];
+    const mobileHomeLink = screen.getAllByRole("link", { name: /app inventario/i })[1];
     const mobileSettingsLink = screen.getAllByRole("link", { name: /ajustes/i })[1];
 
     mobileHomeLink.focus();

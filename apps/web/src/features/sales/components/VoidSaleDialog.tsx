@@ -54,7 +54,7 @@ export function VoidSaleDialog({ saleId }: { saleId: string }) {
           <DialogSurface className="w-full max-w-md">
             <h2 className="text-base font-semibold text-text-strong">Anular venta</h2>
             <p className="mt-1 text-sm text-text-muted">
-              Esta accion devuelve stock y requiere permisos de owner.
+              Esta acción devuelve inventario y requiere permisos de propietario.
             </p>
             <form onSubmit={onSubmit} className="mt-5 space-y-4">
               <input type="hidden" name="sale_id" value={saleId} />

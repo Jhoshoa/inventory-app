@@ -58,7 +58,7 @@ export function SettingsOverview({
           title="Usuario actual"
           description="Sesion y alcance operativo."
           items={[
-            { label: "Email", value: session.email },
+            { label: "Correo electrónico", value: session.email },
             { label: "ID usuario", value: shortId(session.userId) },
           ]}
           badge={<RoleBadge role={session.role} />}
@@ -85,7 +85,7 @@ export function SettingsOverview({
         <div className="min-w-0 space-y-6">
           <AdminSection
             title="Permisos"
-            description="Capacidades disponibles para owner y cashier en el MVP."
+            description="Capacidades disponibles para propietario y cajero en el MVP."
           >
             <PermissionMatrix />
           </AdminSection>
@@ -212,7 +212,7 @@ function PlannedUsersBlock({ role }: { role: Session["role"] }) {
           </p>
         </div>
         <Badge variant={owner ? "success" : "default"}>
-          {owner ? "Owner tendra acceso" : "Solo lectura"}
+          {owner ? "Propietario tendrá acceso" : "Solo lectura"}
         </Badge>
       </div>
     </div>
@@ -261,7 +261,7 @@ function InfoItem({ label, value }: { label: string; value: string }) {
 function RoleBadge({ role }: { role: Session["role"] }) {
   return (
     <Badge variant={role === "owner" ? "success" : "default"}>
-      {role === "owner" ? "Owner" : "Cashier"}
+      {role === "owner" ? "Propietario" : "Cajero"}
     </Badge>
   );
 }

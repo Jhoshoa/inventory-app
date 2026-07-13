@@ -17,7 +17,7 @@ export function SalesReportSummary({ report }: { report: SalesReport }) {
         icon={ReceiptText}
       />
       <MetricCard
-        label="Items vendidos"
+        label="Artículos vendidos"
         value={report.items_count.toString()}
         icon={PackageCheck}
       />

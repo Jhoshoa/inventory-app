@@ -16,7 +16,7 @@ describe("AuthShell", () => {
       </AuthShell>,
     );
 
-    expect(screen.getByText("Inventory App")).toBeInTheDocument();
+    expect(screen.getByText("App Inventario")).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Iniciar sesion" })).toBeInTheDocument();
     expect(screen.getByText("Ingresa para administrar tu tienda.")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Continuar" })).toBeInTheDocument();

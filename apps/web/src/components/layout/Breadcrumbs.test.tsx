@@ -14,7 +14,7 @@ describe("Breadcrumbs", () => {
       />,
     );
 
-    expect(screen.getByRole("navigation", { name: "Ruta de navegacion" })).toBeInTheDocument();
+    expect(screen.getByRole("navigation", { name: "Ruta de navegación" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Dashboard" })).toHaveAttribute("href", "/dashboard");
     expect(screen.getByRole("link", { name: "Productos" })).toHaveAttribute("href", "/dashboard/products");
     expect(screen.getByText("Detalle")).toHaveAttribute("aria-current", "page");
