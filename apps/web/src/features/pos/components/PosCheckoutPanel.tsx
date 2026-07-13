@@ -77,7 +77,7 @@ export function PosCheckoutPanel({
       </div>
       <div className="space-y-2">
         <Label htmlFor="customer_name">Cliente</Label>
-        <Input id="customer_name" name="customer_name" placeholder="Opcional" />
+        <Input id="customer_name" name="customer_name" maxLength={100} placeholder="Opcional" />
       </div>
       <Button className="h-11 w-full" type="submit" disabled={isPending || !isReady}>
         {isPending ? "Confirmando..." : isReady ? "Confirmar venta" : "Carrito vacio"}

@@ -96,6 +96,7 @@ export default function RegisterPage() {
           <Input
             id="full_name"
             name="full_name"
+            maxLength={100}
             value={values.full_name}
             error={Boolean(errors.full_name)}
             onChange={(e) => setValues({ ...values, full_name: e.target.value })}
@@ -107,6 +108,7 @@ export default function RegisterPage() {
           <Input
             id="store_name"
             name="store_name"
+            maxLength={100}
             value={values.store_name}
             error={Boolean(errors.store_name)}
             onChange={(e) => setValues({ ...values, store_name: e.target.value })}
@@ -120,6 +122,7 @@ export default function RegisterPage() {
             name="email"
             type="email"
             autoComplete="email"
+            maxLength={255}
             value={values.email}
             error={Boolean(errors.email)}
             onChange={(e) => setValues({ ...values, email: e.target.value })}

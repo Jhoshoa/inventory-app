@@ -77,12 +77,12 @@ export function ProductStockDialog({
               <input type="hidden" name="product_id" value={productId} />
               <div className="space-y-2">
                 <Label htmlFor={`quantity-${productId}`}>Cantidad delta</Label>
-                <Input id={`quantity-${productId}`} name="quantity" type="number" />
+                <Input id={`quantity-${productId}`} name="quantity" type="number" step="1" />
                 <FieldError message={state.fieldErrors.quantity} />
               </div>
               <div className="space-y-2">
                 <Label htmlFor={`reason-${productId}`}>Razon</Label>
-                <Textarea id={`reason-${productId}`} name="reason" />
+                <Textarea id={`reason-${productId}`} name="reason" maxLength={120} />
                 <FieldError message={state.fieldErrors.reason} />
               </div>
               <div className="flex justify-end gap-2">

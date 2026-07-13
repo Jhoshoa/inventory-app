@@ -61,7 +61,7 @@ export function VoidSaleDialog({ saleId }: { saleId: string }) {
               {state.message ? <Alert variant={state.ok ? "info" : "error"}>{state.message}</Alert> : null}
               <div className="space-y-2">
                 <Label htmlFor={`void-reason-${saleId}`}>Razon</Label>
-                <Textarea id={`void-reason-${saleId}`} name="reason" />
+                <Textarea id={`void-reason-${saleId}`} name="reason" maxLength={200} />
                 <FieldError message={state.fieldErrors.reason} />
               </div>
               <div className="flex justify-end gap-2">

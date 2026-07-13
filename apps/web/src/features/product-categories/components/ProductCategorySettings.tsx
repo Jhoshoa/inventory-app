@@ -112,7 +112,7 @@ export function ProductCategorySettings({ categories }: { categories: ProductCat
       >
         <div className="space-y-2">
           <Label htmlFor="category-name">Nombre</Label>
-          <Input id="category-name" name="name" error={Boolean(createState.fieldErrors.name)} />
+          <Input id="category-name" name="name" maxLength={80} error={Boolean(createState.fieldErrors.name)} />
           <div className="min-h-5">
             <FieldError message={createState.fieldErrors.name} />
           </div>

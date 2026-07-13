@@ -64,6 +64,7 @@ export function LoginForm({ verified }: { verified?: boolean }) {
           name="email"
           type="email"
           autoComplete="email"
+          maxLength={255}
           value={values.email}
           error={Boolean(errors.email)}
           onChange={(event) => setValues({ ...values, email: event.target.value })}

@@ -196,6 +196,7 @@ function StoreDayActionForm({
         <Input
           aria-label={noteLabel}
           name="note"
+          maxLength={255}
           placeholder={`${noteLabel} opcional`}
         />
         <FieldError message={state.fieldErrors.note} />
@@ -265,7 +266,7 @@ function CashMovementPanel({ cashMovements }: { cashMovements?: CashMovementList
           title="Use solo numeros con maximo 2 decimales"
         />
         <FieldError message={state.fieldErrors.amount} />
-        <Input aria-label="Nota de movimiento" name="note" placeholder="Nota opcional" />
+        <Input aria-label="Nota de movimiento" name="note" maxLength={255} placeholder="Nota opcional" />
         <FieldError message={state.fieldErrors.note} />
         <Button type="submit" disabled={isSubmitting}>{isSubmitting ? "Registrando..." : "Registrar movimiento"}</Button>
       </form>

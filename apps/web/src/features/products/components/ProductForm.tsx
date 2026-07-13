@@ -74,6 +74,7 @@ export function ProductForm({
           <Input
             id="name"
             name="name"
+            maxLength={100}
             value={formValues.name}
             onChange={(event) => updateField("name", event.target.value)}
             error={Boolean(state.fieldErrors.name)}
@@ -121,16 +122,17 @@ export function ProductForm({
           </div>
         ) : (
           <Field name="sku" label="SKU" error={state.fieldErrors.sku}>
-            <Input
-              id="sku"
-              name="sku"
-              value={sku}
-              onChange={(event) => {
-                setSku(event.target.value);
-                updateField("sku", event.target.value);
-              }}
-              error={Boolean(state.fieldErrors.sku)}
-            />
+          <Input
+            id="sku"
+            name="sku"
+            maxLength={50}
+            value={sku}
+            onChange={(event) => {
+              setSku(event.target.value);
+              updateField("sku", event.target.value);
+            }}
+            error={Boolean(state.fieldErrors.sku)}
+          />
           </Field>
         )}
         <Field name="price" label="Precio venta" error={state.fieldErrors.price}>
@@ -162,6 +164,7 @@ export function ProductForm({
             name="stock"
             id="stock"
             type="number"
+            step="1"
             min="0"
             value={formValues.stock}
             onChange={(event) => updateField("stock", event.target.value)}
@@ -174,6 +177,7 @@ export function ProductForm({
             name="min_stock"
             id="min_stock"
             type="number"
+            step="1"
             min="0"
             value={formValues.min_stock}
             onChange={(event) => updateField("min_stock", event.target.value)}
@@ -184,6 +188,7 @@ export function ProductForm({
           <Input
             id="unit"
             name="unit"
+            maxLength={20}
             value={formValues.unit}
             onChange={(event) => updateField("unit", event.target.value)}
             error={Boolean(state.fieldErrors.unit)}
@@ -194,6 +199,7 @@ export function ProductForm({
             <Input
               name="qr_code"
               id="qr_code"
+              maxLength={100}
               value={scanCode}
               onChange={(event) => {
                 setScanCode(event.target.value);

@@ -3,7 +3,7 @@ from decimal import Decimal
 from enum import StrEnum
 from uuid import UUID
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 
 class ProductStockFilter(StrEnum):
@@ -34,7 +34,7 @@ class CreateProductDTO(BaseModel):
     min_stock: int = Field(default=1, ge=0)
     unit: str = "unidad"
     sku: str | None = Field(default=None, max_length=50)
-    cost_price: Decimal | None = None
+    cost_price: Decimal | None = Field(default=None, ge=0)
     photo_url: str | None = Field(default=None, max_length=500)
     qr_code: str | None = Field(default=None, max_length=100)
     extra_data: dict = {}
@@ -49,7 +49,7 @@ class UpdateProductDTO(BaseModel):
     stock: int | None = Field(default=None, ge=0)
     unit: str | None = Field(default=None, max_length=20)
     sku: str | None = Field(default=None, max_length=50)
-    cost_price: Decimal | None = None
+    cost_price: Decimal | None = Field(default=None, ge=0)
     photo_url: str | None = Field(default=None, max_length=500)
     qr_code: str | None = Field(default=None, max_length=100)
 
@@ -57,6 +57,13 @@ class UpdateProductDTO(BaseModel):
 class StockAdjustmentDTO(BaseModel):
     quantity: int = Field(..., description="Positive to add stock, negative to subtract stock")
     reason: str | None = Field(default=None, max_length=120)
+
+    @field_validator("quantity")
+    @classmethod
+    def validate_non_zero(cls, v: int) -> int:
+        if v == 0:
+            raise ValueError("La cantidad debe ser mayor o menor a cero")
+        return v
 
 
 class ProductResponseDTO(BaseModel):
