@@ -83,45 +83,37 @@ corepack pnpm openapi:types
 
 ## Local Login
 
-For local development, the backend must run with `DEBUG=true`. In that mode, `POST /api/v1/auth/login` returns a development session and ensures a local user exists.
+The seed runs automatically when the backend starts with `DEBUG=true`. The login validates the password against a stored hash.
 
 Use:
 
 ```text
 Email: dev@local.dev
-Password: secret123
+Password: Dev12345!
 ```
 
 Cashier login credentials
 ```text
 Email: cashier@local.dev
-Password: password123
+Password: Dev12345!
 ```
-
-Note: in `DEBUG=true`, the backend does not validate the password against a stored hash, but the web login form requires at least 6 characters.
 
 ## Seed Data
 
-The backend includes deterministic local seed data. Run migrations first, then seed from `apps/backend` using the backend virtual environment:
-
-```bash
-cd apps/backend
-.\.venv\Scripts\python.exe -m alembic upgrade head
-.\.venv\Scripts\python.exe -m src.infrastructure.database.seed.dev_seed
-```
-
-and if you actually are inside the virtual environment, use this command to run the seed
-```bash
-cd apps/backend
-py -m src.infrastructure.database.seed.dev_seed
-```
-
-The seed is idempotent and creates:
+The seed runs automatically on server startup when `DEBUG=true` (see `src/main.py` lifespan). It is idempotent and creates:
 
 - Store: `Mi Tienda Demo`
-- User: `dev@local.dev`
+- User: `dev@local.dev` (owner)
+- User: `cashier@local.dev` (cashier)
 - Products:
   - `Arroz 1kg` with SKU `ARR-001` and QR `DEMO-ARR-001`
   - `Aceite 1l` with SKU `ACE-001` and QR `DEMO-ACE-001`
   - `Fideo 400g` with SKU `FID-001` and QR `DEMO-FID-001`
 - Exchange rates for `bcb` and `paralelo`
+
+To run the seed manually if needed:
+
+```bash
+cd apps/backend
+py -m src.infrastructure.database.seed.dev_seed
+```

@@ -1,11 +1,12 @@
 import asyncio
-from datetime import date
+from datetime import date, datetime, timedelta, timezone
 from decimal import Decimal
 from uuid import UUID
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.config.database import AsyncSessionLocal
+from src.infrastructure.auth.password import hash_password
 from src.infrastructure.database.models.exchange_rate_model import ExchangeRateModel
 from src.infrastructure.database.models.product_model import ProductModel
 from src.infrastructure.database.models.store_model import StoreModel
@@ -14,6 +15,8 @@ from src.infrastructure.database.models.user_model import UserModel
 DEV_USER_ID = UUID("00000000-0000-0000-0000-000000000001")
 DEV_CASHIER_USER_ID = UUID("00000000-0000-0000-0000-000000000002")
 DEV_STORE_ID = UUID("00000000-0000-0000-0000-000000000101")
+
+DEV_PASSWORD_HASH = hash_password("Dev12345!")
 
 SEEDED_PRODUCT_IDS = {
     "arroz_1kg": UUID("11111111-1111-1111-1111-111111111111"),
@@ -32,6 +35,9 @@ async def seed_dev_data(session: AsyncSession) -> None:
     store.phone = "70000000"
     store.is_active = True
     store.timezone = "America/La_Paz"
+    store.access_status = "active"
+    store.subscription_status = "trial"
+    store.trial_expires_at = datetime.now(timezone.utc).replace(tzinfo=None) + timedelta(days=30)
 
     user = await session.get(UserModel, DEV_USER_ID)
     if user is None:
@@ -42,6 +48,7 @@ async def seed_dev_data(session: AsyncSession) -> None:
     user.full_name = "Dev User"
     user.role = "owner"
     user.is_active = True
+    user.password_hash = DEV_PASSWORD_HASH
 
     cashier = await session.get(UserModel, DEV_CASHIER_USER_ID)
     if cashier is None:
@@ -52,6 +59,7 @@ async def seed_dev_data(session: AsyncSession) -> None:
     cashier.full_name = "Demo Cashier"
     cashier.role = "cashier"
     cashier.is_active = True
+    cashier.password_hash = DEV_PASSWORD_HASH
 
     products = [
         {

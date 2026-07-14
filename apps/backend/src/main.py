@@ -12,12 +12,24 @@ from src.presentation.api.v1.router import api_v1_router
 from src.presentation.middleware.error_handler import add_error_handlers
 from src.presentation.middleware.request_context import add_request_context_middleware
 
+logger = logging.getLogger(__name__)
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     logging.basicConfig(level=getattr(logging, settings.LOG_LEVEL.upper(), logging.INFO))
     if settings.SENTRY_DSN:
         sentry_init(dsn=settings.SENTRY_DSN)
+
+    if settings.DEBUG:
+        from src.config.database import AsyncSessionLocal
+        from src.infrastructure.database.seed.dev_seed import seed_dev_data
+
+        async with AsyncSessionLocal() as session:
+            await seed_dev_data(session)
+            await session.commit()
+            logger.info("Dev seed data ready")
+
     yield
 
 

@@ -1,10 +1,10 @@
 # Local Auth Strategy Compatible With Supabase
 
-Fecha: 2026-05-12
+Fecha: 2026-07-14
 
 ## Contexto
 
-En produccion, Supabase Auth sera el servicio que emite y valida tokens. El backend recibe:
+En produccion, Supabase Auth es el servicio que emite y valida tokens. El backend recibe:
 
 ```text
 Authorization: Bearer <access_token>
@@ -12,266 +12,158 @@ Authorization: Bearer <access_token>
 
 y obtiene desde el token el `user_id`, `email` y `store_id`.
 
-En local, si usamos solo PostgreSQL, no tenemos Supabase Auth disponible. Hoy el backend puede usar un usuario fijo cuando `DEBUG=true`, pero eso no prueba bien login, tokens, multi-tenant ni autorizacion por tienda.
+En local no disponemos de Supabase Auth, por lo que el backend usa un flujo alternativo
+controlado por la variable `DEBUG`.
 
-## Objetivo
+## Implementacion Actual
 
-Tener autenticacion local real para desarrollo y QA sin romper la compatibilidad futura con Supabase.
+No existe un `AUTH_PROVIDER` intercambiable. La decision es por `DEBUG`:
 
-El contrato externo debe mantenerse igual:
+- `DEBUG=true`: login valida usuario + password_hash contra PostgreSQL local, emite JWT firmado con `JWT_SECRET`.
+- `DEBUG=false`: login delega en Supabase Auth (`supabase.auth.sign_in_with_password`).
 
-```text
-POST /api/v1/auth/login
--> access_token
+### 1. Seed de usuarios
 
-GET /api/v1/products
-Authorization: Bearer <access_token>
-```
-
-La diferencia debe ser interna y controlada por variable de entorno.
-
-## Recomendacion
-
-Agregar un proveedor de auth intercambiable:
-
-```env
-AUTH_PROVIDER=local
-# o
-AUTH_PROVIDER=supabase
-```
-
-Valores:
-
-- `local`: usa usuarios guardados en PostgreSQL local, valida password local y emite JWT firmado por `JWT_SECRET`.
-- `supabase`: delega login/register/refresh/verify a Supabase Auth.
-
-## Flujo Local Propuesto
-
-### 1. Seed de usuarios y tiendas
-
-El seed local debe crear al menos dos tiendas y usuarios:
+El seed se ejecuta automaticamente al iniciar el backend cuando `DEBUG=true` (ver `src/main.py` lifespan).
+Crea una sola tienda (`Mi Tienda Demo`) con dos usuarios:
 
 ```text
-Store A
-  id: 00000000-0000-0000-0000-000000000101
-  user: owner-a@local.dev
-  password: secret123
+Store: Mi Tienda Demo
 
-Store B
-  id: 00000000-0000-0000-0000-000000000202
-  user: owner-b@local.dev
-  password: secret123
+Owner:
+  email: dev@local.dev
+  password: Dev12345!
+  role: owner
+
+Cashier:
+  email: cashier@local.dev
+  password: Dev12345!
+  role: cashier
 ```
 
-Tambien debe crear productos separados por tienda:
+Productos creados:
+- `Arroz 1kg` / SKU `ARR-001` / QR `DEMO-ARR-001`
+- `Aceite 1l` / SKU `ACE-001` / QR `DEMO-ACE-001`
+- `Fideo 400g` / SKU `FID-001` / QR `DEMO-FID-001`
 
-```text
-Store A products:
-  Arroz 1kg
-  Aceite 1l
+### 2. Login local (`DEBUG=true`)
 
-Store B products:
-  Cafe 250g
-  Azucar 1kg
-```
+El endpoint `POST /api/v1/auth/login` en modo debug:
 
-Esto permite probar que:
-
-- `owner-a@local.dev` solo ve productos de Store A.
-- `owner-b@local.dev` solo ve productos de Store B.
-- Un `product_id` de Store B devuelve `404` si se consulta con token de Store A.
-
-### 2. Login local
+1. Busca al usuario por email en PostgreSQL.
+2. Verifica que exista `password_hash`.
+3. Verifica el password con `verify_password(dto.password, existing.password_hash)`.
+4. Ejecuta `EnsureLocalUserUseCase` para refrescar `last_login_at`.
+5. Retorna un JWT local firmado y los datos del usuario incluyendo campos de billing.
 
 Request:
-
-```http
-POST /api/v1/auth/login
-Content-Type: application/json
-```
-
 ```json
 {
-  "email": "owner-a@local.dev",
-  "password": "secret123"
+  "email": "dev@local.dev",
+  "password": "Dev12345!"
 }
 ```
 
 Response:
-
 ```json
 {
   "access_token": "<local-jwt>",
-  "refresh_token": "<local-refresh-token-or-local-jwt>",
+  "refresh_token": "dev-refresh-123",
   "user": {
-    "id": "00000000-0000-0000-0000-000000000001",
-    "email": "owner-a@local.dev",
-    "store_id": "00000000-0000-0000-0000-000000000101",
-    "full_name": "Owner Store A"
+    "id": "<uuid>",
+    "email": "dev@local.dev",
+    "store_id": "<uuid>",
+    "full_name": "Owner Dev",
+    "role": "owner",
+    "subscription_status": "trial",
+    "access_status": "active",
+    "trial_expires_at": "<iso-date>",
+    "days_until_trial_ends": 30
   }
 }
 ```
 
-### 3. Request autenticado
+El `refresh_token` es fijo (`dev-refresh-123`) en modo debug; en produccion viene de Supabase.
+
+### 3. Login produccion (`DEBUG=false`)
+
+Delega completamente en Supabase Auth:
+
+```python
+supabase = create_client(settings.SUPABASE_URL, settings.SUPABASE_ANON_KEY)
+response = supabase.auth.sign_in_with_password(...)
+```
+
+Luego busca o crea el usuario local con `EnsureLocalUserUseCase` y construye la misma respuesta.
+
+### 4. Request autenticado
 
 ```http
 GET /api/v1/products
 Authorization: Bearer <local-jwt>
 ```
 
-El backend valida el JWT local, extrae `store_id` y filtra la data por tenant.
+El middleware `get_current_user`:
+- En modo debug: decodifica el JWT local con `decode_access_token()`.
+- En produccion: verifica con Supabase (`supabase.auth.get_user()`).
 
-## Payload JWT Local
+Ambos caminos retornan un `CurrentUserDTO` con la misma estructura.
 
-El token local debe tener claims parecidos a lo que necesitamos de Supabase:
+### 5. Payload JWT Local
 
 ```json
 {
-  "sub": "00000000-0000-0000-0000-000000000001",
-  "email": "owner-a@local.dev",
-  "store_id": "00000000-0000-0000-0000-000000000101",
+  "sub": "<user-id>",
+  "email": "dev@local.dev",
+  "store_id": "<store-id>",
   "role": "owner",
   "iss": "inventory-local-auth",
   "aud": "inventory-api",
-  "exp": 1778600000
+  "exp": <timestamp>
 }
 ```
 
-La funcion `get_current_user` debe devolver la misma forma sin importar proveedor:
+### 6. DB: Tabla `users`
 
-```python
-{
-    "id": UUID(...),
-    "email": "owner-a@local.dev",
-    "store_id": UUID(...),
-    "role": "owner",
-}
-```
-
-## Cambios Tecnicos Sugeridos
-
-### Config
-
-Agregar:
-
-```python
-AUTH_PROVIDER: str = "local"  # local | supabase
-ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
-```
-
-Mantener:
-
-```python
-JWT_SECRET: str
-```
-
-### DB
-
-La tabla `users` actual sirve para identidad basica, pero para auth local conviene agregar:
+Columnas relevantes para auth local:
 
 ```text
-password_hash text nullable
-last_login_at timestamptz nullable
+id              uuid PK
+store_id        uuid FK -> stores
+email           text not null
+password_hash   text nullable
+last_login_at   timestamptz nullable
+full_name       text not null
+role            text not null
+is_active       boolean default true
 ```
 
-`password_hash` debe ser nullable porque con `AUTH_PROVIDER=supabase` el password vive en Supabase, no en nuestra DB.
+`password_hash` es nullable porque en produccion el password vive en Supabase.
 
-### Servicios
+### 7. JWT
 
-Crear una capa de auth:
+Usamos `python-jose` para firmar y verificar JWTs localmente:
+
+- `create_access_token(data, settings)` en `src/infrastructure/auth/jwt.py`
+- `decode_access_token(token, settings)` en `src/infrastructure/auth/jwt.py`
+
+## Flujo completo debug
 
 ```text
-src/infrastructure/auth/
-  local_auth.py
-  supabase_auth.py
-  auth_provider.py
+Request: POST /auth/login { email, password }
+  │
+  ├─ settings.DEBUG == True?
+  │     YES → Buscar user por email en DB
+  │            ├─ existe + password_hash?
+  │            │     YES → verify_password()
+  │            │            ├─ ok → EnsureLocalUserUseCase → _auth_response()
+  │            │            └─ fail → 401
+  │            └─ no → 401
+  │
+  └─ NO → Supabase Auth sign_in_with_password()
+           └─ ok → EnsureLocalUserUseCase → _auth_response_from_supabase()
 ```
 
-Responsabilidades:
+## Tests
 
-- `local_auth.py`
-  - verificar password con hash
-  - emitir JWT local
-  - verificar JWT local
-- `supabase_auth.py`
-  - login/register/refresh usando Supabase
-  - verificar JWT/token con Supabase
-- `auth_provider.py`
-  - escoger proveedor segun `AUTH_PROVIDER`
-
-### Password Hash
-
-Usar una libreria estandar como:
-
-```text
-passlib[bcrypt]
-```
-
-o `pwdlib`.
-
-Nunca guardar passwords en texto plano.
-
-### Endpoints
-
-Mantener las mismas rutas:
-
-```text
-POST /api/v1/auth/login
-POST /api/v1/auth/register
-POST /api/v1/auth/refresh
-```
-
-Internamente:
-
-```python
-if settings.AUTH_PROVIDER == "local":
-    return local_auth.login(...)
-return supabase_auth.login(...)
-```
-
-### Tests Recomendados
-
-Agregar tests de integracion:
-
-1. Login local exitoso.
-2. Login local con password incorrecto devuelve `401`.
-3. `GET /products` con token Store A solo devuelve productos Store A.
-4. `GET /products/{id_store_b}` con token Store A devuelve `404`.
-5. `GET /products` sin token devuelve `401` cuando `DEBUG=false`.
-6. `AUTH_PROVIDER=supabase` no cambia el contrato del endpoint.
-
-## Ventajas
-
-- Permite probar auth real sin depender de Supabase localmente.
-- Mantiene el contrato `Authorization: Bearer`.
-- Permite probar aislamiento multi-tenant de verdad.
-- Permite seed de usuarios, tiendas y productos deterministico.
-- No bloquea la migracion a Supabase porque el provider se cambia por env var.
-
-## Riesgos
-
-- Se duplica parte del comportamiento de auth en local.
-- Hay que cuidar que `local` nunca sea usado por accidente en produccion.
-- Hay que documentar claramente `AUTH_PROVIDER=supabase` para ambientes reales.
-
-Mitigacion:
-
-```python
-if ENVIRONMENT == "production" and AUTH_PROVIDER == "local":
-    raise RuntimeError("Local auth is not allowed in production")
-```
-
-## Decision Recomendada
-
-Implementar `AUTH_PROVIDER=local|supabase`.
-
-Para la siguiente iteracion:
-
-1. Agregar columnas `password_hash` y `last_login_at` a `users`.
-2. Agregar seed con dos tiendas, dos usuarios y productos por tienda.
-3. Implementar `local_auth.py` con JWT local.
-4. Cambiar `/auth/login` para usar provider.
-5. Cambiar `get_current_user` para verificar token con provider.
-6. Agregar tests multi-tenant con tokens reales.
-
-Esto nos da una experiencia local seria y sigue siendo compatible con Supabase.
+Ver `tests/integration/` para tests de login local y multi-tenant.

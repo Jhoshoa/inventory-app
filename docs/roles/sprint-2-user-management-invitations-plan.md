@@ -323,7 +323,7 @@ Payload en produccion:
 ```json
 {
   "token": "raw-token-from-link",
-  "password": "password123",
+  "password": "Dev12345!",
   "full_name": "Cashier Name"
 }
 ```
