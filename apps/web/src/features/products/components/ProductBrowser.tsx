@@ -34,8 +34,8 @@ export function ProductBrowser({
   const [query, setQuery] = useState(initialParams.q ?? "");
   const [products, setProducts] = useState(initialProducts);
   const [error, setError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const didMountRef = useRef(false);
+  const mountedRef = useRef(false);
+  const loadedKeyRef = useRef("");
 
   useEffect(() => {
     const trimmed = query.trim();
@@ -50,14 +50,17 @@ export function ProductBrowser({
     return () => window.clearTimeout(timeout);
   }, [params.q, query]);
 
+  const paramsKey = `${params.q ?? ""}|${params.category ?? ""}|${params.category_id ?? ""}|${params.stock}|${params.limit}|${params.offset}|${params.sort}|${params.direction}`;
+  const isLoading = mountedRef.current && loadedKeyRef.current !== paramsKey;
+
   useEffect(() => {
-    if (!didMountRef.current) {
-      didMountRef.current = true;
+    if (!mountedRef.current) {
+      mountedRef.current = true;
+      loadedKeyRef.current = paramsKey;
       return;
     }
 
     const controller = new AbortController();
-    setIsLoading(true);
     setError(null);
 
     fetch(`/api/products?${buildProductQueryString(params)}`, {
@@ -67,17 +70,19 @@ export function ProductBrowser({
         if (!response.ok) throw new Error(await readErrorMessage(response));
         return response.json() as Promise<ProductListResponse>;
       })
-      .then((data) => setProducts(data))
+      .then((data) => {
+        loadedKeyRef.current = paramsKey;
+        setProducts(data);
+      })
       .catch((fetchError) => {
         if (controller.signal.aborted) return;
+        loadedKeyRef.current = paramsKey;
         setError(fetchError instanceof Error ? fetchError.message : "No se pudieron cargar los productos");
-      })
-      .finally(() => {
-        if (!controller.signal.aborted) setIsLoading(false);
       });
 
     return () => controller.abort();
-  }, [params]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [paramsKey, params]);
 
   function updateFilters(patch: Partial<ProductSearchParams>) {
     setParams((current) => ({ ...current, ...patch, offset: 0 }));
@@ -107,7 +112,6 @@ export function ProductBrowser({
       {error ? (
         <Alert variant="error">No se pudieron cargar los productos: {error}</Alert>
       ) : null}
-      {isLoading ? <Alert>Actualizando productos...</Alert> : null}
 
       {!error && showEmptyInventory ? (
         <EmptyState
@@ -127,15 +131,19 @@ export function ProductBrowser({
           }
         />
       ) : !error ? (
-        <div className="overflow-hidden rounded-lg border border-app-border bg-app-surface shadow-panel">
-          <ProductTable products={products.items} role={role} />
-          <ProductPagination
-            total={products.total}
-            limit={products.limit}
-            offset={products.offset}
-            onChange={goToOffset}
-          />
-        </div>
+        isLoading ? (
+          <InlineTableSkeleton />
+        ) : (
+          <div className="rounded-lg border border-app-border bg-app-surface shadow-panel">
+            <ProductTable products={products.items} role={role} />
+            <ProductPagination
+              total={products.total}
+              limit={products.limit}
+              offset={products.offset}
+              onChange={goToOffset}
+            />
+          </div>
+        )
       ) : null}
     </>
   );
@@ -183,6 +191,49 @@ function ProductPagination({
           Siguiente
           <ChevronRight className="h-4 w-4" aria-hidden />
         </Button>
+      </div>
+    </div>
+  );
+}
+
+const HEADERS = ["Producto", "SKU", "Categoria", "Precio", "Stock", "Estado", "Acciones"];
+
+function InlineTableSkeleton() {
+  return (
+    <div className="rounded-lg border border-app-border bg-app-surface shadow-panel">
+      <table className="w-full">
+        <thead>
+          <tr className="border-b border-app-border">
+            {HEADERS.map((header) => (
+              <th key={header} className="px-4 py-3 text-left text-xs font-medium uppercase text-text-muted">
+                <span className="block h-3 w-16 animate-pulse rounded bg-app-surface-muted" />
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {Array.from({ length: 8 }, (_, rowIndex) => (
+            <tr key={rowIndex} className="border-b border-app-border last:border-b-0">
+              {Array.from({ length: 7 }, (_, cellIndex) => (
+                <td key={cellIndex} className="px-4 py-3">
+                  <span
+                    className={`block h-4 animate-pulse rounded bg-app-surface-muted ${
+                      cellIndex === 0 ? "w-36" : cellIndex === 1 ? "w-20" : cellIndex === 4 ? "w-12" : "w-16"
+                    }`}
+                  />
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <div className="flex items-center justify-between border-t border-app-border px-4 py-3">
+        <span className="h-4 w-48 animate-pulse rounded bg-app-border" />
+        <div className="flex gap-1">
+          {Array.from({ length: 3 }, (_, index) => (
+            <span key={index} className="block h-8 w-8 animate-pulse rounded-md bg-app-surface-muted" />
+          ))}
+        </div>
       </div>
     </div>
   );

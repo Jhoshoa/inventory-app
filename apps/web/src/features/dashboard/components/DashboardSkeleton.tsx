@@ -1,13 +1,36 @@
+import { PageHeader } from "@/components/layout/PageHeader";
 import { PageSection } from "@/components/layout/PageSection";
 
 export function DashboardSkeleton() {
   return (
     <PageSection className="space-y-6" aria-label="Cargando dashboard">
-      <div className="space-y-2">
-        <div className="h-3 w-24 animate-pulse rounded bg-app-borderStrong" />
-        <div className="h-8 w-full max-w-xs animate-pulse rounded-md bg-app-border" />
-        <div className="h-4 w-full max-w-xl animate-pulse rounded bg-app-border" />
+      <PageHeader
+        eyebrow="Operación"
+        title="Dashboard"
+        description="Resumen operativo de ventas, productos y alertas de inventario."
+        actions={
+          <div className="flex gap-2">
+            <div className="h-9 w-24 animate-pulse rounded-md bg-app-surface-muted" />
+            <div className="h-9 w-20 animate-pulse rounded-md bg-app-surface-muted" />
+          </div>
+        }
+      />
+
+      <div className="rounded-lg border border-app-border bg-app-surface p-4 shadow-panel">
+        <div className="flex gap-3">
+          <div className="h-10 w-10 animate-pulse rounded-md border border-app-border bg-app-surface-muted" />
+          <div className="flex-1 space-y-2">
+            <div className="flex items-center gap-2">
+              <div className="h-5 w-32 animate-pulse rounded bg-app-border" />
+              <div className="h-5 w-20 animate-pulse rounded-full bg-app-border" />
+            </div>
+            <div className="h-4 w-64 animate-pulse rounded bg-app-border" />
+            <div className="h-4 w-40 animate-pulse rounded bg-app-border" />
+          </div>
+        </div>
+        <div className="mt-4 h-9 w-full animate-pulse rounded-md bg-app-surface-muted" />
       </div>
+
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {Array.from({ length: 4 }, (_, index) => (
           <div

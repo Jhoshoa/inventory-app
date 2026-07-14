@@ -4,6 +4,10 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { createProductCategoryAction, deactivateProductCategoryAction } from "../actions";
 import { ProductCategorySettings } from "./ProductCategorySettings";
 
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ refresh: vi.fn() }),
+}));
+
 vi.mock("../actions", () => ({
   createProductCategoryAction: vi.fn(),
   deactivateProductCategoryAction: vi.fn(),

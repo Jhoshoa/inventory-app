@@ -17,6 +17,13 @@ export function ReportsPageSkeleton() {
       <PageHeader
         title="Reportes"
         description="Ventas, productos destacados y exportes administrativos."
+        actions={
+          <div className="flex gap-2">
+            <div className="h-9 w-48 animate-pulse rounded-md bg-app-surface-muted" />
+            <div className="h-9 w-36 animate-pulse rounded-md bg-app-surface-muted" />
+            <div className="h-9 w-44 animate-pulse rounded-md bg-app-surface-muted" />
+          </div>
+        }
       />
 
       <ResponsiveToolbar className="md:grid md:grid-cols-[180px_minmax(160px,1fr)_minmax(160px,1fr)]">
@@ -55,6 +62,21 @@ export function ReportsPageSkeleton() {
           headers={["#", "Producto", "Cantidad", "Total"]}
           textColumnIndex={1}
         />
+      </div>
+
+      <div className="space-y-3 rounded-lg border border-app-border bg-app-surface p-4 shadow-panel">
+        <div>
+          <div className="h-5 w-28 animate-pulse rounded bg-app-border" />
+          <div className="mt-1 h-4 w-72 animate-pulse rounded bg-app-border" />
+        </div>
+        <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+          {Array.from({ length: 4 }, (_, index) => (
+            <div key={index} className="space-y-1">
+              <div className="h-9 w-full animate-pulse rounded-md bg-app-surface-muted" />
+              <div className="h-3 w-32 animate-pulse rounded bg-app-border" />
+            </div>
+          ))}
+        </div>
       </div>
     </PageSection>
   );

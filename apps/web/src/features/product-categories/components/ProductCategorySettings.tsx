@@ -2,6 +2,7 @@
 
 import type { FormEvent } from "react";
 import { useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Alert } from "@/components/ui/Alert";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
@@ -32,6 +33,7 @@ export function ProductCategorySettings({ categories }: { categories: ProductCat
   const [deactivateState, setDeactivateState] = useState<ProductCategoryActionState>(initialState);
   const [isCreating, setIsCreating] = useState(false);
   const [deactivatingCategoryId, setDeactivatingCategoryId] = useState<string | null>(null);
+  const router = useRouter();
   const [visibleCategories, setVisibleCategories] = useState(categories);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const createFormRef = useRef<HTMLFormElement>(null);
@@ -55,6 +57,7 @@ export function ProductCategorySettings({ categories }: { categories: ProductCat
         setVisibleCategories((current) => upsertCategory(current, nextState.category as ProductCategory));
         createFormRef.current?.reset();
         showToast(nextState.message);
+        router.refresh();
       }
     } catch (error) {
       setCreateState({
@@ -81,6 +84,7 @@ export function ProductCategorySettings({ categories }: { categories: ProductCat
       if (nextState.ok && nextState.category) {
         setVisibleCategories((current) => upsertCategory(current, nextState.category as ProductCategory));
         showToast(nextState.message);
+        router.refresh();
       }
     } catch (error) {
       setDeactivateState({

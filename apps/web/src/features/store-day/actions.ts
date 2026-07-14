@@ -115,10 +115,11 @@ export async function voidCashMovementAction(
     return { ok: false, message: "Movimiento no valido", fieldErrors: {} };
   }
   const token = await getAuthToken();
+  const voidReason = formData.get("void_reason");
   const result = await apiRequest<CashMovement>(`/cash-movements/${movementId}/void`, {
     method: "POST",
     token: token ?? undefined,
-    body: { void_reason: "Anulado desde Ajustes" },
+    body: { void_reason: typeof voidReason === "string" && voidReason.trim() ? voidReason.trim() : "Anulado desde Ajustes" },
   });
 
   if (!result.ok) return { ok: false, message: result.error.message, fieldErrors: {} };

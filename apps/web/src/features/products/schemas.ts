@@ -76,6 +76,8 @@ export function validateProductForm(values: ProductFormValues, mode: "create" | 
     errors.cost_price = "Costo debe ser mayor o igual a 0";
   }
 
+  if (values.sku && values.sku.length > 50) errors.sku = "SKU debe tener maximo 50 caracteres";
+
   return errors;
 }
 
@@ -91,6 +93,8 @@ export function validateStockAdjustment(quantity: string, reason: string) {
   if (parsed < 0 && !reason.trim()) {
     errors.reason = "La razon es requerida para descontar stock";
   }
+
+  if (reason.length > 120) errors.reason = "La razon debe tener maximo 120 caracteres";
 
   return errors;
 }
@@ -130,7 +134,7 @@ export function productToFormValues(product?: {
     stock: product ? product.stock.toString() : "0",
     category_id: product?.category_id ?? "",
     category: product?.category ?? "",
-    min_stock: product ? product.min_stock.toString() : "5",
+    min_stock: product ? product.min_stock.toString() : "1",
     unit: product?.unit ?? "unidad",
     sku: product?.sku ?? "",
     cost_price: product?.cost_price ?? "",

@@ -29,6 +29,7 @@ export function ImageUploader({
 }: ImageUploaderProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
+  const abortRef = useRef<AbortController | null>(null);
   const [state, setState] = useState<UploadState>("idle");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -40,6 +41,12 @@ export function ImageUploader({
   useEffect(() => {
     setCurrentPhotoUrl(currentUrl ?? null);
   }, [currentUrl]);
+
+  useEffect(() => {
+    return () => {
+      abortRef.current?.abort();
+    };
+  }, []);
 
   useEffect(() => {
     return () => {
@@ -63,7 +70,7 @@ export function ImageUploader({
   );
 
   const uploadPhoto = useCallback(
-    async (file: File): Promise<{ photo_url: string | null }> => {
+    async (file: File, signal?: AbortSignal): Promise<{ photo_url: string | null }> => {
       if (!productId) {
         throw new Error("Producto no disponible");
       }
@@ -77,6 +84,7 @@ export function ImageUploader({
       const response = await fetch(`/api/products/${productId}/photo`, {
         method: "POST",
         body: formData,
+        signal,
       });
 
       if (!response.ok) {
@@ -90,13 +98,14 @@ export function ImageUploader({
   );
 
   const deletePhoto = useCallback(
-    async (): Promise<{ photo_url: string | null }> => {
+    async (signal?: AbortSignal): Promise<{ photo_url: string | null }> => {
       if (!productId) {
         throw new Error("Producto no disponible");
       }
 
       const response = await fetch(`/api/products/${productId}/photo`, {
         method: "DELETE",
+        signal,
       });
 
       if (!response.ok) {
@@ -112,11 +121,17 @@ export function ImageUploader({
   const handleUpload = useCallback(
     async (file: File) => {
       if (!productId) return;
+
+      abortRef.current?.abort();
+      const controller = new AbortController();
+      abortRef.current = controller;
+
       setState("uploading");
       setErrorMessage("");
 
       try {
-        const updated = await uploadPhoto(file);
+        const updated = await uploadPhoto(file, controller.signal);
+        if (controller.signal.aborted) return;
         setCurrentPhotoUrl(updated.photo_url);
         setSelectedFile(null);
         if (previewUrl) {
@@ -126,6 +141,7 @@ export function ImageUploader({
         setState("idle");
         onPhotoChange(updated.photo_url);
       } catch (error) {
+        if (controller.signal.aborted) return;
         setErrorMessage(
           error instanceof Error ? error.message : "Error al subir imagen",
         );
@@ -225,11 +241,16 @@ export function ImageUploader({
       return;
     }
 
+    abortRef.current?.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
+
     setState("uploading");
     setErrorMessage("");
 
     try {
-      await deletePhoto();
+      await deletePhoto(controller.signal);
+      if (controller.signal.aborted) return;
       setCurrentPhotoUrl(null);
       setSelectedFile(null);
       if (previewUrl) {
@@ -239,6 +260,7 @@ export function ImageUploader({
       setState("idle");
       onPhotoChange(null);
     } catch (error) {
+      if (controller.signal.aborted) return;
       setErrorMessage(
         error instanceof Error ? error.message : "Error al eliminar imagen",
       );

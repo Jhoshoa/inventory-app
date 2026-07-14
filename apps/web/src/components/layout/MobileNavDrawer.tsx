@@ -136,13 +136,13 @@ export function MobileNavDrawer({ role }: { role: UserRole }) {
                     key={item.href}
                     href={item.href}
                     aria-current={isActive ? "page" : undefined}
-                    className={`flex h-10 items-center gap-3 rounded-md px-3 text-sm font-medium transition-colors ${
+                    className={`group flex h-10 items-center gap-3 rounded-md px-3 text-sm font-medium transition-colors ${
                       isActive
                         ? "bg-brand-700 text-text-inverse shadow-sm"
-                        : "text-text-body hover:bg-app-surface-muted hover:text-text-strong"
+                        : "text-text-body hover:bg-brand-50 hover:text-brand-700"
                     }`}
                   >
-                    <Icon className={`h-4 w-4 ${isActive ? "text-text-inverse" : "text-text-muted"}`} aria-hidden="true" />
+                    <Icon className={`h-4 w-4 ${isActive ? "text-text-inverse" : "text-text-muted group-hover:text-brand-600"}`} aria-hidden="true" />
                     {item.label}
                   </Link>
                 );

@@ -10,7 +10,7 @@ _PASSWORD_RE = re.compile(r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=
 
 class LoginDTO(BaseModel):
     email: str = Field(..., max_length=255)
-    password: str = Field(..., min_length=1)
+    password: str = Field(..., min_length=6)
 
     @field_validator("email")
     @classmethod

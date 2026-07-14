@@ -325,8 +325,14 @@ function CashMovementRow({ movement }: { movement: CashMovement }) {
         {movement.note ? <p className="text-xs text-text-muted">{movement.note}</p> : null}
       </div>
       {state.message && !state.ok ? <Alert variant="error">{state.message}</Alert> : null}
-      <form onSubmit={onSubmit}>
+      <form onSubmit={onSubmit} className="flex flex-wrap items-center gap-2">
         <input type="hidden" name="movement_id" value={movement.id} />
+        <input
+          type="text"
+          name="void_reason"
+          placeholder="Razon (opcional)"
+          className="h-9 w-40 rounded-md border border-app-border bg-app-surface px-2 text-xs text-text-strong placeholder:text-text-muted"
+        />
         <Button type="submit" variant="secondary" disabled={isSubmitting}>
           {isSubmitting ? "Anulando..." : "Anular"}
         </Button>

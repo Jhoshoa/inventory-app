@@ -26,9 +26,13 @@ export const PosProductSearch = forwardRef<PosProductSearchHandle, {
   const [query, setQuery] = useState("");
   const [products, setProducts] = useState<PosProduct[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
   const [isLookupLoading, setIsLookupLoading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const lookupAbortRef = useRef<AbortController | null>(null);
+  const loadedQueryRef = useRef("");
+
+  const trimmedQuery = query.trim();
+  const isTextLoading = trimmedQuery.length >= MIN_PRODUCT_SEARCH_LENGTH && loadedQueryRef.current !== trimmedQuery;
 
   useImperativeHandle(ref, () => ({
     clear: () => {
@@ -54,7 +58,6 @@ export const PosProductSearch = forwardRef<PosProductSearchHandle, {
 
     let cancelled = false;
     const timeout = window.setTimeout(async () => {
-      setIsLoading(true);
       try {
         const response = await fetch(
           `/api/products/pos?q=${encodeURIComponent(trimmed)}&limit=20&offset=0`,
@@ -62,16 +65,14 @@ export const PosProductSearch = forwardRef<PosProductSearchHandle, {
         if (!response.ok) throw new Error("No se pudo buscar productos");
         const data = (await response.json()) as PosProductListResponse;
         if (!cancelled) {
+          loadedQueryRef.current = trimmed;
           setProducts(data.items);
           setError(null);
         }
       } catch (searchError) {
         if (!cancelled) {
+          loadedQueryRef.current = trimmed;
           setError(searchError instanceof Error ? searchError.message : "Error de busqueda");
-        }
-      } finally {
-        if (!cancelled) {
-          setIsLoading(false);
         }
       }
     }, POS_SEARCH_DEBOUNCE_MS);
@@ -82,13 +83,25 @@ export const PosProductSearch = forwardRef<PosProductSearchHandle, {
     };
   }, [query]);
 
+  useEffect(() => {
+    return () => {
+      lookupAbortRef.current?.abort();
+    };
+  }, []);
+
   async function handleExactLookup() {
     const code = query.trim();
     if (!code) return;
 
+    lookupAbortRef.current?.abort();
+    const abortController = new AbortController();
+    lookupAbortRef.current = abortController;
+
     setIsLookupLoading(true);
     try {
-      const response = await fetch(`/api/products/qr/${encodeURIComponent(code)}`);
+      const response = await fetch(`/api/products/qr/${encodeURIComponent(code)}`, {
+        signal: abortController.signal,
+      });
       if (response.status === 404) {
         setError("No se encontro producto para ese codigo.");
         return;
@@ -100,9 +113,12 @@ export const PosProductSearch = forwardRef<PosProductSearchHandle, {
       setProducts([]);
       setError(null);
     } catch (lookupError) {
+      if (abortController.signal.aborted) return;
       setError(lookupError instanceof Error ? lookupError.message : "Error de busqueda");
     } finally {
-      setIsLookupLoading(false);
+      if (!abortController.signal.aborted) {
+        setIsLookupLoading(false);
+      }
       window.setTimeout(() => inputRef.current?.focus(), 0);
     }
   }
@@ -157,14 +173,44 @@ export const PosProductSearch = forwardRef<PosProductSearchHandle, {
       {query.trim() && query.trim().length < MIN_PRODUCT_SEARCH_LENGTH ? (
         <Alert>Escribe al menos {MIN_PRODUCT_SEARCH_LENGTH} caracteres para buscar.</Alert>
       ) : null}
-      {isLoading || isLookupLoading ? <Alert>Buscando productos...</Alert> : null}
       {error ? <Alert variant="error">{error}</Alert> : null}
       {query.trim().length >= MIN_PRODUCT_SEARCH_LENGTH ? (
-        <PosProductResults products={products} onAdd={onAdd} />
+        isTextLoading || isLookupLoading ? (
+          <InlineResultsSkeleton />
+        ) : (
+          <div>
+            <PosProductResults products={products} onAdd={onAdd} />
+          </div>
+        )
       ) : null}
     </section>
   );
 });
+
+function InlineResultsSkeleton() {
+  return (
+    <div className="grid gap-3">
+      {Array.from({ length: 4 }, (_, index) => (
+        <div
+          key={index}
+          className="grid gap-3 rounded-lg border border-app-border bg-app-surface p-4 shadow-panel sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center"
+        >
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <span className="block h-4 w-44 animate-pulse rounded bg-app-surface-muted" />
+              <span className="block h-5 w-20 animate-pulse rounded-full bg-app-surface-muted" />
+            </div>
+            <div className="flex gap-4">
+              <span className="block h-4 w-16 animate-pulse rounded bg-app-surface-muted" />
+              <span className="block h-4 w-32 animate-pulse rounded bg-app-surface-muted" />
+            </div>
+          </div>
+          <span className="block h-9 w-24 animate-pulse rounded-md bg-app-surface-muted" />
+        </div>
+      ))}
+    </div>
+  );
+}
 
 function compactProduct(product: PosProduct): PosProduct {
   return {

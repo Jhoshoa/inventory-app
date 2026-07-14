@@ -1,3 +1,4 @@
+import { CalendarDays } from "lucide-react";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { PageSection } from "@/components/layout/PageSection";
 import { ResponsiveToolbar } from "@/components/layout/ResponsiveToolbar";
@@ -24,13 +25,19 @@ export function SalesTableSkeleton() {
           <span className="mb-1 block text-xs font-medium uppercase text-text-muted">
             Desde
           </span>
-          <Input type="date" disabled aria-label="Desde" />
+          <span className="relative block">
+            <CalendarDays className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-text-muted" aria-hidden />
+            <Input type="date" disabled className="pl-9" aria-label="Desde" />
+          </span>
         </label>
         <label className="block">
           <span className="mb-1 block text-xs font-medium uppercase text-text-muted">
             Hasta
           </span>
-          <Input type="date" disabled aria-label="Hasta" />
+          <span className="relative block">
+            <CalendarDays className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-text-muted" aria-hidden />
+            <Input type="date" disabled className="pl-9" aria-label="Hasta" />
+          </span>
         </label>
         <label className="block">
           <span className="mb-1 block text-xs font-medium uppercase text-text-muted">
@@ -78,6 +85,18 @@ export function SalesTableSkeleton() {
           ))}
         </tbody>
       </Table>
+
+      <div className="flex items-center justify-between">
+        <div className="h-4 w-48 animate-pulse rounded bg-app-border" />
+        <div className="flex gap-1">
+          {Array.from({ length: 3 }, (_, index) => (
+            <div
+              key={index}
+              className="h-8 w-8 animate-pulse rounded-md bg-app-surface-muted"
+            />
+          ))}
+        </div>
+      </div>
     </PageSection>
   );
 }

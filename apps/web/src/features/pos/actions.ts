@@ -15,7 +15,11 @@ export async function createSaleAction(
   const cartItems = parseCartItems(formData.get("items"));
   const paymentMethod = stringValue(formData, "payment_method") || "efectivo";
   const customerName = stringValue(formData, "customer_name");
-  const fieldErrors = validateCheckout(cartItems, paymentMethod);
+  const fieldErrors: Partial<Record<"items" | "payment_method" | "customer_name" | "reason", string>> = validateCheckout(cartItems, paymentMethod);
+
+  if (customerName.length > 100) {
+    fieldErrors.customer_name = "Nombre del cliente debe tener maximo 100 caracteres";
+  }
 
   if (Object.keys(fieldErrors).length > 0) return { ok: false, fieldErrors };
   if (!isPaymentMethod(paymentMethod)) {

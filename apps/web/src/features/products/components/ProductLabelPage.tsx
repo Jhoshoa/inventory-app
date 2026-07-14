@@ -43,8 +43,8 @@ export function ProductLabelPage({
   const [selected, setSelected] = useState<Record<string, SelectedLabelProduct>>({});
   const [labelSettings, setLabelSettings] = useState<ProductLabelSettings>(DEFAULT_LABEL_SETTINGS);
   const [error, setError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const didMountRef = useRef(false);
+  const mountedRef = useRef(false);
+  const loadedKeyRef = useRef("");
 
   useEffect(() => {
     const trimmed = query.trim();
@@ -59,20 +59,23 @@ export function ProductLabelPage({
     return () => window.clearTimeout(timeout);
   }, [params.q, query]);
 
+  const paramsKey = `${params.q ?? ""}|${params.category ?? ""}|${params.category_id ?? ""}|${params.stock}|${params.limit}|${params.offset}`;
+  const hasAppliedSearch = !!params.q;
+  const isLoading = mountedRef.current && hasAppliedSearch && loadedKeyRef.current !== paramsKey;
+
   useEffect(() => {
-    if (!didMountRef.current) {
-      didMountRef.current = true;
+    if (!mountedRef.current) {
+      mountedRef.current = true;
+      loadedKeyRef.current = paramsKey;
       return;
     }
     if (!params.q) {
       setProducts({ items: [], total: 0, limit: params.limit, offset: 0 });
-      setIsLoading(false);
       setError(null);
       return;
     }
 
     const controller = new AbortController();
-    setIsLoading(true);
     setError(null);
 
     fetch(`/api/products?${buildProductQueryString(params)}`, {
@@ -82,17 +85,19 @@ export function ProductLabelPage({
         if (!response.ok) throw new Error(await readErrorMessage(response));
         return response.json() as Promise<ProductListResponse>;
       })
-      .then((data) => setProducts(data))
+      .then((data) => {
+        loadedKeyRef.current = paramsKey;
+        setProducts(data);
+      })
       .catch((fetchError) => {
         if (controller.signal.aborted) return;
+        loadedKeyRef.current = paramsKey;
         setError(fetchError instanceof Error ? fetchError.message : "No se pudieron cargar productos");
-      })
-      .finally(() => {
-        if (!controller.signal.aborted) setIsLoading(false);
       });
 
     return () => controller.abort();
-  }, [params]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [paramsKey, params.q, params]);
 
   const selectedProducts = useMemo(() => Object.values(selected), [selected]);
   const totalLabels = useMemo(
@@ -102,7 +107,6 @@ export function ProductLabelPage({
   const dimensions = useMemo(() => calculateLabelDimensions(labelSettings), [labelSettings]);
   const hasPrintableLabels = totalLabels > 0 && totalLabels <= MAX_LABELS_PER_PRINT;
   const hasSelection = selectedProducts.length > 0;
-  const hasAppliedSearch = Boolean(params.q);
 
   function updateFilters(patch: Partial<ProductSearchParams>) {
     setParams((current) => ({ ...current, ...patch, offset: 0 }));
@@ -324,42 +328,56 @@ export function ProductLabelPage({
                   <h2 className="text-sm font-semibold text-text-strong">Resultados</h2>
                   <p className="text-xs text-text-muted">Busca por nombre, SKU o codigo y agrega productos a la seleccion.</p>
                 </div>
-                <span className="min-h-4 text-xs text-text-muted" aria-live="polite">
-                  {isLoading ? "Actualizando..." : ""}
-                </span>
               </div>
             </div>
-            {!hasAppliedSearch ? (
-              <div className="p-6 text-center text-sm text-text-muted">
-                Escribe al menos {MIN_PRODUCT_SEARCH_LENGTH} caracteres para buscar productos.
-              </div>
-            ) : products.items.length === 0 ? (
-              <div className="p-6 text-center text-sm text-text-muted">No hay productos para la busqueda actual.</div>
-            ) : (
+            {isLoading && hasAppliedSearch && products.items.length > 0 ? (
               <div className="divide-y divide-app-border">
-                {products.items.map((product) => {
-                  const isSelected = Boolean(selected[product.id]);
-                  const hasCode = Boolean(product.qr_code?.trim());
-                  return (
-                    <div key={product.id} className="flex flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
-                      <div className="min-w-0">
-                        <p className="truncate font-medium text-text-strong">{product.name}</p>
-                        <p className="truncate text-xs text-text-muted">
-                          SKU: {product.sku || "Sin SKU"} · Codigo: {product.qr_code || "Sin codigo"}
-                        </p>
-                      </div>
-                      <Button
-                        type="button"
-                        variant="secondary"
-                        disabled={!hasCode || isSelected}
-                        onClick={() => addProduct(product)}
-                      >
-                        <Plus className="h-4 w-4" aria-hidden="true" />
-                        {isSelected ? "Agregado" : hasCode ? "Agregar" : "Sin codigo"}
-                      </Button>
+                {Array.from({ length: 5 }, (_, i) => (
+                  <div key={i} className="flex items-center gap-4 px-4 py-3">
+                    <span className="block h-5 w-5 animate-pulse rounded bg-app-surface-muted" />
+                    <div className="min-w-0 flex-1">
+                      <span className="block h-4 w-48 animate-pulse rounded bg-app-surface-muted" />
+                      <span className="mt-1 block h-3 w-32 animate-pulse rounded bg-app-surface-muted" />
                     </div>
-                  );
-                })}
+                    <span className="block h-9 w-24 animate-pulse rounded-md bg-app-surface-muted" />
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div>
+                {!hasAppliedSearch ? (
+                  <div className="p-6 text-center text-sm text-text-muted">
+                    Escribe al menos {MIN_PRODUCT_SEARCH_LENGTH} caracteres para buscar productos.
+                  </div>
+                ) : products.items.length === 0 ? (
+                  <div className="p-6 text-center text-sm text-text-muted">No hay productos para la busqueda actual.</div>
+                ) : (
+                  <div className="divide-y divide-app-border">
+                    {products.items.map((product) => {
+                      const isSelected = Boolean(selected[product.id]);
+                      const hasCode = Boolean(product.qr_code?.trim());
+                      return (
+                        <div key={product.id} className="flex flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+                          <div className="min-w-0">
+                            <p className="truncate font-medium text-text-strong">{product.name}</p>
+                            <p className="truncate text-xs text-text-muted">
+                              SKU: {product.sku || "Sin SKU"} · Codigo: {product.qr_code || "Sin codigo"}
+                            </p>
+                          </div>
+                          <Button
+                            type="button"
+                            variant="secondary"
+                            disabled={!hasCode || isSelected}
+                            onClick={() => addProduct(product)}
+                          >
+                            <Plus className="h-4 w-4" aria-hidden="true" />
+                            {isSelected ? "Agregado" : hasCode ? "Agregar" : "Sin codigo"}
+                          </Button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             )}
           </section>

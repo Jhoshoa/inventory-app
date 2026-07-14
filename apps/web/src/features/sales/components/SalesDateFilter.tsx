@@ -1,8 +1,7 @@
 "use client";
 
-import type { FormEvent } from "react";
 import { useEffect, useState } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { CalendarDays } from "lucide-react";
 import { ResponsiveToolbar } from "@/components/layout/ResponsiveToolbar";
 import { Input } from "@/components/ui/Input";
@@ -17,6 +16,7 @@ export function SalesDateFilter({
   firstBusinessDate: string | null;
 }) {
   const pathname = usePathname();
+  const router = useRouter();
   const [fromDate, setFromDate] = useState(params.from_date);
   const [toDate, setToDate] = useState(params.to_date);
   const [status, setStatus] = useState(params.status);
@@ -51,38 +51,47 @@ export function SalesDateFilter({
     return true;
   }
 
-  function submitIfValid(form: HTMLFormElement, nextValues: { fromDate: string; toDate: string }) {
+  function navigate(nextValues: { fromDate: string; toDate: string }) {
     if (!validateRange(nextValues)) return;
-    form.requestSubmit();
+    const q = new URLSearchParams();
+    if (nextValues.fromDate) q.set("from_date", nextValues.fromDate);
+    if (nextValues.toDate) q.set("to_date", nextValues.toDate);
+    if (status && status !== "all") q.set("status", status);
+    q.set("limit", String(params.limit));
+    q.set("offset", "0");
+    router.replace(`${pathname}?${q.toString()}`);
   }
 
-  function onSubmit(event: FormEvent<HTMLFormElement>) {
-    if (!validateRange({ fromDate, toDate })) {
-      event.preventDefault();
-    }
+  function handleStatusChange(nextStatus: string) {
+    setStatus(nextStatus as SaleSearchParams["status"]);
+    const q = new URLSearchParams();
+    if (fromDate) q.set("from_date", fromDate);
+    if (toDate) q.set("to_date", toDate);
+    if (nextStatus && nextStatus !== "all") q.set("status", nextStatus);
+    q.set("limit", String(params.limit));
+    q.set("offset", "0");
+    router.replace(`${pathname}?${q.toString()}`);
   }
 
   return (
-    <form action={pathname} method="get" onSubmit={onSubmit}>
-      <input type="hidden" name="offset" value="0" />
-      <input type="hidden" name="limit" value={params.limit} />
+    <div>
       <ResponsiveToolbar className="md:grid md:grid-cols-[minmax(160px,1fr)_minmax(160px,1fr)_180px]">
         <DateInput
           label="Desde"
           name="from_date"
           value={fromDate}
-          onChange={(value, form) => {
+          onChange={(value) => {
             setFromDate(value);
-            submitIfValid(form, { fromDate: value, toDate });
+            navigate({ fromDate: value, toDate });
           }}
         />
         <DateInput
           label="Hasta"
           name="to_date"
           value={toDate}
-          onChange={(value, form) => {
+          onChange={(value) => {
             setToDate(value);
-            submitIfValid(form, { fromDate, toDate: value });
+            navigate({ fromDate, toDate: value });
           }}
         />
         <label className="block">
@@ -94,10 +103,7 @@ export function SalesDateFilter({
             name="status"
             value={status}
             onChange={(event) => {
-              setStatus(event.target.value as SaleSearchParams["status"]);
-              if (event.currentTarget.form) {
-                submitIfValid(event.currentTarget.form, { fromDate, toDate });
-              }
+              handleStatusChange(event.target.value);
             }}
           >
             <option value="all">Todas</option>
@@ -116,7 +122,7 @@ export function SalesDateFilter({
           {error}
         </p>
       ) : null}
-    </form>
+    </div>
   );
 }
 
@@ -128,7 +134,7 @@ function DateInput({
 }: {
   label: string;
   name: string;
-  onChange: (value: string, form: HTMLFormElement) => void;
+  onChange: (value: string) => void;
   value: string;
 }) {
   return (
@@ -147,9 +153,7 @@ function DateInput({
           name={name}
           value={value}
           onChange={(event) => {
-            if (event.currentTarget.form) {
-              onChange(event.target.value, event.currentTarget.form);
-            }
+            onChange(event.target.value);
           }}
         />
       </span>

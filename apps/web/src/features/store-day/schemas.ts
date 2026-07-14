@@ -18,6 +18,8 @@ export function validateMoneyAmount(value: FormDataEntryValue | null, label: str
   if (!normalized) return required ? `${label} es requerido` : "";
   if (!/^\d+(\.\d{1,2})?$/.test(normalized)) return `${label} debe tener maximo 2 decimales`;
   if (Number(normalized) < 0) return `${label} no puede ser negativo`;
+  if (Number(normalized) === 0) return `${label} debe ser mayor a 0`;
+  if (normalized.replace(".", "").length > 12) return `${label} supera el maximo de 12 digitos`;
   return "";
 }
 

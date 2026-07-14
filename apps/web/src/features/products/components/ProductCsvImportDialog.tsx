@@ -13,7 +13,8 @@ type DialogState =
   | { phase: "uploading" }
   | { phase: "validating" }
   | { phase: "inserting" }
-  | { phase: "completed"; job: ImportJob };
+  | { phase: "completed"; job: ImportJob }
+  | { phase: "error"; message: string };
 
 interface Props {
   open: boolean;
@@ -67,9 +68,12 @@ export function ProductCsvImportDialog({ open, onClose, onSuccess }: Props) {
         if (job.imported_count > 0 && job.error_count === 0) {
           onSuccess();
         }
+      } else {
+        setState({ phase: "error", message: "La importacion no se completo en el tiempo esperado." });
       }
-    } catch {
-      setState({ phase: "idle" });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Error inesperado al importar.";
+      setState({ phase: "error", message });
     }
   }, [file, onSuccess]);
 
@@ -100,6 +104,8 @@ export function ProductCsvImportDialog({ open, onClose, onSuccess }: Props) {
             count={state.job.imported_count}
             onClose={handleClose}
           />
+        ) : state.phase === "error" ? (
+          <ErrorState message={state.message} onRetry={handleSubmit} onClose={handleClose} />
         ) : state.phase === "uploading" || state.phase === "validating" || state.phase === "inserting" ? (
           <ProcessingResult phase={state.phase} filename={file?.name ?? ""} onCancel={handleClose} />
         ) : (
@@ -212,6 +218,21 @@ function IdleForm({
           <Button variant="secondary" onClick={onClose}>Cancelar</Button>
           <Button onClick={onSubmit} disabled={!file}>Subir</Button>
         </div>
+      </div>
+    </>
+  );
+}
+
+function ErrorState({ message, onRetry, onClose }: { message: string; onRetry: () => void; onClose: () => void }) {
+  return (
+    <>
+      <h2 className="text-lg font-semibold text-text-strong">Error al importar</h2>
+      <div className="mt-2">
+        <Alert variant="error">{message}</Alert>
+      </div>
+      <div className="mt-6 flex items-center justify-end gap-2">
+        <Button variant="secondary" onClick={onClose}>Cerrar</Button>
+        <Button onClick={onRetry}>Reintentar</Button>
       </div>
     </>
   );

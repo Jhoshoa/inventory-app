@@ -2,23 +2,20 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { SalesDateFilter } from "./SalesDateFilter";
 
-const requestSubmit = vi.fn();
+const replace = vi.fn();
 
 vi.mock("next/navigation", () => ({
   usePathname: () => "/dashboard/sales",
+  useRouter: () => ({ replace }),
 }));
 
 describe("SalesDateFilter", () => {
   beforeEach(() => {
-    requestSubmit.mockReset();
-    Object.defineProperty(HTMLFormElement.prototype, "requestSubmit", {
-      configurable: true,
-      value: requestSubmit,
-    });
+    replace.mockReset();
     window.history.pushState(null, "", "/dashboard/sales");
   });
 
-  it("applies the to date without changing from date", async () => {
+  it("navigates when to date changes", async () => {
     render(
       <SalesDateFilter
         firstBusinessDate="2026-06-01"
@@ -39,7 +36,12 @@ describe("SalesDateFilter", () => {
 
     expect(from).toHaveValue("2026-06-01");
     expect(to).toHaveValue("2026-06-05");
-    expect(requestSubmit).toHaveBeenCalled();
+    expect(replace).toHaveBeenCalledWith(
+      expect.stringContaining("from_date=2026-06-01"),
+    );
+    expect(replace).toHaveBeenCalledWith(
+      expect.stringContaining("to_date=2026-06-05"),
+    );
   });
 
   it("keeps to date independent when from date changes", async () => {
@@ -63,7 +65,12 @@ describe("SalesDateFilter", () => {
 
     expect(from).toHaveValue("2026-06-04");
     expect(to).toHaveValue("2026-06-07");
-    expect(requestSubmit).toHaveBeenCalled();
+    expect(replace).toHaveBeenCalledWith(
+      expect.stringContaining("from_date=2026-06-04"),
+    );
+    expect(replace).toHaveBeenCalledWith(
+      expect.stringContaining("to_date=2026-06-07"),
+    );
   });
 
   it("blocks invalid date ranges before navigating", async () => {
@@ -85,10 +92,10 @@ describe("SalesDateFilter", () => {
     expect(screen.getByRole("alert")).toHaveTextContent(
       "La fecha desde no puede ser posterior a la fecha hasta.",
     );
-    expect(requestSubmit).not.toHaveBeenCalled();
+    expect(replace).not.toHaveBeenCalled();
   });
 
-  it("submits status with the date range", async () => {
+  it("navigates with status when status changes", async () => {
     render(
       <SalesDateFilter
         firstBusinessDate={null}
@@ -104,10 +111,12 @@ describe("SalesDateFilter", () => {
 
     fireEvent.change(screen.getByLabelText("Estado de venta"), { target: { value: "voided" } });
 
-    expect(requestSubmit).toHaveBeenCalled();
+    expect(replace).toHaveBeenCalledWith(
+      expect.stringContaining("status=voided"),
+    );
   });
 
-  it("submits the current filters through a GET form", () => {
+  it("renders filter controls with correct names", () => {
     render(
       <SalesDateFilter
         firstBusinessDate={null}
@@ -121,14 +130,8 @@ describe("SalesDateFilter", () => {
       />,
     );
 
-    const form = screen.getByLabelText("Desde").closest("form");
-
-    expect(form).toHaveAttribute("method", "get");
-    expect(form).toHaveAttribute("action", "/dashboard/sales");
     expect(screen.getByLabelText("Desde")).toHaveAttribute("name", "from_date");
     expect(screen.getByLabelText("Hasta")).toHaveAttribute("name", "to_date");
     expect(screen.getByLabelText("Estado de venta")).toHaveAttribute("name", "status");
-    expect(document.querySelector('input[name="offset"]')).toHaveValue("0");
-    expect(document.querySelector('input[name="limit"]')).toHaveValue("50");
   });
 });

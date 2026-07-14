@@ -32,7 +32,7 @@ class CreateProductDTO(BaseModel):
     category: str | None = None
     category_id: UUID | None = None
     min_stock: int = Field(default=1, ge=0)
-    unit: str = "unidad"
+    unit: str = Field(default="unidad", max_length=20)
     sku: str | None = Field(default=None, max_length=50)
     cost_price: Decimal | None = Field(default=None, ge=0)
     photo_url: str | None = Field(default=None, max_length=500)
