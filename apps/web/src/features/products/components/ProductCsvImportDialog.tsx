@@ -1,10 +1,10 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useId, useCallback, useRef, useState } from "react";
 import { AlertCircle, CheckCircle2, FileSpreadsheet, Loader2, Upload, X } from "lucide-react";
 import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
-import { DialogSurface } from "@/components/ui/Dialog";
+import { DialogOverlay, DialogSurface } from "@/components/ui/Dialog";
 import { importProductsCsv } from "../import-client";
 import type { ImportJob, RowError } from "../types";
 
@@ -27,6 +27,7 @@ export function ProductCsvImportDialog({ open, onClose, onSuccess }: Props) {
   const [dragOver, setDragOver] = useState(false);
   const [file, setFile] = useState<File | null>(null);
   const [state, setState] = useState<DialogState>({ phase: "idle" });
+  const titleId = useId();
 
   const handleFile = useCallback((f: File) => {
     if (!f.name.endsWith(".csv")) {
@@ -91,8 +92,8 @@ export function ProductCsvImportDialog({ open, onClose, onSuccess }: Props) {
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <DialogSurface className="w-full max-w-lg">
+    <DialogOverlay>
+      <DialogSurface titleId={titleId} onClose={handleClose} className="w-full max-w-lg">
         {state.phase === "completed" && state.job.error_count > 0 ? (
           <ErrorResult
             job={state.job}
@@ -124,7 +125,7 @@ export function ProductCsvImportDialog({ open, onClose, onSuccess }: Props) {
           />
         )}
       </DialogSurface>
-    </div>
+    </DialogOverlay>
   );
 }
 
@@ -199,6 +200,7 @@ function IdleForm({
             type="button"
             onClick={onClear}
             className="ml-2 shrink-0 rounded p-1 text-text-muted hover:bg-app-surface hover:text-text-strong"
+            aria-label="Quitar archivo"
           >
             <X className="h-4 w-4" />
           </button>

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import { readErrorMessage } from "@/lib/api/errors";
 import { Alert } from "@/components/ui/Alert";
 import { Pagination } from "@/components/ui/Pagination";
 import { buildSalesApiQuery } from "../schemas";
@@ -55,7 +56,7 @@ export function SalesBrowser({
       signal: controller.signal,
     })
       .then(async (response) => {
-        if (!response.ok) throw new Error(await readErrorMessage(response));
+        if (!response.ok) throw new Error(await readErrorMessage(response, "No se pudieron cargar las ventas"));
         return response.json() as Promise<SaleListResponse>;
       })
       .then((result) => {
@@ -158,13 +159,4 @@ function InlineTableSkeleton() {
   );
 }
 
-async function readErrorMessage(response: Response) {
-  try {
-    const payload = await response.json();
-    if (typeof payload?.message === "string") return payload.message;
-    if (typeof payload?.detail === "string") return payload.detail;
-  } catch {
-    return "No se pudieron cargar las ventas";
-  }
-  return "No se pudieron cargar las ventas";
-}
+

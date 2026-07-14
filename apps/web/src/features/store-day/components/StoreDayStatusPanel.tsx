@@ -5,6 +5,7 @@ import type { FormEvent } from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { LockKeyhole, Store, UnlockKeyhole } from "lucide-react";
+import { toast } from "sonner";
 import { Alert } from "@/components/ui/Alert";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
@@ -12,6 +13,7 @@ import { FieldError } from "@/components/ui/FieldError";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { formatCurrency } from "@/lib/format/currency";
+import { formatBusinessDateShort, formatDateTimeWithTimezone } from "@/lib/format/datetime";
 import { canOpenCloseStore } from "@/lib/auth/permissions";
 import type { UserRole } from "@/lib/auth/types";
 import { closeStoreDayAction, createCashMovementAction, openStoreDayAction, reopenStoreDayAction, voidCashMovementAction } from "../actions";
@@ -70,11 +72,11 @@ export function StoreDayStatusPanel({
               <h2 className="text-base font-semibold text-text-strong">
                 {isOpen ? "Tienda abierta" : "Tienda cerrada"}
               </h2>
-              <Badge>{formatBusinessDate(visibleStoreDay.business_date)}</Badge>
+              <Badge>{formatBusinessDateShort(visibleStoreDay.business_date)}</Badge>
             </div>
             <p className="mt-1 text-sm text-text-muted">
               {isOpen && visibleStoreDay.opened_at
-                ? `Abierta desde ${formatDateTime(visibleStoreDay.opened_at, visibleStoreDay.timezone)}`
+                ? `Abierta desde ${formatDateTimeWithTimezone(visibleStoreDay.opened_at, visibleStoreDay.timezone)}`
                 : "Abre la jornada para habilitar ventas en POS."}
             </p>
             <p className="mt-1 inline-flex items-center gap-1 text-xs text-text-muted">
@@ -134,14 +136,15 @@ function StoreDayActionForm({
       setState(nextState);
       if (nextState.ok && nextState.storeDay) {
         onStoreDayUpdated(nextState.storeDay);
+        toast.success(nextState.message || "Jornada actualizada");
         router.refresh();
+      } else if (!nextState.ok) {
+        toast.error(nextState.message || "No se pudo procesar la jornada");
       }
     } catch (error) {
-      setState({
-        ok: false,
-        message: error instanceof Error ? error.message : "No se pudo procesar la jornada.",
-        fieldErrors: {},
-      });
+      const message = error instanceof Error ? error.message : "No se pudo procesar la jornada.";
+      setState({ ok: false, message, fieldErrors: {} });
+      toast.error(message);
     } finally {
       setIsSubmitting(false);
     }
@@ -229,14 +232,15 @@ function CashMovementPanel({ cashMovements }: { cashMovements?: CashMovementList
       setState(nextState);
       if (nextState.ok) {
         event.currentTarget.reset();
+        toast.success("Movimiento registrado");
         router.refresh();
+      } else {
+        toast.error(nextState.message || "No se pudo registrar el movimiento");
       }
     } catch (error) {
-      setState({
-        ok: false,
-        message: error instanceof Error ? error.message : "No se pudo registrar el movimiento.",
-        fieldErrors: {},
-      });
+      const message = error instanceof Error ? error.message : "No se pudo registrar el movimiento.";
+      setState({ ok: false, message, fieldErrors: {} });
+      toast.error(message);
     } finally {
       setIsSubmitting(false);
     }
@@ -303,13 +307,16 @@ function CashMovementRow({ movement }: { movement: CashMovement }) {
     try {
       const nextState = await voidCashMovementAction(initialState, new FormData(event.currentTarget));
       setState(nextState);
-      if (nextState.ok) router.refresh();
+      if (nextState.ok) {
+        toast.success("Movimiento anulado");
+        router.refresh();
+      } else {
+        toast.error(nextState.message || "No se pudo anular el movimiento");
+      }
     } catch (error) {
-      setState({
-        ok: false,
-        message: error instanceof Error ? error.message : "No se pudo anular el movimiento.",
-        fieldErrors: {},
-      });
+      const message = error instanceof Error ? error.message : "No se pudo anular el movimiento.";
+      setState({ ok: false, message, fieldErrors: {} });
+      toast.error(message);
     } finally {
       setIsSubmitting(false);
     }
@@ -327,11 +334,11 @@ function CashMovementRow({ movement }: { movement: CashMovement }) {
       {state.message && !state.ok ? <Alert variant="error">{state.message}</Alert> : null}
       <form onSubmit={onSubmit} className="flex flex-wrap items-center gap-2">
         <input type="hidden" name="movement_id" value={movement.id} />
-        <input
-          type="text"
+        <Input
+          aria-label="Razón de anulación"
           name="void_reason"
           placeholder="Razon (opcional)"
-          className="h-9 w-40 rounded-md border border-app-border bg-app-surface px-2 text-xs text-text-strong placeholder:text-text-muted"
+          className="h-9 w-40 text-xs"
         />
         <Button type="submit" variant="secondary" disabled={isSubmitting}>
           {isSubmitting ? "Anulando..." : "Anular"}
@@ -365,28 +372,3 @@ export function toMoneyInputValue(value: string) {
   return `${integer}.${decimalParts.join("").slice(0, 2)}`;
 }
 
-function formatBusinessDate(value: string) {
-  const [year, month, day] = value.split("-");
-  if (!year || !month || !day) return value;
-  return `${day}/${month}/${year}`;
-}
-
-function formatDateTime(value: string, timezone: string) {
-  const parts = new Intl.DateTimeFormat("es-BO", {
-    timeZone: timezone,
-    year: "2-digit",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
-  }).formatToParts(new Date(value));
-  const part = (type: string) => parts.find((item) => item.type === type)?.value;
-  const day = part("day");
-  const month = part("month");
-  const year = part("year");
-  const hour = part("hour");
-  const minute = part("minute");
-  if (!day || !month || !year || !hour || !minute) return value;
-  return `${day}/${month}/${year}, ${hour}:${minute}`;
-}

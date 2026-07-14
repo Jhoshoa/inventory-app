@@ -1,22 +1,8 @@
 import { Badge } from "@/components/ui/Badge";
 import type { BillingStatus } from "@/features/settings/api/billing";
 import type { Session } from "@/lib/auth/session";
-
-const SUBSCRIPTION_LABELS: Record<string, string> = {
-  trial: "Prueba gratuita",
-  active: "Activo",
-  past_due: "Vencido",
-  expired: "Suspendido",
-  canceled: "Cancelado",
-};
-
-const SUBSCRIPTION_VARIANTS: Record<string, "info" | "success" | "warning" | "danger" | "default"> = {
-  trial: "info",
-  active: "success",
-  past_due: "warning",
-  expired: "danger",
-  canceled: "default",
-};
+import { SUBSCRIPTION_LABELS, SUBSCRIPTION_VARIANTS } from "@/lib/constants/subscription";
+import { formatDateLong } from "@/lib/format/datetime";
 
 const ACCESS_LABELS: Record<string, string> = {
   active: "Activo",
@@ -64,7 +50,7 @@ export function BillingSettings({
         />
         {billing.subscription_status === "trial" && billing.trial_expires_at ? (
           <>
-            <InfoItem label="Fin del periodo de prueba" value={formatDate(billing.trial_expires_at)} />
+            <InfoItem label="Fin del periodo de prueba" value={formatDateLong(billing.trial_expires_at)} />
             <InfoItem
               label="Dias restantes de prueba"
               value={billing.days_until_trial_ends !== null ? String(billing.days_until_trial_ends) : "—"}
@@ -73,7 +59,7 @@ export function BillingSettings({
         ) : null}
         {billing.subscription_status === "active" && billing.next_billing_date ? (
           <>
-            <InfoItem label="Proxima facturacion" value={formatDate(billing.next_billing_date)} />
+            <InfoItem label="Proxima facturacion" value={formatDateLong(billing.next_billing_date)} />
             <InfoItem
               label="Dias hasta facturacion"
               value={billing.days_until_next_billing !== null ? String(billing.days_until_next_billing) : "—"}
@@ -125,14 +111,3 @@ function InfoItem({
   );
 }
 
-function formatDate(dateStr: string) {
-  try {
-    return new Date(dateStr).toLocaleDateString("es-ES", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
-  } catch {
-    return dateStr;
-  }
-}

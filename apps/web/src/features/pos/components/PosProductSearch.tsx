@@ -5,11 +5,10 @@ import { ScanLine, Search } from "lucide-react";
 import { Alert } from "@/components/ui/Alert";
 import { Badge } from "@/components/ui/Badge";
 import { Input } from "@/components/ui/Input";
+import { SEARCH_DEBOUNCE_MS } from "@/lib/constants/ui";
 import { MIN_PRODUCT_SEARCH_LENGTH } from "@/features/products/schemas";
 import { PosProductResults } from "./PosProductResults";
 import type { PosProduct, PosProductListResponse } from "../types";
-
-const POS_SEARCH_DEBOUNCE_MS = 500;
 
 export interface PosProductSearchHandle {
   clear: () => void;
@@ -75,7 +74,7 @@ export const PosProductSearch = forwardRef<PosProductSearchHandle, {
           setError(searchError instanceof Error ? searchError.message : "Error de busqueda");
         }
       }
-    }, POS_SEARCH_DEBOUNCE_MS);
+    }, SEARCH_DEBOUNCE_MS);
 
     return () => {
       cancelled = true;

@@ -88,7 +88,7 @@ export function LoginForm({ verified }: { verified?: boolean }) {
             type="button"
             onClick={() => setShowPassword(!showPassword)}
             className="absolute right-2 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-strong"
-            tabIndex={-1}
+            aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
           >
             {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
           </button>
@@ -103,7 +103,7 @@ export function LoginForm({ verified }: { verified?: boolean }) {
           <span className="w-full border-t" />
         </div>
         <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-card px-2 text-muted-foreground">O continúa con</span>
+          <span className="bg-app-surface px-2 text-text-muted">O continúa con</span>
         </div>
       </div>
       <Button

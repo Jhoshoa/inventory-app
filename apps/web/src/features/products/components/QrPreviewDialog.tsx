@@ -2,10 +2,11 @@
 
 /* eslint-disable @next/next/no-img-element */
 
+import { useId } from "react";
 import { Download, Loader2, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/Button";
-import { DialogSurface } from "@/components/ui/Dialog";
+import { DialogOverlay, DialogSurface } from "@/components/ui/Dialog";
 import { generateQrSvg, svgToDataUri, toQrFilename } from "../qr";
 
 interface QrPreviewDialogProps {
@@ -25,6 +26,7 @@ export function QrPreviewDialog({
   const [svg, setSvg] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
+  const titleId = useId();
 
   useEffect(() => {
     if (!open || !normalizedCode) {
@@ -62,19 +64,11 @@ export function QrPreviewDialog({
   if (!open) return null;
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-text-strong/40 p-4"
-      role="presentation"
-    >
-      <DialogSurface
-        className="w-full max-w-md space-y-5"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="qr-preview-title"
-      >
+    <DialogOverlay>
+      <DialogSurface titleId={titleId} onClose={onClose} className="w-full max-w-md space-y-5">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <h2 id="qr-preview-title" className="text-lg font-semibold text-text-strong">
+            <h2 id={titleId} className="text-lg font-semibold text-text-strong">
               QR del producto
             </h2>
             {productName ? (
@@ -124,7 +118,7 @@ export function QrPreviewDialog({
           </Button>
         </div>
       </DialogSurface>
-    </div>
+    </DialogOverlay>
   );
 }
 

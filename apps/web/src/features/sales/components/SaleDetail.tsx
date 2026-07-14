@@ -11,6 +11,7 @@ import {
   TableText,
 } from "@/components/ui/Table";
 import { formatCurrency } from "@/lib/format/currency";
+import { formatDateTimeShort } from "@/lib/format/datetime";
 import { canVoidSale } from "@/lib/auth/permissions";
 import type { UserRole } from "@/lib/auth/types";
 import { SaleStatusBadge } from "./SaleStatusBadge";
@@ -31,7 +32,7 @@ export function SaleDetail({ sale, role }: { sale: Sale; role: UserRole }) {
           />
         }
         title={`Venta ${sale.id.slice(0, 8)}`}
-        description={`${formatDate(sale.created_at)} - ${sale.payment_method}`}
+        description={`${formatDateTimeShort(sale.created_at)} - ${sale.payment_method}`}
         actions={
           <div className="flex flex-wrap items-center gap-2">
             <SaleStatusBadge status={sale.status} />
@@ -42,7 +43,7 @@ export function SaleDetail({ sale, role }: { sale: Sale; role: UserRole }) {
 
       {sale.status === "voided" ? (
         <div className="rounded-lg border border-status-dangerBorder bg-status-dangerBg p-4 text-sm text-status-danger">
-          Anulada {sale.voided_at ? formatDate(sale.voided_at) : ""}:{" "}
+          Anulada {sale.voided_at ? formatDateTimeShort(sale.voided_at) : ""}:{" "}
           {sale.void_reason ?? "Sin razon registrada"}
         </div>
       ) : null}
@@ -81,11 +82,4 @@ export function SaleDetail({ sale, role }: { sale: Sale; role: UserRole }) {
       </div>
     </PageSection>
   );
-}
-
-function formatDate(value: string) {
-  return new Intl.DateTimeFormat("es-BO", {
-    dateStyle: "short",
-    timeStyle: "short",
-  }).format(new Date(value));
 }

@@ -3,6 +3,7 @@
 import { useActionState, useEffect, useMemo, useRef, useState } from "react";
 import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
+import { Field } from "@/components/ui/Field";
 import { FieldError } from "@/components/ui/FieldError";
 import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
@@ -285,24 +286,4 @@ export function ProductForm({
 
 function generateScanCode() {
   return `P-${crypto.randomUUID().replaceAll("-", "").slice(0, 12).toUpperCase()}`;
-}
-
-function Field({
-  name,
-  label,
-  error,
-  children,
-}: {
-  name: string;
-  label: string;
-  error?: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="space-y-2">
-      <Label htmlFor={name}>{label}</Label>
-      {children}
-      <FieldError message={error} />
-    </div>
-  );
 }

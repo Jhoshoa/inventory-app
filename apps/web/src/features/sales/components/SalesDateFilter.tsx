@@ -118,7 +118,7 @@ export function SalesDateFilter({
         </p>
       ) : null}
       {error ? (
-        <p className="mt-2 text-sm font-medium text-danger-700" role="alert">
+        <p className="mt-2 text-sm font-medium text-status-danger" role="alert">
           {error}
         </p>
       ) : null}

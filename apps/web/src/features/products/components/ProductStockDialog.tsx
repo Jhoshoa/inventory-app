@@ -1,12 +1,13 @@
 "use client";
 
-import type { FormEvent } from "react";
+import { useId, type FormEvent } from "react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { PackagePlus } from "lucide-react";
+import { toast } from "sonner";
 import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
-import { DialogSurface } from "@/components/ui/Dialog";
+import { DialogOverlay, DialogSurface } from "@/components/ui/Dialog";
 import { FieldError } from "@/components/ui/FieldError";
 import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
@@ -32,6 +33,7 @@ export function ProductStockDialog({
   const [state, setState] = useState<ProductActionState>(initialProductActionState);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
+  const titleId = useId();
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -42,13 +44,16 @@ export function ProductStockDialog({
     try {
       const nextState = await adjustStockAction(initialProductActionState, new FormData(event.currentTarget));
       setState(nextState);
-      if (nextState.ok) router.refresh();
+      if (nextState.ok) {
+        toast.success("Stock actualizado");
+        router.refresh();
+      } else {
+        toast.error(nextState.message || "No se pudo ajustar el stock");
+      }
     } catch (error) {
-      setState({
-        ok: false,
-        message: error instanceof Error ? error.message : "No se pudo ajustar el stock.",
-        fieldErrors: {},
-      });
+      const message = error instanceof Error ? error.message : "No se pudo ajustar el stock.";
+      setState({ ok: false, message, fieldErrors: {} });
+      toast.error(message);
     } finally {
       setIsSubmitting(false);
     }
@@ -66,9 +71,9 @@ export function ProductStockDialog({
         </Button>
       )}
       {open ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-text-strong/30 p-4">
-          <DialogSurface className="w-full max-w-md">
-            <h2 className="text-base font-semibold text-text-strong">
+        <DialogOverlay>
+          <DialogSurface titleId={titleId} onClose={() => setOpen(false)} className="w-full max-w-md">
+            <h2 id={titleId} className="text-base font-semibold text-text-strong">
               Ajustar stock
             </h2>
             <p className="mt-1 text-sm text-text-muted">{productName}</p>
@@ -95,7 +100,7 @@ export function ProductStockDialog({
               </div>
             </form>
           </DialogSurface>
-        </div>
+        </DialogOverlay>
       ) : null}
     </>
   );

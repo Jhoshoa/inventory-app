@@ -1,23 +1,30 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useState } from "react";
 import { Button } from "./Button";
-import { DialogSurface } from "./Dialog";
+import { DialogOverlay, DialogSurface } from "./Dialog";
 
 export function ConfirmDialog({
   title,
   description,
   triggerLabel,
   confirmLabel,
+  onConfirm,
   children,
 }: {
   title: string;
   description: string;
   triggerLabel: string;
   confirmLabel: string;
-  children: (close: () => void) => React.ReactNode;
+  onConfirm: (close: () => void) => void;
+  children?: (close: () => void) => React.ReactNode;
 }) {
   const [open, setOpen] = useState(false);
+  const titleId = useId();
+
+  function close() {
+    setOpen(false);
+  }
 
   if (!open) {
     return (
@@ -28,20 +35,26 @@ export function ConfirmDialog({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-text-strong/40 p-4">
-      <DialogSurface className="w-full max-w-md">
+    <DialogOverlay>
+      <DialogSurface titleId={titleId} onClose={close} className="w-full max-w-md">
         <div className="space-y-2">
-          <h2 className="text-base font-semibold text-text-strong">{title}</h2>
+          <h2 id={titleId} className="text-base font-semibold text-text-strong">
+            {title}
+          </h2>
           <p className="text-sm text-text-muted">{description}</p>
         </div>
-        <div className="mt-5 space-y-3">{children(() => setOpen(false))}</div>
+        {children ? (
+          <div className="mt-5 space-y-3">{children(close)}</div>
+        ) : null}
         <div className="mt-4 flex justify-end gap-2">
-          <Button variant="secondary" onClick={() => setOpen(false)}>
+          <Button variant="secondary" onClick={close}>
             Cancelar
           </Button>
-          <span className="sr-only">{confirmLabel}</span>
+          <Button variant="danger" onClick={() => onConfirm(close)}>
+            {confirmLabel}
+          </Button>
         </div>
       </DialogSurface>
-    </div>
+    </DialogOverlay>
   );
 }

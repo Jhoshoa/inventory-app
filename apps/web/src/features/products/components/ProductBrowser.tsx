@@ -2,10 +2,13 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import { ChevronLeft, ChevronRight, PackagePlus } from "lucide-react";
+import { PackagePlus } from "lucide-react";
 import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { Pagination } from "@/components/ui/Pagination";
+import { readErrorMessage } from "@/lib/api/errors";
+import { SEARCH_DEBOUNCE_MS } from "@/lib/constants/ui";
 import { canManageProducts } from "@/lib/auth/permissions";
 import type { UserRole } from "@/lib/auth/types";
 import type { ProductCategory } from "@/features/product-categories/types";
@@ -16,8 +19,6 @@ import {
 import type { ProductListResponse, ProductSearchParams } from "../types";
 import { ProductFilters } from "./ProductFilters";
 import { ProductTable } from "./ProductTable";
-
-const PRODUCT_SEARCH_DEBOUNCE_MS = 500;
 
 export function ProductBrowser({
   initialParams,
@@ -45,7 +46,7 @@ export function ProductBrowser({
 
       if ((params.q ?? undefined) === nextQuery) return;
       setParams((current) => ({ ...current, q: nextQuery, offset: 0 }));
-    }, PRODUCT_SEARCH_DEBOUNCE_MS);
+    }, SEARCH_DEBOUNCE_MS);
 
     return () => window.clearTimeout(timeout);
   }, [params.q, query]);
@@ -67,7 +68,7 @@ export function ProductBrowser({
       signal: controller.signal,
     })
       .then(async (response) => {
-        if (!response.ok) throw new Error(await readErrorMessage(response));
+        if (!response.ok) throw new Error(await readErrorMessage(response, "No se pudieron cargar los productos"));
         return response.json() as Promise<ProductListResponse>;
       })
       .then((data) => {
@@ -136,63 +137,16 @@ export function ProductBrowser({
         ) : (
           <div className="rounded-lg border border-app-border bg-app-surface shadow-panel">
             <ProductTable products={products.items} role={role} />
-            <ProductPagination
+            <Pagination
               total={products.total}
               limit={products.limit}
               offset={products.offset}
-              onChange={goToOffset}
+              onNavigate={goToOffset}
             />
           </div>
         )
       ) : null}
     </>
-  );
-}
-
-function ProductPagination({
-  total,
-  limit,
-  offset,
-  onChange,
-}: {
-  total: number;
-  limit: number;
-  offset: number;
-  onChange: (offset: number) => void;
-}) {
-  const from = total === 0 ? 0 : offset + 1;
-  const to = Math.min(offset + limit, total);
-  const previousOffset = Math.max(offset - limit, 0);
-  const nextOffset = offset + limit;
-  const hasPrevious = offset > 0;
-  const hasNext = nextOffset < total;
-
-  return (
-    <div className="flex flex-col gap-3 border-t border-app-border bg-app-surface px-4 py-3 text-sm text-text-muted sm:flex-row sm:items-center sm:justify-between">
-      <p>
-        Mostrando {from}-{to} de {total}
-      </p>
-      <div className="flex items-center gap-2">
-        <Button
-          variant="secondary"
-          type="button"
-          disabled={!hasPrevious}
-          onClick={() => onChange(previousOffset)}
-        >
-          <ChevronLeft className="h-4 w-4" aria-hidden />
-          Anterior
-        </Button>
-        <Button
-          variant="secondary"
-          type="button"
-          disabled={!hasNext}
-          onClick={() => onChange(nextOffset)}
-        >
-          Siguiente
-          <ChevronRight className="h-4 w-4" aria-hidden />
-        </Button>
-      </div>
-    </div>
   );
 }
 
@@ -239,13 +193,4 @@ function InlineTableSkeleton() {
   );
 }
 
-async function readErrorMessage(response: Response) {
-  try {
-    const payload = await response.json();
-    if (typeof payload?.message === "string") return payload.message;
-    if (typeof payload?.detail === "string") return payload.detail;
-  } catch {
-    return "No se pudieron cargar los productos";
-  }
-  return "No se pudieron cargar los productos";
-}
+

@@ -65,6 +65,20 @@ async function readBody(response: Response): Promise<unknown> {
   return response.text().catch(() => null);
 }
 
+export async function readErrorMessage(
+  response: Response,
+  fallback = "Error inesperado",
+): Promise<string> {
+  try {
+    const payload = await response.json();
+    if (typeof payload?.message === "string") return payload.message;
+    if (typeof payload?.detail === "string") return payload.detail;
+  } catch {
+    return fallback;
+  }
+  return fallback;
+}
+
 function getErrorMessage(details: unknown) {
   if (typeof details === "string" && details.length > 0) return details;
   if (!details || typeof details !== "object") return null;

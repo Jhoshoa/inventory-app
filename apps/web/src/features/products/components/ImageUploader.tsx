@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { Loader2 } from "lucide-react";
 import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
 import { errorFromResponse } from "@/lib/api/errors";
@@ -306,26 +307,7 @@ export function ImageUploader({
       {state === "uploading" ? (
         <div className="flex aspect-square w-full items-center justify-center rounded-lg border border-app-border bg-app-surface-muted">
           <div className="flex flex-col items-center gap-2">
-            <svg
-              className="h-8 w-8 animate-spin text-brand-700"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-            >
-              <circle
-                className="opacity-25"
-                cx="12"
-                cy="12"
-                r="10"
-                stroke="currentColor"
-                strokeWidth="4"
-              />
-              <path
-                className="opacity-75"
-                fill="currentColor"
-                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-              />
-            </svg>
+            <Loader2 className="h-8 w-8 animate-spin text-brand-700" />
             <p className="text-sm text-text-muted">Subiendo foto...</p>
           </div>
         </div>
@@ -385,6 +367,10 @@ export function ImageUploader({
             onDrop={handleDrop}
             onDragOver={handleDragOver}
             onClick={() => fileInputRef.current?.click()}
+            onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); fileInputRef.current?.click(); } }}
+            role="button"
+            tabIndex={0}
+            aria-label="Arrastra una imagen aqui o haz clic para seleccionar"
             className="flex aspect-square w-full cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-app-border bg-app-surface-muted transition-colors hover:border-brand-700 hover:bg-app-surface"
           >
             <svg

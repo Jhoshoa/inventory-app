@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { Toaster } from "@/components/ui/Toaster";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -24,7 +25,10 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="es">
-      <body className="bg-app-background text-text-strong antialiased">{children}</body>
+      <body className="bg-app-background text-text-strong antialiased">
+        {children}
+        <Toaster />
+      </body>
     </html>
   );
 }

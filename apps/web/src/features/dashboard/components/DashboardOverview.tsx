@@ -23,6 +23,7 @@ import {
   TableText,
 } from "@/components/ui/Table";
 import { formatCurrency } from "@/lib/format/currency";
+import { formatDateTimeShort, formatBusinessDate } from "@/lib/format/datetime";
 import type { UserRole } from "@/lib/auth/types";
 import { StoreDayStatusPanel } from "@/features/store-day/components/StoreDayStatusPanel";
 import type { StoreDayResult } from "@/features/store-day/types";
@@ -175,7 +176,7 @@ function LatestSalesPanel({ sales }: { sales: DashboardSale[] }) {
                   {formatCurrency(sale.total)}
                 </TableCell>
                 <TableCell>
-                  {sale.created_at ? formatDate(sale.created_at) : "Sin fecha"}
+                  {sale.created_at ? formatDateTimeShort(sale.created_at) : "Sin fecha"}
                 </TableCell>
               </TableRow>
             ))
@@ -301,13 +302,6 @@ function saleQuantity(sale: DashboardSale) {
   return sale.items.reduce((total, item) => total + item.quantity, 0);
 }
 
-function formatDate(value: string) {
-  return new Intl.DateTimeFormat("es-BO", {
-    dateStyle: "short",
-    timeStyle: "short",
-  }).format(new Date(value));
-}
-
 function MetricCard({
   label,
   value,
@@ -378,12 +372,4 @@ function periodLabel(data: DashboardSummary) {
   }
 
   return `${formatBusinessDate(data.from_date)} - ${formatBusinessDate(data.to_date)}`;
-}
-
-function formatBusinessDate(value: string) {
-  return new Intl.DateTimeFormat("es-BO", {
-    day: "2-digit",
-    month: "short",
-    timeZone: "UTC",
-  }).format(new Date(`${value}T00:00:00.000Z`));
 }

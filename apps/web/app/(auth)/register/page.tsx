@@ -146,12 +146,12 @@ export default function RegisterPage() {
               type="button"
               onClick={() => setShowPassword(!showPassword)}
               className="absolute right-2 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-strong"
-              tabIndex={-1}
+              aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
             >
               {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
             </button>
           </div>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-text-muted">
             Mínimo 8 caracteres, una mayúscula, una minúscula, un número y un carácter especial.
           </p>
           <FieldError message={errors.password} />

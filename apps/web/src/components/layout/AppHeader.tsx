@@ -2,21 +2,8 @@ import { LogOut, Store } from "lucide-react";
 import type { Session } from "@/lib/auth/session";
 import { LogoutButton } from "@/features/auth/components/LogoutButton";
 import { Badge } from "@/components/ui/Badge";
+import { SUBSCRIPTION_LABELS, SUBSCRIPTION_VARIANTS } from "@/lib/constants/subscription";
 import { MobileNavDrawer } from "./MobileNavDrawer";
-
-const SUBSCRIPTION_LABELS: Record<string, string> = {
-  trial: "Prueba",
-  active: "Suscripto",
-  past_due: "Vencido",
-  expired: "Suspendido",
-};
-
-const SUBSCRIPTION_VARIANTS: Record<string, "info" | "success" | "warning" | "danger"> = {
-  trial: "info",
-  active: "success",
-  past_due: "warning",
-  expired: "danger",
-};
 
 export function AppHeader({ session }: { session: Session }) {
   const subLabel = session.subscriptionStatus

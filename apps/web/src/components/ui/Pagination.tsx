@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { Button } from "./Button";
 
 export function Pagination({
   basePath,
@@ -7,12 +8,14 @@ export function Pagination({
   total,
   limit,
   offset,
+  onNavigate,
 }: {
-  basePath: string;
-  searchParams: URLSearchParams;
+  basePath?: string;
+  searchParams?: URLSearchParams;
   total: number;
   limit: number;
   offset: number;
+  onNavigate?: (offset: number) => void;
 }) {
   const from = total === 0 ? 0 : offset + 1;
   const to = Math.min(offset + limit, total);
@@ -27,18 +30,43 @@ export function Pagination({
         Mostrando {from}-{to} de {total}
       </p>
       <div className="flex items-center gap-2">
-        <PageLink
-          disabled={!hasPrevious}
-          href={hrefFor(basePath, searchParams, previousOffset)}
-          label="Anterior"
-          icon="previous"
-        />
-        <PageLink
-          disabled={!hasNext}
-          href={hrefFor(basePath, searchParams, nextOffset)}
-          label="Siguiente"
-          icon="next"
-        />
+        {onNavigate ? (
+          <>
+            <Button
+              variant="secondary"
+              type="button"
+              disabled={!hasPrevious}
+              onClick={() => onNavigate(previousOffset)}
+            >
+              <ChevronLeft className="h-4 w-4" aria-hidden />
+              Anterior
+            </Button>
+            <Button
+              variant="secondary"
+              type="button"
+              disabled={!hasNext}
+              onClick={() => onNavigate(nextOffset)}
+            >
+              Siguiente
+              <ChevronRight className="h-4 w-4" aria-hidden />
+            </Button>
+          </>
+        ) : (
+          <>
+            <PageLink
+              disabled={!hasPrevious}
+              href={hrefFor(basePath!, searchParams!, previousOffset)}
+              label="Anterior"
+              icon="previous"
+            />
+            <PageLink
+              disabled={!hasNext}
+              href={hrefFor(basePath!, searchParams!, nextOffset)}
+              label="Siguiente"
+              icon="next"
+            />
+          </>
+        )}
       </div>
     </div>
   );

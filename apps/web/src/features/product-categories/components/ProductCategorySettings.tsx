@@ -3,6 +3,7 @@
 import type { FormEvent } from "react";
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { Alert } from "@/components/ui/Alert";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
@@ -35,14 +36,7 @@ export function ProductCategorySettings({ categories }: { categories: ProductCat
   const [deactivatingCategoryId, setDeactivatingCategoryId] = useState<string | null>(null);
   const router = useRouter();
   const [visibleCategories, setVisibleCategories] = useState(categories);
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
   const createFormRef = useRef<HTMLFormElement>(null);
-
-  function showToast(message?: string) {
-    if (!message) return;
-    setToastMessage(message);
-    window.setTimeout(() => setToastMessage(null), 3000);
-  }
 
   async function onCreateSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -56,15 +50,15 @@ export function ProductCategorySettings({ categories }: { categories: ProductCat
       if (nextState.ok && nextState.category) {
         setVisibleCategories((current) => upsertCategory(current, nextState.category as ProductCategory));
         createFormRef.current?.reset();
-        showToast(nextState.message);
+        toast.success(nextState.message || "Categoria creada");
         router.refresh();
+      } else if (!nextState.ok) {
+        toast.error(nextState.message || "No se pudo crear la categoria");
       }
     } catch (error) {
-      setCreateState({
-        ok: false,
-        message: error instanceof Error ? error.message : "No se pudo crear la categoria.",
-        fieldErrors: {},
-      });
+      const message = error instanceof Error ? error.message : "No se pudo crear la categoria.";
+      setCreateState({ ok: false, message, fieldErrors: {} });
+      toast.error(message);
     } finally {
       setIsCreating(false);
     }
@@ -83,15 +77,15 @@ export function ProductCategorySettings({ categories }: { categories: ProductCat
       setDeactivateState(nextState);
       if (nextState.ok && nextState.category) {
         setVisibleCategories((current) => upsertCategory(current, nextState.category as ProductCategory));
-        showToast(nextState.message);
+        toast.success(nextState.message || "Categoria desactivada");
         router.refresh();
+      } else if (!nextState.ok) {
+        toast.error(nextState.message || "No se pudo desactivar la categoria");
       }
     } catch (error) {
-      setDeactivateState({
-        ok: false,
-        message: error instanceof Error ? error.message : "No se pudo desactivar la categoria.",
-        fieldErrors: {},
-      });
+      const message = error instanceof Error ? error.message : "No se pudo desactivar la categoria.";
+      setDeactivateState({ ok: false, message, fieldErrors: {} });
+      toast.error(message);
     } finally {
       setDeactivatingCategoryId(null);
     }
@@ -102,8 +96,6 @@ export function ProductCategorySettings({ categories }: { categories: ProductCat
       title="Categorias de productos"
       description="Configura prefijos para generar SKUs como COM000001."
     >
-      {toastMessage ? <Toast message={toastMessage} onClose={() => setToastMessage(null)} /> : null}
-
       {createState.message && !createState.ok ? <Alert variant="error">{createState.message}</Alert> : null}
       {deactivateState.message && !deactivateState.ok ? (
         <Alert variant="error">{deactivateState.message}</Alert>
@@ -199,25 +191,4 @@ function upsertCategory(categories: ProductCategory[], category: ProductCategory
     if (left.is_active !== right.is_active) return left.is_active ? -1 : 1;
     return left.name.localeCompare(right.name);
   });
-}
-
-function Toast({ message, onClose }: { message: string; onClose: () => void }) {
-  return (
-    <div
-      role="status"
-      aria-live="polite"
-      className="fixed right-4 top-20 z-50 flex max-w-sm items-center gap-3 rounded-md border border-status-successBorder bg-app-surface px-4 py-3 text-sm font-medium text-status-success shadow-floating"
-    >
-      <span className="h-2 w-2 rounded-full bg-status-success" aria-hidden="true" />
-      <span className="flex-1">{message}</span>
-      <button
-        type="button"
-        className="rounded px-1 text-status-success hover:bg-status-successBg focus:outline-none focus:ring-2 focus:ring-focus"
-        onClick={onClose}
-        aria-label="Cerrar notificacion"
-      >
-        x
-      </button>
-    </div>
-  );
 }
