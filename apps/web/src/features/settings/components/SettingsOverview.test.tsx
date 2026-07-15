@@ -8,6 +8,10 @@ vi.mock("next/navigation", () => ({
   useRouter: () => ({ refresh: vi.fn() }),
 }));
 
+vi.mock("./StoreEditorDialog", () => ({
+  StoreEditorDialog: () => <div data-testid="store-editor-dialog"><button>Editar</button></div>,
+}));
+
 const session: Session = {
   userId: "user-1",
   email: "owner@example.com",
@@ -57,6 +61,60 @@ describe("SettingsOverview", () => {
     expect(screen.getByRole("heading", { name: "Gestion de usuarios" })).toBeInTheDocument();
     expect(screen.getByText("Planificado")).toBeInTheDocument();
     expect(screen.getByText("Propietario tendrá acceso")).toBeInTheDocument();
+  });
+
+  it("shows store data when storeData is provided", () => {
+    render(
+      <SettingsOverview
+        session={session}
+        storeData={{
+          id: "store-1",
+          name: "Mi Tienda Editada",
+          address: "Av. Siempre Viva 123",
+          phone: "77712345",
+          is_active: true,
+        }}
+        storeDay={{ ok: true, data: storeDay }}
+        storeDayEvents={{
+          ok: true,
+          data: [
+            {
+              id: "event-1",
+              business_day_id: "day-1",
+              store_id: "store-1",
+              event_type: "open",
+              note: "Inicio",
+              created_by_user_id: "user-1",
+              created_at: "2026-05-21T12:00:00Z",
+            },
+          ],
+        }}
+      />,
+    );
+
+    expect(screen.getByText("Mi Tienda Editada")).toBeInTheDocument();
+    expect(screen.getByText("Av. Siempre Viva 123")).toBeInTheDocument();
+    expect(screen.getByText("77712345")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /editar/i })).toBeInTheDocument();
+  });
+
+  it("hides edit button for cashiers even with storeData", () => {
+    render(
+      <SettingsOverview
+        session={{ ...session, role: "cashier" }}
+        storeData={{
+          id: "store-1",
+          name: "Mi Tienda",
+          address: null,
+          phone: null,
+          is_active: true,
+        }}
+        storeDay={{ ok: true, data: storeDay }}
+      />,
+    );
+
+    expect(screen.getByText("Mi Tienda")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /editar/i })).not.toBeInTheDocument();
   });
 
   it("renders planned users as read-only context for cashiers", () => {

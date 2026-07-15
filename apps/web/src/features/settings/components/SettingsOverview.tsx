@@ -13,10 +13,13 @@ import type { ProductCategoryListResult } from "@/features/product-categories/ty
 import { StoreDayEventTimeline } from "@/features/store-day/components/StoreDayEventTimeline";
 import { StoreDayStatusPanel } from "@/features/store-day/components/StoreDayStatusPanel";
 import type { CashMovementListResult, StoreDayClosingPreviewResult, StoreDayEventListResult, StoreDayResult } from "@/features/store-day/types";
+import { StoreEditorDialog } from "./StoreEditorDialog";
+import type { StoreResponse } from "../types";
 import { PermissionMatrix } from "./PermissionMatrix";
 
 export function SettingsOverview({
   session,
+  storeData,
   storeDay,
   storeDayEvents,
   closingPreview,
@@ -24,6 +27,7 @@ export function SettingsOverview({
   productCategories,
 }: {
   session: Session;
+  storeData?: StoreResponse;
   storeDay?: StoreDayResult;
   storeDayEvents?: StoreDayEventListResult;
   closingPreview?: StoreDayClosingPreviewResult;
@@ -49,10 +53,24 @@ export function SettingsOverview({
         <AdminSummaryCard
           title="Tienda"
           description="Datos base del negocio activo."
-          items={[
-            { label: "Nombre", value: session.storeName },
-            { label: "ID tienda", value: session.storeId ? shortId(session.storeId) : "N/A" },
-          ]}
+          items={
+            storeData
+              ? [
+                  { label: "Nombre", value: storeData.name },
+                  { label: "ID tienda", value: shortId(session.storeId ?? "") },
+                  { label: "Direccion", value: storeData.address ?? "—" },
+                  { label: "Telefono", value: storeData.phone ?? "—" },
+                ]
+              : [
+                  { label: "Nombre", value: session.storeName },
+                  { label: "ID tienda", value: shortId(session.storeId ?? "") },
+                ]
+          }
+          action={
+            session.role === "owner" && storeData
+              ? <StoreEditorDialog storeData={storeData} />
+              : undefined
+          }
         />
         <AdminSummaryCard
           title="Usuario actual"
