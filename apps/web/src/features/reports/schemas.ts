@@ -24,7 +24,7 @@ export function parseReportSearchParams(
   const rangeValue = firstValue(searchParams.range);
   const range = rangePresets.has(rangeValue as ReportRangePreset)
     ? (rangeValue as ReportRangePreset)
-    : "month";
+    : "today";
   const from = normalizeDateInput(firstValue(searchParams.from));
   const to = normalizeDateInput(firstValue(searchParams.to));
 

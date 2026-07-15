@@ -12,10 +12,10 @@ import {
 const now = new Date("2026-05-20T12:00:00.000Z");
 
 describe("parseReportSearchParams", () => {
-  it("applies a default current month range", () => {
+  it("applies a default today range when no range param is provided", () => {
     expect(parseReportSearchParams({}, now)).toEqual({
-      range: "month",
-      from: "2026-05-01",
+      range: "today",
+      from: "2026-05-20",
       to: "2026-05-20",
     });
   });
