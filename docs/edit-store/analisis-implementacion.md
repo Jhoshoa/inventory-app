@@ -20,13 +20,16 @@
 - **No se necesita migracion** — las columnas ya existen
 - **`GET /api/v1/store`** — endpoint existente en `store.py:21`, requiere solo `get_current_user`
 
-### Frontend (falta implementar)
-- `SettingsOverview.tsx` — tarjeta "Tienda" solo muestra `session.storeName` y storeId en read-only
-- No hay tipos StoreResponseDTO/StoreUpdateDTO en frontend
-- No hay API call para `GET /store` ni `PATCH /store`
-- No hay schemas de validacion
-- No hay server action
-- No hay formulario de edicion
+### Frontend (implementado)
+- `types.ts` — `StoreResponse`, `StoreFormValues`, `StoreEditorState`
+- `api.ts` — `getStore()` llama a `GET /store`
+- `schemas.ts` — `validateStoreForm()` con reglas de negocio
+- `actions.ts` — `updateStoreAction()` server action con validacion + PATCH /store + actualizacion de cookie de sesion
+- `components/StoreEditorDialog.tsx` — modal dialog (patron `ProductStockDialog`) con formulario de edicion
+- `components/StoreEditorDialog.test.tsx` — tests del dialog
+- `components/SettingsOverview.tsx` — tarjeta "Tienda" con datos via `storeData` prop y boton editor en slot `action` (solo owner)
+- `components/SettingsOverview.test.tsx` — tests actualizados con `storeData` mock
+- `app/(app)/dashboard/settings/page.tsx` — fetch `getStore()` y pasa a `SettingsOverview`
 
 ## 2. Analisis de Seguridad Multitenant (Backend)
 
@@ -88,31 +91,35 @@ PATCH /api/v1/store
 ```
 SettingsPage (server)
   ├── requireSession() + canViewSettings()
-  ├── GET /store → StoreResponseDTO (nueva llamada API)
+  ├── GET /store → StoreResponseDTO
   └── SettingsOverview (server component)
-       └── StoreEditorForm (client component)
+       ├── Tarjeta Tienda con InfoItems + action slot
+       └── StoreEditorDialog (client component)
+            ├── Boton "Editar" → abre modal
             ├── Formulario con name, address, phone
-            ├── updateStoreAction (server action)
+            ├── onSubmit → updateStoreAction (server action)
             │    ├── Validar campos
             │    ├── getAuthToken()
             │    ├── PATCH /store { name, address, phone }
+            │    ├── Actualizar cookie de sesion (store_name)
             │    └── revalidatePath("/dashboard/settings")
-            └── toast.success/error (sonner)
+            ├── toast.success/error (sonner)
+            └── router.refresh() → header refleja nuevo nombre
 ```
 
 ### 3.2 Archivos a Crear / Modificar
 
 | Archivo | Accion | Proposito |
 |---------|--------|-----------|
-| `apps/web/src/features/settings/api.ts` | **CREAR** | Funcion para fetch de store + tipos |
-| `apps/web/src/features/settings/schemas.ts` | **CREAR** | Validacion de formulario |
-| `apps/web/src/features/settings/types.ts` | **CREAR** | Tipos StoreDTO, StoreUpdateDTO |
-| `apps/web/src/features/settings/actions.ts` | **CREAR** | Server action `updateStoreAction` |
-| `apps/web/src/features/settings/components/StoreEditorForm.tsx` | **CREAR** | Componente de formulario |
-| `apps/web/src/features/settings/components/StoreEditorForm.test.tsx` | **CREAR** | Tests del formulario |
-| `apps/web/src/features/settings/components/SettingsOverview.tsx` | **MODIFICAR** | Integrar StoreEditorForm + pasar storeData |
-| `apps/web/src/features/settings/components/SettingsOverview.test.tsx` | **MODIFICAR** | Actualizar tests con storeData prop |
-| `apps/web/app/(app)/dashboard/settings/page.tsx` | **MODIFICAR** | Fetch `GET /store` y pasar a SettingsOverview |
+| `apps/web/src/features/settings/types.ts` | **CREAR** | Tipos StoreResponse, StoreFormValues, StoreEditorState |
+| `apps/web/src/features/settings/api.ts` | **CREAR** | Funcion `getStore()` para GET /store |
+| `apps/web/src/features/settings/schemas.ts` | **CREAR** | `validateStoreForm()` |
+| `apps/web/src/features/settings/actions.ts` | **CREAR** | Server action `updateStoreAction` + actualiza cookie de sesion |
+| `apps/web/src/features/settings/components/StoreEditorDialog.tsx` | **CREAR** | Dialog modal con formulario (patron ProductStockDialog) |
+| `apps/web/src/features/settings/components/StoreEditorDialog.test.tsx` | **CREAR** | Tests del dialog |
+| `apps/web/src/features/settings/components/SettingsOverview.tsx` | **MODIFICAR** | Aceptar `storeData` prop, StoreEditorDialog en slot `action` de tarjeta Tienda |
+| `apps/web/src/features/settings/components/SettingsOverview.test.tsx` | **MODIFICAR** | Mock StoreEditorDialog, test con storeData + visibilidad por rol |
+| `apps/web/app/(app)/dashboard/settings/page.tsx` | **MODIFICAR** | Fetch `getStore()` y pasar a SettingsOverview |
 
 ## 4. Diseno de Cada Componente
 
@@ -125,12 +132,6 @@ export interface StoreResponse {
   address: string | null;
   phone: string | null;
   is_active: boolean;
-}
-
-export interface StoreUpdateInput {
-  name?: string;
-  address?: string | null;
-  phone?: string | null;
 }
 
 export interface StoreFormValues {
@@ -185,14 +186,6 @@ export function validateStoreForm(values: StoreFormValues): Record<string, strin
 
   return errors;
 }
-
-export function formDataToStoreValues(formData: FormData, initial: StoreFormValues): StoreFormValues {
-  return {
-    name: (formData.get("name") as string)?.trim() || initial.name,
-    address: (formData.get("address") as string)?.trim() || "",
-    phone: (formData.get("phone") as string)?.trim() || "",
-  };
-}
 ```
 
 ### 4.4 Server Action (`actions.ts`)
@@ -201,9 +194,10 @@ export function formDataToStoreValues(formData: FormData, initial: StoreFormValu
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
 import { apiRequest } from "@/lib/api/client";
-import { getAuthToken } from "@/lib/auth/session";
-import { formDataToStoreValues, validateStoreForm } from "./schemas";
+import { getAuthToken, SESSION_COOKIE, serializeSession } from "@/lib/auth/session";
+import { validateStoreForm } from "./schemas";
 import type { StoreEditorState, StoreFormValues, StoreResponse } from "./types";
 
 export async function updateStoreAction(
@@ -243,159 +237,206 @@ export async function updateStoreAction(
     return { ok: false, message: result.error.message, fieldErrors: {} };
   }
 
+  // Sincronizar cookie de sesion para que el header refleje el nuevo nombre
+  const cookieStore = await cookies();
+  const rawSession = cookieStore.get(SESSION_COOKIE)?.value;
+  if (rawSession) {
+    try {
+      const user = JSON.parse(Buffer.from(rawSession, "base64url").toString("utf8"));
+      user.store_name = values.name;
+      cookieStore.set(SESSION_COOKIE, serializeSession(user), {
+        httpOnly: true,
+        sameSite: "lax",
+        secure: process.env.NODE_ENV === "production",
+        path: "/",
+        maxAge: 60 * 60 * 8,
+      });
+    } catch {
+      // skip updating session if it can't be parsed
+    }
+  }
+
   revalidatePath("/dashboard/settings");
   return { ok: true, message: "Tienda actualizada correctamente", fieldErrors: {} };
 }
 ```
 
-### 4.5 Componente StoreEditorForm
+### 4.5 Componente StoreEditorDialog
 
-**Patron:** Client component con `useState` para form state + `useActionState` (React 19) para server action.
+**Patron:** Client component con `useState` para dialog state + form `onSubmit` con `FormEvent`. Sigue el mismo patron que `ProductStockDialog`, `VoidSaleDialog`.
 
 ```tsx
 "use client";
 
-import { useActionState } from "react";
+import { type FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { Pencil } from "lucide-react";
 import { toast } from "sonner";
+import type { StoreResponse } from "@/features/settings/types";
 import { Button } from "@/components/ui/Button";
-import { Input } from "@/components/ui/Input";
-import { Alert } from "@/components/ui/Alert";
+import { Dialog, DialogTitle, DialogBody, DialogFooter } from "@/components/ui/Dialog";
 import { FieldError } from "@/components/ui/FieldError";
+import { Input } from "@/components/ui/Input";
+import { Label } from "@/components/ui/Label";
 import { updateStoreAction } from "../actions";
-import { validateStoreForm } from "../schemas";
-import type { StoreFormValues, StoreEditorState } from "../types";
+import type { StoreEditorState } from "../types";
 
-// Props: initial values + session role para conditional rendering
+const initialStoreEditorState: StoreEditorState = {
+  ok: false,
+  message: "",
+  fieldErrors: {},
+};
 
-export function StoreEditorForm({
-  initial,
-  isOwner,
-}: {
-  initial: StoreFormValues;
-  isOwner: boolean;
-}) {
+export function StoreEditorDialog({ storeData }: { storeData: StoreResponse }) {
+  const [open, setOpen] = useState(false);
+  const [state, setState] = useState<StoreEditorState>(initialStoreEditorState);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
-  const [formValues, setFormValues] = useState<StoreFormValues>(initial);
 
-  // Solo owner puede editar
-  if (!isOwner) {
-    return <ReadOnlyStoreInfo values={initial} />;
-  }
+  async function onSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (isSubmitting) return;
 
-  const [state, formAction, isPending] = useActionState<StoreEditorState, FormData>(
-    updateStoreAction,
-    { ok: true, message: "", fieldErrors: {} },
-  );
-
-  useEffect(() => {
-    if (!state.message) return;
-    if (state.ok) {
-      toast.success(state.message);
-      router.refresh();
-    } else if (!Object.keys(state.fieldErrors).length) {
-      toast.error(state.message);
+    setIsSubmitting(true);
+    setState(initialStoreEditorState);
+    try {
+      const nextState = await updateStoreAction(
+        initialStoreEditorState,
+        new FormData(event.currentTarget),
+      );
+      setState(nextState);
+      if (nextState.ok) {
+        toast.success(nextState.message);
+        setOpen(false);
+        router.refresh();
+      } else if (!Object.keys(nextState.fieldErrors).length) {
+        toast.error(nextState.message || "No se pudo actualizar la tienda");
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "No se pudo actualizar la tienda.";
+      setState({ ok: false, message, fieldErrors: {} });
+      toast.error(message);
+    } finally {
+      setIsSubmitting(false);
     }
-  }, [state, router]);
-
-  function handleChange(field: keyof StoreFormValues, value: string) {
-    setFormValues((prev) => ({ ...prev, [field]: value }));
   }
 
-  const fieldErrors = state.ok ? {} :
-    Object.keys(state.fieldErrors).length > 0 ? state.fieldErrors : {};
+  const fieldErrors = state.ok ? {} : state.fieldErrors;
 
   return (
-    <form action={formAction} className="space-y-4">
-      {!state.ok && state.message && Object.keys(state.fieldErrors).length > 0 ? (
-        <Alert variant="error">{state.message}</Alert>
-      ) : null}
-
-      <InputGroup label="Nombre de la tienda" name="name" required>
-        <Input
-          name="name"
-          value={formValues.name}
-          onChange={(e) => handleChange("name", e.target.value)}
-          maxLength={100}
-          required
-        />
-        {fieldErrors.name ? <FieldError>{fieldErrors.name}</FieldError> : null}
-      </InputGroup>
-
-      <InputGroup label="Direccion" name="address">
-        <Input
-          name="address"
-          value={formValues.address}
-          onChange={(e) => handleChange("address", e.target.value)}
-          maxLength={255}
-        />
-        {fieldErrors.address ? <FieldError>{fieldErrors.address}</FieldError> : null}
-      </InputGroup>
-
-      <InputGroup label="Telefono" name="phone">
-        <Input
-          name="phone"
-          value={formValues.phone}
-          onChange={(e) => handleChange("phone", e.target.value)}
-          maxLength={20}
-          type="tel"
-        />
-        {fieldErrors.phone ? <FieldError>{fieldErrors.phone}</FieldError> : null}
-      </InputGroup>
-
-      <Button type="submit" disabled={isPending}>
-        {isPending ? "Guardando..." : "Guardar cambios"}
+    <>
+      <Button variant="ghost" onClick={() => setOpen(true)}>
+        <Pencil className="h-4 w-4" aria-hidden="true" />
+        Editar
       </Button>
-    </form>
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogTitle close>Editar datos de tienda</DialogTitle>
+        <form onSubmit={onSubmit} noValidate>
+          <DialogBody>
+            <div className="space-y-4">
+              <div className="space-y-1">
+                <Label htmlFor="store-name">Nombre de la tienda</Label>
+                <Input
+                  id="store-name"
+                  name="name"
+                  defaultValue={storeData.name}
+                  maxLength={100}
+                  required
+                />
+                <FieldError message={fieldErrors.name} />
+              </div>
+              <div className="space-y-1">
+                <Label htmlFor="store-address">Direccion</Label>
+                <Input
+                  id="store-address"
+                  name="address"
+                  defaultValue={storeData.address ?? ""}
+                  maxLength={255}
+                />
+                <FieldError message={fieldErrors.address} />
+              </div>
+              <div className="space-y-1">
+                <Label htmlFor="store-phone">Telefono</Label>
+                <Input
+                  id="store-phone"
+                  name="phone"
+                  type="tel"
+                  defaultValue={storeData.phone ?? ""}
+                  maxLength={20}
+                />
+                <FieldError message={fieldErrors.phone} />
+              </div>
+            </div>
+          </DialogBody>
+          <DialogFooter>
+            <Button type="button" variant="secondary" onClick={() => setOpen(false)}>
+              Cancelar
+            </Button>
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? "Guardando..." : "Guardar cambios"}
+            </Button>
+          </DialogFooter>
+        </form>
+      </Dialog>
+    </>
   );
 }
 ```
 
 **Estados del componente:**
-- **Carga inicial** — no aplica (datos vienen como props server-side)
-- **Renderizado** — formulario con valores iniciales precargados
-- **Validacion** — errores por campo via `FieldError`
+- **Cerrado** — solo se ve el boton "Editar" con icono de lapiz
+- **Abierto** — modal con formulario y valores precargados via `defaultValue`
+- **Validacion** — errores por campo via `FieldError` debajo de cada input
 - **Envio** — boton deshabilitado con texto "Guardando..."
-- **Exito** — `toast.success()` + `router.refresh()` + formulario se re-renderiza con datos actualizados
-- **Error** — `toast.error()` si es error general; `FieldError` si es error de campo; `Alert` si hay errores de validacion
-- **Empty state** — valores por defecto string vacio para address/phone cuando son null
-- **Modo solo lectura** — si el rol no es owner, mostrar texto plano en vez de formulario
+- **Exito** — `toast.success()` + cierre del modal + `router.refresh()` → pagina (incluyendo header) se re-renderiza con datos actualizados
+- **Error de campo** — `FieldError` muestra el mensaje; toast no se muestra (el error es visual en el formulario)
+- **Error general** — `toast.error()` con mensaje del server action
+- **Error de red** — catch general, `toast.error()` con mensaje de error
+- **`noValidate`** — desactiva validacion nativa del browser para que el form siempre dispare el `onSubmit`
 
 ### 4.6 Integracion en SettingsOverview
 
+La tarjeta Tienda usa `AdminSummaryCard` con `items` condicionales y un slot `action` para el boton de editar:
+
 ```tsx
-// page.tsx — nueva llamada
+// page.tsx
 const [storeData] = await Promise.all([
+  getStore().catch(() => null),
   // ... existing fetches ...
-  getStore().catch(() => null),  // fallback si falla
 ]);
 
 <SettingsOverview
   session={session}
-  storeData={storeData}  // nuevo prop
+  storeData={storeData ?? undefined}
   storeDay={storeDay}
   ...
 />
 ```
 
 ```tsx
-// SettingsOverview.tsx — tarjeta Tienda actualizada
-<AdminSummaryCard title="Tienda" ...>
-  {storeData ? (
-    <StoreEditorForm
-      initial={{
-        name: storeData.name,
-        address: storeData.address ?? "",
-        phone: storeData.phone ?? "",
-      }}
-      isOwner={session.role === "owner"}
-    />
-  ) : (
-    // fallback read-only con datos de session
-    <InfoItem label="Nombre" value={session.storeName} />
-  )}
-</AdminSummaryCard>
+// SettingsOverview.tsx — tarjeta Tienda
+<AdminSummaryCard
+  title="Tienda"
+  description="Datos base del negocio activo."
+  items={
+    storeData
+      ? [
+          { label: "Nombre", value: storeData.name },
+          { label: "ID tienda", value: shortId(session.storeId ?? "") },
+          { label: "Direccion", value: storeData.address ?? "—" },
+          { label: "Telefono", value: storeData.phone ?? "—" },
+        ]
+      : [
+          { label: "Nombre", value: session.storeName },
+          { label: "ID tienda", value: shortId(session.storeId ?? "") },
+        ]
+  }
+  action={
+    session.role === "owner" && storeData
+      ? <StoreEditorDialog storeData={storeData} />
+      : undefined
+  }
+/>
 ```
 
 ## 5. Manejo de Errores
@@ -407,42 +448,40 @@ const [storeData] = await Promise.all([
 | Usuario no owner (403) | `require_owner` (`dependencies.py:216-219`) retorna 403 | `toast.error("No tienes permisos para editar la tienda")` |
 | Usuario de otra tienda | `store_id` viene del JWT, no del body — imposible modificar otra tienda | N/A — ni siquiera puede intentarlo |
 | Tienda suspendida | `GetCurrentUserContextUseCase` (`get_current_user_context.py:42-43`) lanza error | `toast.error("Tu cuenta ha sido suspendida. Contacta a soporte.")` |
-| Red caida | fetch timeout (20s) → ApiError con code `network_error` | `toast.error("Error de conexion")` |
-| Validacion falla local | fieldErrors → FieldError + Alert | Rojo en campos + alerta general |
+| Red caida | fetch timeout (20s) → ApiError con code `network_error` | catch general → `toast.error("No se pudo actualizar la tienda.")` |
+| Validacion falla local | fieldErrors → FieldError en cada campo | Rojo debajo del input correspondiente |
 | Nombre vacio | `validateStoreForm` retorna error | FieldError "El nombre de la tienda es requerido" |
 | Nombre > 100 chars | `validateStoreForm` retorna error | FieldError "El nombre no puede exceder 100 caracteres" |
 | Telefono > 20 chars | `validateStoreForm` retorna error | FieldError "El telefono no puede exceder 20 caracteres" |
 
 ## 6. Pruebas
 
-### StoreEditorForm.test.tsx
-- Renderiza formulario con valores iniciales
-- Muestra errores de validacion al enviar vacio
-- Muestra errores de validacion al enviar datos invalidos
-- Llama al server action en submit
-- Owner ve formulario editor; cashier ve solo lectura
-- `toast.success` se llama en exito
-- `toast.error` se llama en error
-- `router.refresh()` se llama en exito
+### StoreEditorDialog.test.tsx
+- Abre el dialog y muestra errores de validacion al enviar con nombre vacio
+- Refresca la ruta (`router.refresh()`) despues de un update exitoso
 
-### Actualizar SettingsOverview.test.tsx
-- Pasar `storeData` prop en tests existentes
-- Testear que storeData.name se muestra en vez de session.storeName
+### SettingsOverview.test.tsx (actualizado)
+- Pasa `storeData` prop en tests existentes
+- Testea que `storeData.name` se muestra en vez de `session.storeName`
+- Testea que el boton "Editar" aparece solo para owner, no para cashier
 
 ## 7. Checklist de Implementacion
 
-- [ ] **Crear `types.ts`** — StoreResponse, StoreUpdateInput, StoreFormValues, StoreEditorState
-- [ ] **Crear `api.ts`** — funcion `getStore()` que llama a GET /store
-- [ ] **Crear `schemas.ts`** — `validateStoreForm()`, `formDataToStoreValues()`
-- [ ] **Crear `actions.ts`** — `updateStoreAction()` server action con validacion + PATCH /store
-- [ ] **Crear `components/StoreEditorForm.tsx`** — formulario con useActionState, validacion, toasts
-- [ ] **Crear `components/StoreEditorForm.test.tsx`** — tests del formulario
-- [ ] **Modificar `SettingsOverview.tsx`** — aceptar `storeData` prop, renderizar StoreEditorForm en tarjeta Tienda
-- [ ] **Modificar `SettingsOverview.test.tsx`** — pasar `storeData` mock, verificar integracion
-- [ ] **Modificar `page.tsx`** — fetch `getStore()` y pasar a SettingsOverview
-- [ ] **Verificar** — `pnpm typecheck`, `pnpm vitest run`, `cd apps/backend && py -m pytest tests -q`
+- [x] **Crear `types.ts`** — StoreResponse, StoreFormValues, StoreEditorState
+- [x] **Crear `api.ts`** — funcion `getStore()` que llama a GET /store
+- [x] **Crear `schemas.ts`** — `validateStoreForm()`
+- [x] **Crear `actions.ts`** — `updateStoreAction()` server action con validacion + PATCH /store + actualizacion de cookie de sesion
+- [x] **Crear `components/StoreEditorDialog.tsx`** — dialog modal con formulario, sigue patron ProductStockDialog
+- [x] **Crear `components/StoreEditorDialog.test.tsx`** — tests del dialog
+- [x] **Modificar `SettingsOverview.tsx`** — aceptar `storeData` prop, renderizar StoreEditorDialog en slot `action` de tarjeta Tienda (solo owner)
+- [x] **Modificar `SettingsOverview.test.tsx`** — mock StoreEditorDialog, testear storeData y visibilidad por rol
+- [x] **Modificar `page.tsx`** — fetch `getStore()` y pasar a SettingsOverview
+- [x] **Verificar** — `pnpm typecheck`, `pnpm vitest run`
 
 ## 8. Consideraciones Adicionales
+
+### Sincronizacion de cookie de sesion con el header
+El `AppHeader` lee `session.storeName` desde la cookie `inventory_session` (base64url de `AuthUser` JSON), no desde una llamada API en vivo. Al editar el nombre de la tienda, el server action (`actions.ts:47-63`) decodifica la cookie actual, actualiza `store_name`, la re-serializa y la setea de nuevo. Cuando el cliente ejecuta `router.refresh()`, el layout re-ejecuta `requireSession()`, lee la cookie actualizada, y el header refleja el nuevo nombre inmediatamente sin necesidad de reloguearse.
 
 ### Phone validation mejorada (opcional)
 Actualmente el backend solo valida `max_length=20`. Se podria agregar una regex basica en `schemas.ts`:
