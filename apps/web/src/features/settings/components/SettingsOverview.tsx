@@ -4,7 +4,7 @@ import { ChevronRight } from "lucide-react";
 import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { PageSection } from "@/components/layout/PageSection";
-import { Alert } from "@/components/ui/Alert";
+import { DataFetchError } from "@/components/ui/DataFetchError";
 import { Badge } from "@/components/ui/Badge";
 import { CollapsibleSection } from "@/components/ui/CollapsibleSection";
 import type { Session } from "@/lib/auth/session";
@@ -98,9 +98,7 @@ export function SettingsOverview({
                 title="Categorias"
                 description="Agrupacion de productos y prefijos SKU."
               >
-                <Alert variant="error">
-                  No se pudieron cargar las categorias: {productCategories.error.message}
-                </Alert>
+                <DataFetchError resource="las categorias" error={productCategories.error.message} />
               </AdminSection>
             )
           ) : null}
@@ -232,9 +230,7 @@ function StoreDayManagement({
 }) {
   if (!storeDay.ok) {
     return (
-      <Alert variant="error">
-        No se pudo cargar el estado de tienda: {storeDay.error.message}
-      </Alert>
+      <DataFetchError resource="el estado de tienda" error={storeDay.error.message} />
     );
   }
 

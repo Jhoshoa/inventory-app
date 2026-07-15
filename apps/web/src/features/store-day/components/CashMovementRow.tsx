@@ -4,16 +4,14 @@ import type { FormEvent } from "react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { formatCurrency } from "@/lib/format/currency";
 import { voidCashMovementAction } from "../actions";
-import type { CashMovement, StoreDayActionState } from "../types";
+import type { CashMovement } from "../types";
 import { cashMovementLabel, initialState } from "./store-day-helpers";
 
 export function CashMovementRow({ movement }: { movement: CashMovement }) {
-  const [state, setState] = useState<StoreDayActionState>(initialState);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
 
@@ -24,7 +22,6 @@ export function CashMovementRow({ movement }: { movement: CashMovement }) {
     setIsSubmitting(true);
     try {
       const nextState = await voidCashMovementAction(initialState, new FormData(event.currentTarget));
-      setState(nextState);
       if (nextState.ok) {
         toast.success("Movimiento anulado");
         router.refresh();
@@ -33,7 +30,6 @@ export function CashMovementRow({ movement }: { movement: CashMovement }) {
       }
     } catch (error) {
       const message = error instanceof Error ? error.message : "No se pudo anular el movimiento.";
-      setState({ ok: false, message, fieldErrors: {} });
       toast.error(message);
     } finally {
       setIsSubmitting(false);
@@ -49,7 +45,6 @@ export function CashMovementRow({ movement }: { movement: CashMovement }) {
         </p>
         {movement.note ? <p className="text-xs text-text-muted">{movement.note}</p> : null}
       </div>
-      {state.message && !state.ok ? <Alert variant="error">{state.message}</Alert> : null}
       <form onSubmit={onSubmit} className="flex flex-wrap items-center gap-2">
         <input type="hidden" name="movement_id" value={movement.id} />
         <Input

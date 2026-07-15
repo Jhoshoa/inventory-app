@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { PageSection } from "@/components/layout/PageSection";
-import { Alert } from "@/components/ui/Alert";
+import { DataFetchError } from "@/components/ui/DataFetchError";
 import { getProduct, listProductStockMovements } from "@/features/products/api";
 import { ProductDetail } from "@/features/products/components/ProductDetail";
 import { ProductStockMovements } from "@/features/products/components/ProductStockMovements";
@@ -23,14 +23,12 @@ export default async function ProductDetailPage({
   return (
     <PageSection className="space-y-6">
       {!product.ok ? (
-        <Alert variant="error">No se pudo cargar el producto: {product.error.message}</Alert>
+        <DataFetchError resource="el producto" error={product.error.message} />
       ) : (
         <>
           <ProductDetail product={product.data} role={session.role} />
           {!movements.ok ? (
-            <Alert variant="error">
-              No se pudo cargar el historial: {movements.error.message}
-            </Alert>
+            <DataFetchError resource="el historial" error={movements.error.message} />
           ) : (
             <ProductStockMovements movements={movements.data.items} />
           )}

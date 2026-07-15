@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { PageSection } from "@/components/layout/PageSection";
-import { Alert } from "@/components/ui/Alert";
+import { DataFetchError } from "@/components/ui/DataFetchError";
 import { getSale } from "@/features/sales/api";
 import { SaleDetail } from "@/features/sales/components/SaleDetail";
 import { requireSession } from "@/lib/auth/session";
@@ -18,7 +18,7 @@ export default async function SaleDetailPage({
   return (
     <PageSection className="space-y-6">
       {!sale.ok ? (
-        <Alert variant="error">No se pudo cargar la venta: {sale.error.message}</Alert>
+        <DataFetchError resource="la venta" error={sale.error.message} />
       ) : (
         <SaleDetail sale={sale.data} role={session.role} />
       )}

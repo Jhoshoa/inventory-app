@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { PageSection } from "@/components/layout/PageSection";
-import { Alert } from "@/components/ui/Alert";
+import { DataFetchError } from "@/components/ui/DataFetchError";
 import { Badge } from "@/components/ui/Badge";
 import { EmptyState } from "@/components/ui/EmptyState";
 import {
@@ -51,9 +51,7 @@ export function DashboardOverview({
     return (
       <PageSection>
         <DashboardHeader scope={scope} />
-        <Alert variant="error">
-          No se pudo cargar el dashboard: {summary.error.message}
-        </Alert>
+        <DataFetchError resource="el dashboard" error={summary.error.message} />
       </PageSection>
     );
   }
@@ -277,9 +275,7 @@ function StoreDaySection({
 }) {
   if (!storeDay.ok) {
     return (
-      <Alert variant="error">
-        No se pudo cargar el estado de tienda: {storeDay.error.message}
-      </Alert>
+      <DataFetchError resource="el estado de tienda" error={storeDay.error.message} />
     );
   }
 

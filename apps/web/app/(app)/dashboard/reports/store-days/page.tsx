@@ -1,7 +1,7 @@
 import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { PageSection } from "@/components/layout/PageSection";
-import { Alert } from "@/components/ui/Alert";
+import { DataFetchError } from "@/components/ui/DataFetchError";
 import { ForbiddenState } from "@/components/ui/ForbiddenState";
 import { Pagination } from "@/components/ui/Pagination";
 import { listCloseReports } from "@/features/store-day/api";
@@ -45,7 +45,7 @@ export default async function StoreDayReportsPage({
       <StoreDayReportsDateFilter fromDate={params.from_date} toDate={params.to_date} />
 
       {!reports.ok ? (
-        <Alert variant="error">No se pudieron cargar cierres: {reports.error.message}</Alert>
+        <DataFetchError resource="los cierres" error={reports.error.message} />
       ) : (
         <>
           <StoreDayCloseReportsTable items={reports.data.items} />

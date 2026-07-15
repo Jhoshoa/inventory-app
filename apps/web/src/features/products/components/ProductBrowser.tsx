@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { PackagePlus } from "lucide-react";
-import { Alert } from "@/components/ui/Alert";
+import { DataFetchError } from "@/components/ui/DataFetchError";
 import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Pagination } from "@/components/ui/Pagination";
@@ -111,7 +111,7 @@ export function ProductBrowser({
       />
 
       {error ? (
-        <Alert variant="error">No se pudieron cargar los productos: {error}</Alert>
+        <DataFetchError resource="los productos" error={error} />
       ) : null}
 
       {!error && showEmptyInventory ? (

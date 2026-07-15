@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { readErrorMessage } from "@/lib/api/errors";
-import { Alert } from "@/components/ui/Alert";
+import { DataFetchError } from "@/components/ui/DataFetchError";
 import { Pagination } from "@/components/ui/Pagination";
 import { buildSalesApiQuery } from "../schemas";
 import type { SaleListResponse, SaleSearchParams } from "../types";
@@ -85,7 +85,7 @@ export function SalesBrowser({
       />
 
       {error ? (
-        <Alert variant="error">No se pudieron cargar las ventas: {error}</Alert>
+        <DataFetchError resource="las ventas" error={error} />
       ) : isLoading ? (
         <InlineTableSkeleton />
       ) : (

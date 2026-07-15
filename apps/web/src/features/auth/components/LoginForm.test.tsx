@@ -10,6 +10,13 @@ vi.mock("next/navigation", () => ({
   useRouter: () => ({ replace, refresh }),
 }));
 
+const toastSuccess = vi.fn();
+const toastError = vi.fn();
+
+vi.mock("sonner", () => ({
+  toast: Object.assign(vi.fn(), { success: (...a: unknown[]) => toastSuccess(...a), error: (...a: unknown[]) => toastError(...a) }),
+}));
+
 describe("validateLogin", () => {
   it("validates required fields", () => {
     expect(validateLogin({ email: "", password: "" })).toEqual({
@@ -43,9 +50,9 @@ describe("LoginForm", () => {
     await userEvent.type(screen.getByLabelText("Contraseña"), "secret1");
     await userEvent.click(screen.getByRole("button", { name: /iniciar sesión/i }));
 
-    expect(
-      await screen.findByText("Credenciales invalidas o backend no disponible."),
-    ).toBeInTheDocument();
+    await vi.waitFor(() => {
+      expect(toastError).toHaveBeenCalledWith("Credenciales invalidas o backend no disponible.");
+    });
 
     vi.unstubAllGlobals();
   });

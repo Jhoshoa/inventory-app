@@ -1,6 +1,6 @@
 import { PageHeader } from "@/components/layout/PageHeader";
 import { PageSection } from "@/components/layout/PageSection";
-import { Alert } from "@/components/ui/Alert";
+import { DataFetchError } from "@/components/ui/DataFetchError";
 import { listSales } from "@/features/sales/api";
 import { SalesBrowser } from "@/features/sales/components/SalesBrowser";
 import { parseSalesSearchParams } from "@/features/sales/schemas";
@@ -22,7 +22,7 @@ export default async function SalesPage({
         description="Historial de ventas registradas en la tienda."
       />
       {!sales.ok ? (
-        <Alert variant="error">No se pudieron cargar ventas: {sales.error.message}</Alert>
+        <DataFetchError resource="las ventas" error={sales.error.message} />
       ) : (
         <SalesBrowser
           initialSearchParams={{

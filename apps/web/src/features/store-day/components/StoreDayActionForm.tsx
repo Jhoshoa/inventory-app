@@ -5,7 +5,6 @@ import type { FormEvent } from "react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
 import { FieldError } from "@/components/ui/FieldError";
 import { Input } from "@/components/ui/Input";
@@ -65,7 +64,6 @@ export function StoreDayActionForm({
       {isOpen ? <StoreDayClosingPreview preview={closingPreview} /> : null}
       {isOpen ? <CashMovementPanel cashMovements={cashMovements} /> : null}
       <form onSubmit={onSubmit} className="space-y-2">
-        {state.message ? <Alert variant={state.ok ? "info" : "error"}>{state.message}</Alert> : null}
         {!isOpen && !isReopen ? (
           <>
             <Input

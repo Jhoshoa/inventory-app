@@ -1,7 +1,7 @@
 import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { PageSection } from "@/components/layout/PageSection";
-import { Alert } from "@/components/ui/Alert";
+import { DataFetchError } from "@/components/ui/DataFetchError";
 import { ForbiddenState } from "@/components/ui/ForbiddenState";
 import { listProductCategories } from "@/features/product-categories/api";
 import { listProducts } from "@/features/products/api";
@@ -56,9 +56,7 @@ export default async function ProductLabelsPage({
       />
 
       {!products.ok ? (
-        <Alert variant="error">
-          No se pudieron cargar los productos: {products.error.message}
-        </Alert>
+        <DataFetchError resource="los productos" error={products.error.message} />
       ) : (
         <ProductLabelPage
           initialParams={params}

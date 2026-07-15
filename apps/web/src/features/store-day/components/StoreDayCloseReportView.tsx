@@ -1,10 +1,10 @@
-import { Alert } from "@/components/ui/Alert";
+import { DataFetchError } from "@/components/ui/DataFetchError";
 import { formatCurrency } from "@/lib/format/currency";
 import type { StoreDayCloseReportResult } from "../types";
 
 export function StoreDayCloseReportView({ report }: { report: StoreDayCloseReportResult }) {
   if (!report.ok) {
-    return <Alert variant="error">No se pudo cargar el reporte de cierre: {report.error.message}</Alert>;
+    return <DataFetchError resource="el reporte de cierre" error={report.error.message} />;
   }
 
   const data = report.data;

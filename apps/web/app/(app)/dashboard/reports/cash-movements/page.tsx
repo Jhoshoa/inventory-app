@@ -1,7 +1,7 @@
 import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { PageSection } from "@/components/layout/PageSection";
-import { Alert } from "@/components/ui/Alert";
+import { DataFetchError } from "@/components/ui/DataFetchError";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ForbiddenState } from "@/components/ui/ForbiddenState";
 import { Pagination } from "@/components/ui/Pagination";
@@ -46,7 +46,7 @@ export default async function CashMovementsPage({
       <CashMovementsReportControls params={params} />
 
       {!movements.ok ? (
-        <Alert variant="error">No se pudieron cargar movimientos: {movements.error.message}</Alert>
+        <DataFetchError resource="los movimientos" error={movements.error.message} />
       ) : movements.data.total === 0 ? (
         <EmptyState
           title="Sin movimientos de caja"

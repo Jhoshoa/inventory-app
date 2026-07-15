@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Activity } from "lucide-react";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { PageSection } from "@/components/layout/PageSection";
-import { Alert } from "@/components/ui/Alert";
+import { DataFetchError } from "@/components/ui/DataFetchError";
 import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { getSalesReport } from "@/features/reports/api";
@@ -60,9 +60,7 @@ export default async function ReportsPage({
       />
 
       {!report.ok ? (
-        <Alert variant="error">
-          No se pudo cargar el reporte: {report.error.message}
-        </Alert>
+        <DataFetchError resource="el reporte" error={report.error.message} />
       ) : report.data.sales_count === 0 ? (
         <>
           <SalesReportSummary report={report.data} />

@@ -3,6 +3,13 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ProductForm } from "./ProductForm";
 import type { ProductActionState } from "../types";
 
+const toastSuccess = vi.fn();
+const toastError = vi.fn();
+
+vi.mock("sonner", () => ({
+  toast: Object.assign(vi.fn(), { success: (...a: unknown[]) => toastSuccess(...a), error: (...a: unknown[]) => toastError(...a) }),
+}));
+
 let actionState: ProductActionState = {
   ok: false,
   fieldErrors: {
@@ -123,6 +130,6 @@ describe("ProductForm", () => {
     expect(screen.getByLabelText("SKU")).toHaveValue("CEM000001");
     expect(screen.getByLabelText("Precio venta")).toHaveValue(45.5);
     expect(screen.getByLabelText("Codigo escaneable")).toHaveValue("QR-CEM");
-    expect(screen.getByText("El SKU ya esta en uso por otro producto")).toBeInTheDocument();
+    expect(toastError).toHaveBeenCalledWith("El SKU ya esta en uso por otro producto");
   });
 });

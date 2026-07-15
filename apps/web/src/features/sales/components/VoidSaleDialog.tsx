@@ -3,7 +3,6 @@
 import { type FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
 import { Dialog, DialogTitle, DialogBody, DialogFooter } from "@/components/ui/Dialog";
 import { FieldError } from "@/components/ui/FieldError";
@@ -61,11 +60,6 @@ export function VoidSaleDialog({ saleId }: { saleId: string }) {
               Esta accion devuelve inventario y requiere permisos de propietario.
             </p>
             <input type="hidden" name="sale_id" value={saleId} />
-            {state.message ? (
-              <div className="mt-3">
-                <Alert variant={state.ok ? "info" : "error"}>{state.message}</Alert>
-              </div>
-            ) : null}
             <div className="mt-4 space-y-1">
               <Label htmlFor={`void-reason-${saleId}`}>Razon</Label>
               <Textarea id={`void-reason-${saleId}`} name="reason" maxLength={200} />

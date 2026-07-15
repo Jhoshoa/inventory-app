@@ -4,7 +4,6 @@ import { type FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import { PackagePlus } from "lucide-react";
 import { toast } from "sonner";
-import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
 import { Dialog, DialogTitle, DialogBody, DialogFooter } from "@/components/ui/Dialog";
 import { FieldError } from "@/components/ui/FieldError";
@@ -74,11 +73,6 @@ export function ProductStockDialog({
         <form onSubmit={onSubmit}>
           <DialogBody>
             <p className="text-sm text-text-muted">{productName}</p>
-            {state.message ? (
-              <div className="mt-3">
-                <Alert variant={state.ok ? "info" : "error"}>{state.message}</Alert>
-              </div>
-            ) : null}
             <input type="hidden" name="product_id" value={productId} />
             <div className="mt-4 space-y-3">
               <div className="space-y-1">

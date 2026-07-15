@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useEffect, useMemo, useRef, useState } from "react";
+import { toast } from "sonner";
 import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
 import { Field } from "@/components/ui/Field";
@@ -61,13 +62,22 @@ export function ProductForm({
     setScanCode(state.values.qr_code);
   }, [state.values]);
 
+  useEffect(() => {
+    if (state.message) {
+      if (state.ok) {
+        toast.success(state.message);
+      } else {
+        toast.error(state.message);
+      }
+    }
+  }, [state.message, state.ok]);
+
   function updateField(name: keyof typeof formValues, value: string) {
     setFormValues((current) => ({ ...current, [name]: value }));
   }
 
   return (
     <form action={formAction} className="space-y-6">
-      {state.message ? <Alert variant={state.ok ? "info" : "error"}>{state.message}</Alert> : null}
       {product ? <input type="hidden" name="product_id" value={product.id} /> : null}
 
       <div className="grid gap-4 md:grid-cols-2">

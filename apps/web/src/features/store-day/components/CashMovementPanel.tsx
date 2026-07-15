@@ -4,7 +4,7 @@ import type { FormEvent } from "react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Alert } from "@/components/ui/Alert";
+import { DataFetchError } from "@/components/ui/DataFetchError";
 import { Button } from "@/components/ui/Button";
 import { FieldError } from "@/components/ui/FieldError";
 import { Input } from "@/components/ui/Input";
@@ -48,7 +48,6 @@ export function CashMovementPanel({ cashMovements }: { cashMovements?: CashMovem
     <div className="space-y-2 rounded-lg border border-app-border bg-app-surface-muted p-3">
       <p className="text-sm font-semibold text-text-strong">Movimientos de caja</p>
       <form onSubmit={onSubmit} className="grid gap-2">
-        {state.message ? <Alert variant={state.ok ? "info" : "error"}>{state.message}</Alert> : null}
         <Select aria-label="Tipo de movimiento" name="movement_type" defaultValue="expense">
           <option value="expense">Gasto</option>
           <option value="cash_in">Entrada</option>
@@ -79,7 +78,7 @@ export function CashMovementPanel({ cashMovements }: { cashMovements?: CashMovem
 
 function CashMovementList({ cashMovements }: { cashMovements?: CashMovementListResult }) {
   if (!cashMovements) return null;
-  if (!cashMovements.ok) return <Alert variant="error">No se pudieron cargar movimientos: {cashMovements.error.message}</Alert>;
+  if (!cashMovements.ok) return <DataFetchError resource="los movimientos" error={cashMovements.error.message} />;
   if (cashMovements.data.items.length === 0) {
     return <p className="text-sm text-text-muted">Sin movimientos de caja.</p>;
   }

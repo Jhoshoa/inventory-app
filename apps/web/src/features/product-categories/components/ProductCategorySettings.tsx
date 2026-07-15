@@ -4,7 +4,6 @@ import type { FormEvent } from "react";
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Alert } from "@/components/ui/Alert";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { CollapsibleSection } from "@/components/ui/CollapsibleSection";
@@ -31,7 +30,6 @@ const initialState: ProductCategoryActionState = { ok: false, fieldErrors: {} };
 
 export function ProductCategorySettings({ categories }: { categories: ProductCategory[] }) {
   const [createState, setCreateState] = useState<ProductCategoryActionState>(initialState);
-  const [deactivateState, setDeactivateState] = useState<ProductCategoryActionState>(initialState);
   const [isCreating, setIsCreating] = useState(false);
   const [deactivatingCategoryId, setDeactivatingCategoryId] = useState<string | null>(null);
   const router = useRouter();
@@ -71,10 +69,8 @@ export function ProductCategorySettings({ categories }: { categories: ProductCat
     if (typeof categoryId !== "string" || !categoryId || deactivatingCategoryId) return;
 
     setDeactivatingCategoryId(categoryId);
-    setDeactivateState(initialState);
     try {
       const nextState = await deactivateProductCategoryAction(initialState, formData);
-      setDeactivateState(nextState);
       if (nextState.ok && nextState.category) {
         setVisibleCategories((current) => upsertCategory(current, nextState.category as ProductCategory));
         toast.success(nextState.message || "Categoria desactivada");
@@ -84,7 +80,6 @@ export function ProductCategorySettings({ categories }: { categories: ProductCat
       }
     } catch (error) {
       const message = error instanceof Error ? error.message : "No se pudo desactivar la categoria.";
-      setDeactivateState({ ok: false, message, fieldErrors: {} });
       toast.error(message);
     } finally {
       setDeactivatingCategoryId(null);
@@ -96,11 +91,6 @@ export function ProductCategorySettings({ categories }: { categories: ProductCat
       title="Categorias de productos"
       description="Configura prefijos para generar SKUs como COM000001."
     >
-      {createState.message && !createState.ok ? <Alert variant="error">{createState.message}</Alert> : null}
-      {deactivateState.message && !deactivateState.ok ? (
-        <Alert variant="error">{deactivateState.message}</Alert>
-      ) : null}
-
       <form
         ref={createFormRef}
         onSubmit={onCreateSubmit}

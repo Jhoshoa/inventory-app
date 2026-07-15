@@ -1,5 +1,5 @@
 import { Clock3 } from "lucide-react";
-import { Alert } from "@/components/ui/Alert";
+import { DataFetchError } from "@/components/ui/DataFetchError";
 import { CollapsibleSection } from "@/components/ui/CollapsibleSection";
 import type { StoreDayEventListResult } from "../types";
 
@@ -17,7 +17,7 @@ export function StoreDayEventTimeline({
   timezone?: string;
 }) {
   if (!events.ok) {
-    return <Alert variant="error">No se pudo cargar el historial de jornada: {events.error.message}</Alert>;
+    return <DataFetchError resource="el historial de jornada" error={events.error.message} />;
   }
 
   if (events.data.length === 0) {

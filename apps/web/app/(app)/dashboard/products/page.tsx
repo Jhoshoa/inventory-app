@@ -2,7 +2,7 @@ import Link from "next/link";
 import { PackagePlus, Tags } from "lucide-react";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { PageSection } from "@/components/layout/PageSection";
-import { Alert } from "@/components/ui/Alert";
+import { DataFetchError } from "@/components/ui/DataFetchError";
 import { Button } from "@/components/ui/Button";
 import { listProductCategories } from "@/features/product-categories/api";
 import { listProducts } from "@/features/products/api";
@@ -53,9 +53,7 @@ export default async function ProductsPage({
       />
 
       {!products.ok ? (
-        <Alert variant="error">
-          No se pudieron cargar los productos: {products.error.message}
-        </Alert>
+        <DataFetchError resource="los productos" error={products.error.message} />
       ) : (
         <ProductBrowser
           initialParams={params}

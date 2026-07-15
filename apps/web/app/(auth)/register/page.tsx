@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
+import { toast } from "sonner";
 import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
 import { FieldError } from "@/components/ui/FieldError";
@@ -50,14 +51,18 @@ export default function RegisterPage() {
 
       if (!response.ok) {
         const err = await response.json().catch(() => ({}));
-        setErrors({ form: err.message || "No se pudo crear la cuenta. Intenta de nuevo." });
+        const message = err.message || "No se pudo crear la cuenta. Intenta de nuevo.";
+        setErrors({ form: message });
+        toast.error(message);
         return;
       }
 
       setValues(INITIAL_STATE);
       setIsSuccess(true);
     } catch {
-      setErrors({ form: "No se pudo conectar con el servidor." });
+      const message = "No se pudo conectar con el servidor.";
+      setErrors({ form: message });
+      toast.error(message);
     } finally {
       setIsSubmitting(false);
     }
@@ -91,7 +96,6 @@ export default function RegisterPage() {
       footerLinkLabel="Inicia sesión"
     >
       <form className="space-y-4" onSubmit={onSubmit} noValidate>
-        {errors.form ? <Alert variant="error">{errors.form}</Alert> : null}
         <div className="space-y-2">
           <Label htmlFor="full_name">Nombre completo</Label>
           <Input

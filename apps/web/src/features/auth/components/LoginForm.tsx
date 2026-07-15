@@ -1,9 +1,9 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Eye, EyeOff } from "lucide-react";
-import { Alert } from "@/components/ui/Alert";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/Button";
 import { FieldError } from "@/components/ui/FieldError";
 import { Input } from "@/components/ui/Input";
@@ -24,6 +24,12 @@ export function LoginForm({ verified }: { verified?: boolean }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const passwordRef = useRef<HTMLInputElement>(null);
 
+  useEffect(() => {
+    if (verified) {
+      toast.success("Email confirmado. Ahora puedes iniciar sesión.");
+    }
+  }, [verified]);
+
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const nextErrors = validateLogin(values);
@@ -41,14 +47,18 @@ export function LoginForm({ verified }: { verified?: boolean }) {
 
       if (!response.ok) {
         const body = await response.json().catch(() => ({}));
-        setErrors({ form: body.message ?? "Credenciales invalidas o backend no disponible." });
+        const message = body.message ?? "Credenciales invalidas o backend no disponible.";
+        setErrors({ form: message });
+        toast.error(message);
         return;
       }
 
       router.replace("/dashboard");
       router.refresh();
     } catch {
-      setErrors({ form: "No se pudo conectar con el servidor." });
+      const message = "No se pudo conectar con el servidor.";
+      setErrors({ form: message });
+      toast.error(message);
     } finally {
       setIsSubmitting(false);
     }
@@ -56,8 +66,6 @@ export function LoginForm({ verified }: { verified?: boolean }) {
 
   return (
       <form className="space-y-4" onSubmit={onSubmit} noValidate>
-        {verified ? <Alert variant="success">Email confirmado. Ahora puedes iniciar sesión.</Alert> : null}
-        {errors.form ? <Alert variant="error">{errors.form}</Alert> : null}
       <div className="space-y-2">
         <Label htmlFor="email">Correo electrónico</Label>
         <Input
@@ -121,7 +129,9 @@ export function LoginForm({ verified }: { verified?: boolean }) {
             const { url } = await res.json();
             if (url) window.location.href = url;
           } catch {
-            setErrors({ form: "No se pudo conectar con Google" });
+            const message = "No se pudo conectar con Google";
+            setErrors({ form: message });
+            toast.error(message);
           }
         }}
       >

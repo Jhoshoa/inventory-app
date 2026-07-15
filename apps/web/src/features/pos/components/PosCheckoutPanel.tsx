@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useEffect } from "react";
-import { Alert } from "@/components/ui/Alert";
+import { toast } from "sonner";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { FieldError } from "@/components/ui/FieldError";
@@ -38,6 +38,16 @@ export function PosCheckoutPanel({
     }
   }, [onStockRefresh, state]);
 
+  useEffect(() => {
+    if (state.message) {
+      if (state.ok) {
+        toast.success(state.message);
+      } else {
+        toast.error(state.message);
+      }
+    }
+  }, [state.message, state.ok]);
+
   return (
     <form
       action={formAction}
@@ -63,7 +73,6 @@ export function PosCheckoutPanel({
           <span className="text-lg font-semibold text-text-strong">{formatCurrency(total)}</span>
         </div>
       </div>
-      {state.message ? <Alert variant={state.ok ? "info" : "error"}>{state.message}</Alert> : null}
       <FieldError message={state.fieldErrors.items} />
       <div className="space-y-2">
         <Label htmlFor="payment_method">Metodo de pago</Label>
