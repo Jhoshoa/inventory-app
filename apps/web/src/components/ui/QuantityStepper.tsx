@@ -9,6 +9,7 @@ export function QuantityStepper({
   onDecrement,
   onValueChange,
   incrementDisabled = false,
+  min = 1,
   max,
 }: {
   value: number;
@@ -16,6 +17,7 @@ export function QuantityStepper({
   onDecrement: () => void;
   onValueChange?: (value: number) => void;
   incrementDisabled?: boolean;
+  min?: number;
   max?: number;
 }) {
   const [draft, setDraft] = useState(String(value));
@@ -34,17 +36,21 @@ export function QuantityStepper({
     if (!nextDraft) return;
 
     const parsed = Number(nextDraft);
-    const nextQuantity = max ? Math.min(parsed, max) : parsed;
-    setDraft(String(nextQuantity));
-    onValueChange?.(nextQuantity);
+    const clamped = Math.max(min, max ? Math.min(parsed, max) : parsed);
+    if (clamped !== parsed) setDraft(String(clamped));
+    onValueChange?.(clamped);
   }
 
   function handleBlur() {
     setIsEditing(false);
 
-    if (!draft) {
-      setDraft(String(value));
+    if (!draft || Number(draft) < min) {
+      setDraft(String(value >= min ? value : min));
     }
+  }
+
+  function handleDecrement() {
+    if (value > min) onDecrement();
   }
 
   return (
@@ -52,7 +58,8 @@ export function QuantityStepper({
       <Button
         className="h-8 w-8 rounded-r-none border-r border-app-borderStrong bg-app-surface-muted px-0 text-lg font-semibold leading-none text-text-strong hover:bg-app-surface-muted disabled:text-text-disabled"
         variant="ghost"
-        onClick={onDecrement}
+        onClick={handleDecrement}
+        disabled={value <= min}
         aria-label="Disminuir cantidad"
       >
         <span aria-hidden="true">-</span>

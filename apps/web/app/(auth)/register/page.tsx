@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
@@ -31,6 +31,7 @@ export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const passwordRef = useRef<HTMLInputElement>(null);
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -133,6 +134,7 @@ export default function RegisterPage() {
           <Label htmlFor="password">Contraseña</Label>
           <div className="relative">
             <Input
+              ref={passwordRef}
               id="password"
               name="password"
               type={showPassword ? "text" : "password"}
@@ -144,7 +146,10 @@ export default function RegisterPage() {
             />
             <button
               type="button"
-              onClick={() => setShowPassword(!showPassword)}
+              onClick={() => {
+                setShowPassword(!showPassword);
+                passwordRef.current?.focus();
+              }}
               className="absolute right-2 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-strong"
               aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
             >

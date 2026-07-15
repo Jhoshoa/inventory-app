@@ -245,21 +245,12 @@ export function ProductForm({
       </div>
 
       <div className="col-span-full max-w-64">
-        {mode === "edit" && product ? (
-          <ImageUploader
-            currentUrl={product.photo_url}
-            productId={product.id}
-            productVersion={product.version}
-            onPhotoChange={(photoUrl) => {
-              updateField("photo_url", photoUrl ?? "");
-            }}
-          />
-        ) : (
-          <ImageUploader
-            onPhotoChange={() => {}}
-            photoRef={photoRef}
-          />
-        )}
+        <ProductImageSection
+          mode={mode}
+          product={product}
+          photoRef={photoRef}
+          onPhotoChange={(photoUrl) => updateField("photo_url", photoUrl ?? "")}
+        />
       </div>
 
       {mode === "edit" ? (
@@ -286,4 +277,33 @@ export function ProductForm({
 
 function generateScanCode() {
   return `P-${crypto.randomUUID().replaceAll("-", "").slice(0, 12).toUpperCase()}`;
+}
+
+function ProductImageSection({
+  mode,
+  product,
+  photoRef,
+  onPhotoChange,
+}: {
+  mode: "create" | "edit";
+  product?: Product;
+  photoRef?: React.RefObject<File | null>;
+  onPhotoChange: (photoUrl: string | null) => void;
+}) {
+  if (mode === "edit" && product) {
+    return (
+      <ImageUploader
+        currentUrl={product.photo_url}
+        productId={product.id}
+        productVersion={product.version}
+        onPhotoChange={onPhotoChange}
+      />
+    );
+  }
+  return (
+    <ImageUploader
+      onPhotoChange={() => {}}
+      photoRef={photoRef}
+    />
+  );
 }
