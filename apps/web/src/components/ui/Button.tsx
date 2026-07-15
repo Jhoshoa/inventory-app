@@ -1,3 +1,5 @@
+"use client";
+
 import type { ButtonHTMLAttributes } from "react";
 import { Children, cloneElement, isValidElement } from "react";
 

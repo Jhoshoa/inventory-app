@@ -1,5 +1,3 @@
-"use client";
-
 interface TrialBannerProps {
   subscriptionStatus: string | null;
   daysUntilTrialEnds: number | null;
