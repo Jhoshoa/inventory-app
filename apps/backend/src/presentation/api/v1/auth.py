@@ -6,7 +6,6 @@ from uuid import UUID, uuid4
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from supabase import create_client
 from supabase_auth.errors import AuthApiError
 
 from src.application.dto.auth_dto import (
@@ -32,6 +31,7 @@ from src.application.use_cases.trials.trial_status import BillingStatusUseCase
 from src.config.settings import settings
 from src.domain.entities.store import Store
 from src.infrastructure.auth.password import hash_password, verify_password
+from src.infrastructure.auth.supabase_client import get_supabase_client
 from src.infrastructure.database.models.pkce_verifier_model import PkceVerifierModel
 from src.infrastructure.database.repositories.store_repository import StoreRepository
 from src.infrastructure.database.repositories.user_repository import UserRepository
@@ -176,7 +176,7 @@ async def login(
             access_status=store.access_status if store else "active",
         )
 
-    supabase = create_client(settings.SUPABASE_URL, settings.SUPABASE_ANON_KEY)
+    supabase = get_supabase_client()
     response = supabase.auth.sign_in_with_password(
         {"email": dto.email, "password": dto.password}
     )
@@ -273,7 +273,7 @@ async def register(
         return RegisterSuccessDTO(message="Tienda creada exitosamente. Ahora puedes iniciar sesion.")
 
     store_id = str(uuid4())
-    supabase = create_client(settings.SUPABASE_URL, settings.SUPABASE_ANON_KEY)
+    supabase = get_supabase_client()
     try:
         response = supabase.auth.sign_up(
             {
@@ -335,7 +335,7 @@ async def refresh_token(
     if settings.DEBUG:
         return _dev_auth_response()
 
-    supabase = create_client(settings.SUPABASE_URL, settings.SUPABASE_ANON_KEY)
+    supabase = get_supabase_client()
     response = supabase.auth.refresh_session(dto.refresh_token)
     auth_response = _auth_response_from_supabase(response)
 
@@ -405,7 +405,7 @@ async def oauth_google(
         return {"url": f"{settings.FRONTEND_URL}/login?oauth=dev"}
     state = str(uuid4())
     redirect_to = f"{settings.FRONTEND_URL}/auth/callback?state={state}"
-    supabase = create_client(settings.SUPABASE_URL, settings.SUPABASE_ANON_KEY)
+    supabase = get_supabase_client()
     response = supabase.auth.sign_in_with_oauth(
         {
             "provider": "google",
@@ -432,7 +432,7 @@ async def oauth_callback(
     if settings.DEBUG or settings.ENVIRONMENT == "local":
         return _dev_auth_response()
 
-    supabase = create_client(settings.SUPABASE_URL, settings.SUPABASE_ANON_KEY)
+    supabase = get_supabase_client()
 
     code_verifier = None
     if dto.state:
@@ -472,9 +472,9 @@ async def oauth_callback(
     except AuthApiError as e:
         logger.error("OAuth callback: error de autenticacion con Supabase: %s", e)
         raise HTTPException(status_code=401, detail=str(e))
-    except Exception as e:
+    except Exception:
         logger.exception("OAuth callback: error inesperado al intercambiar codigo")
-        raise HTTPException(status_code=500, detail=f"Error al intercambiar codigo: {e}")
+        raise HTTPException(status_code=500, detail="Error al iniciar sesion con Google. Intente de nuevo.")
 
     try:
         supabase_session = auth_resp.session

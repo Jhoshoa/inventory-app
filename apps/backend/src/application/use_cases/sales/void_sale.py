@@ -28,16 +28,13 @@ class VoidSaleUseCase:
         if sale.status != "completed":
             raise ConflictError("Solo se pueden anular ventas completadas")
 
-        for item in sale.items:
-            await self._product_repo.update_stock(
-                input.store_id,
-                item.product_id,
-                item.quantity,
-                movement_type="sale_void",
-                reason=input.reason,
-                sale_id=sale.id,
-                device_id=sale.device_id,
-            )
+        await self._product_repo.batch_update_stock(
+            input.store_id,
+            [
+                (item.product_id, item.quantity, "sale_void", input.reason, sale.id, sale.device_id)
+                for item in sale.items
+            ],
+        )
 
         voided = await self._sale_repo.mark_voided(input.store_id, input.sale_id, input.reason)
         if not voided:

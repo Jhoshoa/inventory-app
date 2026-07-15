@@ -56,6 +56,16 @@ class ProductRepository(IProductRepository):
             version=model.version,
         )
 
+    async def get_by_ids(self, store_id: UUID, product_ids: list[UUID]) -> list[Product]:
+        result = await self._session.execute(
+            select(ProductModel).where(
+                ProductModel.store_id == store_id,
+                ProductModel.id.in_(product_ids),
+                ProductModel.deleted_at.is_(None),
+            )
+        )
+        return [self._to_entity(m) for m in result.scalars().all()]
+
     async def get_by_id(self, store_id: UUID, product_id: UUID) -> Product | None:
         result = await self._session.execute(
             select(ProductModel).where(
@@ -230,6 +240,25 @@ class ProductRepository(IProductRepository):
             model.deleted_at = datetime.now(timezone.utc)
             model.is_active = False
             await self._session.flush()
+
+    async def batch_update_stock(
+        self,
+        store_id: UUID,
+        items: list[tuple[UUID, int, str, str | None, UUID | None, str | None]],
+        *,
+        sale_id: UUID | None = None,
+        device_id: str | None = None,
+    ) -> None:
+        for product_id, quantity, movement_type, reason, item_sale_id, item_device_id in items:
+            await self.update_stock(
+                store_id,
+                product_id,
+                quantity,
+                movement_type=movement_type,
+                reason=reason,
+                sale_id=item_sale_id or sale_id,
+                device_id=item_device_id or device_id,
+            )
 
     async def update_stock(
         self,

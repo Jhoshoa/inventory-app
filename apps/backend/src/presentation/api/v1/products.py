@@ -2,6 +2,7 @@ import time
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.application.dto.product_dto import (
     CreateProductDTO,
@@ -66,8 +67,8 @@ from src.infrastructure.database.repositories.product_repository import (
 from src.infrastructure.database.repositories.stock_movement_repository import (
     StockMovementRepository,
 )
-from src.infrastructure.database.session import get_session
 from src.presentation.dependencies import (
+    get_db_session,
     get_import_job_repo,
     get_photo_storage,
     get_product_category_repo,
@@ -379,18 +380,18 @@ async def delete_product(
 async def import_products_csv(
     file: UploadFile = File(...),
     user=Depends(require_owner),
-    product_repo: ProductRepository = Depends(get_product_repo),
-    category_repo: ProductCategoryRepository = Depends(get_product_category_repo),
-    job_repo: ImportJobRepository = Depends(get_import_job_repo),
+    session: AsyncSession = Depends(get_db_session),
 ):
     if file.content_type not in {"text/csv", "application/vnd.ms-excel", "application/octet-stream"}:
         raise HTTPException(status_code=415, detail="Solo se aceptan archivos CSV")
 
     content = (await file.read()).decode("utf-8", errors="replace")
 
-    async with get_session() as session:
-        use_case = ImportProductsCsvUseCase(session, product_repo, category_repo, job_repo)
-        job = await use_case.execute(user.store_id, user.id, file.filename or "productos.csv", content)
+    product_repo = ProductRepository(session)
+    category_repo = ProductCategoryRepository(session)
+    job_repo = ImportJobRepository(session)
+    use_case = ImportProductsCsvUseCase(session, product_repo, category_repo, job_repo)
+    job = await use_case.execute(user.store_id, user.id, file.filename or "productos.csv", content)
 
     return _job_to_response(job)
 

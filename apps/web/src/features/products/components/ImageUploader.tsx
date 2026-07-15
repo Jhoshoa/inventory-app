@@ -34,6 +34,7 @@ export function ImageUploader({
   const [state, setState] = useState<UploadState>("idle");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const previewUrlRef = useRef<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string>("");
   const [currentPhotoUrl, setCurrentPhotoUrl] = useState<string | null>(
     currentUrl ?? null,
@@ -51,8 +52,8 @@ export function ImageUploader({
 
   useEffect(() => {
     return () => {
-      if (previewUrl) {
-        URL.revokeObjectURL(previewUrl);
+      if (previewUrlRef.current) {
+        URL.revokeObjectURL(previewUrlRef.current);
       }
     };
   }, [previewUrl]);
@@ -135,8 +136,9 @@ export function ImageUploader({
         if (controller.signal.aborted) return;
         setCurrentPhotoUrl(updated.photo_url);
         setSelectedFile(null);
-        if (previewUrl) {
-          URL.revokeObjectURL(previewUrl);
+        if (previewUrlRef.current) {
+          URL.revokeObjectURL(previewUrlRef.current);
+          previewUrlRef.current = null;
           setPreviewUrl(null);
         }
         setState("idle");
@@ -149,7 +151,7 @@ export function ImageUploader({
         setState("error");
       }
     },
-    [productId, previewUrl, onPhotoChange, uploadPhoto],
+    [productId, onPhotoChange, uploadPhoto],
   );
 
   const processFile = useCallback(
@@ -161,11 +163,12 @@ export function ImageUploader({
         return;
       }
 
-      if (previewUrl) {
-        URL.revokeObjectURL(previewUrl);
+      if (previewUrlRef.current) {
+        URL.revokeObjectURL(previewUrlRef.current);
       }
 
       const objectUrl = URL.createObjectURL(file);
+      previewUrlRef.current = objectUrl;
       setSelectedFile(file);
       setPreviewUrl(objectUrl);
       setErrorMessage("");
@@ -178,7 +181,7 @@ export function ImageUploader({
         photoRef.current = file;
       }
     },
-    [validateFile, previewUrl, productId, handleUpload],
+    [validateFile, productId, handleUpload, photoRef],
   );
 
   const handleFileInputChange = useCallback(
@@ -220,8 +223,9 @@ export function ImageUploader({
 
   const clearSelection = useCallback(() => {
     setSelectedFile(null);
-    if (previewUrl) {
-      URL.revokeObjectURL(previewUrl);
+    if (previewUrlRef.current) {
+      URL.revokeObjectURL(previewUrlRef.current);
+      previewUrlRef.current = null;
       setPreviewUrl(null);
     }
     if (fileInputRef.current) {
@@ -232,7 +236,7 @@ export function ImageUploader({
     }
     setErrorMessage("");
     setState("idle");
-  }, [previewUrl, photoRef]);
+  }, [photoRef]);
 
   const handleRemove = useCallback(async () => {
     if (!productId) {
@@ -254,8 +258,9 @@ export function ImageUploader({
       if (controller.signal.aborted) return;
       setCurrentPhotoUrl(null);
       setSelectedFile(null);
-      if (previewUrl) {
-        URL.revokeObjectURL(previewUrl);
+      if (previewUrlRef.current) {
+        URL.revokeObjectURL(previewUrlRef.current);
+        previewUrlRef.current = null;
         setPreviewUrl(null);
       }
       setState("idle");
@@ -267,7 +272,7 @@ export function ImageUploader({
       );
       setState("error");
     }
-  }, [productId, previewUrl, onPhotoChange, deletePhoto, clearSelection]);
+  }, [productId, onPhotoChange, deletePhoto, clearSelection]);
 
   const handleRetry = useCallback(() => {
     if (selectedFile) {

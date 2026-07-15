@@ -23,6 +23,7 @@ import {
   MIN_PRODUCT_SEARCH_LENGTH,
 } from "../schemas";
 import type { Product, ProductListResponse, ProductSearchParams } from "../types";
+import { errorFromResponse } from "@/lib/api/errors";
 import { ProductLabelPreview, type SelectedLabelProduct } from "./ProductLabelPreview";
 
 const PRODUCT_SEARCH_DEBOUNCE_MS = 500;
@@ -82,7 +83,10 @@ export function ProductLabelPage({
       signal: controller.signal,
     })
       .then(async (response) => {
-        if (!response.ok) throw new Error(await readErrorMessage(response));
+        if (!response.ok) {
+          const err = await errorFromResponse(response);
+          throw new Error(err.message);
+        }
         return response.json() as Promise<ProductListResponse>;
       })
       .then((data) => {
@@ -405,7 +409,17 @@ export function ProductLabelPage({
                       max={MAX_LABELS_PER_PRINT}
                       value={quantity}
                       aria-label={`Cantidad ${product.name}`}
-                      onChange={(event) => updateQuantity(product, Number(event.target.value))}
+                      onChange={(event) => {
+                        const raw = event.target.value;
+                        if (raw === "" || raw === "0") {
+                          updateQuantity(product, 1);
+                          return;
+                        }
+                        const num = parseInt(raw, 10);
+                        if (!isNaN(num) && num >= 1) {
+                          updateQuantity(product, Math.min(num, MAX_LABELS_PER_PRINT));
+                        }
+                      }}
                     />
                     <Button type="button" variant="ghost" onClick={() => removeProduct(product.id)} aria-label={`Quitar ${product.name}`}>
                       <Trash2 className="h-4 w-4" aria-hidden="true" />
@@ -450,15 +464,4 @@ function LabelToggle({
 
 function toCm(mm: number) {
   return (mm / 10).toFixed(2);
-}
-
-async function readErrorMessage(response: Response) {
-  try {
-    const payload = await response.json();
-    if (typeof payload?.message === "string") return payload.message;
-    if (typeof payload?.detail === "string") return payload.detail;
-  } catch {
-    return "No se pudieron cargar productos";
-  }
-  return "No se pudieron cargar productos";
 }

@@ -12,6 +12,9 @@ class IProductRepository(ABC):
     async def get_by_id(self, store_id: UUID, product_id: UUID) -> Product | None: ...
 
     @abstractmethod
+    async def get_by_ids(self, store_id: UUID, product_ids: list[UUID]) -> list[Product]: ...
+
+    @abstractmethod
     async def list_by_store(self, store_id: UUID) -> list[Product]: ...
 
     @abstractmethod
@@ -58,6 +61,16 @@ class IProductRepository(ABC):
 
     @abstractmethod
     async def delete(self, store_id: UUID, product_id: UUID) -> None: ...
+
+    @abstractmethod
+    async def batch_update_stock(
+        self,
+        store_id: UUID,
+        items: list[tuple[UUID, int, str, str | None, UUID | None, str | None]],
+        *,
+        sale_id: UUID | None = None,
+        device_id: str | None = None,
+    ) -> None: ...
 
     @abstractmethod
     async def update_stock(

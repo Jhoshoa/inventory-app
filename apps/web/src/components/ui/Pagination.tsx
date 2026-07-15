@@ -17,6 +17,13 @@ export function Pagination({
   offset: number;
   onNavigate?: (offset: number) => void;
 }) {
+  if (!onNavigate && (!basePath || !searchParams)) {
+    throw new Error("Pagination requires basePath + searchParams when onNavigate is not provided");
+  }
+
+  const resolvedBasePath = basePath ?? "";
+  const resolvedSearchParams = searchParams ?? new URLSearchParams();
+
   const from = total === 0 ? 0 : offset + 1;
   const to = Math.min(offset + limit, total);
   const previousOffset = Math.max(offset - limit, 0);
@@ -55,13 +62,13 @@ export function Pagination({
           <>
             <PageLink
               disabled={!hasPrevious}
-              href={hrefFor(basePath!, searchParams!, previousOffset)}
+              href={hrefFor(resolvedBasePath, resolvedSearchParams, previousOffset)}
               label="Anterior"
               icon="previous"
             />
             <PageLink
               disabled={!hasNext}
-              href={hrefFor(basePath!, searchParams!, nextOffset)}
+              href={hrefFor(resolvedBasePath, resolvedSearchParams, nextOffset)}
               label="Siguiente"
               icon="next"
             />

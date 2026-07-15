@@ -1,8 +1,7 @@
 from uuid import UUID
 
-from supabase import create_client
-
 from src.config.settings import settings
+from src.infrastructure.auth.supabase_client import get_supabase_admin_client
 
 
 def verify_jwt(token: str) -> dict:
@@ -19,7 +18,7 @@ def verify_jwt(token: str) -> dict:
             "store_id": UUID("00000000-0000-0000-0000-000000000101"),
         }
 
-    supabase = create_client(settings.SUPABASE_URL, settings.SUPABASE_SERVICE_ROLE_KEY)
+    supabase = get_supabase_admin_client()
     response = supabase.auth.get_user(token)
     if not response.user:
         raise PermissionError("Token inválido o expirado")

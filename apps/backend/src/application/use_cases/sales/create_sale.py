@@ -42,13 +42,16 @@ class CreateSaleUseCase:
         if business_day is None:
             raise ConflictError("La tienda esta cerrada. Un owner debe abrir la jornada para vender.")
 
-        sale_items: list[SaleItem] = []
         product_ids = [item.product_id for item in input.items]
         if len(set(product_ids)) != len(product_ids):
             raise ValueError("La venta no puede incluir productos duplicados")
 
+        products = await self._product_repo.get_by_ids(input.store_id, product_ids)
+        product_map = {p.id: p for p in products}
+
+        sale_items: list[SaleItem] = []
         for item in input.items:
-            product = await self._product_repo.get_by_id(input.store_id, item.product_id)
+            product = product_map.get(item.product_id)
             if not product:
                 raise NotFoundError(f"Producto no encontrado: {item.product_id}")
             if not product.can_sell(item.quantity):
@@ -78,14 +81,12 @@ class CreateSaleUseCase:
         )
         sale = await self._sale_repo.save(sale)
 
-        for item in input.items:
-            await self._product_repo.update_stock(
-                input.store_id,
-                item.product_id,
-                -item.quantity,
-                movement_type="sale",
-                sale_id=sale.id,
-                device_id=input.device_id,
-            )
+        await self._product_repo.batch_update_stock(
+            input.store_id,
+            [
+                (item.product_id, -item.quantity, "sale", None, sale.id, input.device_id)
+                for item in input.items
+            ],
+        )
 
         return sale
