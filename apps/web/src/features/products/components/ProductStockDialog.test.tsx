@@ -55,6 +55,5 @@ describe("ProductStockDialog", () => {
     await user.click(screen.getByRole("button", { name: "Guardar ajuste" }));
 
     expect(mocks.refresh).toHaveBeenCalled();
-    expect(screen.getByRole("button", { name: "Guardar ajuste" })).toBeEnabled();
   });
 });

@@ -1,60 +1,61 @@
 "use client";
 
-import { useId, useState } from "react";
+import { useState } from "react";
+import type { ReactNode } from "react";
 import { Button } from "./Button";
-import { DialogOverlay, DialogSurface } from "./Dialog";
+import { Dialog, DialogTitle, DialogDescription, DialogBody, DialogFooter } from "./Dialog";
+
+interface ConfirmDialogProps {
+  title: string;
+  description?: string;
+  confirmLabel?: string;
+  cancelLabel?: string;
+  variant?: "danger" | "primary";
+  onConfirm: () => void;
+  children?: ReactNode;
+  triggerLabel?: string;
+}
 
 export function ConfirmDialog({
   title,
   description,
   triggerLabel,
-  confirmLabel,
+  confirmLabel = "Confirmar",
+  cancelLabel = "Cancelar",
+  variant = "danger",
   onConfirm,
   children,
-}: {
-  title: string;
-  description: string;
-  triggerLabel: string;
-  confirmLabel: string;
-  onConfirm: (close: () => void) => void;
-  children?: (close: () => void) => React.ReactNode;
-}) {
+}: ConfirmDialogProps) {
   const [open, setOpen] = useState(false);
-  const titleId = useId();
-
-  function close() {
-    setOpen(false);
-  }
-
-  if (!open) {
-    return (
-      <Button variant="ghost" onClick={() => setOpen(true)}>
-        {triggerLabel}
-      </Button>
-    );
-  }
 
   return (
-    <DialogOverlay>
-      <DialogSurface titleId={titleId} onClose={close} className="w-full max-w-md">
-        <div className="space-y-2">
-          <h2 id={titleId} className="text-base font-semibold text-text-strong">
-            {title}
-          </h2>
-          <p className="text-sm text-text-muted">{description}</p>
-        </div>
-        {children ? (
-          <div className="mt-5 space-y-3">{children(close)}</div>
+    <>
+      {triggerLabel ? (
+        <Button variant="ghost" onClick={() => setOpen(true)}>
+          {triggerLabel}
+        </Button>
+      ) : null}
+      <Dialog open={open} onOpenChange={setOpen} size="sm">
+        <DialogTitle close>{title}</DialogTitle>
+        {description ? (
+          <DialogDescription>{description}</DialogDescription>
         ) : null}
-        <div className="mt-4 flex justify-end gap-2">
-          <Button variant="secondary" onClick={close}>
-            Cancelar
+        {children ? <DialogBody>{children}</DialogBody> : null}
+        <DialogFooter>
+          <Button variant="secondary" onClick={() => setOpen(false)}>
+            {cancelLabel}
           </Button>
-          <Button variant="danger" onClick={() => onConfirm(close)}>
+          <Button
+            variant={variant}
+            onClick={() => {
+              onConfirm();
+              setOpen(false);
+            }}
+          >
             {confirmLabel}
           </Button>
-        </div>
-      </DialogSurface>
-    </DialogOverlay>
+        </DialogFooter>
+      </Dialog>
+    </>
   );
 }

@@ -34,7 +34,7 @@ describe("ProductDeleteDialog", () => {
     render(<ProductDeleteDialog productId="product-1" productName="Arroz" />);
 
     await user.click(screen.getByRole("button", { name: "Eliminar" }));
-    const dialog = screen.getByRole("heading", { name: "Eliminar producto" }).parentElement!;
+    const dialog = screen.getByRole("dialog");
     await user.click(within(dialog).getByRole("button", { name: "Eliminar" }));
 
     expect(screen.getByText("Escribe ELIMINAR para confirmar")).toBeInTheDocument();
@@ -52,7 +52,7 @@ describe("ProductDeleteDialog", () => {
 
     await user.click(screen.getByRole("button", { name: "Eliminar" }));
     await user.type(screen.getByLabelText("Confirmacion"), "ELIMINAR");
-    const dialog = screen.getByRole("heading", { name: "Eliminar producto" }).parentElement!;
+    const dialog = screen.getByRole("dialog");
     await user.click(within(dialog).getByRole("button", { name: "Eliminar" }));
 
     expect(mocks.replace).toHaveBeenCalledWith("/dashboard/products");

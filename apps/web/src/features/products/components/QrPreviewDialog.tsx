@@ -2,11 +2,16 @@
 
 /* eslint-disable @next/next/no-img-element */
 
-import { useId } from "react";
-import { Download, Loader2, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import { Download, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
-import { DialogOverlay, DialogSurface } from "@/components/ui/Dialog";
+import {
+  Dialog,
+  DialogTitle,
+  DialogDescription,
+  DialogBody,
+  DialogFooter,
+} from "@/components/ui/Dialog";
 import { generateQrSvg, svgToDataUri, toQrFilename } from "../qr";
 
 interface QrPreviewDialogProps {
@@ -26,7 +31,6 @@ export function QrPreviewDialog({
   const [svg, setSvg] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
-  const titleId = useId();
 
   useEffect(() => {
     if (!open || !normalizedCode) {
@@ -61,30 +65,13 @@ export function QrPreviewDialog({
     return svgToDataUri(svg);
   }, [svg]);
 
-  if (!open) return null;
-
   return (
-    <DialogOverlay>
-      <DialogSurface titleId={titleId} onClose={onClose} className="w-full max-w-md space-y-5">
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <h2 id={titleId} className="text-lg font-semibold text-text-strong">
-              QR del producto
-            </h2>
-            {productName ? (
-              <p className="mt-1 text-sm text-text-muted">{productName}</p>
-            ) : null}
-          </div>
-          <button
-            type="button"
-            className="inline-flex h-8 w-8 items-center justify-center rounded-md text-text-muted hover:bg-app-surface-muted hover:text-text-strong focus:outline-none focus:ring-2 focus:ring-focus"
-            onClick={onClose}
-            aria-label="Cerrar"
-          >
-            <X className="h-4 w-4" aria-hidden="true" />
-          </button>
-        </div>
-
+    <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
+      <DialogTitle close>QR del producto</DialogTitle>
+      {productName ? (
+        <DialogDescription>{productName}</DialogDescription>
+      ) : null}
+      <DialogBody>
         <div className="flex min-h-72 flex-col items-center justify-center rounded-lg border border-app-border bg-app-surface-muted p-6">
           {isGenerating ? (
             <div className="flex items-center gap-2 text-sm text-text-muted">
@@ -103,22 +90,20 @@ export function QrPreviewDialog({
             </p>
           )}
         </div>
-
-        <div className="rounded-md bg-app-surface-muted px-3 py-2 font-mono text-sm text-text-body">
+        <div className="mt-4 rounded-md bg-app-surface-muted px-3 py-2 font-mono text-sm text-text-body">
           {normalizedCode || "Sin codigo"}
         </div>
-
-        <div className="flex justify-end gap-3">
-          <Button type="button" variant="secondary" onClick={onClose}>
-            Cerrar
-          </Button>
-          <Button type="button" onClick={() => downloadSvg(svg, normalizedCode)} disabled={!svg}>
-            <Download className="h-4 w-4" aria-hidden="true" />
-            Descargar SVG
-          </Button>
-        </div>
-      </DialogSurface>
-    </DialogOverlay>
+      </DialogBody>
+      <DialogFooter>
+        <Button variant="secondary" onClick={onClose}>
+          Cerrar
+        </Button>
+        <Button onClick={() => downloadSvg(svg, normalizedCode)} disabled={!svg}>
+          <Download className="h-4 w-4" aria-hidden="true" />
+          Descargar SVG
+        </Button>
+      </DialogFooter>
+    </Dialog>
   );
 }
 

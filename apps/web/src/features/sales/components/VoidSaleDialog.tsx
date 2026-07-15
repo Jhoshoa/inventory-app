@@ -1,12 +1,11 @@
 "use client";
 
-import { useId, type FormEvent } from "react";
-import { useState } from "react";
+import { type FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
-import { DialogOverlay, DialogSurface } from "@/components/ui/Dialog";
+import { Dialog, DialogTitle, DialogBody, DialogFooter } from "@/components/ui/Dialog";
 import { FieldError } from "@/components/ui/FieldError";
 import { Label } from "@/components/ui/Label";
 import { Textarea } from "@/components/ui/Textarea";
@@ -23,7 +22,6 @@ export function VoidSaleDialog({ saleId }: { saleId: string }) {
   const [state, setState] = useState<SaleActionState>(initialVoidState);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
-  const titleId = useId();
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -36,6 +34,7 @@ export function VoidSaleDialog({ saleId }: { saleId: string }) {
       setState(nextState);
       if (nextState.ok) {
         toast.success("Venta anulada");
+        setOpen(false);
         router.refresh();
       } else {
         toast.error(nextState.message || "No se pudo anular la venta");
@@ -54,33 +53,35 @@ export function VoidSaleDialog({ saleId }: { saleId: string }) {
       <Button variant="danger" onClick={() => setOpen(true)}>
         Anular venta
       </Button>
-      {open ? (
-        <DialogOverlay>
-          <DialogSurface titleId={titleId} onClose={() => setOpen(false)} className="w-full max-w-md">
-            <h2 id={titleId} className="text-base font-semibold text-text-strong">Anular venta</h2>
-            <p className="mt-1 text-sm text-text-muted">
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogTitle close>Anular venta</DialogTitle>
+        <form onSubmit={onSubmit}>
+          <DialogBody>
+            <p className="text-sm text-text-muted">
               Esta accion devuelve inventario y requiere permisos de propietario.
             </p>
-            <form onSubmit={onSubmit} className="mt-5 space-y-4">
-              <input type="hidden" name="sale_id" value={saleId} />
-              {state.message ? <Alert variant={state.ok ? "info" : "error"}>{state.message}</Alert> : null}
-              <div className="space-y-2">
-                <Label htmlFor={`void-reason-${saleId}`}>Razon</Label>
-                <Textarea id={`void-reason-${saleId}`} name="reason" maxLength={200} />
-                <FieldError message={state.fieldErrors.reason} />
+            <input type="hidden" name="sale_id" value={saleId} />
+            {state.message ? (
+              <div className="mt-3">
+                <Alert variant={state.ok ? "info" : "error"}>{state.message}</Alert>
               </div>
-              <div className="flex justify-end gap-2">
-                <Button type="button" variant="secondary" onClick={() => setOpen(false)}>
-                  Cancelar
-                </Button>
-                <Button type="submit" variant="danger" disabled={isSubmitting}>
-                  {isSubmitting ? "Anulando..." : "Confirmar anulacion"}
-                </Button>
-              </div>
-            </form>
-          </DialogSurface>
-        </DialogOverlay>
-      ) : null}
+            ) : null}
+            <div className="mt-4 space-y-1">
+              <Label htmlFor={`void-reason-${saleId}`}>Razon</Label>
+              <Textarea id={`void-reason-${saleId}`} name="reason" maxLength={200} />
+              <FieldError message={state.fieldErrors.reason} />
+            </div>
+          </DialogBody>
+          <DialogFooter>
+            <Button type="button" variant="secondary" onClick={() => setOpen(false)}>
+              Cancelar
+            </Button>
+            <Button type="submit" variant="danger" disabled={isSubmitting}>
+              {isSubmitting ? "Anulando..." : "Confirmar anulacion"}
+            </Button>
+          </DialogFooter>
+        </form>
+      </Dialog>
     </>
   );
 }

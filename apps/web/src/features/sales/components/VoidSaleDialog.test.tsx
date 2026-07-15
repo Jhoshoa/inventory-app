@@ -53,6 +53,6 @@ describe("VoidSaleDialog", () => {
     await user.click(screen.getByRole("button", { name: "Confirmar anulacion" }));
 
     expect(mocks.refresh).toHaveBeenCalled();
-    expect(screen.getByRole("button", { name: "Confirmar anulacion" })).toBeEnabled();
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
 });

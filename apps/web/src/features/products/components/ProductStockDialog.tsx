@@ -1,13 +1,12 @@
 "use client";
 
-import { useId, type FormEvent } from "react";
-import { useState } from "react";
+import { type FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import { PackagePlus } from "lucide-react";
 import { toast } from "sonner";
 import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
-import { DialogOverlay, DialogSurface } from "@/components/ui/Dialog";
+import { Dialog, DialogTitle, DialogBody, DialogFooter } from "@/components/ui/Dialog";
 import { FieldError } from "@/components/ui/FieldError";
 import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
@@ -33,7 +32,6 @@ export function ProductStockDialog({
   const [state, setState] = useState<ProductActionState>(initialProductActionState);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
-  const titleId = useId();
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -46,6 +44,7 @@ export function ProductStockDialog({
       setState(nextState);
       if (nextState.ok) {
         toast.success("Stock actualizado");
+        setOpen(false);
         router.refresh();
       } else {
         toast.error(nextState.message || "No se pudo ajustar el stock");
@@ -70,38 +69,40 @@ export function ProductStockDialog({
           Ajustar stock
         </Button>
       )}
-      {open ? (
-        <DialogOverlay>
-          <DialogSurface titleId={titleId} onClose={() => setOpen(false)} className="w-full max-w-md">
-            <h2 id={titleId} className="text-base font-semibold text-text-strong">
-              Ajustar stock
-            </h2>
-            <p className="mt-1 text-sm text-text-muted">{productName}</p>
-            <form onSubmit={onSubmit} className="mt-5 space-y-4">
-              {state.message ? <Alert variant={state.ok ? "info" : "error"}>{state.message}</Alert> : null}
-              <input type="hidden" name="product_id" value={productId} />
-              <div className="space-y-2">
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogTitle close>Ajustar stock</DialogTitle>
+        <form onSubmit={onSubmit}>
+          <DialogBody>
+            <p className="text-sm text-text-muted">{productName}</p>
+            {state.message ? (
+              <div className="mt-3">
+                <Alert variant={state.ok ? "info" : "error"}>{state.message}</Alert>
+              </div>
+            ) : null}
+            <input type="hidden" name="product_id" value={productId} />
+            <div className="mt-4 space-y-3">
+              <div className="space-y-1">
                 <Label htmlFor={`quantity-${productId}`}>Cantidad delta</Label>
                 <Input id={`quantity-${productId}`} name="quantity" type="number" step="1" />
                 <FieldError message={state.fieldErrors.quantity} />
               </div>
-              <div className="space-y-2">
+              <div className="space-y-1">
                 <Label htmlFor={`reason-${productId}`}>Razon</Label>
                 <Textarea id={`reason-${productId}`} name="reason" maxLength={120} />
                 <FieldError message={state.fieldErrors.reason} />
               </div>
-              <div className="flex justify-end gap-2">
-                <Button type="button" variant="secondary" onClick={() => setOpen(false)}>
-                  Cerrar
-                </Button>
-                <Button type="submit" disabled={isSubmitting}>
-                  {isSubmitting ? "Guardando..." : "Guardar ajuste"}
-                </Button>
-              </div>
-            </form>
-          </DialogSurface>
-        </DialogOverlay>
-      ) : null}
+            </div>
+          </DialogBody>
+          <DialogFooter>
+            <Button type="button" variant="secondary" onClick={() => setOpen(false)}>
+              Cerrar
+            </Button>
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? "Guardando..." : "Guardar ajuste"}
+            </Button>
+          </DialogFooter>
+        </form>
+      </Dialog>
     </>
   );
 }

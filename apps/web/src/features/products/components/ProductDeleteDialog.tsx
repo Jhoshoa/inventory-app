@@ -1,12 +1,11 @@
 "use client";
 
-import { useId, type FormEvent } from "react";
-import { useState } from "react";
+import { type FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Trash2 } from "lucide-react";
 import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
-import { DialogOverlay, DialogSurface } from "@/components/ui/Dialog";
+import { Dialog, DialogTitle, DialogBody, DialogFooter } from "@/components/ui/Dialog";
 import { FieldError } from "@/components/ui/FieldError";
 import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
@@ -31,7 +30,6 @@ export function ProductDeleteDialog({
   const [state, setState] = useState<ProductActionState>(initialProductActionState);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
-  const titleId = useId();
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -43,6 +41,7 @@ export function ProductDeleteDialog({
       const nextState = await deleteProductAction(initialProductActionState, new FormData(event.currentTarget));
       setState(nextState);
       if (nextState.ok) {
+        setOpen(false);
         router.replace("/dashboard/products");
         router.refresh();
       }
@@ -68,35 +67,35 @@ export function ProductDeleteDialog({
           Eliminar
         </Button>
       )}
-      {open ? (
-        <DialogOverlay>
-          <DialogSurface titleId={titleId} onClose={() => setOpen(false)} className="w-full max-w-md">
-            <h2 id={titleId} className="text-base font-semibold text-text-strong">
-              Eliminar producto
-            </h2>
-            <p className="mt-1 text-sm text-text-muted">
+      <Dialog open={open} onOpenChange={setOpen} size="sm">
+        <DialogTitle close>Eliminar producto</DialogTitle>
+        <form onSubmit={onSubmit} noValidate>
+          <DialogBody>
+            <p className="text-sm text-text-muted">
               Escribe ELIMINAR para borrar {productName}. El backend validara permisos owner.
             </p>
-            <form onSubmit={onSubmit} noValidate className="mt-5 space-y-4">
-              {state.message ? <Alert variant={state.ok ? "info" : "error"}>{state.message}</Alert> : null}
-              <input type="hidden" name="product_id" value={productId} />
-              <div className="space-y-2">
-                <Label htmlFor={`confirm-${productId}`}>Confirmacion</Label>
-                <Input id={`confirm-${productId}`} name="confirm" required pattern="ELIMINAR" />
-                <FieldError message={state.fieldErrors.confirm} />
+            {state.message ? (
+              <div className="mt-3">
+                <Alert variant={state.ok ? "info" : "error"}>{state.message}</Alert>
               </div>
-              <div className="flex justify-end gap-2">
-                <Button type="button" variant="secondary" onClick={() => setOpen(false)}>
-                  Cancelar
-                </Button>
-                <Button type="submit" variant="danger" disabled={isSubmitting}>
-                  {isSubmitting ? "Eliminando..." : "Eliminar"}
-                </Button>
-              </div>
-            </form>
-          </DialogSurface>
-        </DialogOverlay>
-      ) : null}
+            ) : null}
+            <input type="hidden" name="product_id" value={productId} />
+            <div className="mt-4 space-y-1">
+              <Label htmlFor={`confirm-${productId}`}>Confirmacion</Label>
+              <Input id={`confirm-${productId}`} name="confirm" required pattern="ELIMINAR" />
+              <FieldError message={state.fieldErrors.confirm} />
+            </div>
+          </DialogBody>
+          <DialogFooter>
+            <Button type="button" variant="secondary" onClick={() => setOpen(false)}>
+              Cancelar
+            </Button>
+            <Button type="submit" variant="danger" disabled={isSubmitting}>
+              {isSubmitting ? "Eliminando..." : "Eliminar"}
+            </Button>
+          </DialogFooter>
+        </form>
+      </Dialog>
     </>
   );
 }

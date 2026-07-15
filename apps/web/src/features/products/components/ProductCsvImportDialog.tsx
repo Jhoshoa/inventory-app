@@ -1,10 +1,21 @@
 "use client";
 
-import { useId, useCallback, useRef, useState } from "react";
-import { AlertCircle, CheckCircle2, FileSpreadsheet, Loader2, Upload, X } from "lucide-react";
+import { useCallback, useRef, useState } from "react";
+import {
+  AlertCircle,
+  CheckCircle2,
+  FileSpreadsheet,
+  Loader2,
+  Upload,
+  X,
+} from "lucide-react";
 import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
-import { DialogOverlay, DialogSurface } from "@/components/ui/Dialog";
+import {
+  Dialog,
+  DialogTitle,
+  DialogBody,
+} from "@/components/ui/Dialog";
 import { importProductsCsv } from "../import-client";
 import type { ImportJob, RowError } from "../types";
 
@@ -27,7 +38,6 @@ export function ProductCsvImportDialog({ open, onClose, onSuccess }: Props) {
   const [dragOver, setDragOver] = useState(false);
   const [file, setFile] = useState<File | null>(null);
   const [state, setState] = useState<DialogState>({ phase: "idle" });
-  const titleId = useId();
 
   const handleFile = useCallback((f: File) => {
     if (!f.name.endsWith(".csv")) {
@@ -70,10 +80,14 @@ export function ProductCsvImportDialog({ open, onClose, onSuccess }: Props) {
           onSuccess();
         }
       } else {
-        setState({ phase: "error", message: "La importacion no se completo en el tiempo esperado." });
+        setState({
+          phase: "error",
+          message: "La importacion no se completo en el tiempo esperado.",
+        });
       }
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Error inesperado al importar.";
+      const message =
+        error instanceof Error ? error.message : "Error inesperado al importar.";
       setState({ phase: "error", message });
     }
   }, [file, onSuccess]);
@@ -89,11 +103,10 @@ export function ProductCsvImportDialog({ open, onClose, onSuccess }: Props) {
     onClose();
   }
 
-  if (!open) return null;
-
   return (
-    <DialogOverlay>
-      <DialogSurface titleId={titleId} onClose={handleClose} className="w-full max-w-lg">
+    <Dialog open={open} onOpenChange={(v) => !v && handleClose()} size="lg">
+      <DialogTitle close>Importar productos desde CSV</DialogTitle>
+      <DialogBody>
         {state.phase === "completed" && state.job.error_count > 0 ? (
           <ErrorResult
             job={state.job}
@@ -106,26 +119,42 @@ export function ProductCsvImportDialog({ open, onClose, onSuccess }: Props) {
             onClose={handleClose}
           />
         ) : state.phase === "error" ? (
-          <ErrorState message={state.message} onRetry={handleSubmit} onClose={handleClose} />
-        ) : state.phase === "uploading" || state.phase === "validating" || state.phase === "inserting" ? (
-          <ProcessingResult phase={state.phase} filename={file?.name ?? ""} onCancel={handleClose} />
+          <ErrorState
+            message={state.message}
+            onRetry={handleSubmit}
+            onClose={handleClose}
+          />
+        ) : state.phase === "uploading" ||
+          state.phase === "validating" ||
+          state.phase === "inserting" ? (
+          <ProcessingResult
+            phase={state.phase}
+            filename={file?.name ?? ""}
+            onCancel={handleClose}
+          />
         ) : (
           <IdleForm
             file={file}
             dragOver={dragOver}
-            onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+            onDragOver={(e) => {
+              e.preventDefault();
+              setDragOver(true);
+            }}
             onDragLeave={() => setDragOver(false)}
             onDrop={handleDrop}
             onFileClick={() => inputRef.current?.click()}
             onFileChange={handleInputChange}
-            onClear={() => { setFile(null); if (inputRef.current) inputRef.current.value = ""; }}
+            onClear={() => {
+              setFile(null);
+              if (inputRef.current) inputRef.current.value = "";
+            }}
             onSubmit={handleSubmit}
             onClose={handleClose}
             inputRef={inputRef}
           />
         )}
-      </DialogSurface>
-    </DialogOverlay>
+      </DialogBody>
+    </Dialog>
   );
 }
 
@@ -156,7 +185,6 @@ function IdleForm({
 }) {
   return (
     <>
-      <h2 className="text-lg font-semibold text-text-strong">Importar productos desde CSV</h2>
       <p className="mt-1 text-sm text-text-muted">
         Sube un archivo CSV con los productos a importar.
       </p>
@@ -173,13 +201,17 @@ function IdleForm({
         onClick={onFileClick}
         role="button"
         tabIndex={0}
-        onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") onFileClick(); }}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") onFileClick();
+        }}
       >
         <Upload className="mx-auto h-8 w-8 text-text-disabled" />
         <p className="mt-2 text-sm font-medium text-text-strong">
           Arrastra tu archivo CSV aqui
         </p>
-        <p className="mt-1 text-xs text-text-muted">o haz clic para seleccionar archivo</p>
+        <p className="mt-1 text-xs text-text-muted">
+          o haz clic para seleccionar archivo
+        </p>
         <input
           ref={inputRef}
           type="file"
@@ -193,8 +225,12 @@ function IdleForm({
         <div className="mt-3 flex items-center justify-between rounded-md border border-app-border bg-app-surface-muted px-3 py-2">
           <div className="flex items-center gap-2 truncate">
             <FileSpreadsheet className="h-4 w-4 shrink-0 text-text-muted" />
-            <span className="truncate text-sm text-text-strong">{file.name}</span>
-            <span className="shrink-0 text-xs text-text-muted">({(file.size / 1024).toFixed(0)} KB)</span>
+            <span className="truncate text-sm text-text-strong">
+              {file.name}
+            </span>
+            <span className="shrink-0 text-xs text-text-muted">
+              ({(file.size / 1024).toFixed(0)} KB)
+            </span>
           </div>
           <button
             type="button"
@@ -217,23 +253,36 @@ function IdleForm({
           Descargar plantilla CSV
         </a>
         <div className="flex items-center gap-2">
-          <Button variant="secondary" onClick={onClose}>Cancelar</Button>
-          <Button onClick={onSubmit} disabled={!file}>Subir</Button>
+          <Button variant="secondary" onClick={onClose}>
+            Cancelar
+          </Button>
+          <Button onClick={onSubmit} disabled={!file}>
+            Subir
+          </Button>
         </div>
       </div>
     </>
   );
 }
 
-function ErrorState({ message, onRetry, onClose }: { message: string; onRetry: () => void; onClose: () => void }) {
+function ErrorState({
+  message,
+  onRetry,
+  onClose,
+}: {
+  message: string;
+  onRetry: () => void;
+  onClose: () => void;
+}) {
   return (
     <>
-      <h2 className="text-lg font-semibold text-text-strong">Error al importar</h2>
       <div className="mt-2">
         <Alert variant="error">{message}</Alert>
       </div>
       <div className="mt-6 flex items-center justify-end gap-2">
-        <Button variant="secondary" onClick={onClose}>Cerrar</Button>
+        <Button variant="secondary" onClick={onClose}>
+          Cerrar
+        </Button>
         <Button onClick={onRetry}>Reintentar</Button>
       </div>
     </>
@@ -266,13 +315,21 @@ function ProcessingResult({
         <p className="mt-1 text-xs text-text-muted">{filename}</p>
       </div>
       <div className="mt-4 flex justify-center">
-        <Button variant="secondary" onClick={onCancel}>Cancelar</Button>
+        <Button variant="secondary" onClick={onCancel}>
+          Cancelar
+        </Button>
       </div>
     </>
   );
 }
 
-function SuccessResult({ count, onClose }: { count: number; onClose: () => void }) {
+function SuccessResult({
+  count,
+  onClose,
+}: {
+  count: number;
+  onClose: () => void;
+}) {
   return (
     <>
       <div className="flex flex-col items-center py-6 text-center">
@@ -281,7 +338,8 @@ function SuccessResult({ count, onClose }: { count: number; onClose: () => void 
           Importacion completada
         </h2>
         <p className="mt-2 text-sm text-text-muted">
-          {count} {count === 1 ? "producto importado" : "productos importados"}
+          {count}{" "}
+          {count === 1 ? "producto importado" : "productos importados"}
         </p>
       </div>
       <div className="mt-4 flex justify-center">
@@ -291,16 +349,24 @@ function SuccessResult({ count, onClose }: { count: number; onClose: () => void 
   );
 }
 
-function ErrorResult({ job, filename, onClose }: { job: ImportJob; filename: string; onClose: () => void }) {
+function ErrorResult({
+  job,
+  filename,
+  onClose,
+}: {
+  job: ImportJob;
+  filename: string;
+  onClose: () => void;
+}) {
   return (
     <>
       <div className="flex items-start gap-3">
         <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-status-danger" />
         <div>
-          <h2 className="text-lg font-semibold text-text-strong">Error al importar productos</h2>
-          <p className="mt-1 text-sm text-text-muted">
-            Se encontraron {job.error_count} {job.error_count === 1 ? "error" : "errores"}.
-            Ningun producto fue importado.
+          <p className="text-sm text-text-muted">
+            Se encontraron {job.error_count}{" "}
+            {job.error_count === 1 ? "error" : "errores"}. Ningun producto fue
+            importado.
           </p>
           <p className="text-xs text-text-muted">
             Corrige el archivo e intenta de nuevo.
@@ -321,7 +387,9 @@ function ErrorResult({ job, filename, onClose }: { job: ImportJob; filename: str
             {job.errors.map((err: RowError, i: number) => (
               <tr key={i} className="border-b border-app-border last:border-0">
                 <td className="px-3 py-2 text-text-muted">{err.row}</td>
-                <td className="px-3 py-2 font-medium text-text-strong">{err.field}</td>
+                <td className="px-3 py-2 font-medium text-text-strong">
+                  {err.field}
+                </td>
                 <td className="px-3 py-2 text-text-body">{err.message}</td>
               </tr>
             ))}
@@ -352,7 +420,9 @@ function downloadErrors(errors: RowError[], originalFilename: string) {
     ),
   ].join("\n");
 
-  const blob = new Blob(["\ufeff" + csvContent], { type: "text/csv;charset=utf-8;" });
+  const blob = new Blob(["\ufeff" + csvContent], {
+    type: "text/csv;charset=utf-8;",
+  });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
