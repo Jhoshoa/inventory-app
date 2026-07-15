@@ -1,4 +1,4 @@
-"""description
+"""fix fk and unique constraints
 
 Revision ID: 4e1e63e2bb80
 Revises: 015

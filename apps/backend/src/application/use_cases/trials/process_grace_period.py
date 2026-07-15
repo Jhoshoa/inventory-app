@@ -20,14 +20,9 @@ class ProcessGracePeriodUseCase:
         now = datetime.now(timezone.utc)
         cutoff = now - timedelta(days=settings.GRACE_PERIOD_DAYS)
         expired_stores = await self._store_repo.list_by_past_due_expired(cutoff)
-        total = 0
+        if not expired_stores:
+            return 0
 
-        for store in expired_stores:
-            await self._store_repo.update_access_status(store.id, "suspended")
-            await self._store_repo.update_subscription(
-                store.id,
-                subscription_status="expired",
-            )
-            total += 1
-
-        return total
+        store_ids = [store.id for store in expired_stores]
+        await self._store_repo.batch_update_expired(store_ids, "suspended", "expired")
+        return len(store_ids)

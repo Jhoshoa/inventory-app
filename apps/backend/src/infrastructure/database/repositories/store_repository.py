@@ -99,6 +99,25 @@ class StoreRepository(IStoreRepository):
         )
         await self._session.flush()
 
+    async def batch_update_expired(
+        self,
+        store_ids: list[UUID],
+        access_status: str,
+        subscription_status: str,
+    ) -> None:
+        if not store_ids:
+            return
+        await self._session.execute(
+            update(StoreModel)
+            .where(StoreModel.id.in_(store_ids))
+            .values(
+                access_status=access_status,
+                subscription_status=subscription_status,
+                is_active=(access_status == "active"),
+            )
+        )
+        await self._session.flush()
+
     async def update_subscription(
         self,
         store_id: UUID,

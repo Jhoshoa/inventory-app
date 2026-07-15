@@ -63,13 +63,22 @@ class StockMovementRepository(IStockMovementRepository):
         from_date: datetime,
         to_date: datetime,
     ) -> list[StockMovement]:
-        movements, _total = await self.search(
-            store_id,
-            from_date=from_date,
-            to_date=to_date,
-            limit=10000,
-            offset=0,
+        filters = [StockMovementModel.store_id == store_id]
+        if from_date is not None:
+            filters.append(StockMovementModel.created_at >= from_date)
+        if to_date is not None:
+            filters.append(StockMovementModel.created_at <= to_date)
+
+        stmt = (
+            select(StockMovementModel)
+            .where(*filters)
+            .order_by(StockMovementModel.created_at.desc(), StockMovementModel.id.asc())
+            .execution_options(stream_results=True)
         )
+        movements: list[StockMovement] = []
+        async for partition in (await self._session.stream(stmt)).scalars().partitions(500):
+            for model in partition:
+                movements.append(self._to_entity(model))
         return movements
 
     def _to_entity(self, model: StockMovementModel) -> StockMovement:

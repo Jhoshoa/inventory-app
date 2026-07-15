@@ -6,15 +6,12 @@ from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.config.database import AsyncSessionLocal
+from src.config.dev_constants import DEV_CASHIER_USER_ID, DEV_STORE_ID, DEV_USER_ID
 from src.infrastructure.auth.password import hash_password
 from src.infrastructure.database.models.exchange_rate_model import ExchangeRateModel
 from src.infrastructure.database.models.product_model import ProductModel
 from src.infrastructure.database.models.store_model import StoreModel
 from src.infrastructure.database.models.user_model import UserModel
-
-DEV_USER_ID = UUID("00000000-0000-0000-0000-000000000001")
-DEV_CASHIER_USER_ID = UUID("00000000-0000-0000-0000-000000000002")
-DEV_STORE_ID = UUID("00000000-0000-0000-0000-000000000101")
 
 DEV_PASSWORD_HASH = hash_password("Dev12345!")
 

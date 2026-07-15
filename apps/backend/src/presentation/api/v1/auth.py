@@ -144,10 +144,11 @@ async def login(
     store_repo: StoreRepository = Depends(get_store_repo),
 ):
     if settings.DEBUG:
-        existing = await user_repo.get_by_email(dto.email)
-        if not existing or not existing.password_hash:
+        existing_with_pw = await user_repo.get_by_email_with_password(dto.email)
+        if not existing_with_pw or not existing_with_pw[1]:
             raise HTTPException(status_code=401, detail="Credenciales invalidas")
-        if not verify_password(dto.password, existing.password_hash):
+        existing, password_hash = existing_with_pw
+        if not verify_password(dto.password, password_hash):
             raise HTTPException(status_code=401, detail="Credenciales invalidas")
 
         local_user = await EnsureLocalUserUseCase(user_repo, store_repo).execute(

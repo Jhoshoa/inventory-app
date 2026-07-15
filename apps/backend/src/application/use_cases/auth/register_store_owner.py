@@ -35,15 +35,16 @@ class RegisterStoreOwnerUseCase:
             store = Store.create(input.store_name)
         store.trial_expires_at = Store.calculate_trial_expiry()
         store = await self._store_repo.save(store)
-        user = await self._user_repo.save(
-            User(
-                id=input.user_id,
-                email=input.email,
-                store_id=store.id,
-                full_name=input.full_name,
-                role="owner",
-                is_active=True,
-                password_hash=input.password_hash,
-            )
+        user_entity = User(
+            id=input.user_id,
+            email=input.email,
+            store_id=store.id,
+            full_name=input.full_name,
+            role="owner",
+            is_active=True,
         )
+        if input.password_hash is not None:
+            user = await self._user_repo.save_with_password(user_entity, input.password_hash)
+        else:
+            user = await self._user_repo.save(user_entity)
         return RegisterStoreOwnerResult(store=store, user=user)

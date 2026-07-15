@@ -2,7 +2,9 @@ from dataclasses import dataclass
 from datetime import date, datetime, timedelta, timezone
 from uuid import UUID, uuid4
 
-from src.config.settings import settings
+TRIAL_DAYS = 30
+GRACE_PERIOD_DAYS = 7
+TRIAL_WARN_DAYS = 5
 
 
 @dataclass
@@ -52,7 +54,7 @@ class Store:
         remaining = self.days_until_trial_ends
         if remaining is None:
             return False
-        return 0 < remaining <= settings.TRIAL_WARN_DAYS
+        return 0 < remaining <= TRIAL_WARN_DAYS
 
     @property
     def days_until_next_billing(self) -> int | None:
@@ -66,7 +68,7 @@ class Store:
         if self.subscription_status != "past_due" or self.grace_period_started_at is None:
             return None
         elapsed = (datetime.now(timezone.utc) - self.grace_period_started_at).days
-        return max(settings.GRACE_PERIOD_DAYS - elapsed, 0)
+        return max(GRACE_PERIOD_DAYS - elapsed, 0)
 
     @property
     def is_access_restricted(self) -> bool:
@@ -80,10 +82,10 @@ class Store:
             return True
         if (self.subscription_status == "past_due"
                 and self.grace_period_started_at is not None
-                and datetime.now(timezone.utc) >= self.grace_period_started_at + timedelta(days=settings.GRACE_PERIOD_DAYS)):
+                and datetime.now(timezone.utc) >= self.grace_period_started_at + timedelta(days=GRACE_PERIOD_DAYS)):
             return True
         return False
 
     @staticmethod
     def calculate_trial_expiry() -> datetime:
-        return datetime.now(timezone.utc) + timedelta(days=settings.TRIAL_DAYS)
+        return datetime.now(timezone.utc) + timedelta(days=TRIAL_DAYS)

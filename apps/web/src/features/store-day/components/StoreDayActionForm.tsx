@@ -12,7 +12,7 @@ import { closeStoreDayAction, openStoreDayAction, reopenStoreDayAction } from ".
 import type { CashMovementListResult, StoreDay, StoreDayActionState, StoreDayClosingPreviewResult } from "../types";
 import { CashMovementPanel } from "./CashMovementPanel";
 import { StoreDayClosingPreview } from "./StoreDayClosingPreview";
-import { initialState, sanitizeMoneyInput } from "./store-day-helpers";
+import { initialState, sanitizeMoneyInput } from "../utils/store-day-helpers";
 
 export function StoreDayActionForm({
   storeDay,

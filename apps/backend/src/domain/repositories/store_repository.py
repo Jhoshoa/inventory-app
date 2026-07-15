@@ -25,6 +25,14 @@ class IStoreRepository(ABC):
     async def update_access_status(self, store_id: UUID, access_status: str) -> None: ...
 
     @abstractmethod
+    async def batch_update_expired(
+        self,
+        store_ids: list[UUID],
+        access_status: str,
+        subscription_status: str,
+    ) -> None: ...
+
+    @abstractmethod
     async def update_subscription(
         self,
         store_id: UUID,

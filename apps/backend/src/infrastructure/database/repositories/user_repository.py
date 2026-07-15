@@ -63,8 +63,6 @@ class UserRepository(IUserRepository):
         model.is_active = user.is_active
         model.last_login_at = user.last_login_at
         model.updated_at = datetime.now(timezone.utc)
-        if user.password_hash is not None:
-            model.password_hash = user.password_hash
         await self._session.flush()
         return self._to_entity(model)
 
@@ -95,6 +93,36 @@ class UserRepository(IUserRepository):
         await self._session.flush()
         return self._to_entity(model)
 
+    async def get_by_email_with_password(self, email: str) -> tuple[User, str | None] | None:
+        result = await self._session.execute(select(UserModel).where(UserModel.email == email))
+        model = result.scalar_one_or_none()
+        if model is None:
+            return None
+        return (self._to_entity(model), model.password_hash)
+
+    async def save_with_password(self, user: User, password_hash: str) -> User:
+        model = await self._session.get(UserModel, user.id)
+        if model is None:
+            model = UserModel(id=user.id)
+            self._session.add(model)
+        model.email = user.email
+        model.store_id = user.store_id
+        model.full_name = user.full_name
+        model.role = user.role
+        model.is_active = user.is_active
+        model.last_login_at = user.last_login_at
+        model.updated_at = datetime.now(timezone.utc)
+        model.password_hash = password_hash
+        await self._session.flush()
+        return self._to_entity(model)
+
+    async def set_password_hash(self, user_id: UUID, password_hash: str) -> None:
+        model = await self._session.get(UserModel, user_id)
+        if model is not None:
+            model.password_hash = password_hash
+            model.updated_at = datetime.now(timezone.utc)
+            await self._session.flush()
+
     async def list_active_by_store(self, store_id: UUID) -> list[User]:
         result = await self._session.execute(
             select(UserModel).where(
@@ -120,5 +148,4 @@ class UserRepository(IUserRepository):
             is_active=model.is_active,
             last_login_at=model.last_login_at,
             updated_at=model.updated_at,
-            password_hash=model.password_hash,
         )

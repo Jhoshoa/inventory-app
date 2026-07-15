@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/Input";
 import { formatCurrency } from "@/lib/format/currency";
 import { voidCashMovementAction } from "../actions";
 import type { CashMovement } from "../types";
-import { cashMovementLabel, initialState } from "./store-day-helpers";
+import { cashMovementLabel, initialState } from "../utils/store-day-helpers";
 
 export function CashMovementRow({ movement }: { movement: CashMovement }) {
   const [isSubmitting, setIsSubmitting] = useState(false);

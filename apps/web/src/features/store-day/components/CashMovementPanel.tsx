@@ -12,7 +12,7 @@ import { Select } from "@/components/ui/Select";
 import { createCashMovementAction } from "../actions";
 import type { CashMovementListResult, StoreDayActionState } from "../types";
 import { CashMovementRow } from "./CashMovementRow";
-import { initialState, sanitizeMoneyInput } from "./store-day-helpers";
+import { initialState, sanitizeMoneyInput } from "../utils/store-day-helpers";
 
 export function CashMovementPanel({ cashMovements }: { cashMovements?: CashMovementListResult }) {
   const [state, setState] = useState<StoreDayActionState>(initialState);

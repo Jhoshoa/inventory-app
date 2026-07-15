@@ -25,6 +25,23 @@ export function PosWorkspace() {
     }
   }, []);
 
+  const handleIncrement = useCallback(
+    (productId: string) => dispatch({ type: "increment", productId }),
+    [],
+  );
+  const handleDecrement = useCallback(
+    (productId: string) => dispatch({ type: "decrement", productId }),
+    [],
+  );
+  const handleQuantityChange = useCallback(
+    (productId: string, quantity: number) => dispatch({ type: "setQuantity", productId, quantity }),
+    [],
+  );
+  const handleRemove = useCallback(
+    (productId: string) => dispatch({ type: "remove", productId }),
+    [],
+  );
+
   return (
     <div className="grid min-w-0 gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(360px,420px)]">
       <PosProductSearch
@@ -35,10 +52,10 @@ export function PosWorkspace() {
       <aside className="space-y-4 xl:sticky xl:top-20 xl:self-start">
         <PosCart
           items={cart.items}
-          onIncrement={(productId) => dispatch({ type: "increment", productId })}
-          onDecrement={(productId) => dispatch({ type: "decrement", productId })}
-          onQuantityChange={(productId, quantity) => dispatch({ type: "setQuantity", productId, quantity })}
-          onRemove={(productId) => dispatch({ type: "remove", productId })}
+          onIncrement={handleIncrement}
+          onDecrement={handleDecrement}
+          onQuantityChange={handleQuantityChange}
+          onRemove={handleRemove}
         />
         <PosCheckoutPanel items={cart.items} onStockRefresh={handleStockRefresh} />
       </aside>

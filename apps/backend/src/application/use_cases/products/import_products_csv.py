@@ -378,19 +378,22 @@ class ImportProductsCsvUseCase:
         if errors:
             return errors
 
+        all_skus = [row.sku for row in rows if row.sku]
+        all_qrs = [row.qr_code for row in rows if row.qr_code]
+        all_names = [(normalize_product_name(row.name), row.unit) for row in rows]
+
+        existing_skus = await self._product_repo.skus_exist(store_id, all_skus) if all_skus else set()
+        existing_qrs = await self._product_repo.qr_codes_exist(all_qrs) if all_qrs else set()
+        existing_names = await self._product_repo.names_exist(store_id, all_names) if all_names else set()
+
         for row in rows:
-            if row.sku:
-                exists = await self._product_repo.sku_exists(store_id, row.sku)
-                if exists:
-                    errors.append(RowError(row=row.row_number, field="sku", message=f"El SKU {row.sku} ya esta en uso por otro producto"))
+            if row.sku and row.sku in existing_skus:
+                errors.append(RowError(row=row.row_number, field="sku", message=f"El SKU {row.sku} ya esta en uso por otro producto"))
 
-            if row.qr_code:
-                exists = await self._product_repo.qr_code_exists(row.qr_code)
-                if exists:
-                    errors.append(RowError(row=row.row_number, field="qr_code", message=f"El codigo escaneable {row.qr_code} ya esta en uso por otro producto"))
+            if row.qr_code and row.qr_code in existing_qrs:
+                errors.append(RowError(row=row.row_number, field="qr_code", message=f"El codigo escaneable {row.qr_code} ya esta en uso por otro producto"))
 
-            exists = await self._product_repo.product_name_exists(store_id, normalize_product_name(row.name), row.unit)
-            if exists:
+            if normalize_product_name(row.name) in existing_names:
                 errors.append(RowError(row=row.row_number, field="name", message=f"Ya existe un producto con el nombre '{row.name}' y unidad '{row.unit}'"))
 
         return errors

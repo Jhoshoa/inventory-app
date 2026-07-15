@@ -4,10 +4,11 @@ from decimal import Decimal
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.domain.repositories.exchange_rate_repository import IExchangeRateRepository
 from src.infrastructure.database.models.exchange_rate_model import ExchangeRateModel
 
 
-class ExchangeRateRepository:
+class ExchangeRateRepository(IExchangeRateRepository):
     def __init__(self, session: AsyncSession):
         self._session = session
 

@@ -181,6 +181,42 @@ class ProductRepository(IProductRepository):
         result = await self._session.execute(select(func.count()).select_from(ProductModel).where(*filters))
         return int(result.scalar_one()) > 0
 
+    async def skus_exist(self, store_id: UUID, skus: list[str]) -> set[str]:
+        if not skus:
+            return set()
+        result = await self._session.execute(
+            select(ProductModel.sku).where(
+                ProductModel.store_id == store_id,
+                ProductModel.sku.in_(skus),
+                ProductModel.deleted_at.is_(None),
+            )
+        )
+        return {row[0] for row in result.all()}
+
+    async def qr_codes_exist(self, qr_codes: list[str]) -> set[str]:
+        if not qr_codes:
+            return set()
+        result = await self._session.execute(
+            select(ProductModel.qr_code).where(
+                ProductModel.qr_code.in_(qr_codes),
+                ProductModel.deleted_at.is_(None),
+            )
+        )
+        return {row[0] for row in result.all()}
+
+    async def names_exist(self, store_id: UUID, names: list[tuple[str, str]]) -> set[str]:
+        if not names:
+            return set()
+        from sqlalchemy import tuple_
+        result = await self._session.execute(
+            select(ProductModel.name).where(
+                ProductModel.store_id == store_id,
+                tuple_(ProductModel.name, ProductModel.unit).in_(names),
+                ProductModel.deleted_at.is_(None),
+            )
+        )
+        return {row[0] for row in result.all()}
+
     async def list_low_stock(self, store_id: UUID, limit: int = 20) -> list[Product]:
         result = await self._session.execute(
             select(ProductModel)

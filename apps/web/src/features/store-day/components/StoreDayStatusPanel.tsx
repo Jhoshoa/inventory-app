@@ -11,7 +11,7 @@ import type { UserRole } from "@/lib/auth/types";
 import type { CashMovementListResult, StoreDay, StoreDayClosingPreviewResult } from "../types";
 import { StoreDayActionForm } from "./StoreDayActionForm";
 
-export { toMoneyInputValue } from "./store-day-helpers";
+export { toMoneyInputValue } from "../utils/store-day-helpers";
 
 export function StoreDayStatusPanel({
   storeDay,

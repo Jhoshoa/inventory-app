@@ -50,11 +50,9 @@ from src.infrastructure.services.cloudinary.photo_storage import (
 )
 
 from src.application.ports.photo_storage import IPhotoStorage
+from src.config.dev_constants import DEV_CASHIER_USER_ID, DEV_STORE_ID, DEV_USER_ID
 
 security_scheme = HTTPBearer(auto_error=False)
-DEV_USER_ID = UUID("00000000-0000-0000-0000-000000000001")
-DEV_CASHIER_USER_ID = UUID("00000000-0000-0000-0000-000000000002")
-DEV_STORE_ID = UUID("00000000-0000-0000-0000-000000000101")
 DEV_ACCESS_TOKEN = "dev-token-123"
 DEV_CASHIER_ACCESS_TOKEN = "dev-cashier-token-123"
 
@@ -109,8 +107,8 @@ async def get_current_user(
         if payload.get("id") is not None:
             payload["id"] = UUID(str(payload["id"]))
         return payload
-    except Exception:
-        raise HTTPException(status_code=401, detail="Token inválido")
+    except (ValueError, PermissionError) as e:
+        raise HTTPException(status_code=401, detail="Token inválido") from e
 
 
 def get_product_repo(session: AsyncSession = Depends(get_db_session)) -> ProductRepository:
