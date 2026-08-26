@@ -1,7 +1,5 @@
 from datetime import datetime, timezone
-from decimal import Decimal
 from uuid import UUID
-from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from pydantic import ValidationError
 from sqlalchemy import select
@@ -20,12 +18,23 @@ from src.application.dto.sync_dto import (
     SyncPullChangeDTO,
     SyncResultStatus,
 )
+from src.application.exceptions import ApplicationError
+from src.application.use_cases.sales.create_sale import (
+    CreateSaleInput,
+    CreateSaleUseCase,
+    SaleItemInput,
+)
 from src.domain.repositories.sync_repository import ISyncRepository
 from src.infrastructure.database.models.product_model import ProductModel
-from src.infrastructure.database.models.sale_model import SaleItemModel, SaleModel
+from src.infrastructure.database.models.sale_model import SaleModel
 from src.infrastructure.database.models.stock_movement_model import StockMovementModel
-from src.infrastructure.database.models.store_model import StoreModel
 from src.infrastructure.database.models.sync_change_model import SyncChangeModel
+from src.infrastructure.database.repositories.product_repository import ProductRepository
+from src.infrastructure.database.repositories.sale_repository import SaleRepository
+from src.infrastructure.database.repositories.store_business_day_repository import (
+    StoreBusinessDayRepository,
+)
+from src.infrastructure.database.repositories.store_repository import StoreRepository
 
 
 class SyncRepository(ISyncRepository):
@@ -140,6 +149,7 @@ class SyncRepository(ISyncRepository):
         store_id: UUID,
         device_id: str,
         changes: list[SyncChangeDTO],
+        user_id: UUID | None = None,
     ) -> list[SyncChangeResultDTO]:
         results: list[SyncChangeResultDTO] = []
         for change in changes:
@@ -148,14 +158,16 @@ class SyncRepository(ISyncRepository):
                 results.append(self._duplicate_result(change, duplicate))
                 continue
 
-            result = await self._apply_change(store_id, device_id, change)
+            result = await self._apply_change(store_id, device_id, user_id, change)
             await self._record_processed_change(store_id, device_id, change, result)
             results.append(result)
 
         await self._session.flush()
         return results
 
-    async def _apply_change(self, store_id: UUID, device_id: str, change: SyncChangeDTO) -> SyncChangeResultDTO:
+    async def _apply_change(
+        self, store_id: UUID, device_id: str, user_id: UUID | None, change: SyncChangeDTO
+    ) -> SyncChangeResultDTO:
         try:
             if change.entity == SyncEntity.PRODUCT and change.operation == SyncOperation.UPSERT:
                 version, updated_at = await self._apply_product_upsert(store_id, change)
@@ -164,7 +176,7 @@ class SyncRepository(ISyncRepository):
                 version, updated_at = await self._apply_product_delete(store_id, change)
                 return self._result(change, SyncResultStatus.ACCEPTED, version, updated_at)
             if change.entity == SyncEntity.SALE and change.operation == SyncOperation.CREATE:
-                version, updated_at = await self._apply_sale_create(store_id, device_id, change)
+                version, updated_at = await self._apply_sale_create(store_id, device_id, user_id, change)
                 return self._result(change, SyncResultStatus.ACCEPTED, version, updated_at)
             if change.entity == SyncEntity.STOCK_MOVEMENT and change.operation == SyncOperation.CREATE:
                 updated_at = await self._apply_stock_movement_create(store_id, device_id, change)
@@ -224,77 +236,48 @@ class SyncRepository(ISyncRepository):
         await self._session.flush()
         return model.version, model.updated_at
 
-    async def _apply_sale_create(self, store_id: UUID, device_id: str, change: SyncChangeDTO) -> tuple[int, datetime]:
+    async def _apply_sale_create(
+        self, store_id: UUID, device_id: str, user_id: UUID | None, change: SyncChangeDTO
+    ) -> tuple[int, datetime]:
         payload = SaleSyncPayloadDTO.model_validate(change.payload)
         existing = await self._session.get(SaleModel, change.entity_id)
         if existing is not None:
             raise ValueError("Venta ya existe")
-        store = await self._session.get(StoreModel, store_id)
-        store_timezone = store.timezone if store is not None and store.timezone else "America/La_Paz"
-        now = datetime.now(timezone.utc)
 
-        sale = SaleModel(
-            id=change.entity_id,
-            store_id=store_id,
-            device_id=device_id,
-            customer_name=payload.customer_name,
-            subtotal=Decimal("0"),
-            discount=Decimal("0"),
-            total=Decimal("0"),
-            items_count=len(payload.items),
-            payment_method=payload.payment_method,
-            status="completed",
-            business_date=self._business_date(now, store_timezone),
-            created_at=now,
-            updated_at=now,
+        # Reutiliza exactamente la misma logica de negocio que la venta online
+        # (resolucion de descuentos, jornada abierta, precio autoritativo del
+        # servidor, descuento de stock) para que una venta creada offline y
+        # sincronizada despues sea indistinguible de una creada en linea.
+        use_case = CreateSaleUseCase(
+            SaleRepository(self._session),
+            ProductRepository(self._session),
+            StoreBusinessDayRepository(self._session),
+            StoreRepository(self._session),
         )
-        total = Decimal("0")
-        stock_updates: list[tuple[ProductModel, int]] = []
-
-        for item in payload.items:
-            product = await self._session.get(ProductModel, item.product_id)
-            if product is None or product.store_id != store_id or product.deleted_at is not None:
-                raise ValueError(f"Producto no encontrado: {item.product_id}")
-            if product.stock < item.quantity:
-                raise ValueError(f"Stock insuficiente para {product.name}: {product.stock} < {item.quantity}")
-            unit_price = item.unit_price if item.unit_price is not None else product.price
-            subtotal = unit_price * item.quantity
-            total += subtotal
-            sale.items.append(
-                SaleItemModel(
-                    product_id=product.id,
-                    product_name=product.name,
-                    quantity=item.quantity,
-                    unit_price=unit_price,
-                    subtotal=subtotal,
-                )
-            )
-            stock_updates.append((product, item.quantity))
-
-        sale.subtotal = total
-        sale.total = total
-        self._session.add(sale)
-        await self._session.flush()
-
-        for product, quantity in stock_updates:
-            product.stock -= quantity
-            product.version = (product.version or 0) + 1
-            product.updated_at = now
-            self._session.add(
-                StockMovementModel(
+        try:
+            sale = await use_case.execute(
+                CreateSaleInput(
                     store_id=store_id,
-                    product_id=product.id,
-                    sale_id=sale.id,
-                    movement_type="sale",
-                    quantity_delta=-quantity,
-                    stock_after=product.stock,
+                    user_id=user_id,
+                    items=[
+                        SaleItemInput(product_id=item.product_id, quantity=item.quantity)
+                        for item in payload.items
+                    ],
+                    payment_method=payload.payment_method,
                     device_id=device_id,
-                    reason="offline sale",
+                    customer_name=payload.customer_name,
+                    discount_type=payload.discount_type,
+                    discount_value=payload.discount_value,
+                    discount_source_override=payload.discount_source_override,
+                    sale_id=change.entity_id,
+                    created_at=payload.created_at,
                 )
             )
+        except ApplicationError as exc:
+            raise ValueError(exc.detail) from exc
 
-        await self._session.flush()
-        return sale.version, sale.updated_at
+        model = await self._session.get(SaleModel, sale.id)
+        return model.version, model.updated_at
 
     async def _apply_stock_movement_create(self, store_id: UUID, device_id: str, change: SyncChangeDTO) -> datetime:
         payload = StockMovementSyncPayloadDTO.model_validate(change.payload)
@@ -415,10 +398,3 @@ class SyncRepository(ISyncRepository):
         if value.tzinfo is None:
             value = value.replace(tzinfo=timezone.utc)
         return value.timestamp()
-
-    def _business_date(self, value: datetime, timezone_name: str):
-        try:
-            zone = ZoneInfo(timezone_name)
-        except ZoneInfoNotFoundError:
-            zone = ZoneInfo("America/La_Paz")
-        return value.astimezone(zone).date()

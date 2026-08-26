@@ -68,6 +68,7 @@ async def test_sync_push_sale_create_is_idempotent_and_reduces_stock_once(client
         json={"name": "Aceite", "price": "18.00", "stock": 5},
     )
     product_id = product_response.json()["id"]
+    await client.post("/api/v1/store-day/open")
     sale_id = str(uuid4())
     payload = {
         "payment_method": "efectivo",
@@ -106,6 +107,118 @@ async def test_sync_push_sale_create_is_idempotent_and_reduces_stock_once(client
     movements = movement_result.scalars().all()
     assert len(movements) == 1
     assert movements[0].quantity_delta == -2
+
+
+async def test_sync_push_sale_create_sets_business_day_and_creator(client, db_session):
+    from src.infrastructure.database.models.sale_model import SaleModel
+
+    product_response = await client.post(
+        "/api/v1/products",
+        json={"name": "Fideo", "price": "10.00", "stock": 5},
+    )
+    product_id = product_response.json()["id"]
+    open_response = await client.post("/api/v1/store-day/open")
+    business_day_id = open_response.json()["id"]
+    sale_id = str(uuid4())
+
+    response = await client.post(
+        "/api/v1/sync/push",
+        json={
+            "device_id": "device-sale-2",
+            "changes": [
+                _change(
+                    client_change_id="sale-create-bday",
+                    entity="sale",
+                    operation="create",
+                    entity_id=sale_id,
+                    payload={
+                        "payment_method": "efectivo",
+                        "items": [{"product_id": product_id, "quantity": 1}],
+                    },
+                )
+            ],
+        },
+    )
+    assert response.json()["results"][0]["status"] == "accepted"
+
+    sale_model = await db_session.get(SaleModel, UUID(sale_id))
+    assert str(sale_model.business_day_id) == business_day_id
+    assert sale_model.created_by_user_id is not None
+
+
+async def test_sync_push_sale_create_rejects_when_store_is_closed(client):
+    product_response = await client.post(
+        "/api/v1/products",
+        json={"name": "Sal", "price": "5.00", "stock": 5},
+    )
+    product_id = product_response.json()["id"]
+
+    response = await client.post(
+        "/api/v1/sync/push",
+        json={
+            "device_id": "device-closed",
+            "changes": [
+                _change(
+                    client_change_id="sale-create-closed",
+                    entity="sale",
+                    operation="create",
+                    entity_id=str(uuid4()),
+                    payload={
+                        "payment_method": "efectivo",
+                        "items": [{"product_id": product_id, "quantity": 1}],
+                    },
+                )
+            ],
+        },
+    )
+
+    assert response.status_code == 200
+    assert response.json()["results"][0]["status"] == "conflict"
+
+
+async def test_sync_push_sale_create_applies_manual_discount(client, db_session):
+    from src.infrastructure.database.models.sale_model import SaleModel
+    from src.infrastructure.database.models.store_model import StoreModel
+    from src.presentation import dependencies
+
+    store = await db_session.get(StoreModel, dependencies.DEV_STORE_ID)
+    store.allow_manual_discount = True
+    store.max_manual_discount_amount = 100
+    await db_session.commit()
+
+    product_response = await client.post(
+        "/api/v1/products",
+        json={"name": "Arroz 1kg", "price": "20.00", "stock": 5},
+    )
+    product_id = product_response.json()["id"]
+    await client.post("/api/v1/store-day/open")
+    sale_id = str(uuid4())
+
+    response = await client.post(
+        "/api/v1/sync/push",
+        json={
+            "device_id": "device-discount",
+            "changes": [
+                _change(
+                    client_change_id="sale-create-discount",
+                    entity="sale",
+                    operation="create",
+                    entity_id=sale_id,
+                    payload={
+                        "payment_method": "efectivo",
+                        "items": [{"product_id": product_id, "quantity": 2}],
+                        "discount_type": "fixed",
+                        "discount_value": "5.00",
+                    },
+                )
+            ],
+        },
+    )
+    assert response.json()["results"][0]["status"] == "accepted"
+
+    sale_model = await db_session.get(SaleModel, UUID(sale_id))
+    assert str(sale_model.discount) == "5.00"
+    assert str(sale_model.total) == "35.00"
 
 
 async def test_sync_push_rejects_cross_store_product(client, db_session):

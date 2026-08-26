@@ -10,6 +10,7 @@ class SyncPushInput:
     store_id: UUID
     device_id: str
     changes: list[SyncChangeDTO]
+    user_id: UUID | None = None
 
 
 class SyncPushUseCase:
@@ -17,4 +18,4 @@ class SyncPushUseCase:
         self._repo = repo
 
     async def execute(self, input: SyncPushInput) -> list[SyncChangeResultDTO]:
-        return await self._repo.push_changes(input.store_id, input.device_id, input.changes)
+        return await self._repo.push_changes(input.store_id, input.device_id, input.changes, input.user_id)

@@ -3,7 +3,7 @@ from decimal import Decimal
 from enum import StrEnum
 from uuid import UUID
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field
 
 
 class CashMovementType(StrEnum):
@@ -15,16 +15,9 @@ class CashMovementType(StrEnum):
 
 
 class CreateCashMovementDTO(BaseModel):
-    movement_type: str = Field(max_length=30)
+    movement_type: CashMovementType
     amount: Decimal = Field(gt=0, max_digits=12, decimal_places=2)
     note: str | None = Field(default=None, max_length=255)
-
-    @field_validator("movement_type")
-    @classmethod
-    def validate_movement_type(cls, v: str) -> str:
-        if v not in CashMovementType._value2member_map_:
-            raise ValueError(f"Tipo de movimiento no valido: {v}")
-        return v
 
 
 class VoidCashMovementDTO(BaseModel):

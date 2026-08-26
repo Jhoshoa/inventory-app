@@ -26,8 +26,23 @@ class Settings(BaseSettings):
     GRACE_PERIOD_DAYS: int = 15
     PURCHASE_URL: str = "https://tusitio.com/planes"
 
+    # Cron interno (APScheduler) que expira trials y periodos de gracia vencidos.
+    # En despliegues con varios workers (ver WORKERS), dejar esto en true solo en
+    # UN worker/proceso para evitar ejecuciones duplicadas del mismo dia.
+    ENABLE_SCHEDULER: bool = True
+
     SENTRY_DSN: str | None = None
     FRONTEND_URL: str = "http://localhost:3010"
+    INVITATION_EXPIRE_DAYS: int = 7
+
+    # Rate limiting (en memoria, por proceso — ver src/infrastructure/services/rate_limit)
+    RATE_LIMIT_LOGIN_MAX: int = 10
+    RATE_LIMIT_LOGIN_WINDOW_SECONDS: int = 60
+    RATE_LIMIT_GLOBAL_MAX: int = 300
+    RATE_LIMIT_GLOBAL_WINDOW_SECONDS: int = 60
+
+    # Ciclo de vida de tiendas suspendidas (ver ArchiveStoresUseCase)
+    STORE_ARCHIVE_AFTER_SUSPENDED_DAYS: int = 90
     CORS_ALLOWED_ORIGINS: str = "http://localhost:3010,http://localhost:8081"
     MAX_IMAGE_SIZE_MB: int = 5
 

@@ -11,5 +11,6 @@ class User:
     full_name: str | None = None
     role: str = "cashier"
     is_active: bool = True
+    is_platform_admin: bool = False
     last_login_at: datetime | None = None
     updated_at: datetime | None = None

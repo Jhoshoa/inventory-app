@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from src.application.exceptions import NotFoundError
+from src.application.exceptions import NotFoundError, StockConflictError
 from src.domain.entities.product import Product
 from src.domain.repositories.product_repository import IProductRepository
 
@@ -14,7 +14,12 @@ class UpdateStockUseCase:
         if not product:
             raise NotFoundError("Producto no encontrado")
         if quantity < 0 and abs(quantity) > product.stock:
-            raise ValueError(f"Stock insuficiente: {product.stock} < {abs(quantity)}")
+            raise StockConflictError(
+                product_id=str(product.id),
+                product_name=product.name,
+                available_stock=product.stock,
+                requested_quantity=abs(quantity),
+            )
         return await self._repo.update_stock(
             store_id,
             product_id,

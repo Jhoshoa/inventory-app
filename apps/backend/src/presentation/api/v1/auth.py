@@ -3,7 +3,7 @@ import logging
 from datetime import datetime, timedelta, timezone
 from uuid import UUID, uuid4
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from supabase_auth.errors import AuthApiError
@@ -35,6 +35,9 @@ from src.infrastructure.auth.supabase_client import get_supabase_client
 from src.infrastructure.database.models.pkce_verifier_model import PkceVerifierModel
 from src.infrastructure.database.repositories.store_repository import StoreRepository
 from src.infrastructure.database.repositories.user_repository import UserRepository
+from src.infrastructure.services.rate_limit.in_memory_rate_limiter import (
+    login_rate_limiter,
+)
 from src.presentation.dependencies import (
     DEV_ACCESS_TOKEN,
     DEV_CASHIER_ACCESS_TOKEN,
@@ -52,6 +55,13 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/auth", tags=["auth"])
 
 _PKCE_VERIFIER_TTL = timedelta(minutes=10)
+
+
+def _client_ip(request: Request) -> str:
+    forwarded = request.headers.get("x-forwarded-for")
+    if forwarded:
+        return forwarded.split(",")[0].strip()
+    return request.client.host if request.client else "unknown"
 
 
 def _auth_response_from_supabase(response) -> AuthResponseDTO:
@@ -140,9 +150,13 @@ def _dev_auth_response(
 @router.post("/login", response_model=AuthResponseDTO)
 async def login(
     dto: LoginDTO,
+    request: Request,
     user_repo: UserRepository = Depends(get_user_repo),
     store_repo: StoreRepository = Depends(get_store_repo),
 ):
+    if not login_rate_limiter.is_allowed(_client_ip(request)):
+        raise HTTPException(status_code=429, detail="Demasiados intentos. Intenta nuevamente en unos minutos.")
+
     if settings.DEBUG:
         existing_with_pw = await user_repo.get_by_email_with_password(dto.email)
         if not existing_with_pw or not existing_with_pw[1]:
@@ -213,7 +227,7 @@ async def login(
     store = await store_repo.get_by_id(local_user.store_id)
     if store is not None:
         now = datetime.now(timezone.utc)
-        if store.access_status != "active":
+        if not store.is_active or store.access_status != "active":
             raise HTTPException(status_code=401, detail="Tu cuenta ha sido suspendida. Contacta a soporte.")
         if (store.subscription_status == "trial"
                 and store.trial_expires_at is not None
@@ -258,9 +272,13 @@ async def login(
 @router.post("/register", status_code=201)
 async def register(
     dto: RegisterDTO,
+    request: Request,
     user_repo: UserRepository = Depends(get_user_repo),
     store_repo: StoreRepository = Depends(get_store_repo),
 ):
+    if not login_rate_limiter.is_allowed(_client_ip(request)):
+        raise HTTPException(status_code=429, detail="Demasiados intentos. Intenta nuevamente en unos minutos.")
+
     if settings.DEBUG:
         await RegisterStoreOwnerUseCase(store_repo, user_repo).execute(
             RegisterStoreOwnerInput(
@@ -355,6 +373,9 @@ async def refresh_token(
         raise UnauthorizedError("Usuario inactivo")
 
     store = await store_repo.get_by_id(local_user.store_id)
+    if store is not None and (not store.is_active or store.access_status != "active"):
+        raise UnauthorizedError("Tu cuenta ha sido suspendida. Contacta a soporte.")
+
     return _auth_response(
         auth_response.access_token,
         auth_response.refresh_token,
@@ -512,7 +533,13 @@ async def oauth_callback(
             )
         )
 
+        if not local_user.is_active:
+            raise UnauthorizedError("Usuario inactivo")
+
         store = await store_repo.get_by_id(local_user.store_id)
+        if store is not None and (not store.is_active or store.access_status != "active"):
+            raise UnauthorizedError("Tu cuenta ha sido suspendida. Contacta a soporte.")
+
         return _auth_response(
             supabase_session.access_token,
             supabase_session.refresh_token,
@@ -527,6 +554,8 @@ async def oauth_callback(
             subscription_status=store.subscription_status if store else "trial",
             access_status=store.access_status if store else "active",
         )
+    except UnauthorizedError:
+        raise
     except Exception:
         logger.exception("OAuth callback: error al acceder a base de datos")
         raise HTTPException(

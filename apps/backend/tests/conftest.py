@@ -9,6 +9,12 @@ from src.config.settings import settings
 from src.infrastructure.database import models as _models
 from src.infrastructure.database.models import StoreModel, UserModel
 from src.infrastructure.database.models.product_model import Base
+from src.infrastructure.services.rate_limit.in_memory_rate_limiter import (
+    global_rate_limiter,
+    invitation_accept_rate_limiter,
+    lead_rate_limiter,
+    login_rate_limiter,
+)
 from src.main import app
 from src.presentation import dependencies
 
@@ -61,6 +67,14 @@ async def client(db_session: AsyncSession) -> AsyncGenerator[AsyncClient, None]:
     original_environment = settings.ENVIRONMENT
     settings.DEBUG = True
     settings.ENVIRONMENT = "test"
+
+    # El estado de los rate limiters es un singleton por proceso: sin este
+    # reset, tests que no tienen nada que ver con rate limiting empiezan a
+    # fallar con 429 apenas la suite acumula suficientes requests.
+    global_rate_limiter.reset()
+    login_rate_limiter.reset()
+    lead_rate_limiter.reset()
+    invitation_accept_rate_limiter.reset()
 
     async def override_db_session():
         try:

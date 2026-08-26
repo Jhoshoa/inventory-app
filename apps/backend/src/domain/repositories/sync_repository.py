@@ -14,4 +14,5 @@ class ISyncRepository(ABC):
         store_id: UUID,
         device_id: str,
         changes: list[Any],
+        user_id: UUID | None = None,
     ) -> list[Any]: ...

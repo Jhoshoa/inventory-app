@@ -7,9 +7,11 @@ from fastapi.openapi.utils import get_openapi
 from sentry_sdk import init as sentry_init
 
 from src.config.settings import settings
+from src.infrastructure.scheduler import start_scheduler, stop_scheduler
 from src.presentation.api.health import router as health_router
 from src.presentation.api.v1.router import api_v1_router
 from src.presentation.middleware.error_handler import add_error_handlers
+from src.presentation.middleware.rate_limit import add_rate_limit_middleware
 from src.presentation.middleware.request_context import add_request_context_middleware
 
 logger = logging.getLogger(__name__)
@@ -30,7 +32,13 @@ async def lifespan(app: FastAPI):
             await session.commit()
             logger.info("Dev seed data ready")
 
+    if settings.ENABLE_SCHEDULER:
+        start_scheduler()
+
     yield
+
+    if settings.ENABLE_SCHEDULER:
+        stop_scheduler()
 
 
 def custom_openapi():
@@ -50,7 +58,7 @@ def custom_openapi():
     }
     for path in openapi_schema["paths"].values():
         for method in path.values():
-            if method.get("tags") == ["health"]:
+            if method.get("tags") in (["health"], ["public"]):
                 continue
             method.setdefault("security", [{"BearerAuth": []}])
     app.openapi_schema = openapi_schema
@@ -75,6 +83,7 @@ app.add_middleware(
 )
 
 add_request_context_middleware(app)
+add_rate_limit_middleware(app)
 add_error_handlers(app)
 app.include_router(health_router)
 app.include_router(api_v1_router, prefix="/api/v1")

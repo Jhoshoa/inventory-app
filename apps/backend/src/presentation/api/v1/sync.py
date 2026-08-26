@@ -30,6 +30,7 @@ async def sync_push(
             store_id=UUID(str(user["store_id"])),
             device_id=dto.device_id,
             changes=dto.changes,
+            user_id=UUID(str(user["id"])) if user.get("id") else None,
         )
     )
     return SyncPushResponseDTO(results=results, server_time=server_time)

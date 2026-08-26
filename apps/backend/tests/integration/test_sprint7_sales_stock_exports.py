@@ -178,7 +178,18 @@ async def test_list_sales_rejects_range_starting_before_first_business_date(clie
     assert response.status_code == 400
 
 
-async def test_list_sales_defaults_to_calendar_today_even_with_old_open_business_day(client, db_session):
+async def test_list_sales_defaults_to_calendar_today_even_with_old_open_business_day(client, db_session, monkeypatch):
+    from src.application.use_cases import date_ranges as date_ranges_module
+
+    frozen_now = datetime(2026, 6, 7, 16, 0, tzinfo=UTC)
+
+    class _FrozenDatetime(datetime):
+        @classmethod
+        def now(cls, tz=None):
+            return frozen_now.astimezone(tz) if tz else frozen_now
+
+    monkeypatch.setattr(date_ranges_module, "datetime", _FrozenDatetime)
+
     _product, sale = await _create_product_and_sale(client)
     open_day = await db_session.get(StoreBusinessDayModel, sale["business_day_id"])
     sale_model = await db_session.get(SaleModel, sale["id"])
@@ -186,15 +197,18 @@ async def test_list_sales_defaults_to_calendar_today_even_with_old_open_business
     store.first_business_date = date(2026, 6, 1)
     open_day.business_date = date(2026, 6, 3)
     sale_model.business_date = date(2026, 6, 3)
-    sale_model.created_at = datetime(2026, 6, 7, 16, 0, tzinfo=UTC)
+    sale_model.created_at = frozen_now
     await db_session.commit()
 
     response = await client.get("/api/v1/sales")
 
     assert response.status_code == 200
     data = response.json()
-    assert data["from_date"] == "2026-06-07"
-    assert data["to_date"] == "2026-06-07"
+    from zoneinfo import ZoneInfo
+
+    expected_today = frozen_now.astimezone(ZoneInfo("America/La_Paz")).date().isoformat()
+    assert data["from_date"] == expected_today
+    assert data["to_date"] == expected_today
     assert data["total"] == 1
     assert data["items"][0]["id"] == sale["id"]
 

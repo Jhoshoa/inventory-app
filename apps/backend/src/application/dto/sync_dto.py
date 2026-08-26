@@ -96,7 +96,6 @@ class ProductSyncPayloadDTO(BaseModel):
 class SaleItemSyncPayloadDTO(BaseModel):
     product_id: UUID
     quantity: int = Field(..., gt=0)
-    unit_price: Decimal | None = Field(default=None, ge=0)
 
 
 class SaleSyncPayloadDTO(BaseModel):
@@ -104,6 +103,9 @@ class SaleSyncPayloadDTO(BaseModel):
     customer_name: str | None = Field(default=None, max_length=100)
     items: list[SaleItemSyncPayloadDTO] = Field(..., min_length=1)
     created_at: datetime | None = None
+    discount_type: str | None = None
+    discount_value: Decimal = Field(default=Decimal(0), ge=0)
+    discount_source_override: str | None = None
 
 
 class StockMovementSyncPayloadDTO(BaseModel):

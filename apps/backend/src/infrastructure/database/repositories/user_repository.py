@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from uuid import UUID
 
 from sqlalchemy import func, select
@@ -62,7 +62,7 @@ class UserRepository(IUserRepository):
         model.role = user.role
         model.is_active = user.is_active
         model.last_login_at = user.last_login_at
-        model.updated_at = datetime.now(timezone.utc)
+        model.updated_at = datetime.now(UTC)
         await self._session.flush()
         return self._to_entity(model)
 
@@ -71,7 +71,7 @@ class UserRepository(IUserRepository):
         if not model:
             return None
         model.role = role
-        model.updated_at = datetime.now(timezone.utc)
+        model.updated_at = datetime.now(UTC)
         await self._session.flush()
         return self._to_entity(model)
 
@@ -80,7 +80,7 @@ class UserRepository(IUserRepository):
         if not model:
             return None
         model.is_active = is_active
-        model.updated_at = datetime.now(timezone.utc)
+        model.updated_at = datetime.now(UTC)
         await self._session.flush()
         return self._to_entity(model)
 
@@ -88,8 +88,8 @@ class UserRepository(IUserRepository):
         model = await self._session.get(UserModel, user_id)
         if not model:
             return None
-        model.last_login_at = datetime.now(timezone.utc)
-        model.updated_at = datetime.now(timezone.utc)
+        model.last_login_at = datetime.now(UTC)
+        model.updated_at = datetime.now(UTC)
         await self._session.flush()
         return self._to_entity(model)
 
@@ -111,7 +111,7 @@ class UserRepository(IUserRepository):
         model.role = user.role
         model.is_active = user.is_active
         model.last_login_at = user.last_login_at
-        model.updated_at = datetime.now(timezone.utc)
+        model.updated_at = datetime.now(UTC)
         model.password_hash = password_hash
         await self._session.flush()
         return self._to_entity(model)
@@ -120,7 +120,7 @@ class UserRepository(IUserRepository):
         model = await self._session.get(UserModel, user_id)
         if model is not None:
             model.password_hash = password_hash
-            model.updated_at = datetime.now(timezone.utc)
+            model.updated_at = datetime.now(UTC)
             await self._session.flush()
 
     async def list_active_by_store(self, store_id: UUID) -> list[User]:
@@ -146,6 +146,7 @@ class UserRepository(IUserRepository):
             full_name=model.full_name,
             role=model.role,
             is_active=model.is_active,
+            is_platform_admin=bool(model.is_platform_admin),
             last_login_at=model.last_login_at,
             updated_at=model.updated_at,
         )

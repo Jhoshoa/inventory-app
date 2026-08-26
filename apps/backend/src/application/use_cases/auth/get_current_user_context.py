@@ -15,6 +15,7 @@ class CurrentUserContext:
     full_name: str | None
     role: str
     is_active: bool
+    is_platform_admin: bool = False
 
 
 class GetCurrentUserContextUseCase:
@@ -39,7 +40,7 @@ class GetCurrentUserContextUseCase:
             if store is None:
                 raise UnauthorizedError("Tienda no encontrada")
 
-            if store.access_status != "active":
+            if not store.is_active or store.access_status != "active":
                 raise UnauthorizedError("Tu cuenta ha sido suspendida. Contacta a soporte.")
 
         if not user.is_active:
@@ -55,4 +56,5 @@ class GetCurrentUserContextUseCase:
             full_name=user.full_name,
             role=user.role,
             is_active=user.is_active,
+            is_platform_admin=user.is_platform_admin,
         )
