@@ -1,4 +1,5 @@
 import type {
+  ProductDiscountType,
   ProductFormValues,
   ProductSearchParams,
   ProductSortField,
@@ -78,16 +79,34 @@ export function validateProductForm(values: ProductFormValues, mode: "create" | 
 
   if (values.sku && values.sku.length > 50) errors.sku = "SKU debe tener maximo 50 caracteres";
 
+  if (values.discount_type) {
+    const discountValue = Number(values.discount_value);
+    if (values.discount_value === "" || !Number.isFinite(discountValue) || discountValue < 0) {
+      errors.discount_value = "Ingresa un valor de descuento valido";
+    } else if (values.discount_type === "percentage" && discountValue > 100) {
+      errors.discount_value = "El porcentaje no puede superar 100";
+    } else if (values.discount_type === "fixed" && price > 0 && discountValue > price) {
+      errors.discount_value = "La rebaja no puede ser mayor al precio de venta";
+    }
+  }
+
   return errors;
 }
 
-export function validateStockAdjustment(quantity: string, reason: string) {
+export const STOCK_ADJUSTMENT_MAX = 1_000_000;
+
+export function validateStockAdjustment(quantity: string, reason: string, currentStock?: number) {
   const errors: { quantity?: string; reason?: string } = {};
   const parsed = Number(quantity);
 
-  if (!quantity) errors.quantity = "Cantidad es requerida";
-  else if (!Number.isInteger(parsed) || parsed === 0) {
+  if (!quantity) {
+    errors.quantity = "Cantidad es requerida";
+  } else if (!Number.isInteger(parsed) || parsed === 0) {
     errors.quantity = "Cantidad debe ser un entero distinto de 0";
+  } else if (Math.abs(parsed) > STOCK_ADJUSTMENT_MAX) {
+    errors.quantity = `La cantidad no puede superar ${STOCK_ADJUSTMENT_MAX.toLocaleString("es-BO")} unidades`;
+  } else if (parsed < 0 && typeof currentStock === "number" && Math.abs(parsed) > currentStock) {
+    errors.quantity = `Stock insuficiente: disponible ${currentStock}`;
   }
 
   if (parsed < 0 && !reason.trim()) {
@@ -100,6 +119,7 @@ export function validateStockAdjustment(quantity: string, reason: string) {
 }
 
 export function formDataToProductValues(formData: FormData): ProductFormValues {
+  const discountType = stringValue(formData, "discount_type");
   return {
     name: stringValue(formData, "name"),
     price: stringValue(formData, "price"),
@@ -112,6 +132,8 @@ export function formDataToProductValues(formData: FormData): ProductFormValues {
     cost_price: stringValue(formData, "cost_price"),
     qr_code: stringValue(formData, "qr_code"),
     photo_url: stringValue(formData, "photo_url"),
+    discount_type: discountType === "percentage" || discountType === "fixed" ? discountType : "",
+    discount_value: stringValue(formData, "discount_value"),
   };
 }
 
@@ -127,6 +149,8 @@ export function productToFormValues(product?: {
   cost_price: string | null;
   qr_code: string | null;
   photo_url: string | null;
+  discount_type?: ProductDiscountType | null;
+  discount_value?: string;
 }): ProductFormValues {
   return {
     name: product?.name ?? "",
@@ -140,6 +164,8 @@ export function productToFormValues(product?: {
     cost_price: product?.cost_price ?? "",
     qr_code: product?.qr_code ?? "",
     photo_url: product?.photo_url ?? "",
+    discount_type: product?.discount_type ?? "",
+    discount_value: product?.discount_value ?? "",
   };
 }
 

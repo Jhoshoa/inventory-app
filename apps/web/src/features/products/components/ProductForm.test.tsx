@@ -69,6 +69,9 @@ describe("ProductForm", () => {
           cost_price: "8.00",
           is_active: true,
           version: 1,
+          discount_type: null,
+          discount_value: "0",
+          effective_price: "12.50",
         }}
       />,
     );
@@ -121,6 +124,8 @@ describe("ProductForm", () => {
         unit: "bolsa",
         qr_code: "QR-CEM",
         photo_url: "https://example.com/cemento.png",
+        discount_type: "",
+        discount_value: "",
       },
     };
 

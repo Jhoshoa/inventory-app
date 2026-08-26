@@ -7,6 +7,9 @@ export interface PosProduct {
   stock: number;
   unit: string;
   qr_code: string | null;
+  discount_type: "percentage" | "fixed" | null;
+  discount_value: string;
+  effective_price: string;
 }
 
 export interface PosProductListResponse {

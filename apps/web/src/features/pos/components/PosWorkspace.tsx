@@ -1,16 +1,19 @@
 "use client";
 
 import { useCallback, useReducer, useRef, useState } from "react";
+import { useConnectionStatus } from "@/lib/offline/useConnectionStatus";
 import { PosCart } from "./PosCart";
 import { PosCheckoutPanel } from "./PosCheckoutPanel";
 import { PosProductSearch, type PosProductSearchHandle } from "./PosProductSearch";
 import { initialCartState, posCartReducer } from "../schemas";
 import type { CheckoutActionState, PosProduct } from "../types";
+import type { StoreResponse } from "@/features/settings/types";
 
-export function PosWorkspace() {
+export function PosWorkspace({ discountPolicy }: { discountPolicy: StoreResponse }) {
   const [cart, dispatch] = useReducer(posCartReducer, initialCartState);
   const [lastAddedProductName, setLastAddedProductName] = useState<string | null>(null);
   const searchRef = useRef<PosProductSearchHandle>(null);
+  const connection = useConnectionStatus();
 
   const handleAddProduct = useCallback((product: PosProduct) => {
     dispatch({ type: "add", product });
@@ -42,12 +45,17 @@ export function PosWorkspace() {
     [],
   );
 
+  const handleOfflineSaleQueued = useCallback(() => {
+    dispatch({ type: "clear" });
+  }, []);
+
   return (
     <div className="grid min-w-0 gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(360px,420px)]">
       <PosProductSearch
         ref={searchRef}
         lastAddedProductName={lastAddedProductName}
         onAdd={handleAddProduct}
+        isOnline={connection.isOnline}
       />
       <aside className="space-y-4 xl:sticky xl:top-20 xl:self-start">
         <PosCart
@@ -57,7 +65,13 @@ export function PosWorkspace() {
           onQuantityChange={handleQuantityChange}
           onRemove={handleRemove}
         />
-        <PosCheckoutPanel items={cart.items} onStockRefresh={handleStockRefresh} />
+        <PosCheckoutPanel
+          items={cart.items}
+          discountPolicy={discountPolicy}
+          onStockRefresh={handleStockRefresh}
+          isOnline={connection.isOnline}
+          onOfflineSaleQueued={handleOfflineSaleQueued}
+        />
       </aside>
     </div>
   );

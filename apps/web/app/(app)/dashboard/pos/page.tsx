@@ -2,11 +2,12 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { PageSection } from "@/components/layout/PageSection";
 import { DataFetchError } from "@/components/ui/DataFetchError";
 import { PosWorkspace } from "@/features/pos/components/PosWorkspace";
+import { getStore } from "@/features/settings/api";
 import { getCurrentStoreDay } from "@/features/store-day/api";
 import { StoreClosedNotice } from "@/features/store-day/components/StoreClosedNotice";
 
 export default async function PosPage() {
-  const storeDay = await getCurrentStoreDay();
+  const [storeDay, store] = await Promise.all([getCurrentStoreDay(), getStore()]);
 
   return (
     <PageSection className="space-y-6">
@@ -20,7 +21,7 @@ export default async function PosPage() {
       ) : storeDay.data.status !== "open" ? (
         <StoreClosedNotice />
       ) : (
-        <PosWorkspace />
+        <PosWorkspace discountPolicy={store} />
       )}
     </PageSection>
   );

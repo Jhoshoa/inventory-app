@@ -40,14 +40,27 @@ export function ProductDetail({ product, role }: { product: Product; role: UserR
               </Button>
             ) : null}
             {canAdjustStock(role) ? (
-              <ProductStockDialog productId={product.id} productName={product.name} />
+              <ProductStockDialog productId={product.id} productName={product.name} currentStock={product.stock} />
             ) : null}
           </>
         }
       />
 
       <div className="grid gap-4 md:grid-cols-3">
-        <InfoCard label="Precio" value={formatCurrency(product.price)} />
+        <div className="rounded-lg border border-app-border bg-app-surface p-4 shadow-panel">
+          <p className="text-sm text-text-muted">Precio</p>
+          {product.discount_type ? (
+            <>
+              <p className="mt-2 text-sm text-text-muted line-through">{formatCurrency(product.price)}</p>
+              <p className="text-2xl font-semibold text-status-success">{formatCurrency(product.effective_price)}</p>
+              <Badge variant="success">
+                {product.discount_type === "percentage" ? `-${product.discount_value}%` : `-${formatCurrency(product.discount_value)}`}
+              </Badge>
+            </>
+          ) : (
+            <p className="mt-3 text-2xl font-semibold text-text-strong">{formatCurrency(product.price)}</p>
+          )}
+        </div>
         <InfoCard label="Stock" value={`${product.stock} ${product.unit}`} />
         <div className="rounded-lg border border-app-border bg-app-surface p-4 shadow-panel">
           <p className="text-sm text-text-muted">Estado</p>

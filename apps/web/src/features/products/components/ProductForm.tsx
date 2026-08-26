@@ -9,6 +9,7 @@ import { FieldError } from "@/components/ui/FieldError";
 import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
 import { Select } from "@/components/ui/Select";
+import { formatCurrency } from "@/lib/format/currency";
 import type { ProductCategory } from "@/features/product-categories/types";
 import { QrPreviewDialog } from "./QrPreviewDialog";
 import { ImageUploader } from "./ImageUploader";
@@ -254,6 +255,14 @@ export function ProductForm({
         </Field>
       </div>
 
+      <DiscountSection
+        formValues={formValues}
+        price={Number(formValues.price) || 0}
+        fieldError={state.fieldErrors.discount_value}
+        onDiscountTypeChange={(value) => updateField("discount_type", value)}
+        onDiscountValueChange={(value) => updateField("discount_value", value)}
+      />
+
       <div className="col-span-full max-w-64">
         <ProductImageSection
           mode={mode}
@@ -287,6 +296,75 @@ export function ProductForm({
 
 function generateScanCode() {
   return `P-${crypto.randomUUID().replaceAll("-", "").slice(0, 12).toUpperCase()}`;
+}
+
+function DiscountSection({
+  formValues,
+  price,
+  fieldError,
+  onDiscountTypeChange,
+  onDiscountValueChange,
+}: {
+  formValues: { discount_type: "percentage" | "fixed" | ""; discount_value: string };
+  price: number;
+  fieldError?: string;
+  onDiscountTypeChange: (value: string) => void;
+  onDiscountValueChange: (value: string) => void;
+}) {
+  const discountValueNumber = Number(formValues.discount_value) || 0;
+  const effectivePrice =
+    formValues.discount_type === "percentage"
+      ? Math.max(price - (price * discountValueNumber) / 100, 0)
+      : formValues.discount_type === "fixed"
+        ? Math.max(price - discountValueNumber, 0)
+        : price;
+
+  return (
+    <div className="col-span-full space-y-3 rounded-md border border-app-border p-4">
+      <div>
+        <p className="text-sm font-medium text-text-strong">Descuento del producto (opcional)</p>
+        <p className="text-xs text-text-muted">
+          Se aplica automaticamente al venderlo. Si el cajero tambien intenta aplicar un descuento
+          manual en el POS, el sistema usa el que resulte mas conveniente para el cliente.
+        </p>
+      </div>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div className="space-y-2">
+          <Label htmlFor="discount_type">Tipo de descuento</Label>
+          <Select
+            id="discount_type"
+            name="discount_type"
+            value={formValues.discount_type}
+            onChange={(event) => onDiscountTypeChange(event.target.value)}
+          >
+            <option value="">Sin descuento</option>
+            <option value="percentage">Porcentaje</option>
+            <option value="fixed">Monto fijo (Bs.)</option>
+          </Select>
+        </div>
+        {formValues.discount_type ? (
+          <Field name="discount_value" label={formValues.discount_type === "percentage" ? "Porcentaje (%)" : "Monto (Bs.)"} error={fieldError}>
+            <Input
+              id="discount_value"
+              name="discount_value"
+              type="number"
+              min={0}
+              max={formValues.discount_type === "percentage" ? 100 : undefined}
+              step="0.01"
+              value={formValues.discount_value}
+              onChange={(event) => onDiscountValueChange(event.target.value)}
+              error={Boolean(fieldError)}
+            />
+          </Field>
+        ) : null}
+      </div>
+      {formValues.discount_type && price > 0 ? (
+        <p className="text-sm text-text-body">
+          Precio final estimado: <span className="font-semibold text-text-strong">{formatCurrency(effectivePrice)}</span>
+        </p>
+      ) : null}
+    </div>
+  );
 }
 
 function ProductImageSection({

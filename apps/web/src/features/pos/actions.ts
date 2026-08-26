@@ -15,11 +15,33 @@ export async function createSaleAction(
   const cartItems = parseCartItems(formData.get("items"));
   const paymentMethod = stringValue(formData, "payment_method") || "efectivo";
   const customerName = stringValue(formData, "customer_name");
-  const fieldErrors: Partial<Record<"items" | "payment_method" | "customer_name" | "reason", string>> = validateCheckout(cartItems, paymentMethod);
+  const discountTypeRaw = stringValue(formData, "discount_type");
+  const discountValueRaw = stringValue(formData, "discount_value");
+  const discountSourceOverrideRaw = stringValue(formData, "discount_source_override");
+  const fieldErrors: CheckoutActionState["fieldErrors"] = validateCheckout(cartItems, paymentMethod);
 
   if (customerName.length > 100) {
     fieldErrors.customer_name = "Nombre del cliente debe tener maximo 100 caracteres";
   }
+
+  const discountType = discountTypeRaw === "percentage" || discountTypeRaw === "fixed" ? discountTypeRaw : null;
+  let discountValue = 0;
+  if (discountType) {
+    discountValue = Number(discountValueRaw);
+    if (!Number.isFinite(discountValue) || discountValue <= 0) {
+      fieldErrors.discount_value = "Ingresa un valor de descuento valido";
+    } else if (discountType === "percentage" && discountValue > 100) {
+      fieldErrors.discount_value = "El porcentaje no puede superar 100";
+    }
+  }
+
+  const discountSourceOverride =
+    discountSourceOverrideRaw === "auto" ||
+    discountSourceOverrideRaw === "product" ||
+    discountSourceOverrideRaw === "manual" ||
+    discountSourceOverrideRaw === "none"
+      ? discountSourceOverrideRaw
+      : null;
 
   if (Object.keys(fieldErrors).length > 0) return { ok: false, fieldErrors };
   if (!isPaymentMethod(paymentMethod)) {
@@ -38,6 +60,8 @@ export async function createSaleAction(
       payment_method: paymentMethod,
       device_id: "web-pos",
       customer_name: customerName || null,
+      ...(discountType ? { discount_type: discountType, discount_value: String(discountValue) } : {}),
+      ...(discountSourceOverride ? { discount_source_override: discountSourceOverride } : {}),
     },
   });
 
@@ -90,6 +114,8 @@ function parseProduct(value: Record<string, unknown>): PosProduct | null {
     return null;
   }
 
+  const discountType = value.discount_type === "percentage" || value.discount_type === "fixed" ? value.discount_type : null;
+
   return {
     id: value.id,
     name: value.name,
@@ -97,6 +123,9 @@ function parseProduct(value: Record<string, unknown>): PosProduct | null {
     stock,
     unit: value.unit,
     qr_code: typeof value.qr_code === "string" ? value.qr_code : null,
+    discount_type: discountType,
+    discount_value: typeof value.discount_value === "string" ? value.discount_value : "0",
+    effective_price: typeof value.effective_price === "string" ? value.effective_price : value.price,
   };
 }
 
@@ -119,6 +148,9 @@ function compactProduct(product: PosProduct & { qr_code?: string | null }): PosP
     stock: product.stock,
     unit: product.unit,
     qr_code: product.qr_code ?? null,
+    discount_type: product.discount_type ?? null,
+    discount_value: product.discount_value ?? "0",
+    effective_price: product.effective_price ?? product.price,
   };
 }
 

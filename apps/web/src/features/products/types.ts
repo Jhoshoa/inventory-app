@@ -4,6 +4,8 @@ export type ProductStockFilter = "all" | "available" | "low" | "out";
 export type ProductSortField = "name" | "stock" | "updated_at" | "price";
 export type SortDirection = "asc" | "desc";
 
+export type ProductDiscountType = "percentage" | "fixed";
+
 export interface Product {
   id: string;
   name: string;
@@ -19,6 +21,9 @@ export interface Product {
   cost_price: string | null;
   is_active: boolean;
   version: number;
+  discount_type: ProductDiscountType | null;
+  discount_value: string;
+  effective_price: string;
 }
 
 export interface ProductListResponse {
@@ -70,13 +75,17 @@ export interface ProductFormValues {
   cost_price: string;
   qr_code: string;
   photo_url: string;
+  discount_type: ProductDiscountType | "";
+  discount_value: string;
 }
 
 export interface ProductActionState {
   ok: boolean;
   message?: string;
   values?: ProductFormValues;
-  fieldErrors: Partial<Record<keyof ProductFormValues | "quantity" | "reason" | "confirm", string>>;
+  fieldErrors: Partial<
+    Record<keyof ProductFormValues | "quantity" | "reason" | "confirm", string>
+  >;
 }
 
 export type ProductListResult = ApiResult<ProductListResponse>;

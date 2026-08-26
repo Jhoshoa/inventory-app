@@ -98,7 +98,9 @@ export async function adjustStockAction(
   const productId = stringValue(formData, "product_id");
   const quantity = stringValue(formData, "quantity");
   const reason = stringValue(formData, "reason");
-  const fieldErrors = validateStockAdjustment(quantity, reason);
+  const currentStockRaw = stringValue(formData, "current_stock");
+  const currentStock = currentStockRaw ? Number(currentStockRaw) : undefined;
+  const fieldErrors = validateStockAdjustment(quantity, reason, currentStock);
 
   if (!productId) return { ok: false, message: "Producto invalido", fieldErrors: {} };
   if (Object.keys(fieldErrors).length > 0) return { ok: false, fieldErrors };
@@ -154,12 +156,14 @@ function createPayload(values: ReturnType<typeof formDataToProductValues>) {
     stock: Number(values.stock),
     category_id: nullable(values.category_id),
     category: nullable(values.category),
-    min_stock: values.min_stock ? Number(values.min_stock) : 5,
+    min_stock: values.min_stock ? Number(values.min_stock) : 1,
     unit: values.unit || "unidad",
     sku: nullable(values.sku),
     cost_price: values.cost_price ? values.cost_price : null,
     photo_url: null,
     qr_code: nullable(values.qr_code),
+    discount_type: values.discount_type || null,
+    discount_value: values.discount_type ? values.discount_value || "0" : "0",
   };
 }
 
@@ -169,12 +173,15 @@ function updatePayload(values: ReturnType<typeof formDataToProductValues>) {
     price: values.price,
     category_id: nullable(values.category_id),
     category: nullable(values.category),
-    min_stock: values.min_stock ? Number(values.min_stock) : 5,
+    min_stock: values.min_stock ? Number(values.min_stock) : 1,
     unit: values.unit || "unidad",
     sku: nullable(values.sku),
     cost_price: values.cost_price ? values.cost_price : null,
     photo_url: null,
     qr_code: nullable(values.qr_code),
+    discount_type: values.discount_type || null,
+    discount_value: values.discount_type ? values.discount_value || "0" : null,
+    remove_discount: !values.discount_type,
   };
 }
 

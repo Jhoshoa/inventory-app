@@ -79,6 +79,8 @@ describe("validateProductForm", () => {
           cost_price: "",
           qr_code: "",
           photo_url: "",
+          discount_type: "",
+          discount_value: "",
         },
         "create",
       ),

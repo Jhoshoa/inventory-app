@@ -37,6 +37,28 @@ export function calculateCartTotal(items: CartItem[]) {
   return items.reduce((total, item) => total + Number(item.product.price) * item.quantity, 0);
 }
 
+export type DiscountType = "percentage" | "fixed" | "";
+export type DiscountSourceOverride = "auto" | "product" | "manual" | "none" | "";
+
+export function calculateDiscountAmount(subtotal: number, discountType: DiscountType, discountValueRaw: string) {
+  const value = Number(discountValueRaw);
+  if (!discountType || !Number.isFinite(value) || value <= 0) return 0;
+  if (discountType === "percentage") {
+    return Math.min(subtotal * (value / 100), subtotal);
+  }
+  return Math.min(value, subtotal);
+}
+
+/** Suma de los descuentos propios de cada producto en el carrito (Bs.). */
+export function calculateProductDiscountTotal(items: CartItem[]) {
+  return items.reduce((total, item) => {
+    const price = Number(item.product.price);
+    const effectivePrice = Number(item.product.effective_price);
+    if (!Number.isFinite(price) || !Number.isFinite(effectivePrice)) return total;
+    return total + Math.max(price - effectivePrice, 0) * item.quantity;
+  }, 0);
+}
+
 export function validateCheckout(items: CartItem[], paymentMethod: string = "efectivo") {
   const errors: { items?: string; payment_method?: string } = {};
 

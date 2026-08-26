@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Input } from "@/components/ui/Input";
 import { SEARCH_DEBOUNCE_MS } from "@/lib/constants/ui";
 import { MIN_PRODUCT_SEARCH_LENGTH } from "@/features/products/schemas";
+import { getOfflineDb, type OfflineProduct } from "@/lib/offline/db";
 import { PosProductResults } from "./PosProductResults";
 import type { PosProduct, PosProductListResponse } from "../types";
 
@@ -15,12 +16,28 @@ export interface PosProductSearchHandle {
   focus: () => void;
 }
 
+function toPosProduct(product: OfflineProduct): PosProduct {
+  return {
+    id: product.id,
+    name: product.name,
+    price: product.price,
+    stock: product.stock,
+    unit: product.unit,
+    qr_code: product.qr_code,
+    discount_type: product.discount_type,
+    discount_value: product.discount_value,
+    effective_price: product.effective_price,
+  };
+}
+
 export const PosProductSearch = forwardRef<PosProductSearchHandle, {
   lastAddedProductName?: string | null;
   onAdd: (product: PosProduct) => void;
+  isOnline?: boolean;
 }>(function PosProductSearch({
   lastAddedProductName,
   onAdd,
+  isOnline = true,
 }, ref) {
   const [query, setQuery] = useState("");
   const [products, setProducts] = useState<PosProduct[]>([]);
@@ -58,6 +75,21 @@ export const PosProductSearch = forwardRef<PosProductSearchHandle, {
     let cancelled = false;
     const timeout = window.setTimeout(async () => {
       try {
+        if (!isOnline) {
+          const db = getOfflineDb();
+          const lower = trimmed.toLowerCase();
+          const matches = await db.products
+            .filter((product) => !product.deleted && product.name.toLowerCase().includes(lower))
+            .limit(20)
+            .toArray();
+          if (!cancelled) {
+            loadedQueryRef.current = trimmed;
+            setProducts(matches.map(toPosProduct));
+            setError(null);
+          }
+          return;
+        }
+
         const response = await fetch(
           `/api/products/pos?q=${encodeURIComponent(trimmed)}&limit=20&offset=0`,
         );
@@ -80,7 +112,7 @@ export const PosProductSearch = forwardRef<PosProductSearchHandle, {
       cancelled = true;
       window.clearTimeout(timeout);
     };
-  }, [query]);
+  }, [query, isOnline]);
 
   useEffect(() => {
     return () => {
@@ -98,6 +130,20 @@ export const PosProductSearch = forwardRef<PosProductSearchHandle, {
 
     setIsLookupLoading(true);
     try {
+      if (!isOnline) {
+        const db = getOfflineDb();
+        const match = await db.products.where("qr_code").equals(code).first();
+        if (!match || match.deleted) {
+          setError("No se encontro producto para ese codigo en el catalogo local.");
+          return;
+        }
+        onAdd(toPosProduct(match));
+        setQuery("");
+        setProducts([]);
+        setError(null);
+        return;
+      }
+
       const response = await fetch(`/api/products/qr/${encodeURIComponent(code)}`, {
         signal: abortController.signal,
       });
@@ -131,7 +177,7 @@ export const PosProductSearch = forwardRef<PosProductSearchHandle, {
             Escanea un codigo y presiona Enter, o busca por nombre para agregar productos.
           </p>
         </div>
-        <Badge variant="default">Caja activa</Badge>
+        <Badge variant={isOnline ? "default" : "warning"}>{isOnline ? "Caja activa" : "Modo sin conexion"}</Badge>
       </div>
       <label className="relative block">
         <span className="sr-only">Buscar producto</span>
@@ -219,5 +265,8 @@ function compactProduct(product: PosProduct): PosProduct {
     stock: product.stock,
     unit: product.unit,
     qr_code: product.qr_code ?? null,
+    discount_type: product.discount_type ?? null,
+    discount_value: product.discount_value ?? "0",
+    effective_price: product.effective_price ?? product.price,
   };
 }

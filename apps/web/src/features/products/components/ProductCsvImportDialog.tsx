@@ -37,14 +37,18 @@ export function ProductCsvImportDialog({ open, onClose, onSuccess }: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [dragOver, setDragOver] = useState(false);
   const [file, setFile] = useState<File | null>(null);
+  const [fileError, setFileError] = useState<string | null>(null);
   const [state, setState] = useState<DialogState>({ phase: "idle" });
 
   const handleFile = useCallback((f: File) => {
-    if (!f.name.endsWith(".csv")) {
+    if (!f.name.toLowerCase().endsWith(".csv")) {
+      setFile(null);
+      setFileError("Selecciona un archivo con extension .csv");
       setState({ phase: "idle" });
       return;
     }
     setFile(f);
+    setFileError(null);
     setState({ phase: "idle" });
   }, []);
 
@@ -94,6 +98,7 @@ export function ProductCsvImportDialog({ open, onClose, onSuccess }: Props) {
 
   function reset() {
     setFile(null);
+    setFileError(null);
     setState({ phase: "idle" });
     if (inputRef.current) inputRef.current.value = "";
   }
@@ -135,6 +140,7 @@ export function ProductCsvImportDialog({ open, onClose, onSuccess }: Props) {
         ) : (
           <IdleForm
             file={file}
+            fileError={fileError}
             dragOver={dragOver}
             onDragOver={(e) => {
               e.preventDefault();
@@ -146,6 +152,7 @@ export function ProductCsvImportDialog({ open, onClose, onSuccess }: Props) {
             onFileChange={handleInputChange}
             onClear={() => {
               setFile(null);
+              setFileError(null);
               if (inputRef.current) inputRef.current.value = "";
             }}
             onSubmit={handleSubmit}
@@ -160,6 +167,7 @@ export function ProductCsvImportDialog({ open, onClose, onSuccess }: Props) {
 
 function IdleForm({
   file,
+  fileError,
   dragOver,
   onDragOver,
   onDragLeave,
@@ -172,6 +180,7 @@ function IdleForm({
   inputRef,
 }: {
   file: File | null;
+  fileError: string | null;
   dragOver: boolean;
   onDragOver: (e: React.DragEvent) => void;
   onDragLeave: (e: React.DragEvent) => void;
@@ -220,6 +229,12 @@ function IdleForm({
           onChange={onFileChange}
         />
       </div>
+
+      {fileError ? (
+        <div className="mt-3">
+          <Alert variant="error">{fileError}</Alert>
+        </div>
+      ) : null}
 
       {file ? (
         <div className="mt-3 flex items-center justify-between rounded-md border border-app-border bg-app-surface-muted px-3 py-2">

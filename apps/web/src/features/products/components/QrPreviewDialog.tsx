@@ -48,7 +48,8 @@ export function QrPreviewDialog({
       .then((nextSvg) => {
         if (isCurrent) setSvg(nextSvg);
       })
-      .catch(() => {
+      .catch((generationError: unknown) => {
+        console.error("No se pudo generar el QR", generationError);
         if (isCurrent) setError("No se pudo generar el QR.");
       })
       .finally(() => {

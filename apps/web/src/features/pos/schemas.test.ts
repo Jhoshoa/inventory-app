@@ -14,6 +14,9 @@ const product: PosProduct = {
   stock: 2,
   unit: "unidad",
   qr_code: "QR-1",
+  discount_type: null,
+  discount_value: "0",
+  effective_price: "12.50",
 };
 
 describe("posCartReducer", () => {

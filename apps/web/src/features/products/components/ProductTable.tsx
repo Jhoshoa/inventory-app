@@ -83,7 +83,12 @@ export function ProductTable({ products, role }: { products: Product[]; role: Us
                   ) : null}
                   {canAdjustStock(role) ? (
                     <Tooltip content="Ajustar stock">
-                      <ProductStockDialog productId={product.id} productName={product.name} trigger="icon" />
+                      <ProductStockDialog
+                        productId={product.id}
+                        productName={product.name}
+                        currentStock={product.stock}
+                        trigger="icon"
+                      />
                     </Tooltip>
                   ) : null}
                   {canDeleteProduct(role) ? (

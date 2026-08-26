@@ -27,6 +27,9 @@ const product: Product = {
   cost_price: null,
   is_active: true,
   version: 1,
+  discount_type: null,
+  discount_value: "0",
+  effective_price: "12.50",
 };
 
 describe("ProductTable", () => {

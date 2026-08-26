@@ -32,6 +32,9 @@ const codedProduct: Product = {
   cost_price: "8.00",
   is_active: true,
   version: 1,
+  discount_type: null,
+  discount_value: "0",
+  effective_price: "12.50",
 };
 
 const productWithoutCode: Product = {
