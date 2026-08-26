@@ -3,6 +3,7 @@ import type { Session } from "@/lib/auth/session";
 import { LogoutButton } from "@/features/auth/components/LogoutButton";
 import { Badge } from "@/components/ui/Badge";
 import { SUBSCRIPTION_LABELS, SUBSCRIPTION_VARIANTS } from "@/lib/constants/subscription";
+import { ConnectionBadge } from "./ConnectionBadge";
 import { MobileNavDrawer } from "./MobileNavDrawer";
 
 export function AppHeader({ session }: { session: Session }) {
@@ -14,7 +15,7 @@ export function AppHeader({ session }: { session: Session }) {
     : "default";
 
   return (
-    <header className="sticky top-0 z-20 border-b border-app-border bg-app-surface/95 backdrop-blur">
+    <header className="print-hidden sticky top-0 z-20 border-b border-app-border bg-app-surface/95 backdrop-blur">
       <div className="flex h-16 items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
         <div className="flex min-w-0 items-center gap-3">
           <MobileNavDrawer role={session.role} />
@@ -28,6 +29,9 @@ export function AppHeader({ session }: { session: Session }) {
               {subLabel ? <Badge variant={subVariant}>{subLabel}</Badge> : null}
             </p>
           </div>
+        </div>
+        <div className="flex items-center gap-3">
+          <ConnectionBadge />
         </div>
         <LogoutButton>
           <LogOut className="h-4 w-4" aria-hidden="true" />

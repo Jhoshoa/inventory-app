@@ -14,9 +14,9 @@ export function AppShell({
   return (
     <div className="min-h-screen bg-app-background">
       <AppSidebar role={session.role} />
-      <div className="min-h-screen lg:pl-64">
+      <div className="min-h-screen lg:pl-64 print:pl-0">
         <AppHeader session={session} />
-        <div className="mx-auto max-w-7xl px-4 py-2 sm:px-6 lg:px-8">
+        <div className="print-hidden mx-auto max-w-7xl px-4 py-2 sm:px-6 lg:px-8">
           <TrialBanner
             subscriptionStatus={session.subscriptionStatus}
             daysUntilTrialEnds={session.daysUntilTrialEnds}

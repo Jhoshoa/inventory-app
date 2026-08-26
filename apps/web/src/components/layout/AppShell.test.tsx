@@ -1,6 +1,7 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Session } from "@/lib/auth/session";
+import { BRAND } from "@/lib/brand";
 import { AppShell } from "./AppShell";
 
 let pathname = "/dashboard/products/labels";
@@ -8,6 +9,10 @@ let pathname = "/dashboard/products/labels";
 vi.mock("next/navigation", () => ({
   usePathname: () => pathname,
   useRouter: () => ({ replace: vi.fn(), refresh: vi.fn() }),
+}));
+
+vi.mock("./ConnectionBadge", () => ({
+  ConnectionBadge: () => null,
 }));
 
 describe("AppShell", () => {
@@ -116,7 +121,7 @@ describe("AppShell", () => {
 
     fireEvent.click(screen.getByRole("button", { name: /abrir menú/i }));
 
-    const mobileHomeLink = screen.getAllByRole("link", { name: /app inventario/i })[1];
+    const mobileHomeLink = screen.getAllByRole("link", { name: new RegExp(BRAND.name, "i") })[1];
     const mobileSettingsLink = screen.getAllByRole("link", { name: /ajustes/i })[1];
 
     mobileHomeLink.focus();

@@ -1,20 +1,30 @@
 import type { Metadata, Viewport } from "next";
 import { Toaster } from "@/components/ui/Toaster";
+import { BRAND } from "@/lib/brand";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  applicationName: "App Inventario",
+  metadataBase: new URL(BRAND.siteUrl),
+  applicationName: BRAND.name,
   title: {
-    default: "App Inventario",
-    template: "%s | App Inventario",
+    default: `${BRAND.tagline} | ${BRAND.name}`,
+    template: `%s | ${BRAND.name}`,
   },
-  description: "Herramienta operativa para inventario, ventas, reportes e importacion asistida.",
+  description: BRAND.description,
   icons: {
     icon: "/favicon.svg",
   },
-  robots: {
-    index: false,
-    follow: false,
+  openGraph: {
+    type: "website",
+    locale: "es_BO",
+    siteName: BRAND.name,
+    title: `${BRAND.tagline} | ${BRAND.name}`,
+    description: BRAND.description,
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: `${BRAND.tagline} | ${BRAND.name}`,
+    description: BRAND.description,
   },
 };
 
