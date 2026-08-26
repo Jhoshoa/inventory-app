@@ -6,6 +6,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
 import type { UserRole } from "@/lib/auth/types";
+import { BRAND } from "@/lib/brand";
 import { isNavItemActive, visibleNavItems } from "./navigation";
 
 export function MobileNavDrawer({ role }: { role: UserRole }) {
@@ -115,7 +116,7 @@ export function MobileNavDrawer({ role }: { role: UserRole }) {
           >
             <div className="flex h-16 items-center justify-between border-b border-app-border px-5">
               <Link href="/dashboard" className="text-base font-semibold text-text-strong">
-                App Inventario
+                {BRAND.name}
               </Link>
               <button
                 ref={closeButtonRef}

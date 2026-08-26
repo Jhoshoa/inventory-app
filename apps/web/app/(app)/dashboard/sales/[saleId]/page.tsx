@@ -3,6 +3,7 @@ import { PageSection } from "@/components/layout/PageSection";
 import { DataFetchError } from "@/components/ui/DataFetchError";
 import { getSale } from "@/features/sales/api";
 import { SaleDetail } from "@/features/sales/components/SaleDetail";
+import { getStore } from "@/features/settings/api";
 import { requireSession } from "@/lib/auth/session";
 
 export default async function SaleDetailPage({
@@ -11,7 +12,7 @@ export default async function SaleDetailPage({
   params: Promise<{ saleId: string }>;
 }) {
   const { saleId } = await params;
-  const [session, sale] = await Promise.all([requireSession(), getSale(saleId)]);
+  const [session, sale, store] = await Promise.all([requireSession(), getSale(saleId), getStore()]);
 
   if (!sale.ok && sale.error.status === 404) notFound();
 
@@ -20,7 +21,11 @@ export default async function SaleDetailPage({
       {!sale.ok ? (
         <DataFetchError resource="la venta" error={sale.error.message} />
       ) : (
-        <SaleDetail sale={sale.data} role={session.role} />
+        <SaleDetail
+          sale={sale.data}
+          role={session.role}
+          store={{ name: store.name, address: store.address, phone: store.phone }}
+        />
       )}
     </PageSection>
   );

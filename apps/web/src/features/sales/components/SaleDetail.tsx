@@ -14,11 +14,22 @@ import { formatCurrency } from "@/lib/format/currency";
 import { formatDateTimeShort } from "@/lib/format/datetime";
 import { canVoidSale } from "@/lib/auth/permissions";
 import type { UserRole } from "@/lib/auth/types";
+import { discountLabel } from "../schemas";
 import { SaleStatusBadge } from "./SaleStatusBadge";
+import { SaleReceiptDialog } from "./SaleReceiptDialog";
+import type { ReceiptStoreInfo } from "./SaleReceipt";
 import { VoidSaleDialog } from "./VoidSaleDialog";
 import type { Sale } from "../types";
 
-export function SaleDetail({ sale, role }: { sale: Sale; role: UserRole }) {
+export function SaleDetail({
+  sale,
+  role,
+  store,
+}: {
+  sale: Sale;
+  role: UserRole;
+  store: ReceiptStoreInfo;
+}) {
   return (
     <PageSection className="space-y-6">
       <PageHeader
@@ -36,6 +47,7 @@ export function SaleDetail({ sale, role }: { sale: Sale; role: UserRole }) {
         actions={
           <div className="flex flex-wrap items-center gap-2">
             <SaleStatusBadge status={sale.status} />
+            <SaleReceiptDialog sale={sale} store={store} />
             {sale.status === "completed" && canVoidSale(role) ? <VoidSaleDialog saleId={sale.id} /> : null}
           </div>
         }
@@ -77,7 +89,14 @@ export function SaleDetail({ sale, role }: { sale: Sale; role: UserRole }) {
         </tbody>
       </Table>
 
-      <div className="ml-auto w-full max-w-sm rounded-lg border border-app-border bg-app-surface p-4 shadow-panel">
+      <div className="ml-auto w-full max-w-sm space-y-1 rounded-lg border border-app-border bg-app-surface p-4 shadow-panel">
+        <SummaryRow label="Subtotal" value={formatCurrency(sale.subtotal)} />
+        {Number(sale.discount_amount) > 0 ? (
+          <SummaryRow
+            label={discountLabel(sale)}
+            value={`-${formatCurrency(sale.discount_amount)}`}
+          />
+        ) : null}
         <SummaryRow label="Total" value={formatCurrency(sale.total)} strong />
       </div>
     </PageSection>

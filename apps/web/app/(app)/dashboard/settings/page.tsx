@@ -3,6 +3,7 @@ import { listProductCategories } from "@/features/product-categories/api";
 import { getStore } from "@/features/settings/api";
 import { SettingsOverview } from "@/features/settings/components/SettingsOverview";
 import { getCurrentClosingPreview, getCurrentStoreDay, getCurrentStoreDayEvents, listCashMovements } from "@/features/store-day/api";
+import { listUserInvitations, listUsers } from "@/features/users/api";
 import { canViewSettings } from "@/lib/auth/permissions";
 import { requireSession } from "@/lib/auth/session";
 
@@ -11,11 +12,13 @@ export default async function SettingsPage() {
   if (!canViewSettings(session.role)) {
     return <ForbiddenState description="Ajustes requiere permisos de owner." />;
   }
-  const [storeData, storeDay, storeDayEvents, productCategories] = await Promise.all([
+  const [storeData, storeDay, storeDayEvents, productCategories, users, userInvitations] = await Promise.all([
     getStore().catch(() => null),
     getCurrentStoreDay(),
     getCurrentStoreDayEvents(),
     listProductCategories(true),
+    listUsers(),
+    listUserInvitations(),
   ]);
   const closingPreview = storeDay.ok && storeDay.data.status === "open"
     ? await getCurrentClosingPreview()
@@ -32,6 +35,8 @@ export default async function SettingsPage() {
       closingPreview={closingPreview}
       cashMovements={cashMovements}
       productCategories={productCategories}
+      users={users}
+      userInvitations={userInvitations}
     />
   );
 }

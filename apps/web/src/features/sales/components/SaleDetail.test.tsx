@@ -12,6 +12,8 @@ vi.mock("next/navigation", () => ({
   useRouter: () => ({ refresh: vi.fn() }),
 }));
 
+const store = { name: "Mi Tienda", address: null, phone: null };
+
 const sale: Sale = {
   id: "sale-12345678",
   items: [
@@ -23,6 +25,10 @@ const sale: Sale = {
       subtotal: "25.00",
     },
   ],
+  subtotal: "25.00",
+  discount_type: null,
+  discount_value: "0",
+  discount_amount: "0",
   total: "25.00",
   payment_method: "efectivo",
   status: "voided",
@@ -36,23 +42,35 @@ const sale: Sale = {
 
 describe("SaleDetail", () => {
   it("renders sale items, status, and void reason", () => {
-    render(<SaleDetail sale={sale} role="owner" />);
+    render(<SaleDetail sale={sale} role="owner" store={store} />);
 
     expect(screen.getByRole("heading", { name: "Venta sale-123" })).toBeInTheDocument();
     expect(screen.getByText("Anulada")).toBeInTheDocument();
     expect(screen.getByText(/Error de cobro/)).toBeInTheDocument();
     expect(screen.getByText("Arroz 1kg")).toBeInTheDocument();
-    expect(screen.getAllByText(/Bs\s+25,00/)).toHaveLength(2);
+    expect(screen.getAllByText(/Bs\s+25,00/)).toHaveLength(3);
   });
 
   it("hides void action for cashier", () => {
-    render(<SaleDetail sale={{ ...sale, status: "completed", voided_at: null, void_reason: null }} role="cashier" />);
+    render(
+      <SaleDetail
+        sale={{ ...sale, status: "completed", voided_at: null, void_reason: null }}
+        role="cashier"
+        store={store}
+      />,
+    );
 
     expect(screen.queryByRole("button", { name: /anular venta/i })).not.toBeInTheDocument();
   });
 
   it("shows void action for owner", () => {
-    render(<SaleDetail sale={{ ...sale, status: "completed", voided_at: null, void_reason: null }} role="owner" />);
+    render(
+      <SaleDetail
+        sale={{ ...sale, status: "completed", voided_at: null, void_reason: null }}
+        role="owner"
+        store={store}
+      />,
+    );
 
     expect(screen.getByRole("button", { name: /anular venta/i })).toBeInTheDocument();
   });

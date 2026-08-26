@@ -1,8 +1,14 @@
-import type { SaleSearchParams, SaleStatusFilter } from "./types";
+import type { Sale, SaleSearchParams, SaleStatusFilter } from "./types";
 
 export const DEFAULT_SALE_LIMIT = 50;
 
 const saleStatuses = new Set<SaleStatusFilter>(["all", "completed", "voided"]);
+
+export function discountLabel(sale: Pick<Sale, "discount_type" | "discount_value">) {
+  if (sale.discount_type === "percentage") return `Descuento (${sale.discount_value}%)`;
+  if (sale.discount_type === "product") return "Descuento de producto";
+  return "Rebaja";
+}
 
 export function validateVoidSale(reason: string) {
   const trimmed = reason.trim();

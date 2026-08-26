@@ -1,5 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
+import { BRAND } from "@/lib/brand";
 import { AuthShell } from "./AuthShell";
 
 describe("AuthShell", () => {
@@ -16,7 +17,7 @@ describe("AuthShell", () => {
       </AuthShell>,
     );
 
-    expect(screen.getByText("App Inventario")).toBeInTheDocument();
+    expect(screen.getByText(BRAND.name)).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Iniciar sesion" })).toBeInTheDocument();
     expect(screen.getByText("Ingresa para administrar tu tienda.")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Continuar" })).toBeInTheDocument();

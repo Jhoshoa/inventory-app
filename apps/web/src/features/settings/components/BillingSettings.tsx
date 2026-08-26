@@ -3,6 +3,7 @@ import type { BillingStatus } from "@/features/settings/api/billing";
 import type { Session } from "@/lib/auth/session";
 import { SUBSCRIPTION_LABELS, SUBSCRIPTION_VARIANTS } from "@/lib/constants/subscription";
 import { formatDateLong } from "@/lib/format/datetime";
+import { PaymentRequestButton } from "./PaymentRequestButton";
 
 const ACCESS_LABELS: Record<string, string> = {
   active: "Activo",
@@ -82,11 +83,18 @@ export function BillingSettings({
         ) : null}
       </div>
 
-      {!isOwner ? (
+      {isOwner ? (
+        <div className="mt-6 flex flex-col gap-2 border-t border-app-border pt-4 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-sm text-text-muted">
+            Coordina tu pago directamente con nuestro equipo. Aun no tenemos cobro automatico integrado.
+          </p>
+          <PaymentRequestButton />
+        </div>
+      ) : (
         <p className="mt-4 text-sm text-text-muted">
           Solo el owner puede administrar la suscripcion.
         </p>
-      ) : null}
+      )}
     </section>
   );
 }

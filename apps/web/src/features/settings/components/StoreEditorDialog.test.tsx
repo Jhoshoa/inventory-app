@@ -22,6 +22,11 @@ const storeData = {
   address: "Av. Siempre Viva 123",
   phone: "77712345",
   is_active: true,
+  allow_percentage_discount: false,
+  max_percentage_discount: "0",
+  allow_manual_discount: false,
+  max_manual_discount_amount: "0",
+  allow_cashier_discount_override: false,
 };
 
 describe("StoreEditorDialog", () => {

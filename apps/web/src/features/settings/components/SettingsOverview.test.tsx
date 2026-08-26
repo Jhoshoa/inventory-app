@@ -12,6 +12,13 @@ vi.mock("./StoreEditorDialog", () => ({
   StoreEditorDialog: () => <div data-testid="store-editor-dialog"><button>Editar</button></div>,
 }));
 
+vi.mock("@/features/users/components/UsersSection", () => ({
+  UsersSection: () => <div data-testid="users-section">Users section content</div>,
+}));
+
+const emptyUsers = { ok: true as const, data: { items: [], total: 0, limit: 50, offset: 0 } };
+const emptyInvitations = { ok: true as const, data: { items: [], total: 0, limit: 50, offset: 0 } };
+
 const session: Session = {
   userId: "user-1",
   email: "owner@example.com",
@@ -45,6 +52,8 @@ describe("SettingsOverview", () => {
             },
           ],
         }}
+        users={emptyUsers}
+        userInvitations={emptyInvitations}
       />,
     );
 
@@ -58,9 +67,7 @@ describe("SettingsOverview", () => {
     expect(screen.getByText("Operacion diaria")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Abrir tienda" })).toBeInTheDocument();
     expect(screen.getByText("Apertura")).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "Gestion de usuarios" })).toBeInTheDocument();
-    expect(screen.getByText("Planificado")).toBeInTheDocument();
-    expect(screen.getByText("Propietario tendrá acceso")).toBeInTheDocument();
+    expect(screen.getByTestId("users-section")).toBeInTheDocument();
   });
 
   it("shows store data when storeData is provided", () => {
@@ -73,6 +80,11 @@ describe("SettingsOverview", () => {
           address: "Av. Siempre Viva 123",
           phone: "77712345",
           is_active: true,
+          allow_percentage_discount: false,
+          max_percentage_discount: "0",
+          allow_manual_discount: false,
+          max_manual_discount_amount: "0",
+          allow_cashier_discount_override: false,
         }}
         storeDay={{ ok: true, data: storeDay }}
         storeDayEvents={{
@@ -108,6 +120,11 @@ describe("SettingsOverview", () => {
           address: null,
           phone: null,
           is_active: true,
+          allow_percentage_discount: false,
+          max_percentage_discount: "0",
+          allow_manual_discount: false,
+          max_manual_discount_amount: "0",
+          allow_cashier_discount_override: false,
         }}
         storeDay={{ ok: true, data: storeDay }}
       />,
@@ -117,17 +134,18 @@ describe("SettingsOverview", () => {
     expect(screen.queryByRole("button", { name: /editar/i })).not.toBeInTheDocument();
   });
 
-  it("renders planned users as read-only context for cashiers", () => {
+  it("hides the users section for cashiers", () => {
     render(
       <SettingsOverview
         session={{ ...session, role: "cashier" }}
         storeDay={{ ok: true, data: storeDay }}
+        users={emptyUsers}
+        userInvitations={emptyInvitations}
       />,
     );
 
     expect(screen.getAllByText("Cajero").length).toBeGreaterThan(0);
-    expect(screen.getByRole("heading", { name: "Gestion de usuarios" })).toBeInTheDocument();
-    expect(screen.getByText("Solo lectura")).toBeInTheDocument();
+    expect(screen.queryByTestId("users-section")).not.toBeInTheDocument();
   });
 });
 

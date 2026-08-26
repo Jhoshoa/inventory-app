@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { BRAND } from "@/lib/brand";
 
 interface AuthShellProps {
   title: string;
@@ -22,9 +23,12 @@ export function AuthShell({
     <main className="flex min-h-screen items-center justify-center bg-app-background px-4 py-10 text-text-body">
       <section className="w-full max-w-md rounded-lg border border-app-border bg-app-surface p-6 shadow-panel">
         <div className="mb-6 text-center">
-          <p className="text-xs font-semibold uppercase tracking-wide text-brand-700">
-            App Inventario
-          </p>
+          <Link
+            href="/"
+            className="text-xs font-semibold uppercase tracking-wide text-brand-700 hover:text-brand-800"
+          >
+            {BRAND.name}
+          </Link>
           <h1 className="mt-2 text-2xl font-semibold text-text-strong">{title}</h1>
           <p className="mt-2 text-sm text-text-muted">{description}</p>
         </div>

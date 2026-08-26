@@ -11,6 +11,10 @@ export interface SaleItem {
 export interface Sale {
   id: string;
   items: SaleItem[];
+  subtotal: string;
+  discount_type: "percentage" | "fixed" | "product" | null;
+  discount_value: string;
+  discount_amount: string;
   total: string;
   payment_method: string;
   status: "completed" | "voided" | string;
@@ -48,12 +52,16 @@ export interface CreateSalePayload {
   payment_method: string;
   device_id?: string;
   customer_name?: string | null;
+  discount_type?: "percentage" | "fixed" | null;
+  discount_value?: string;
 }
 
 export interface SaleActionState {
   ok: boolean;
   message?: string;
-  fieldErrors: Partial<Record<"items" | "payment_method" | "customer_name" | "reason", string>>;
+  fieldErrors: Partial<
+    Record<"items" | "payment_method" | "customer_name" | "discount_value" | "reason", string>
+  >;
 }
 
 export type SaleListResult = ApiResult<SaleListResponse>;

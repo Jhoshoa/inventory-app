@@ -27,6 +27,19 @@ export function BillingSkeleton() {
               </div>
             ))}
           </div>
+          <div className="h-9 w-48 animate-pulse rounded-md bg-app-surface-muted" />
+        </div>
+      </div>
+
+      <div className="rounded-lg border border-app-border bg-app-surface p-4 shadow-panel">
+        <div className="mb-4 space-y-2">
+          <div className="h-3 w-20 animate-pulse rounded bg-app-borderStrong" />
+          <div className="h-5 w-48 animate-pulse rounded bg-app-border" />
+        </div>
+        <div className="space-y-2">
+          {Array.from({ length: 3 }, (_, index) => (
+            <div key={index} className="h-10 w-full animate-pulse rounded bg-app-surface-muted" />
+          ))}
         </div>
       </div>
     </div>

@@ -13,6 +13,9 @@ import type { ProductCategoryListResult } from "@/features/product-categories/ty
 import { StoreDayEventTimeline } from "@/features/store-day/components/StoreDayEventTimeline";
 import { StoreDayStatusPanel } from "@/features/store-day/components/StoreDayStatusPanel";
 import type { CashMovementListResult, StoreDayClosingPreviewResult, StoreDayEventListResult, StoreDayResult } from "@/features/store-day/types";
+import { UsersSection } from "@/features/users/components/UsersSection";
+import type { UserInvitationListResult, UserListResult } from "@/features/users/types";
+import { DiscountPolicyDialog } from "./DiscountPolicyDialog";
 import { StoreEditorDialog } from "./StoreEditorDialog";
 import type { StoreResponse } from "../types";
 import { PermissionMatrix } from "./PermissionMatrix";
@@ -25,6 +28,8 @@ export function SettingsOverview({
   closingPreview,
   cashMovements,
   productCategories,
+  users,
+  userInvitations,
 }: {
   session: Session;
   storeData?: StoreResponse;
@@ -33,6 +38,8 @@ export function SettingsOverview({
   closingPreview?: StoreDayClosingPreviewResult;
   cashMovements?: CashMovementListResult;
   productCategories?: ProductCategoryListResult;
+  users?: UserListResult;
+  userInvitations?: UserInvitationListResult;
 }) {
   return (
     <PageSection className="space-y-6">
@@ -67,9 +74,12 @@ export function SettingsOverview({
                 ]
           }
           action={
-            session.role === "owner" && storeData
-              ? <StoreEditorDialog storeData={storeData} />
-              : undefined
+            session.role === "owner" && storeData ? (
+              <div className="flex flex-wrap gap-2">
+                <StoreEditorDialog storeData={storeData} />
+                <DiscountPolicyDialog storeData={storeData} />
+              </div>
+            ) : undefined
           }
         />
         <AdminSummaryCard
@@ -121,12 +131,14 @@ export function SettingsOverview({
             )
           ) : null}
 
-          <AdminSection
-            title="Usuarios"
-            description="Invitaciones y administracion de miembros."
-          >
-            <PlannedUsersBlock role={session.role} />
-          </AdminSection>
+          {session.role === "owner" && users && userInvitations ? (
+            <AdminSection
+              title="Usuarios"
+              description="Invitaciones y administracion de miembros."
+            >
+              <UsersSection users={users} invitations={userInvitations} currentUserId={session.userId} />
+            </AdminSection>
+          ) : null}
         </div>
 
         <div className="min-w-0 space-y-6">
@@ -209,29 +221,6 @@ function AdminSection({
     <CollapsibleSection title={title} description={description} defaultOpen>
       {children}
     </CollapsibleSection>
-  );
-}
-
-function PlannedUsersBlock({ role }: { role: Session["role"] }) {
-  const owner = role === "owner";
-
-  return (
-    <div className="rounded-lg border border-app-border bg-app-surface-muted p-4">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <div className="min-w-0">
-          <div className="flex flex-wrap items-center gap-2">
-            <h3 className="text-base font-semibold text-text-strong">Gestion de usuarios</h3>
-            <Badge variant="default">Planificado</Badge>
-          </div>
-          <p className="mt-2 text-sm text-text-muted">
-            Invitaciones, cambio de roles y administracion de miembros se implementaran como feature dedicada despues del MVP visual.
-          </p>
-        </div>
-        <Badge variant={owner ? "success" : "default"}>
-          {owner ? "Propietario tendrá acceso" : "Solo lectura"}
-        </Badge>
-      </div>
-    </div>
   );
 }
 
