@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from sqlalchemy import (
     Boolean,
@@ -27,6 +27,8 @@ class SaleModel(Base):
     customer_name = Column(String(100))
     subtotal = Column(Numeric(12, 2), nullable=False, default=0)
     discount = Column(Numeric(12, 2), nullable=False, default=0)
+    discount_type = Column(String(20), nullable=True)
+    discount_value = Column(Numeric(12, 2), nullable=False, default=0)
     total = Column(Numeric(12, 2), nullable=False)
     items_count = Column(Integer, nullable=False, default=0)
     payment_method = Column(String(20), default="efectivo")
@@ -39,8 +41,8 @@ class SaleModel(Base):
     synced = Column(Boolean, default=False)
     version = Column(Integer, default=1)
     deleted_at = Column(DateTime(timezone=True))
-    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
-    updated_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(UTC))
+    updated_at = Column(DateTime(timezone=True), default=lambda: datetime.now(UTC), onupdate=lambda: datetime.now(UTC))
 
     items = relationship("SaleItemModel", back_populates="sale", cascade="all, delete-orphan")
 

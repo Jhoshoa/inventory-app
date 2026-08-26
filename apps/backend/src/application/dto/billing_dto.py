@@ -1,6 +1,8 @@
 from datetime import datetime
+from typing import Literal
+from uuid import UUID
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class BillingStatusResponse(BaseModel):
@@ -17,9 +19,32 @@ class BillingStatusResponse(BaseModel):
 
 
 class UpdateBillingRequest(BaseModel):
-    subscription_status: str | None = None
+    subscription_status: Literal["trial", "active", "past_due", "expired"] | None = None
     next_billing_date: datetime | None = None
     billing_email: str | None = None
     billing_nit: str | None = None
     billing_razon_social: str | None = None
+    reason: str = Field(min_length=3, max_length=500)
+
+
+class CheckoutResponse(BaseModel):
+    store_name: str
+    billing_email: str | None = None
+    billing_nit: str | None = None
+    billing_razon_social: str | None = None
+    subscription_status: str
+
+
+class BillingHistoryEntryResponse(BaseModel):
+    id: UUID
     reason: str
+    changed_by_email: str
+    old_values: dict = Field(default_factory=dict)
+    new_values: dict = Field(default_factory=dict)
+    created_at: datetime
+
+    model_config = {"from_attributes": True}
+
+
+class BillingHistoryResponse(BaseModel):
+    items: list[BillingHistoryEntryResponse]

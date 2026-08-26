@@ -19,16 +19,12 @@ from src.application.dto.product_dto import (
     StockAdjustmentDTO,
     UpdateProductDTO,
 )
+from src.application.dto.stock_movement_dto import StockMovementListResponseDTO
 from src.application.ports.image_validator import (
     ALLOWED_MIME_TYPES,
     validate_image_magic_bytes,
 )
 from src.application.ports.photo_storage import IPhotoStorage
-from src.config.settings import settings
-from src.infrastructure.services.cloudinary.photo_storage import (
-    parse_public_id_from_url,
-)
-from src.application.dto.stock_movement_dto import StockMovementListResponseDTO
 from src.application.use_cases.products.create_product import (
     CreateProductInput,
     CreateProductUseCase,
@@ -55,6 +51,7 @@ from src.application.use_cases.stock_movements.list_product_stock_movements impo
     ListProductStockMovementsInput,
     ListProductStockMovementsUseCase,
 )
+from src.config.settings import settings
 from src.infrastructure.database.repositories.import_job_repository import (
     ImportJobRepository,
 )
@@ -66,6 +63,9 @@ from src.infrastructure.database.repositories.product_repository import (
 )
 from src.infrastructure.database.repositories.stock_movement_repository import (
     StockMovementRepository,
+)
+from src.infrastructure.services.cloudinary.photo_storage import (
+    parse_public_id_from_url,
 )
 from src.presentation.dependencies import (
     get_db_session,
@@ -137,6 +137,8 @@ async def list_products_for_pos(
                 stock=product.stock,
                 unit=product.unit,
                 qr_code=product.qr_code,
+                discount_type=product.discount_type,
+                discount_value=product.discount_value,
             )
             for product in products
         ],
@@ -205,6 +207,8 @@ async def create_product(
             cost_price=dto.cost_price,
             photo_url=dto.photo_url,
             qr_code=dto.qr_code,
+            discount_type=dto.discount_type.value if dto.discount_type else None,
+            discount_value=dto.discount_value,
         )
     )
     return product
@@ -241,6 +245,9 @@ async def update_product(
             cost_price=dto.cost_price,
             photo_url=dto.photo_url,
             qr_code=dto.qr_code,
+            discount_type=dto.discount_type.value if dto.discount_type else None,
+            discount_value=dto.discount_value,
+            remove_discount=dto.remove_discount,
         )
     )
     if dto.stock is not None:

@@ -25,6 +25,9 @@ class UpdateProductInput:
     cost_price: Decimal | None = None
     photo_url: str | None = None
     qr_code: str | None = None
+    discount_type: str | None = None
+    discount_value: Decimal | None = None
+    remove_discount: bool = False
 
 
 class UpdateProductUseCase:
@@ -75,4 +78,12 @@ class UpdateProductUseCase:
             if await self._repo.qr_code_exists(input.qr_code, exclude_product_id=product.id):
                 raise ConflictError("El codigo escaneable ya esta en uso por otro producto")
             product.qr_code = input.qr_code
+
+        if input.remove_discount:
+            product.discount_type = None
+            product.discount_value = Decimal(0)
+        elif input.discount_type is not None:
+            product.discount_type = input.discount_type
+            product.discount_value = input.discount_value if input.discount_value is not None else Decimal(0)
+
         return await self._repo.save(product)

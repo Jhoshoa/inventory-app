@@ -33,6 +33,12 @@ class IStoreRepository(ABC):
     ) -> None: ...
 
     @abstractmethod
+    async def list_by_suspended_before(self, cutoff: datetime) -> list[Store]: ...
+
+    @abstractmethod
+    async def batch_archive(self, store_ids: list[UUID]) -> None: ...
+
+    @abstractmethod
     async def update_subscription(
         self,
         store_id: UUID,
@@ -40,6 +46,7 @@ class IStoreRepository(ABC):
         subscription_status: str | None = None,
         next_billing_date: datetime | None = None,
         grace_period_started_at: datetime | None = None,
+        clear_grace_period: bool = False,
         billing_email: str | None = None,
         billing_nit: str | None = None,
         billing_razon_social: str | None = None,

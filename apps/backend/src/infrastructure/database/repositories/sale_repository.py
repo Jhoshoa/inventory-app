@@ -1,4 +1,4 @@
-from datetime import date, datetime, timezone
+from datetime import UTC, date, datetime
 from decimal import Decimal
 from uuid import UUID
 
@@ -21,8 +21,10 @@ class SaleRepository(ISaleRepository):
             store_id=sale.store_id,
             device_id=sale.device_id,
             customer_name=sale.customer_name,
-            subtotal=sale.total,
-            discount=0,
+            subtotal=sale.subtotal,
+            discount=sale.discount_amount,
+            discount_type=sale.discount_type,
+            discount_value=sale.discount_value,
             total=sale.total,
             items_count=len(sale.items),
             payment_method=sale.payment_method,
@@ -30,6 +32,7 @@ class SaleRepository(ISaleRepository):
             business_day_id=sale.business_day_id,
             business_date=sale.business_date,
             created_by_user_id=sale.created_by_user_id,
+            created_at=sale.created_at,
         )
         for item in sale.items:
             item_model = SaleItemModel(
@@ -168,10 +171,10 @@ class SaleRepository(ISaleRepository):
             ).group_by(SaleModel.payment_method)
         )
         totals = {
-            "cash_sales_total": Decimal("0"),
-            "qr_sales_total": Decimal("0"),
-            "transfer_sales_total": Decimal("0"),
-            "card_sales_total": Decimal("0"),
+            "cash_sales_total": Decimal(0),
+            "qr_sales_total": Decimal(0),
+            "transfer_sales_total": Decimal(0),
+            "card_sales_total": Decimal(0),
         }
         mapping = {
             "efectivo": "cash_sales_total",
@@ -229,10 +232,10 @@ class SaleRepository(ISaleRepository):
         if model is None:
             return None
         model.status = "voided"
-        model.voided_at = datetime.now(timezone.utc)
+        model.voided_at = datetime.now(UTC)
         model.void_reason = reason
         model.version = (model.version or 0) + 1
-        model.updated_at = datetime.now(timezone.utc)
+        model.updated_at = datetime.now(UTC)
         await self._session.flush()
         return await self.get_by_id(store_id, sale_id)
 
@@ -388,6 +391,10 @@ class SaleRepository(ISaleRepository):
             id=model.id,
             store_id=model.store_id,
             items=items,
+            subtotal=model.subtotal,
+            discount_type=model.discount_type,
+            discount_value=model.discount_value or Decimal(0),
+            discount_amount=model.discount or Decimal(0),
             total=model.total,
             payment_method=model.payment_method,
             status=model.status,

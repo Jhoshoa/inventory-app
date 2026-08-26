@@ -5,6 +5,8 @@ from fastapi.security import HTTPBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.application.exceptions import ForbiddenError, UnauthorizedError
+from src.application.ports.email_sender import IEmailSender
+from src.application.ports.photo_storage import IPhotoStorage
 from src.application.use_cases.auth.ensure_local_user import (
     EnsureLocalUserInput,
     EnsureLocalUserUseCase,
@@ -13,9 +15,13 @@ from src.application.use_cases.auth.get_current_user_context import (
     CurrentUserContext,
     GetCurrentUserContextUseCase,
 )
+from src.config.dev_constants import DEV_CASHIER_USER_ID, DEV_STORE_ID, DEV_USER_ID
 from src.config.settings import settings
 from src.domain.entities.store import Store
 from src.infrastructure.auth.supabase_auth import verify_jwt
+from src.infrastructure.database.repositories.billing_audit_log_repository import (
+    BillingAuditLogRepository,
+)
 from src.infrastructure.database.repositories.cash_movement_repository import (
     CashMovementRepository,
 )
@@ -25,6 +31,7 @@ from src.infrastructure.database.repositories.exchange_rate_repository import (
 from src.infrastructure.database.repositories.import_job_repository import (
     ImportJobRepository,
 )
+from src.infrastructure.database.repositories.lead_repository import LeadRepository
 from src.infrastructure.database.repositories.product_category_repository import (
     ProductCategoryRepository,
 )
@@ -43,14 +50,15 @@ from src.infrastructure.database.repositories.store_business_day_repository impo
 )
 from src.infrastructure.database.repositories.store_repository import StoreRepository
 from src.infrastructure.database.repositories.sync_repository import SyncRepository
+from src.infrastructure.database.repositories.user_invitation_repository import (
+    UserInvitationRepository,
+)
 from src.infrastructure.database.repositories.user_repository import UserRepository
 from src.infrastructure.database.session import get_session
 from src.infrastructure.services.cloudinary.photo_storage import (
     CloudinaryPhotoStorage,
 )
-
-from src.application.ports.photo_storage import IPhotoStorage
-from src.config.dev_constants import DEV_CASHIER_USER_ID, DEV_STORE_ID, DEV_USER_ID
+from src.infrastructure.services.email.noop_email_sender import NoopEmailSender
 
 security_scheme = HTTPBearer(auto_error=False)
 DEV_ACCESS_TOKEN = "dev-token-123"
@@ -155,6 +163,16 @@ def get_cash_movement_repo(session: AsyncSession = Depends(get_db_session)) -> C
     return CashMovementRepository(session)
 
 
+def get_lead_repo(session: AsyncSession = Depends(get_db_session)) -> LeadRepository:
+    return LeadRepository(session)
+
+
+def get_billing_audit_log_repo(
+    session: AsyncSession = Depends(get_db_session),
+) -> BillingAuditLogRepository:
+    return BillingAuditLogRepository(session)
+
+
 async def get_current_user_context(
     raw_user: dict = Depends(get_current_user),
     user_repo: UserRepository = Depends(get_user_repo),
@@ -217,5 +235,21 @@ async def require_owner(user: CurrentUserContext = Depends(require_active_user))
     return user
 
 
+async def require_platform_admin(
+    user: CurrentUserContext = Depends(require_active_user),
+) -> CurrentUserContext:
+    if not user.is_platform_admin:
+        raise ForbiddenError("Permiso requerido: administrador de plataforma")
+    return user
+
+
 def get_photo_storage() -> IPhotoStorage:
     return CloudinaryPhotoStorage()
+
+
+def get_user_invitation_repo(session: AsyncSession = Depends(get_db_session)) -> UserInvitationRepository:
+    return UserInvitationRepository(session)
+
+
+def get_email_sender() -> IEmailSender:
+    return NoopEmailSender()

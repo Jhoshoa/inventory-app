@@ -39,5 +39,10 @@ async def update_store(
             name=dto.name,
             address=dto.address,
             phone=dto.phone,
+            allow_percentage_discount=dto.allow_percentage_discount,
+            max_percentage_discount=dto.max_percentage_discount,
+            allow_manual_discount=dto.allow_manual_discount,
+            max_manual_discount_amount=dto.max_manual_discount_amount,
+            allow_cashier_discount_override=dto.allow_cashier_discount_override,
         )
     )

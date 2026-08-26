@@ -9,12 +9,14 @@ from src.presentation.api.v1 import (
     exports,
     product_categories,
     products,
+    public_leads,
     reports,
     sales,
     stock_movements,
     store,
     store_day,
     sync,
+    user_invitations,
     users,
 )
 
@@ -30,7 +32,9 @@ api_v1_router.include_router(exchange_rates.router)
 api_v1_router.include_router(dashboard.router)
 api_v1_router.include_router(reports.router)
 api_v1_router.include_router(users.router)
+api_v1_router.include_router(user_invitations.router)
 api_v1_router.include_router(stock_movements.router)
 api_v1_router.include_router(cash_movements.router)
 api_v1_router.include_router(billing.router)
 api_v1_router.include_router(exports.router)
+api_v1_router.include_router(public_leads.router)

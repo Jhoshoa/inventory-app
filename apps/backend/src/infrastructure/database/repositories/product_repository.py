@@ -1,4 +1,5 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
+from decimal import Decimal
 from uuid import UUID
 
 from sqlalchemy import func, or_, select, update
@@ -33,7 +34,9 @@ class ProductRepository(IProductRepository):
         model.cost_price = product.cost_price
         model.is_active = product.is_active
         model.version = product.version
-        model.updated_at = datetime.now(timezone.utc)
+        model.discount_type = product.discount_type
+        model.discount_value = product.discount_value
+        model.updated_at = datetime.now(UTC)
         await self._session.flush()
         return product
 
@@ -54,6 +57,8 @@ class ProductRepository(IProductRepository):
             cost_price=model.cost_price,
             is_active=model.is_active,
             version=model.version,
+            discount_type=model.discount_type,
+            discount_value=model.discount_value or Decimal(0),
         )
 
     async def get_by_ids(self, store_id: UUID, product_ids: list[UUID]) -> list[Product]:
@@ -273,7 +278,7 @@ class ProductRepository(IProductRepository):
         )
         model = result.scalar_one_or_none()
         if model:
-            model.deleted_at = datetime.now(timezone.utc)
+            model.deleted_at = datetime.now(UTC)
             model.is_active = False
             await self._session.flush()
 
@@ -321,7 +326,7 @@ class ProductRepository(IProductRepository):
             .values(
                 stock=ProductModel.stock + quantity,
                 version=ProductModel.version + 1,
-                updated_at=datetime.now(timezone.utc),
+                updated_at=datetime.now(UTC),
             )
             .returning(ProductModel)
         )

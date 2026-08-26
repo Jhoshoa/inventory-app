@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from sqlalchemy import (
     JSON,
@@ -39,11 +39,13 @@ class ProductModel(Base):
     photo_url = Column(String(500))
     qr_code = Column(String(100), unique=True)
     is_active = Column(Boolean, default=True)
+    discount_type = Column(String(20), nullable=True)
+    discount_value = Column(Numeric(12, 2), nullable=False, default=0)
     extra_data = Column("extra_data", JSON, default=dict)
     version = Column(Integer, default=1)
     deleted_at = Column(DateTime(timezone=True))
-    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
-    updated_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(UTC))
+    updated_at = Column(DateTime(timezone=True), default=lambda: datetime.now(UTC), onupdate=lambda: datetime.now(UTC))
 
     __table_args__ = (
         Index("ix_products_store_id", "store_id"),

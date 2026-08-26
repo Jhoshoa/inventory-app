@@ -25,6 +25,8 @@ class CreateProductInput:
     cost_price: Decimal | None = None
     photo_url: str | None = None
     qr_code: str | None = None
+    discount_type: str | None = None
+    discount_value: Decimal = Decimal(0)
 
 
 class CreateProductUseCase:
@@ -72,6 +74,8 @@ class CreateProductUseCase:
             cost_price=input.cost_price,
             photo_url=input.photo_url,
             qr_code=qr_code,
+            discount_type=input.discount_type,
+            discount_value=input.discount_value,
         )
         return await self._repo.save(product)
 

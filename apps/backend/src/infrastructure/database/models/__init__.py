@@ -1,6 +1,10 @@
+from src.infrastructure.database.models.billing_audit_log_model import (
+    BillingAuditLogModel,
+)
 from src.infrastructure.database.models.cash_movement_model import CashMovementModel
 from src.infrastructure.database.models.exchange_rate_model import ExchangeRateModel
 from src.infrastructure.database.models.import_job_model import ImportJobModel
+from src.infrastructure.database.models.lead_model import LeadModel
 from src.infrastructure.database.models.pkce_verifier_model import PkceVerifierModel
 from src.infrastructure.database.models.product_category_model import (
     ProductCategoryModel,
@@ -33,4 +37,6 @@ __all__ = [
     "SyncChangeModel",
     "ImportJobModel",
     "PkceVerifierModel",
+    "LeadModel",
+    "BillingAuditLogModel",
 ]

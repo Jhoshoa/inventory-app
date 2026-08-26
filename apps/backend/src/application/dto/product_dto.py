@@ -3,7 +3,12 @@ from decimal import Decimal
 from enum import StrEnum
 from uuid import UUID
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, computed_field, field_validator, model_validator
+
+
+class ProductDiscountTypeDTO(StrEnum):
+    PERCENTAGE = "percentage"
+    FIXED = "fixed"
 
 
 class ProductStockFilter(StrEnum):
@@ -38,6 +43,14 @@ class CreateProductDTO(BaseModel):
     photo_url: str | None = Field(default=None, max_length=500)
     qr_code: str | None = Field(default=None, max_length=100)
     extra_data: dict = {}
+    discount_type: ProductDiscountTypeDTO | None = None
+    discount_value: Decimal = Field(default=Decimal(0), ge=0)
+
+    @model_validator(mode="after")
+    def validate_discount(self) -> "CreateProductDTO":
+        if self.discount_type == ProductDiscountTypeDTO.PERCENTAGE and self.discount_value > 100:
+            raise ValueError("El porcentaje de descuento no puede superar 100%")
+        return self
 
 
 class UpdateProductDTO(BaseModel):
@@ -52,10 +65,33 @@ class UpdateProductDTO(BaseModel):
     cost_price: Decimal | None = Field(default=None, ge=0)
     photo_url: str | None = Field(default=None, max_length=500)
     qr_code: str | None = Field(default=None, max_length=100)
+    discount_type: ProductDiscountTypeDTO | None = None
+    discount_value: Decimal | None = Field(default=None, ge=0)
+    # discount_type=None ya significa "no lo toques" (igual que el resto de
+    # campos opcionales de este DTO), asi que se necesita una senal explicita
+    # aparte para poder quitar un descuento ya configurado.
+    remove_discount: bool = False
+
+    @model_validator(mode="after")
+    def validate_discount(self) -> "UpdateProductDTO":
+        if self.discount_type is not None and self.discount_value is None:
+            raise ValueError("El valor de descuento es requerido junto con el tipo de descuento")
+        if (
+            self.discount_type == ProductDiscountTypeDTO.PERCENTAGE
+            and self.discount_value is not None
+            and self.discount_value > 100
+        ):
+            raise ValueError("El porcentaje de descuento no puede superar 100%")
+        return self
 
 
 class StockAdjustmentDTO(BaseModel):
-    quantity: int = Field(..., description="Positive to add stock, negative to subtract stock")
+    quantity: int = Field(
+        ...,
+        ge=-1_000_000,
+        le=1_000_000,
+        description="Positive to add stock, negative to subtract stock",
+    )
     reason: str | None = Field(default=None, max_length=120)
 
     @field_validator("quantity")
@@ -81,8 +117,19 @@ class ProductResponseDTO(BaseModel):
     cost_price: Decimal | None = None
     is_active: bool
     version: int
+    discount_type: str | None = None
+    discount_value: Decimal = Decimal(0)
 
     model_config = {"from_attributes": True}
+
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def effective_price(self) -> Decimal:
+        if self.discount_type == "percentage":
+            return self.price - min(self.price * self.discount_value / Decimal(100), self.price)
+        if self.discount_type == "fixed":
+            return self.price - min(self.discount_value, self.price)
+        return self.price
 
 
 class ProductCompactResponseDTO(BaseModel):
@@ -92,8 +139,19 @@ class ProductCompactResponseDTO(BaseModel):
     stock: int
     unit: str
     qr_code: str | None
+    discount_type: str | None = None
+    discount_value: Decimal = Decimal(0)
 
     model_config = {"from_attributes": True}
+
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def effective_price(self) -> Decimal:
+        if self.discount_type == "percentage":
+            return self.price - min(self.price * self.discount_value / Decimal(100), self.price)
+        if self.discount_type == "fixed":
+            return self.price - min(self.discount_value, self.price)
+        return self.price
 
 
 class ProductListResponseDTO(BaseModel):

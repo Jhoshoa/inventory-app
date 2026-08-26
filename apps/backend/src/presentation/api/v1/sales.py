@@ -68,8 +68,9 @@ async def create_sale(
     sale_repo: SaleRepository = Depends(get_sale_repo),
     product_repo: ProductRepository = Depends(get_product_repo),
     business_day_repo: StoreBusinessDayRepository = Depends(get_store_business_day_repo),
+    store_repo: StoreRepository = Depends(get_store_repo),
 ):
-    use_case = CreateSaleUseCase(sale_repo, product_repo, business_day_repo)
+    use_case = CreateSaleUseCase(sale_repo, product_repo, business_day_repo, store_repo)
     items = [SaleItemInput(product_id=i.product_id, quantity=i.quantity) for i in dto.items]
     sale = await use_case.execute(CreateSaleInput(
         store_id=UUID(str(user["store_id"])),
@@ -78,6 +79,9 @@ async def create_sale(
         payment_method=dto.payment_method.value,
         device_id=dto.device_id,
         customer_name=dto.customer_name,
+        discount_type=dto.discount_type.value if dto.discount_type else None,
+        discount_value=dto.discount_value,
+        discount_source_override=dto.discount_source_override.value if dto.discount_source_override else None,
     ))
     return sale
 
