@@ -27,6 +27,15 @@ const storeData = {
   allow_manual_discount: false,
   max_manual_discount_amount: "0",
   allow_cashier_discount_override: false,
+  storefront_enabled: false,
+  storefront_slug: null,
+  storefront_tier: "none",
+  storefront_logo_url: null,
+  storefront_banner_url: null,
+  storefront_color_primary: null,
+  storefront_color_secondary: null,
+  storefront_description: null,
+  storefront_whatsapp: null,
 };
 
 describe("StoreEditorDialog", () => {

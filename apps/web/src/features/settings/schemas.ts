@@ -1,4 +1,7 @@
-import type { DiscountPolicyFormValues, StoreFormValues } from "./types";
+import type { DiscountPolicyFormValues, StoreFormValues, StorefrontFormValues } from "./types";
+
+const SLUG_RE = /^[a-z0-9](?:[a-z0-9-]{1,58}[a-z0-9])?$/;
+const HEX_COLOR_RE = /^#[0-9A-Fa-f]{6}$/;
 
 export function validateStoreForm(values: StoreFormValues): Record<string, string> {
   const errors: Record<string, string> = {};
@@ -15,6 +18,37 @@ export function validateStoreForm(values: StoreFormValues): Record<string, strin
 
   if (values.phone && values.phone.length > 20) {
     errors.phone = "El telefono no puede exceder 20 caracteres";
+  }
+
+  return errors;
+}
+
+export function validateStorefrontForm(values: StorefrontFormValues): Record<string, string> {
+  const errors: Record<string, string> = {};
+
+  const slug = values.slug.trim();
+  if (values.enabled && !slug) {
+    errors.slug = "Define un slug antes de activar el catalogo publico";
+  } else if (slug && !SLUG_RE.test(slug)) {
+    errors.slug = "Solo minusculas, numeros y guiones, sin empezar ni terminar en guion (min. 3 caracteres)";
+  }
+
+  if (values.colorPrimary && !HEX_COLOR_RE.test(values.colorPrimary)) {
+    errors.colorPrimary = "Ingresa un color hex valido, ej. #2563EB";
+  }
+  if (values.colorSecondary && !HEX_COLOR_RE.test(values.colorSecondary)) {
+    errors.colorSecondary = "Ingresa un color hex valido, ej. #2563EB";
+  }
+
+  if (values.description.length > 280) {
+    errors.description = "La descripcion no puede exceder 280 caracteres";
+  }
+
+  if (values.logoUrl && values.logoUrl.length > 500) {
+    errors.logoUrl = "La URL no puede exceder 500 caracteres";
+  }
+  if (values.bannerUrl && values.bannerUrl.length > 500) {
+    errors.bannerUrl = "La URL no puede exceder 500 caracteres";
   }
 
   return errors;

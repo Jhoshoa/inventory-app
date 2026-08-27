@@ -9,7 +9,33 @@ export interface StoreResponse {
   allow_manual_discount: boolean;
   max_manual_discount_amount: string;
   allow_cashier_discount_override: boolean;
+  storefront_enabled: boolean;
+  storefront_slug: string | null;
+  storefront_tier: string;
+  storefront_logo_url: string | null;
+  storefront_banner_url: string | null;
+  storefront_color_primary: string | null;
+  storefront_color_secondary: string | null;
+  storefront_description: string | null;
+  storefront_whatsapp: string | null;
 }
+
+export interface StorefrontFormValues {
+  enabled: boolean;
+  slug: string;
+  logoUrl: string;
+  bannerUrl: string;
+  colorPrimary: string;
+  colorSecondary: string;
+  description: string;
+  whatsapp: string;
+}
+
+export type StorefrontState = {
+  ok: boolean;
+  message: string;
+  fieldErrors: Record<string, string>;
+};
 
 export interface StoreFormValues {
   name: string;

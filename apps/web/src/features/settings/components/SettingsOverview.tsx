@@ -16,6 +16,7 @@ import type { CashMovementListResult, StoreDayClosingPreviewResult, StoreDayEven
 import { UsersSection } from "@/features/users/components/UsersSection";
 import type { UserInvitationListResult, UserListResult } from "@/features/users/types";
 import { DiscountPolicyDialog } from "./DiscountPolicyDialog";
+import { StorefrontSettingsDialog } from "./StorefrontSettingsDialog";
 import { StoreEditorDialog } from "./StoreEditorDialog";
 import type { StoreResponse } from "../types";
 import { PermissionMatrix } from "./PermissionMatrix";
@@ -78,6 +79,7 @@ export function SettingsOverview({
               <div className="flex flex-wrap gap-2">
                 <StoreEditorDialog storeData={storeData} />
                 <DiscountPolicyDialog storeData={storeData} />
+                <StorefrontSettingsDialog storeData={storeData} />
               </div>
             ) : undefined
           }

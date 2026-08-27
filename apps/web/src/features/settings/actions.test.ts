@@ -27,10 +27,11 @@ vi.mock("next/headers", () => ({
   }),
 }));
 
-import { updateStoreAction } from "./actions";
-import type { StoreEditorState } from "./types";
+import { updateStoreAction, updateStorefrontAction } from "./actions";
+import type { StoreEditorState, StorefrontState } from "./types";
 
 const initialState: StoreEditorState = { ok: false, message: "", fieldErrors: {} };
+const initialStorefrontState: StorefrontState = { ok: false, message: "", fieldErrors: {} };
 
 function buildFormData(values: Record<string, string>) {
   const formData = new FormData();
@@ -77,5 +78,80 @@ describe("updateStoreAction", () => {
 
     const [, options] = apiRequest.mock.calls[0];
     expect(options.body).toEqual({ name: "Tienda", address: "Calle 1", phone: "123" });
+  });
+});
+
+describe("updateStorefrontAction", () => {
+  beforeEach(() => {
+    apiRequest.mockReset();
+    getAuthToken.mockReset();
+    revalidatePath.mockReset();
+    getAuthToken.mockResolvedValue("token");
+  });
+
+  it("rejects activating the storefront without a slug", async () => {
+    const formData = buildFormData({ storefront_enabled: "on", storefront_slug: "" });
+
+    const result = await updateStorefrontAction(initialStorefrontState, formData);
+
+    expect(result.ok).toBe(false);
+    expect(result.fieldErrors.slug).toBeTruthy();
+    expect(apiRequest).not.toHaveBeenCalled();
+  });
+
+  it("rejects an invalid slug format", async () => {
+    const formData = buildFormData({ storefront_slug: "Mi Tienda!" });
+
+    const result = await updateStorefrontAction(initialStorefrontState, formData);
+
+    expect(result.ok).toBe(false);
+    expect(result.fieldErrors.slug).toBeTruthy();
+  });
+
+  it("rejects a non-hex color", async () => {
+    const formData = buildFormData({ storefront_color_primary: "blue" });
+
+    const result = await updateStorefrontAction(initialStorefrontState, formData);
+
+    expect(result.ok).toBe(false);
+    expect(result.fieldErrors.colorPrimary).toBeTruthy();
+  });
+
+  it("sends the slug only when provided, but always sends the other optional fields", async () => {
+    apiRequest.mockResolvedValue({ ok: true, data: { id: "store-1" } });
+
+    const formData = buildFormData({
+      storefront_enabled: "on",
+      storefront_slug: "mi-tienda",
+      storefront_logo_url: "",
+      storefront_color_primary: "#2563EB",
+    });
+
+    const result = await updateStorefrontAction(initialStorefrontState, formData);
+
+    expect(result.ok).toBe(true);
+    const [, options] = apiRequest.mock.calls[0];
+    expect(options.body).toEqual({
+      storefront_enabled: true,
+      storefront_slug: "mi-tienda",
+      storefront_logo_url: "",
+      storefront_banner_url: "",
+      storefront_color_primary: "#2563EB",
+      storefront_color_secondary: "",
+      storefront_description: "",
+      storefront_whatsapp: "",
+    });
+  });
+
+  it("omits the slug key entirely when left blank on a disable-only save", async () => {
+    apiRequest.mockResolvedValue({ ok: true, data: { id: "store-1" } });
+
+    const formData = buildFormData({ storefront_enabled: "" });
+
+    await updateStorefrontAction(initialStorefrontState, formData);
+
+    const [, options] = apiRequest.mock.calls[0];
+    expect(options.body).not.toHaveProperty("storefront_slug");
+    expect(options.body.storefront_enabled).toBe(false);
   });
 });

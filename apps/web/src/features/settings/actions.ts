@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { apiRequest } from "@/lib/api/client";
 import { getAuthToken, SESSION_COOKIE, serializeSession } from "@/lib/auth/session";
-import { validateDiscountPolicyForm, validateStoreForm } from "./schemas";
+import { validateDiscountPolicyForm, validateStoreForm, validateStorefrontForm } from "./schemas";
 import type {
   CheckoutState,
   DiscountPolicyFormValues,
@@ -12,6 +12,8 @@ import type {
   StoreEditorState,
   StoreFormValues,
   StoreResponse,
+  StorefrontFormValues,
+  StorefrontState,
 } from "./types";
 
 export async function updateStoreAction(
@@ -116,6 +118,55 @@ export async function updateDiscountPolicyAction(
   revalidatePath("/dashboard/settings");
   revalidatePath("/dashboard/pos");
   return { ok: true, message: "Politica de descuentos actualizada", fieldErrors: {} };
+}
+
+export async function updateStorefrontAction(
+  _previousState: StorefrontState,
+  formData: FormData,
+): Promise<StorefrontState> {
+  const values: StorefrontFormValues = {
+    enabled: formData.get("storefront_enabled") === "on",
+    slug: String(formData.get("storefront_slug") ?? "").trim().toLowerCase(),
+    logoUrl: String(formData.get("storefront_logo_url") ?? "").trim(),
+    bannerUrl: String(formData.get("storefront_banner_url") ?? "").trim(),
+    colorPrimary: String(formData.get("storefront_color_primary") ?? "").trim(),
+    colorSecondary: String(formData.get("storefront_color_secondary") ?? "").trim(),
+    description: String(formData.get("storefront_description") ?? "").trim(),
+    whatsapp: String(formData.get("storefront_whatsapp") ?? "").trim(),
+  };
+
+  const fieldErrors = validateStorefrontForm(values);
+  if (Object.keys(fieldErrors).length > 0) {
+    return { ok: false, message: "Corrige los errores del formulario", fieldErrors };
+  }
+
+  const token = await getAuthToken();
+  if (!token) return { ok: false, message: "Sesion no valida", fieldErrors: {} };
+
+  const result = await apiRequest<StoreResponse>("/store", {
+    method: "PATCH",
+    token,
+    body: {
+      storefront_enabled: values.enabled,
+      // El slug solo se envia si trae contenido: un slug vacio no es un
+      // valor valido a guardar (min 3 caracteres en el backend), y omitirlo
+      // deja el slug ya guardado intacto en vez de intentar borrarlo.
+      ...(values.slug ? { storefront_slug: values.slug } : {}),
+      storefront_logo_url: values.logoUrl,
+      storefront_banner_url: values.bannerUrl,
+      storefront_color_primary: values.colorPrimary,
+      storefront_color_secondary: values.colorSecondary,
+      storefront_description: values.description,
+      storefront_whatsapp: values.whatsapp,
+    },
+  });
+
+  if (!result.ok) {
+    return { ok: false, message: result.error.message, fieldErrors: {} };
+  }
+
+  revalidatePath("/dashboard/settings");
+  return { ok: true, message: "Catalogo publico actualizado", fieldErrors: {} };
 }
 
 interface CheckoutResponse {
