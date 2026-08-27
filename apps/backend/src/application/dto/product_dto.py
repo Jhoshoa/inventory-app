@@ -5,6 +5,8 @@ from uuid import UUID
 
 from pydantic import BaseModel, Field, computed_field, field_validator, model_validator
 
+from src.domain.entities.product import product_discount_per_unit
+
 
 class ProductDiscountTypeDTO(StrEnum):
     PERCENTAGE = "percentage"
@@ -125,11 +127,7 @@ class ProductResponseDTO(BaseModel):
     @computed_field  # type: ignore[prop-decorator]
     @property
     def effective_price(self) -> Decimal:
-        if self.discount_type == "percentage":
-            return self.price - min(self.price * self.discount_value / Decimal(100), self.price)
-        if self.discount_type == "fixed":
-            return self.price - min(self.discount_value, self.price)
-        return self.price
+        return self.price - product_discount_per_unit(self.price, self.discount_type, self.discount_value)
 
 
 class ProductCompactResponseDTO(BaseModel):
@@ -147,11 +145,7 @@ class ProductCompactResponseDTO(BaseModel):
     @computed_field  # type: ignore[prop-decorator]
     @property
     def effective_price(self) -> Decimal:
-        if self.discount_type == "percentage":
-            return self.price - min(self.price * self.discount_value / Decimal(100), self.price)
-        if self.discount_type == "fixed":
-            return self.price - min(self.discount_value, self.price)
-        return self.price
+        return self.price - product_discount_per_unit(self.price, self.discount_type, self.discount_value)
 
 
 class ProductListResponseDTO(BaseModel):

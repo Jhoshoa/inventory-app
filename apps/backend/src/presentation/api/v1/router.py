@@ -10,6 +10,7 @@ from src.presentation.api.v1 import (
     product_categories,
     products,
     public_leads,
+    public_storefront,
     reports,
     sales,
     stock_movements,
@@ -38,3 +39,4 @@ api_v1_router.include_router(cash_movements.router)
 api_v1_router.include_router(billing.router)
 api_v1_router.include_router(exports.router)
 api_v1_router.include_router(public_leads.router)
+api_v1_router.include_router(public_storefront.router)

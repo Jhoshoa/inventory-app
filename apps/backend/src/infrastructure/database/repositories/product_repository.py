@@ -145,6 +145,60 @@ class ProductRepository(IProductRepository):
         )
         return [self._to_entity(m) for m in result.scalars().all()], total
 
+    async def list_public(
+        self,
+        store_id: UUID,
+        *,
+        q: str | None = None,
+        category_id: UUID | None = None,
+        on_sale: bool = False,
+        sort: str = "name",
+        limit: int = 24,
+        offset: int = 0,
+    ) -> tuple[list[Product], int]:
+        filters = [
+            ProductModel.store_id == store_id,
+            ProductModel.deleted_at.is_(None),
+            ProductModel.is_active.is_(True),
+        ]
+        if q:
+            filters.append(ProductModel.name.ilike(f"%{q}%"))
+        if category_id:
+            filters.append(ProductModel.category_id == category_id)
+        if on_sale:
+            filters.append(ProductModel.discount_type.isnot(None))
+
+        total_result = await self._session.execute(select(func.count()).select_from(ProductModel).where(*filters))
+        total = int(total_result.scalar_one())
+
+        sort_columns = {
+            "name": ProductModel.name.asc(),
+            "price_asc": ProductModel.price.asc(),
+            "price_desc": ProductModel.price.desc(),
+        }
+        order_by = sort_columns.get(sort, ProductModel.name.asc())
+
+        result = await self._session.execute(
+            select(ProductModel)
+            .where(*filters)
+            .order_by(order_by, ProductModel.id.asc())
+            .limit(limit)
+            .offset(offset)
+        )
+        return [self._to_entity(m) for m in result.scalars().all()], total
+
+    async def get_public_by_id(self, store_id: UUID, product_id: UUID) -> Product | None:
+        result = await self._session.execute(
+            select(ProductModel).where(
+                ProductModel.store_id == store_id,
+                ProductModel.id == product_id,
+                ProductModel.deleted_at.is_(None),
+                ProductModel.is_active.is_(True),
+            )
+        )
+        model = result.scalar_one_or_none()
+        return self._to_entity(model) if model else None
+
     async def get_by_qr_code(self, store_id: UUID, qr_code: str) -> Product | None:
         result = await self._session.execute(
             select(ProductModel).where(

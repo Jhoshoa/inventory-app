@@ -14,6 +14,8 @@ from src.infrastructure.services.rate_limit.in_memory_rate_limiter import (
     invitation_accept_rate_limiter,
     lead_rate_limiter,
     login_rate_limiter,
+    storefront_ip_rate_limiter,
+    storefront_slug_rate_limiter,
 )
 from src.main import app
 from src.presentation import dependencies
@@ -75,6 +77,8 @@ async def client(db_session: AsyncSession) -> AsyncGenerator[AsyncClient, None]:
     login_rate_limiter.reset()
     lead_rate_limiter.reset()
     invitation_accept_rate_limiter.reset()
+    storefront_ip_rate_limiter.reset()
+    storefront_slug_rate_limiter.reset()
 
     async def override_db_session():
         try:

@@ -50,6 +50,14 @@ login_rate_limiter = InMemoryRateLimiter(
     window_seconds=settings.RATE_LIMIT_LOGIN_WINDOW_SECONDS,
 )
 
+# Catalogo publico por tienda (storefront): dos limites independientes.
+# Por IP, para frenar un scraper/bot puntual; por slug, para que ninguna
+# tienda pueda consumir la cuota de las demas ni ser tumbada por trafico
+# dirigido solo a ella. Generosos porque es trafico de navegacion legitima
+# de clientes finales, no un formulario ocasional.
+storefront_ip_rate_limiter = InMemoryRateLimiter(max_requests=60, window_seconds=60)
+storefront_slug_rate_limiter = InMemoryRateLimiter(max_requests=300, window_seconds=60)
+
 # Red de seguridad generosa para el resto de la API autenticada, por IP: no
 # busca limitar uso normal, solo frenar un cliente (o bot) que tumbe el
 # servicio para todos. Configurable via RATE_LIMIT_GLOBAL_*.

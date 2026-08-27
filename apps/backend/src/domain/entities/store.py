@@ -33,6 +33,15 @@ class Store:
     allow_manual_discount: bool = False
     max_manual_discount_amount: Decimal = Decimal(0)
     allow_cashier_discount_override: bool = False
+    storefront_enabled: bool = False
+    storefront_slug: str | None = None
+    storefront_tier: str = "none"
+    storefront_logo_url: str | None = None
+    storefront_banner_url: str | None = None
+    storefront_color_primary: str | None = None
+    storefront_color_secondary: str | None = None
+    storefront_description: str | None = None
+    storefront_whatsapp: str | None = None
 
     @staticmethod
     def create(name: str, address: str | None = None, phone: str | None = None) -> "Store":

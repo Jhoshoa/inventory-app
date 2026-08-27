@@ -36,6 +36,22 @@ class IProductRepository(ABC):
     async def get_by_qr_code(self, store_id: UUID, qr_code: str) -> Product | None: ...
 
     @abstractmethod
+    async def list_public(
+        self,
+        store_id: UUID,
+        *,
+        q: str | None = None,
+        category_id: UUID | None = None,
+        on_sale: bool = False,
+        sort: str = "name",
+        limit: int = 24,
+        offset: int = 0,
+    ) -> tuple[list[Product], int]: ...
+
+    @abstractmethod
+    async def get_public_by_id(self, store_id: UUID, product_id: UUID) -> Product | None: ...
+
+    @abstractmethod
     async def qr_code_exists(self, qr_code: str, exclude_product_id: UUID | None = None) -> bool: ...
 
     @abstractmethod

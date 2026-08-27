@@ -22,3 +22,6 @@ class IProductCategoryRepository(ABC):
 
     @abstractmethod
     async def reserve_next_sku(self, store_id: UUID, category_id: UUID) -> str | None: ...
+
+    @abstractmethod
+    async def list_public_with_counts(self, store_id: UUID) -> list[tuple[ProductCategory, int]]: ...

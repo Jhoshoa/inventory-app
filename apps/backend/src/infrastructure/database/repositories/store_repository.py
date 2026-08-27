@@ -2,7 +2,7 @@ from datetime import UTC, date, datetime
 from decimal import Decimal
 from uuid import UUID
 
-from sqlalchemy import select, update
+from sqlalchemy import func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.domain.entities.store import Store
@@ -53,6 +53,15 @@ class StoreRepository(IStoreRepository):
         model.allow_manual_discount = store.allow_manual_discount
         model.max_manual_discount_amount = store.max_manual_discount_amount
         model.allow_cashier_discount_override = store.allow_cashier_discount_override
+        model.storefront_enabled = store.storefront_enabled
+        model.storefront_slug = store.storefront_slug
+        model.storefront_tier = store.storefront_tier
+        model.storefront_logo_url = store.storefront_logo_url
+        model.storefront_banner_url = store.storefront_banner_url
+        model.storefront_color_primary = store.storefront_color_primary
+        model.storefront_color_secondary = store.storefront_color_secondary
+        model.storefront_description = store.storefront_description
+        model.storefront_whatsapp = store.storefront_whatsapp
         await self._session.flush()
         return store
 
@@ -66,6 +75,24 @@ class StoreRepository(IStoreRepository):
         if model is None:
             return None
         return self._to_entity(model)
+
+    async def get_by_storefront_slug(self, slug: str) -> Store | None:
+        result = await self._session.execute(
+            select(StoreModel).where(StoreModel.storefront_slug == slug)
+        )
+        model = result.scalar_one_or_none()
+        if model is None:
+            return None
+        return self._to_entity(model)
+
+    async def storefront_slug_exists(self, slug: str, exclude_store_id: UUID | None = None) -> bool:
+        filters = [StoreModel.storefront_slug == slug]
+        if exclude_store_id is not None:
+            filters.append(StoreModel.id != exclude_store_id)
+        result = await self._session.execute(
+            select(func.count()).select_from(StoreModel).where(*filters)
+        )
+        return int(result.scalar_one()) > 0
 
     async def set_first_business_date(self, store_id: UUID, first_business_date: date) -> None:
         await self._session.execute(
@@ -218,4 +245,13 @@ class StoreRepository(IStoreRepository):
             allow_manual_discount=bool(model.allow_manual_discount),
             max_manual_discount_amount=model.max_manual_discount_amount or Decimal(0),
             allow_cashier_discount_override=bool(model.allow_cashier_discount_override),
+            storefront_enabled=bool(model.storefront_enabled),
+            storefront_slug=model.storefront_slug,
+            storefront_tier=model.storefront_tier or "none",
+            storefront_logo_url=model.storefront_logo_url,
+            storefront_banner_url=model.storefront_banner_url,
+            storefront_color_primary=model.storefront_color_primary,
+            storefront_color_secondary=model.storefront_color_secondary,
+            storefront_description=model.storefront_description,
+            storefront_whatsapp=model.storefront_whatsapp,
         )

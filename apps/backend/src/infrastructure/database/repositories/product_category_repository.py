@@ -107,6 +107,27 @@ class ProductCategoryRepository(IProductCategoryRepository):
                 return sku, next_number + 1
             next_number += 1
 
+    async def list_public_with_counts(self, store_id: UUID) -> list[tuple[ProductCategory, int]]:
+        # Solo categorias activas que tienen al menos un producto activo
+        # visible: una categoria vacia en el sidebar publico es ruido, no
+        # informacion.
+        result = await self._session.execute(
+            select(ProductCategoryModel, func.count(ProductModel.id))
+            .join(
+                ProductModel,
+                (ProductModel.category_id == ProductCategoryModel.id)
+                & ProductModel.is_active.is_(True)
+                & ProductModel.deleted_at.is_(None),
+            )
+            .where(
+                ProductCategoryModel.store_id == store_id,
+                ProductCategoryModel.is_active.is_(True),
+            )
+            .group_by(ProductCategoryModel.id)
+            .order_by(ProductCategoryModel.name.asc())
+        )
+        return [(self._to_entity(model), count) for model, count in result.all()]
+
     def _to_entity(self, model: ProductCategoryModel) -> ProductCategory:
         return ProductCategory(
             id=model.id,

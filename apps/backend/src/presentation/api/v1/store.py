@@ -44,5 +44,13 @@ async def update_store(
             allow_manual_discount=dto.allow_manual_discount,
             max_manual_discount_amount=dto.max_manual_discount_amount,
             allow_cashier_discount_override=dto.allow_cashier_discount_override,
+            storefront_enabled=dto.storefront_enabled,
+            storefront_slug=dto.storefront_slug,
+            storefront_logo_url=dto.storefront_logo_url,
+            storefront_banner_url=dto.storefront_banner_url,
+            storefront_color_primary=dto.storefront_color_primary,
+            storefront_color_secondary=dto.storefront_color_secondary,
+            storefront_description=dto.storefront_description,
+            storefront_whatsapp=dto.storefront_whatsapp,
         )
     )
