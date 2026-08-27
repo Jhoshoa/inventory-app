@@ -48,6 +48,9 @@ from src.infrastructure.database.repositories.store_business_day_event_repositor
 from src.infrastructure.database.repositories.store_business_day_repository import (
     StoreBusinessDayRepository,
 )
+from src.infrastructure.database.repositories.storefront_request_repository import (
+    StorefrontRequestRepository,
+)
 from src.infrastructure.database.repositories.store_repository import StoreRepository
 from src.infrastructure.database.repositories.sync_repository import SyncRepository
 from src.infrastructure.database.repositories.user_invitation_repository import (
@@ -165,6 +168,12 @@ def get_cash_movement_repo(session: AsyncSession = Depends(get_db_session)) -> C
 
 def get_lead_repo(session: AsyncSession = Depends(get_db_session)) -> LeadRepository:
     return LeadRepository(session)
+
+
+def get_storefront_request_repo(
+    session: AsyncSession = Depends(get_db_session),
+) -> StorefrontRequestRepository:
+    return StorefrontRequestRepository(session)
 
 
 def get_billing_audit_log_repo(

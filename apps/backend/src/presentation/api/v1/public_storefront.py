@@ -9,6 +9,10 @@ from src.application.dto.storefront_dto import (
     PublicStorefrontProductDTO,
     PublicStorefrontProductListDTO,
 )
+from src.application.dto.storefront_request_dto import (
+    CreateStorefrontRequestDTO,
+    StorefrontRequestResponseDTO,
+)
 from src.application.exceptions import NotFoundError
 from src.application.use_cases.storefront.get_public_storefront import (
     GetPublicStorefrontUseCase,
@@ -20,16 +24,29 @@ from src.application.use_cases.storefront.list_public_products import (
     GetPublicProductUseCase,
     ListPublicProductsUseCase,
 )
+from src.application.use_cases.storefront_requests.create_storefront_request import (
+    CreateStorefrontRequestInput,
+    CreateStorefrontRequestUseCase,
+)
 from src.infrastructure.database.repositories.product_category_repository import (
     ProductCategoryRepository,
 )
 from src.infrastructure.database.repositories.product_repository import ProductRepository
+from src.infrastructure.database.repositories.storefront_request_repository import (
+    StorefrontRequestRepository,
+)
 from src.infrastructure.database.repositories.store_repository import StoreRepository
 from src.infrastructure.services.rate_limit.in_memory_rate_limiter import (
     storefront_ip_rate_limiter,
+    storefront_request_rate_limiter,
     storefront_slug_rate_limiter,
 )
-from src.presentation.dependencies import get_product_category_repo, get_product_repo, get_store_repo
+from src.presentation.dependencies import (
+    get_product_category_repo,
+    get_product_repo,
+    get_storefront_request_repo,
+    get_store_repo,
+)
 
 router = APIRouter(prefix="/public/storefront", tags=["public"])
 
@@ -136,3 +153,37 @@ async def get_storefront_product(
         raise HTTPException(status_code=404, detail=str(e)) from e
 
     return PublicStorefrontProductDTO.from_product(product)
+
+
+@router.post(
+    "/{slug}/products/{product_id}/requests",
+    response_model=StorefrontRequestResponseDTO,
+    status_code=201,
+)
+async def create_storefront_request(
+    slug: str,
+    product_id: UUID,
+    dto: CreateStorefrontRequestDTO,
+    request: Request,
+    store_repo: StoreRepository = Depends(get_store_repo),
+    product_repo: ProductRepository = Depends(get_product_repo),
+    request_repo: StorefrontRequestRepository = Depends(get_storefront_request_repo),
+):
+    _check_rate_limit(request, slug)
+    if not storefront_request_rate_limiter.is_allowed(_client_ip(request)):
+        raise HTTPException(status_code=429, detail="Demasiadas solicitudes. Intenta nuevamente en unos minutos.")
+
+    try:
+        result = await CreateStorefrontRequestUseCase(store_repo, product_repo, request_repo).execute(
+            CreateStorefrontRequestInput(
+                slug=slug,
+                product_id=product_id,
+                customer_name=dto.customer_name,
+                customer_phone=dto.customer_phone,
+                note=dto.note,
+            )
+        )
+    except NotFoundError as e:
+        raise HTTPException(status_code=404, detail=str(e)) from e
+
+    return result

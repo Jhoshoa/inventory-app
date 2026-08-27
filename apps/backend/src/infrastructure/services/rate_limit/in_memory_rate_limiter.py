@@ -58,6 +58,11 @@ login_rate_limiter = InMemoryRateLimiter(
 storefront_ip_rate_limiter = InMemoryRateLimiter(max_requests=60, window_seconds=60)
 storefront_slug_rate_limiter = InMemoryRateLimiter(max_requests=300, window_seconds=60)
 
+# Solicitudes de contacto ("Solicitar" en el catalogo publico): igual criterio
+# que el formulario de leads, un cliente legitimo no manda mas de un par por
+# minuto ni aunque reintente.
+storefront_request_rate_limiter = InMemoryRateLimiter(max_requests=5, window_seconds=600)
+
 # Red de seguridad generosa para el resto de la API autenticada, por IP: no
 # busca limitar uso normal, solo frenar un cliente (o bot) que tumbe el
 # servicio para todos. Configurable via RATE_LIMIT_GLOBAL_*.

@@ -16,6 +16,7 @@ from src.presentation.api.v1 import (
     stock_movements,
     store,
     store_day,
+    storefront_requests,
     sync,
     user_invitations,
     users,
@@ -40,3 +41,4 @@ api_v1_router.include_router(billing.router)
 api_v1_router.include_router(exports.router)
 api_v1_router.include_router(public_leads.router)
 api_v1_router.include_router(public_storefront.router)
+api_v1_router.include_router(storefront_requests.router)
