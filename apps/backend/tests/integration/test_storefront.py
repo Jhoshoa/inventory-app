@@ -179,6 +179,23 @@ async def test_public_products_filtered_on_sale(client):
     assert ids == [on_sale_id]
 
 
+async def test_public_products_paginated_with_offset(client):
+    await _enable_storefront(client)
+    for i in range(5):
+        await _create_product(client, name=f"Producto {i}", price=f"{i + 1}.00")
+
+    first_page = await client.get(
+        "/api/v1/public/storefront/ferreteria-lopez/products?sort=price_asc&limit=2&offset=0"
+    )
+    second_page = await client.get(
+        "/api/v1/public/storefront/ferreteria-lopez/products?sort=price_asc&limit=2&offset=2"
+    )
+
+    assert first_page.json()["total"] == 5
+    assert [i["name"] for i in first_page.json()["items"]] == ["Producto 0", "Producto 1"]
+    assert [i["name"] for i in second_page.json()["items"]] == ["Producto 2", "Producto 3"]
+
+
 async def test_public_products_sorted_by_price(client):
     await _enable_storefront(client)
     await _create_product(client, name="Caro", price="99.00")

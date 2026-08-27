@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { ArrowLeft, MessageCircle } from "lucide-react";
 import { notFound } from "next/navigation";
 import {
@@ -9,6 +10,40 @@ import {
 import { StorefrontProductGrid } from "@/features/storefront/components/StorefrontProductGrid";
 import { formatCurrency } from "@/lib/format/currency";
 import { storefrontWhatsappHref } from "@/features/storefront/whatsapp";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string; productId: string }>;
+}): Promise<Metadata> {
+  const { slug, productId } = await params;
+  const [store, product] = await Promise.all([
+    getPublicStorefront(slug),
+    getPublicStorefrontProduct(slug, productId),
+  ]);
+  if (!store || !product) return {};
+
+  const title = `${product.name} - ${store.name}`;
+  const description = `${formatCurrency(product.effective_price)} · ${product.available ? "Disponible" : "Agotado"} en ${store.name}`;
+  const image = product.photo_url ?? store.logo_url ?? undefined;
+
+  return {
+    title,
+    description,
+    openGraph: {
+      type: "website",
+      title,
+      description,
+      images: image ? [{ url: image }] : undefined,
+    },
+    twitter: {
+      card: image ? "summary_large_image" : "summary",
+      title,
+      description,
+      images: image ? [image] : undefined,
+    },
+  };
+}
 
 export default async function StorefrontProductPage({
   params,
@@ -87,6 +122,7 @@ export default async function StorefrontProductPage({
               style={store.color_primary ? { color: store.color_primary } : undefined}
             >
               {formatCurrency(product.effective_price)}
+              <span className="ml-1 text-base font-normal text-text-muted">/ {product.unit}</span>
             </p>
             {product.effective_price !== product.price ? (
               <p className="text-sm text-text-disabled line-through">{formatCurrency(product.price)}</p>

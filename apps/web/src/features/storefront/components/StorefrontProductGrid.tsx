@@ -59,6 +59,7 @@ export function StorefrontProductGrid({
                 <img
                   src={product.photo_url}
                   alt={product.name}
+                  loading="lazy"
                   className={`h-full w-full object-cover transition-transform group-hover:scale-105 ${!product.available ? "opacity-60" : ""}`}
                 />
               ) : (

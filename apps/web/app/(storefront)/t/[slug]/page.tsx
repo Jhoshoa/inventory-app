@@ -5,30 +5,33 @@ import {
   listPublicStorefrontCategories,
   listPublicStorefrontProducts,
 } from "@/features/storefront/api";
+import { Pagination } from "@/components/ui/Pagination";
 import { StorefrontFeaturedCarousel } from "@/features/storefront/components/StorefrontFeaturedCarousel";
 import { StorefrontProductGrid } from "@/features/storefront/components/StorefrontProductGrid";
 import { StorefrontSidebar } from "@/features/storefront/components/StorefrontSidebar";
 import { StorefrontSortSelect } from "@/features/storefront/components/StorefrontSortSelect";
 
 const VALID_SORTS: StorefrontSort[] = ["name", "price_asc", "price_desc"];
+const PAGE_SIZE = 24;
 
 export default async function StorefrontCatalogPage({
   params,
   searchParams,
 }: {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ q?: string; category?: string; sort?: string }>;
+  searchParams: Promise<{ q?: string; category?: string; sort?: string; offset?: string }>;
 }) {
   const { slug } = await params;
-  const { q, category, sort: rawSort } = await searchParams;
+  const { q, category, sort: rawSort, offset: rawOffset } = await searchParams;
   const sort: StorefrontSort = VALID_SORTS.includes(rawSort as StorefrontSort)
     ? (rawSort as StorefrontSort)
     : "name";
+  const offset = Math.max(0, Number(rawOffset) || 0);
 
   const [store, categories, productList, featured] = await Promise.all([
     getPublicStorefront(slug),
     listPublicStorefrontCategories(slug),
-    listPublicStorefrontProducts(slug, { q, categoryId: category, sort, limit: 48 }),
+    listPublicStorefrontProducts(slug, { q, categoryId: category, sort, limit: PAGE_SIZE, offset }),
     q || category ? Promise.resolve(null) : listPublicStorefrontProducts(slug, { onSale: true, limit: 10 }),
   ]);
 
@@ -87,8 +90,25 @@ export default async function StorefrontCatalogPage({
             emptyTitle={emptyTitle}
             emptyDescription={emptyDescription}
           />
+          {productList.total > PAGE_SIZE ? (
+            <Pagination
+              basePath={`/t/${slug}`}
+              searchParams={paginationSearchParams({ q, category, sort })}
+              total={productList.total}
+              limit={PAGE_SIZE}
+              offset={offset}
+            />
+          ) : null}
         </div>
       </div>
     </div>
   );
+}
+
+function paginationSearchParams(values: { q?: string; category?: string; sort: StorefrontSort }) {
+  const params = new URLSearchParams();
+  if (values.q) params.set("q", values.q);
+  if (values.category) params.set("category", values.category);
+  if (values.sort !== "name") params.set("sort", values.sort);
+  return params;
 }

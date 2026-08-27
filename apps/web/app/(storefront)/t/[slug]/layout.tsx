@@ -12,9 +12,25 @@ export async function generateMetadata({
   const { slug } = await params;
   const store = await getPublicStorefront(slug);
   if (!store) return {};
+
+  const description = store.description ?? `Catalogo de productos de ${store.name}`;
+  const image = store.banner_url ?? store.logo_url ?? undefined;
+
   return {
     title: store.name,
-    description: store.description ?? `Catalogo de productos de ${store.name}`,
+    description,
+    openGraph: {
+      type: "website",
+      title: store.name,
+      description,
+      images: image ? [{ url: image }] : undefined,
+    },
+    twitter: {
+      card: image ? "summary_large_image" : "summary",
+      title: store.name,
+      description,
+      images: image ? [image] : undefined,
+    },
   };
 }
 
