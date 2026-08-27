@@ -65,7 +65,7 @@ export function InviteCashierForm() {
       </Button>
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogTitle close>Invitar a un miembro</DialogTitle>
-        <form onSubmit={onSubmit} noValidate>
+        <form onSubmit={onSubmit} noValidate className="contents">
           <DialogBody>
             <div className="space-y-4">
               <p className="text-sm text-text-muted">

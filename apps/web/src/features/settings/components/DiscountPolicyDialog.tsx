@@ -62,7 +62,7 @@ export function DiscountPolicyDialog({ storeData }: { storeData: StoreResponse }
       </Button>
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogTitle close>Politica de descuentos</DialogTitle>
-        <form onSubmit={onSubmit} noValidate>
+        <form onSubmit={onSubmit} noValidate className="contents">
           <DialogBody>
             <div className="space-y-6">
               <p className="text-sm text-text-muted">

@@ -91,7 +91,7 @@ export function ProductStockDialog({
         }}
       >
         <DialogTitle close>Ajustar stock</DialogTitle>
-        <form onSubmit={onSubmit} noValidate>
+        <form onSubmit={onSubmit} noValidate className="contents">
           <DialogBody>
             <p className="text-sm text-text-muted">{productName}</p>
             <p className="mt-1 text-sm text-text-strong">

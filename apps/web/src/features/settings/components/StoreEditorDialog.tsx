@@ -60,7 +60,7 @@ export function StoreEditorDialog({ storeData }: { storeData: StoreResponse }) {
       </Button>
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogTitle close>Editar datos de tienda</DialogTitle>
-        <form onSubmit={onSubmit} noValidate>
+        <form onSubmit={onSubmit} noValidate className="contents">
           <DialogBody>
             <div className="space-y-4">
               <div className="space-y-1">

@@ -70,7 +70,7 @@ export function ProductDeleteDialog({
       )}
       <Dialog open={open} onOpenChange={setOpen} size="sm">
         <DialogTitle close>Eliminar producto</DialogTitle>
-        <form onSubmit={onSubmit} noValidate>
+        <form onSubmit={onSubmit} noValidate className="contents">
           <DialogBody>
             <p className="text-sm text-text-muted">
               Escribe ELIMINAR para borrar {productName}. El backend validara permisos owner.

@@ -54,7 +54,7 @@ export function VoidSaleDialog({ saleId }: { saleId: string }) {
       </Button>
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogTitle close>Anular venta</DialogTitle>
-        <form onSubmit={onSubmit}>
+        <form onSubmit={onSubmit} className="contents">
           <DialogBody>
             <p className="text-sm text-text-muted">
               Esta accion devuelve inventario y requiere permisos de propietario.
