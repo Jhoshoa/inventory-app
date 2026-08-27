@@ -7,6 +7,8 @@ export interface PublicStorefront {
   color_secondary: string | null;
   description: string | null;
   whatsapp: string | null;
+  payment_qr_url: string | null;
+  payment_instructions: string | null;
 }
 
 export interface PublicStorefrontProduct {

@@ -16,10 +16,14 @@ export function StorefrontRequestDialog({
   slug,
   productId,
   productName,
+  paymentQrUrl,
+  paymentInstructions,
 }: {
   slug: string;
   productId: string;
   productName: string;
+  paymentQrUrl?: string | null;
+  paymentInstructions?: string | null;
 }) {
   const [open, setOpen] = useState(false);
   const [state, setState] = useState<StorefrontRequestState>(INITIAL_STOREFRONT_REQUEST_STATE);
@@ -72,9 +76,27 @@ export function StorefrontRequestDialog({
         <DialogTitle close>Solicitar &quot;{productName}&quot;</DialogTitle>
         {sent ? (
           <DialogBody>
-            <p className="py-4 text-center text-sm text-text-body">
-              Listo, dejamos tu pedido registrado. La tienda te va a contactar pronto para coordinar la compra.
-            </p>
+            <div className="space-y-4 py-2 text-center">
+              <p className="text-sm text-text-body">
+                Listo, dejamos tu pedido registrado. La tienda te va a contactar pronto para coordinar la compra.
+              </p>
+              {paymentQrUrl ? (
+                <div className="space-y-2 rounded-lg border border-app-border bg-app-surface-muted p-4">
+                  <p className="text-xs font-medium text-text-muted">
+                    Si preferis, ya podes pagar con este QR mientras te contactan
+                  </p>
+                  {/* eslint-disable-next-line @next/next/no-img-element -- imagen remota (Cloudinary), sin loader configurado */}
+                  <img
+                    src={paymentQrUrl}
+                    alt="QR de pago de la tienda"
+                    className="mx-auto h-48 w-48 rounded-md border border-app-border bg-app-surface object-contain"
+                  />
+                  {paymentInstructions ? (
+                    <p className="text-xs text-text-muted">{paymentInstructions}</p>
+                  ) : null}
+                </div>
+              ) : null}
+            </div>
           </DialogBody>
         ) : (
           <form ref={formRef} onSubmit={onSubmit} noValidate className="contents">

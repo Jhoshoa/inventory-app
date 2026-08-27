@@ -140,6 +140,7 @@ describe("updateStorefrontAction", () => {
       storefront_color_secondary: "",
       storefront_description: "",
       storefront_whatsapp: "",
+      storefront_payment_instructions: "",
     });
   });
 

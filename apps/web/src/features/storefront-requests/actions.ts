@@ -30,3 +30,24 @@ export async function updateStorefrontRequestStatusAction(
   };
   return { ok: true, message: labels[status] };
 }
+
+export async function updateStorefrontRequestPaymentAction(
+  requestId: string,
+  paymentConfirmed: boolean,
+): Promise<StorefrontRequestActionState> {
+  const token = await getAuthToken();
+  if (!token) return { ok: false, message: "Sesion no valida" };
+
+  const result = await apiRequest<StorefrontRequestResponse>(`/storefront-requests/${requestId}/payment`, {
+    method: "PATCH",
+    token,
+    body: { payment_confirmed: paymentConfirmed },
+  });
+
+  if (!result.ok) {
+    return { ok: false, message: result.error.message };
+  }
+
+  revalidatePath("/dashboard/solicitudes");
+  return { ok: true, message: paymentConfirmed ? "Pago confirmado" : "Pago desmarcado" };
+}

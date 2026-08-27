@@ -133,6 +133,7 @@ export async function updateStorefrontAction(
     colorSecondary: String(formData.get("storefront_color_secondary") ?? "").trim(),
     description: String(formData.get("storefront_description") ?? "").trim(),
     whatsapp: String(formData.get("storefront_whatsapp") ?? "").trim(),
+    paymentInstructions: String(formData.get("storefront_payment_instructions") ?? "").trim(),
   };
 
   const fieldErrors = validateStorefrontForm(values);
@@ -158,6 +159,7 @@ export async function updateStorefrontAction(
       storefront_color_secondary: values.colorSecondary,
       storefront_description: values.description,
       storefront_whatsapp: values.whatsapp,
+      storefront_payment_instructions: values.paymentInstructions,
     },
   });
 

@@ -10,6 +10,7 @@ export interface StorefrontRequestResponse {
   customer_phone: string;
   note: string | null;
   status: StorefrontRequestStatus;
+  payment_confirmed: boolean;
   created_at: string;
 }
 

@@ -18,6 +18,8 @@ export interface StoreResponse {
   storefront_color_secondary: string | null;
   storefront_description: string | null;
   storefront_whatsapp: string | null;
+  storefront_payment_qr_url: string | null;
+  storefront_payment_instructions: string | null;
 }
 
 export interface StorefrontFormValues {
@@ -29,6 +31,7 @@ export interface StorefrontFormValues {
   colorSecondary: string;
   description: string;
   whatsapp: string;
+  paymentInstructions: string;
 }
 
 export type StorefrontState = {

@@ -170,7 +170,13 @@ export default async function StorefrontProductPage({
           )}
 
           <div className="flex flex-wrap gap-2">
-            <StorefrontRequestDialog slug={slug} productId={product.id} productName={product.name} />
+            <StorefrontRequestDialog
+              slug={slug}
+              productId={product.id}
+              productName={product.name}
+              paymentQrUrl={store.payment_qr_url}
+              paymentInstructions={store.payment_instructions}
+            />
             {store.whatsapp ? (
               <a
                 href={storefrontWhatsappHref(

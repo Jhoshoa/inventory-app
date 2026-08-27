@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/Table";
 import { formatDateTimeShort } from "@/lib/format/datetime";
 import { storefrontWhatsappHref } from "@/features/storefront/whatsapp";
-import { updateStorefrontRequestStatusAction } from "../actions";
+import { updateStorefrontRequestPaymentAction, updateStorefrontRequestStatusAction } from "../actions";
 import type { StorefrontRequestResponse, StorefrontRequestStatus } from "../types";
 
 const STATUS_LABELS: Record<StorefrontRequestStatus, string> = {
@@ -50,6 +50,20 @@ export function StorefrontRequestsTable({ requests }: { requests: StorefrontRequ
     });
   }
 
+  function togglePayment(request: StorefrontRequestResponse) {
+    setPendingId(request.id);
+    startTransition(async () => {
+      const result = await updateStorefrontRequestPaymentAction(request.id, !request.payment_confirmed);
+      if (result.ok) {
+        toast.success(result.message);
+        router.refresh();
+      } else {
+        toast.error(result.message);
+      }
+      setPendingId(null);
+    });
+  }
+
   return (
     <Table wrapperClassName="w-full">
       <thead>
@@ -57,13 +71,14 @@ export function StorefrontRequestsTable({ requests }: { requests: StorefrontRequ
           <TableHeaderCell>Producto</TableHeaderCell>
           <TableHeaderCell>Cliente</TableHeaderCell>
           <TableHeaderCell>Estado</TableHeaderCell>
+          <TableHeaderCell>Pago</TableHeaderCell>
           <TableHeaderCell>Recibido</TableHeaderCell>
           <TableHeaderCell align="right">Acciones</TableHeaderCell>
         </tr>
       </thead>
       <tbody>
         {requests.length === 0 ? (
-          <TableEmptyRow colSpan={5}>Todavia no llegaron solicitudes desde tu catalogo publico.</TableEmptyRow>
+          <TableEmptyRow colSpan={6}>Todavia no llegaron solicitudes desde tu catalogo publico.</TableEmptyRow>
         ) : (
           requests.map((request) => {
             const rowPending = isPending && pendingId === request.id;
@@ -83,6 +98,11 @@ export function StorefrontRequestsTable({ requests }: { requests: StorefrontRequ
                 </TableCell>
                 <TableCell mobileLabel="Estado">
                   <Badge variant={STATUS_VARIANTS[request.status]}>{STATUS_LABELS[request.status]}</Badge>
+                </TableCell>
+                <TableCell mobileLabel="Pago">
+                  <Badge variant={request.payment_confirmed ? "success" : "default"}>
+                    {request.payment_confirmed ? "Confirmado" : "Pendiente"}
+                  </Badge>
                 </TableCell>
                 <TableCell mobileLabel="Recibido">
                   <span className="text-xs text-text-muted">{formatDateTimeShort(request.created_at)}</span>
@@ -115,6 +135,9 @@ export function StorefrontRequestsTable({ requests }: { requests: StorefrontRequ
                         Cerrar
                       </Button>
                     ) : null}
+                    <Button variant="ghost" disabled={rowPending} onClick={() => togglePayment(request)}>
+                      {request.payment_confirmed ? "Desmarcar pago" : "Marcar pagado"}
+                    </Button>
                   </TableActionGroup>
                 </TableCell>
               </TableRow>

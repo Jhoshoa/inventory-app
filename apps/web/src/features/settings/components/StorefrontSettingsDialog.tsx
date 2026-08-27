@@ -10,7 +10,9 @@ import { Dialog, DialogTitle, DialogBody, DialogFooter } from "@/components/ui/D
 import { FieldError } from "@/components/ui/FieldError";
 import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
+import { Textarea } from "@/components/ui/Textarea";
 import { updateStorefrontAction } from "../actions";
+import { StorePaymentQrUploader } from "./StorePaymentQrUploader";
 import type { StorefrontState } from "../types";
 
 const initialState: StorefrontState = { ok: false, message: "", fieldErrors: {} };
@@ -198,6 +200,30 @@ export function StorefrontSettingsDialog({ storeData }: { storeData: StoreRespon
                 <p className="text-xs text-text-muted">
                   Si lo dejas vacio, se usa el telefono de la tienda.
                 </p>
+              </div>
+
+              <div className="space-y-3 border-t border-app-border pt-4">
+                <div>
+                  <p className="text-sm font-medium text-text-strong">Pago con QR (opcional)</p>
+                  <p className="text-xs text-text-muted">
+                    Sube el QR que ya usas para cobrar (AloKe, ZAS, tu banco, lo que sea). Se lo mostramos
+                    al cliente cuando te solicita un producto — vos confirmas el pago a mano cuando te
+                    llegue, no procesamos ningun cobro.
+                  </p>
+                </div>
+                <StorePaymentQrUploader currentUrl={storeData.storefront_payment_qr_url} onChange={() => router.refresh()} />
+                <div className="space-y-1">
+                  <Label htmlFor="storefront-payment-instructions">Instrucciones para el cliente</Label>
+                  <Textarea
+                    id="storefront-payment-instructions"
+                    name="storefront_payment_instructions"
+                    defaultValue={storeData.storefront_payment_instructions ?? ""}
+                    placeholder="Ej. Paga con este QR y enviame el comprobante por WhatsApp"
+                    maxLength={280}
+                    rows={2}
+                  />
+                  <FieldError message={fieldErrors.paymentInstructions} />
+                </div>
               </div>
             </div>
           </DialogBody>

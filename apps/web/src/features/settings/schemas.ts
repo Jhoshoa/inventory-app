@@ -51,6 +51,10 @@ export function validateStorefrontForm(values: StorefrontFormValues): Record<str
     errors.bannerUrl = "La URL no puede exceder 500 caracteres";
   }
 
+  if (values.paymentInstructions.length > 280) {
+    errors.paymentInstructions = "Las instrucciones no pueden exceder 280 caracteres";
+  }
+
   return errors;
 }
 

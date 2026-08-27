@@ -36,6 +36,8 @@ const storeData = {
   storefront_color_secondary: null,
   storefront_description: null,
   storefront_whatsapp: null,
+  storefront_payment_qr_url: null,
+  storefront_payment_instructions: null,
 };
 
 describe("StoreEditorDialog", () => {
