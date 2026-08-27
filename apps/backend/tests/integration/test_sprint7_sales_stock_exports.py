@@ -236,6 +236,33 @@ async def test_export_sales_csv_includes_voided_and_completed(client):
     assert {row["status"] for row in rows} == {"completed", "voided"}
 
 
+async def test_export_sales_csv_includes_a_sale_created_at_the_same_instant_as_the_export(client, monkeypatch):
+    """Regresion: el rango por defecto del export usa `hasta = ahora`, y el
+    repositorio filtra `created_at < hasta` (exclusivo). Si una venta se crea
+    en el mismo instante que se calcula ese `ahora` (reproducible en hosts
+    con poca resolucion de reloj — ver el mismo problema en
+    test_store_day.py), la venta quedaba excluida del export. Se fuerza el
+    escenario congelando el reloj para la venta y el calculo del export al
+    mismo valor exacto."""
+    import src.application.use_cases.exports.csv_helpers as csv_helpers_module
+    import src.domain.entities.sale as sale_entity_module
+
+    frozen_now = datetime.now(UTC)
+    frozen_datetime = type("_FrozenDatetime", (), {"now": staticmethod(lambda tz=None: frozen_now)})
+    monkeypatch.setattr(sale_entity_module, "datetime", frozen_datetime)
+
+    _product, sale = await _create_product_and_sale(client, "Cafe")
+
+    monkeypatch.setattr(csv_helpers_module, "datetime", frozen_datetime)
+
+    response = await client.get("/api/v1/exports/sales.csv")
+
+    assert response.status_code == 200
+    rows = _csv_rows(response)
+    assert len(rows) == 1
+    assert rows[0]["id"] == sale["id"]
+
+
 async def test_export_stock_movements_csv_returns_expected_rows(client):
     _product, sale = await _create_product_and_sale(client)
     await client.post(f"/api/v1/sales/{sale['id']}/void", json={"reason": "export movements"})

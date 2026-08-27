@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime, timezone
 
-from sqlalchemy import Column, DateTime, ForeignKey, Index, String
+from sqlalchemy import Column, DateTime, ForeignKey, Index, Integer, String
 
 from src.infrastructure.database.models.product_model import Base
 from src.infrastructure.database.types import GUID
@@ -17,6 +17,12 @@ class StoreBusinessDayEventModel(Base):
     note = Column(String(255))
     created_by_user_id = Column(GUID(), ForeignKey("users.id"), nullable=False)
     created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
+    # Desempate explicito de orden dentro de una jornada. `created_at` no
+    # alcanza: en Windows `datetime.now()` puede devolver el mismo valor en
+    # llamadas sucesivas muy rapidas (resolucion de reloj ~15ms), y el id
+    # (UUID aleatorio) no tiene relacion con el orden de insercion. Se
+    # calcula en el repositorio como MAX(sequence)+1 por business_day_id.
+    sequence = Column(Integer, nullable=False, default=0)
 
     __table_args__ = (
         Index("ix_store_business_day_events_day_created", "business_day_id", "created_at"),

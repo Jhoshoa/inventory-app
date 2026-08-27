@@ -262,6 +262,34 @@ async def test_owner_can_reopen_closed_store_day_and_keep_same_business_day(clie
     assert events[-1]["note"] == "Reapertura"
 
 
+async def test_events_keep_insertion_order_when_clock_does_not_advance(client, monkeypatch):
+    """Regresion: en algunos hosts (visto en Windows) datetime.now() puede
+    devolver el mismo valor en llamadas sucesivas muy rapidas, por lo que
+    created_at solo no alcanza como orden de eventos. Se fuerza ese escenario
+    congelando el reloj y se verifica que el orden de insercion se mantenga
+    via el campo `sequence`, no created_at ni el id (UUID aleatorio, sin
+    relacion con el orden real)."""
+    import src.domain.entities.store_business_day_event as event_entity_module
+
+    frozen_now = datetime.now(timezone.utc)
+    monkeypatch.setattr(event_entity_module, "datetime", type("_FrozenDatetime", (), {"now": staticmethod(lambda tz=None: frozen_now)}))
+
+    open_response = await client.post("/api/v1/store-day/open")
+    assert open_response.status_code == 201
+    close_response = await client.post(
+        "/api/v1/store-day/close",
+        json={"closing_note": "Pausa", "counted_cash_amount": "0.00"},
+    )
+    assert close_response.status_code == 200
+    reopen_response = await client.post("/api/v1/store-day/reopen", json={"opening_note": "Reapertura"})
+    assert reopen_response.status_code == 200
+
+    events_response = await client.get("/api/v1/store-day/current/events")
+    events = events_response.json()
+    assert len({e["created_at"] for e in events}) == 1, "la prueba no reprodujo el reloj congelado"
+    assert [event["event_type"] for event in events] == ["open", "close", "reopen"]
+
+
 async def test_current_store_day_events_returns_empty_without_business_day(client):
     response = await client.get("/api/v1/store-day/current/events")
 

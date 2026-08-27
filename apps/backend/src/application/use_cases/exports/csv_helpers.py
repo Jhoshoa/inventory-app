@@ -11,7 +11,12 @@ def validate_export_range(from_date: datetime, to_date: datetime) -> None:
 
 
 def default_from_to(from_date: datetime | None, to_date: datetime | None) -> tuple[datetime, datetime]:
-    end = to_date or datetime.now(timezone.utc)
+    # +1s de margen: repos comparan con `created_at < end` (exclusivo, correcto
+    # para limites de fecha explicitos). Sin este margen, un registro creado
+    # justo antes de este calculo podia quedar excluido del export "hasta
+    # ahora" en hosts donde datetime.now() tiene poca resolucion de reloj
+    # (observado en Windows: la misma marca de tiempo en llamadas sucesivas).
+    end = to_date or (datetime.now(timezone.utc) + timedelta(seconds=1))
     start = from_date or (end - timedelta(days=7))
     if start.tzinfo is None:
         start = start.replace(tzinfo=timezone.utc)

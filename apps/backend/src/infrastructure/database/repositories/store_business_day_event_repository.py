@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.domain.entities.store_business_day_event import StoreBusinessDayEvent
@@ -17,6 +17,7 @@ class StoreBusinessDayEventRepository(IStoreBusinessDayEventRepository):
         self._session = session
 
     async def save(self, event: StoreBusinessDayEvent) -> StoreBusinessDayEvent:
+        next_sequence = await self._next_sequence(event.business_day_id)
         model = StoreBusinessDayEventModel(
             id=event.id,
             business_day_id=event.business_day_id,
@@ -25,10 +26,20 @@ class StoreBusinessDayEventRepository(IStoreBusinessDayEventRepository):
             note=event.note,
             created_by_user_id=event.created_by_user_id,
             created_at=event.created_at,
+            sequence=next_sequence,
         )
         self._session.add(model)
         await self._session.flush()
         return self._to_entity(model)
+
+    async def _next_sequence(self, business_day_id: UUID) -> int:
+        result = await self._session.execute(
+            select(func.max(StoreBusinessDayEventModel.sequence)).where(
+                StoreBusinessDayEventModel.business_day_id == business_day_id,
+            )
+        )
+        current_max = result.scalar_one_or_none()
+        return (current_max or 0) + 1
 
     async def list_by_business_day(self, store_id: UUID, business_day_id: UUID) -> list[StoreBusinessDayEvent]:
         result = await self._session.execute(
@@ -37,7 +48,7 @@ class StoreBusinessDayEventRepository(IStoreBusinessDayEventRepository):
                 StoreBusinessDayEventModel.store_id == store_id,
                 StoreBusinessDayEventModel.business_day_id == business_day_id,
             )
-            .order_by(StoreBusinessDayEventModel.created_at.asc(), StoreBusinessDayEventModel.id.asc())
+            .order_by(StoreBusinessDayEventModel.sequence.asc())
         )
         return [self._to_entity(model) for model in result.scalars().all()]
 
