@@ -25,6 +25,7 @@ class StoreUpdateDTO(BaseModel):
     storefront_color_secondary: str | None = None
     storefront_description: str | None = Field(default=None, max_length=280)
     storefront_whatsapp: str | None = Field(default=None, max_length=20)
+    storefront_payment_instructions: str | None = Field(default=None, max_length=280)
 
     @field_validator("storefront_slug")
     @classmethod
@@ -69,5 +70,7 @@ class StoreResponseDTO(BaseModel):
     storefront_color_secondary: str | None = None
     storefront_description: str | None = None
     storefront_whatsapp: str | None = None
+    storefront_payment_qr_url: str | None = None
+    storefront_payment_instructions: str | None = None
 
     model_config = {"from_attributes": True}

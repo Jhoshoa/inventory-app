@@ -42,6 +42,8 @@ class Store:
     storefront_color_secondary: str | None = None
     storefront_description: str | None = None
     storefront_whatsapp: str | None = None
+    storefront_payment_qr_url: str | None = None
+    storefront_payment_instructions: str | None = None
 
     @staticmethod
     def create(name: str, address: str | None = None, phone: str | None = None) -> "Store":

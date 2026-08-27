@@ -21,3 +21,8 @@ class IStorefrontRequestRepository(ABC):
 
     @abstractmethod
     async def update_status(self, store_id: UUID, request_id: UUID, status: str) -> StorefrontRequest | None: ...
+
+    @abstractmethod
+    async def update_payment_confirmed(
+        self, store_id: UUID, request_id: UUID, payment_confirmed: bool
+    ) -> StorefrontRequest | None: ...

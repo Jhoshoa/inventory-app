@@ -21,6 +21,8 @@ class PublicStorefrontDTO(BaseModel):
     color_secondary: str | None = None
     description: str | None = None
     whatsapp: str | None = None
+    payment_qr_url: str | None = None
+    payment_instructions: str | None = None
 
 
 class PublicStorefrontProductDTO(BaseModel):

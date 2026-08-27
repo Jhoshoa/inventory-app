@@ -1,7 +1,7 @@
 import uuid
 from datetime import UTC, datetime
 
-from sqlalchemy import Column, DateTime, ForeignKey, Index, String, Text
+from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Index, String, Text
 
 from src.infrastructure.database.models.product_model import Base
 from src.infrastructure.database.types import GUID
@@ -18,6 +18,7 @@ class StorefrontRequestModel(Base):
     customer_phone = Column(String(30), nullable=False)
     note = Column(Text, nullable=True)
     status = Column(String(20), nullable=False, default="pending")
+    payment_confirmed = Column(Boolean, nullable=False, default=False)
     created_at = Column(DateTime(timezone=True), nullable=False, default=lambda: datetime.now(UTC))
 
     __table_args__ = (

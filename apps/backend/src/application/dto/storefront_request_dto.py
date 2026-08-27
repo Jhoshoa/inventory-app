@@ -46,6 +46,7 @@ class StorefrontRequestResponseDTO(BaseModel):
     customer_phone: str
     note: str | None
     status: str
+    payment_confirmed: bool
     created_at: datetime
 
     model_config = {"from_attributes": True}
@@ -61,3 +62,7 @@ class StorefrontRequestListResponseDTO(BaseModel):
 
 class UpdateStorefrontRequestStatusDTO(BaseModel):
     status: Literal["contacted", "closed", "pending"]
+
+
+class UpdateStorefrontRequestPaymentDTO(BaseModel):
+    payment_confirmed: bool

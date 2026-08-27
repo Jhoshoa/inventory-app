@@ -42,5 +42,7 @@ class StoreModel(Base):
     storefront_color_secondary = Column(String(7), nullable=True)
     storefront_description = Column(String(280), nullable=True)
     storefront_whatsapp = Column(String(20), nullable=True)
+    storefront_payment_qr_url = Column(String(500), nullable=True)
+    storefront_payment_instructions = Column(String(280), nullable=True)
     created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(UTC))
     updated_at = Column(DateTime(timezone=True), default=lambda: datetime.now(UTC), onupdate=lambda: datetime.now(UTC))

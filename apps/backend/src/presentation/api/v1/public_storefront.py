@@ -87,6 +87,8 @@ async def get_storefront(
         color_secondary=store.storefront_color_secondary,
         description=store.storefront_description,
         whatsapp=store.storefront_whatsapp or store.phone,
+        payment_qr_url=store.storefront_payment_qr_url,
+        payment_instructions=store.storefront_payment_instructions,
     )
 
 

@@ -26,6 +26,7 @@ class UpdateStoreInput:
     storefront_color_secondary: str | None = None
     storefront_description: str | None = None
     storefront_whatsapp: str | None = None
+    storefront_payment_instructions: str | None = None
 
 
 class UpdateStoreUseCase:
@@ -68,6 +69,8 @@ class UpdateStoreUseCase:
             store.storefront_description = input.storefront_description or None
         if input.storefront_whatsapp is not None:
             store.storefront_whatsapp = input.storefront_whatsapp or None
+        if input.storefront_payment_instructions is not None:
+            store.storefront_payment_instructions = input.storefront_payment_instructions or None
         if input.storefront_enabled is not None:
             if input.storefront_enabled and not store.storefront_slug:
                 raise ValueError("Define un slug antes de activar el catalogo publico")

@@ -5,11 +5,16 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from src.application.dto.storefront_request_dto import (
     StorefrontRequestListResponseDTO,
     StorefrontRequestResponseDTO,
+    UpdateStorefrontRequestPaymentDTO,
     UpdateStorefrontRequestStatusDTO,
 )
 from src.application.exceptions import NotFoundError
 from src.application.use_cases.storefront_requests.list_storefront_requests import (
     ListStorefrontRequestsUseCase,
+)
+from src.application.use_cases.storefront_requests.update_storefront_request_payment import (
+    UpdateStorefrontRequestPaymentInput,
+    UpdateStorefrontRequestPaymentUseCase,
 )
 from src.application.use_cases.storefront_requests.update_storefront_request_status import (
     UpdateStorefrontRequestStatusInput,
@@ -55,6 +60,25 @@ async def update_storefront_request_status(
                 store_id=user["store_id"],
                 request_id=request_id,
                 status=dto.status,
+            )
+        )
+    except NotFoundError as e:
+        raise HTTPException(status_code=404, detail=str(e)) from e
+
+
+@router.patch("/{request_id}/payment", response_model=StorefrontRequestResponseDTO)
+async def update_storefront_request_payment(
+    request_id: UUID,
+    dto: UpdateStorefrontRequestPaymentDTO,
+    user: dict = Depends(get_current_user),
+    repo: StorefrontRequestRepository = Depends(get_storefront_request_repo),
+):
+    try:
+        return await UpdateStorefrontRequestPaymentUseCase(repo).execute(
+            UpdateStorefrontRequestPaymentInput(
+                store_id=user["store_id"],
+                request_id=request_id,
+                payment_confirmed=dto.payment_confirmed,
             )
         )
     except NotFoundError as e:

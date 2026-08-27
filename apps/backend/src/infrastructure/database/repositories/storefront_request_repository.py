@@ -26,6 +26,7 @@ class StorefrontRequestRepository(IStorefrontRequestRepository):
             customer_phone=request.customer_phone,
             note=request.note,
             status=request.status,
+            payment_confirmed=request.payment_confirmed,
             created_at=request.created_at,
         )
         self._session.add(model)
@@ -87,6 +88,22 @@ class StorefrontRequestRepository(IStorefrontRequestRepository):
         await self._session.flush()
         return self._to_entity(model)
 
+    async def update_payment_confirmed(
+        self, store_id: UUID, request_id: UUID, payment_confirmed: bool
+    ) -> StorefrontRequest | None:
+        result = await self._session.execute(
+            select(StorefrontRequestModel).where(
+                StorefrontRequestModel.store_id == store_id,
+                StorefrontRequestModel.id == request_id,
+            )
+        )
+        model = result.scalar_one_or_none()
+        if model is None:
+            return None
+        model.payment_confirmed = payment_confirmed
+        await self._session.flush()
+        return self._to_entity(model)
+
     def _to_entity(self, model: StorefrontRequestModel) -> StorefrontRequest:
         return StorefrontRequest(
             id=model.id,
@@ -97,5 +114,6 @@ class StorefrontRequestRepository(IStorefrontRequestRepository):
             customer_phone=model.customer_phone,
             note=model.note,
             status=model.status,
+            payment_confirmed=model.payment_confirmed,
             created_at=model.created_at,
         )

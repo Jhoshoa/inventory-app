@@ -21,6 +21,7 @@ class StorefrontRequest:
     customer_phone: str
     note: str | None
     status: str
+    payment_confirmed: bool
     created_at: datetime
 
     @staticmethod
@@ -42,5 +43,6 @@ class StorefrontRequest:
             customer_phone=customer_phone,
             note=note,
             status="pending",
+            payment_confirmed=False,
             created_at=datetime.now(UTC),
         )
