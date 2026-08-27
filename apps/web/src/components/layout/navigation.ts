@@ -2,6 +2,7 @@ import {
   BarChart3,
   Boxes,
   LayoutDashboard,
+  MessageSquareText,
   ReceiptText,
   Settings,
   ShoppingCart,
@@ -16,6 +17,7 @@ export const appNavItems = [
   { href: "/dashboard/pos", label: "POS", icon: ShoppingCart, allowed: canView },
   { href: "/dashboard/products", label: "Productos", icon: Boxes, allowed: canView },
   { href: "/dashboard/sales", label: "Ventas", icon: ReceiptText, allowed: canView },
+  { href: "/dashboard/solicitudes", label: "Solicitudes", icon: MessageSquareText, allowed: canView },
   { href: "/dashboard/reports", label: "Reportes", icon: BarChart3, allowed: canView },
   { href: "/dashboard/settings", label: "Ajustes", icon: Settings, allowed: canViewSettings },
 ] as const;

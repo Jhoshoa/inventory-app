@@ -9,6 +9,7 @@ import {
 } from "@/features/storefront/api";
 import { StorefrontImagePlaceholder } from "@/features/storefront/components/StorefrontImagePlaceholder";
 import { StorefrontProductGrid } from "@/features/storefront/components/StorefrontProductGrid";
+import { StorefrontRequestDialog } from "@/features/storefront/components/StorefrontRequestDialog";
 import { StorefrontShareButton } from "@/features/storefront/components/StorefrontShareButton";
 import { formatCurrency } from "@/lib/format/currency";
 import { storefrontWhatsappHref } from "@/features/storefront/whatsapp";
@@ -169,6 +170,7 @@ export default async function StorefrontProductPage({
           )}
 
           <div className="flex flex-wrap gap-2">
+            <StorefrontRequestDialog slug={slug} productId={product.id} productName={product.name} />
             {store.whatsapp ? (
               <a
                 href={storefrontWhatsappHref(
