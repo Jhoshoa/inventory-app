@@ -12,6 +12,38 @@ import { StorefrontProductGrid } from "@/features/storefront/components/Storefro
 import { StorefrontShareButton } from "@/features/storefront/components/StorefrontShareButton";
 import { formatCurrency } from "@/lib/format/currency";
 import { storefrontWhatsappHref } from "@/features/storefront/whatsapp";
+import type { PublicStorefrontProduct } from "@/features/storefront/types";
+
+const RELATED_LIMIT = 4;
+
+/** Productos relacionados: prioriza la misma categoria, y completa (o
+ * reemplaza, si el producto no tiene categoria) con productos en oferta que
+ * esten disponibles — asi la seccion siempre tiene algo relevante que
+ * mostrar, en vez de desaparecer para productos sin categoria asignada. */
+async function getRelatedProducts(
+  slug: string,
+  product: PublicStorefrontProduct,
+): Promise<PublicStorefrontProduct[]> {
+  const [sameCategory, onSale] = await Promise.all([
+    product.category_id
+      ? listPublicStorefrontProducts(slug, { categoryId: product.category_id, limit: RELATED_LIMIT + 1 })
+      : Promise.resolve(null),
+    listPublicStorefrontProducts(slug, { onSale: true, limit: RELATED_LIMIT + 1 }),
+  ]);
+
+  const candidates = [...(sameCategory?.items ?? []), ...(onSale?.items ?? [])];
+  const seen = new Set<string>([product.id]);
+  const related: PublicStorefrontProduct[] = [];
+
+  for (const item of candidates) {
+    if (seen.has(item.id) || !item.available) continue;
+    seen.add(item.id);
+    related.push(item);
+    if (related.length === RELATED_LIMIT) break;
+  }
+
+  return related;
+}
 
 export async function generateMetadata({
   params,
@@ -60,10 +92,7 @@ export default async function StorefrontProductPage({
 
   if (!store || !product) notFound();
 
-  const related = product.category_id
-    ? await listPublicStorefrontProducts(slug, { categoryId: product.category_id, limit: 5 })
-    : null;
-  const relatedItems = (related?.items ?? []).filter((item) => item.id !== product.id).slice(0, 4);
+  const relatedItems = await getRelatedProducts(slug, product);
 
   const jsonLd = {
     "@context": "https://schema.org",
