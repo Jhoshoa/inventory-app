@@ -7,7 +7,9 @@ import {
   getPublicStorefrontProduct,
   listPublicStorefrontProducts,
 } from "@/features/storefront/api";
+import { StorefrontImagePlaceholder } from "@/features/storefront/components/StorefrontImagePlaceholder";
 import { StorefrontProductGrid } from "@/features/storefront/components/StorefrontProductGrid";
+import { StorefrontShareButton } from "@/features/storefront/components/StorefrontShareButton";
 import { formatCurrency } from "@/lib/format/currency";
 import { storefrontWhatsappHref } from "@/features/storefront/whatsapp";
 
@@ -107,9 +109,7 @@ export default async function StorefrontProductPage({
             // eslint-disable-next-line @next/next/no-img-element -- imagen remota de producto, sin loader configurado
             <img src={product.photo_url} alt={product.name} className="h-full w-full object-cover" />
           ) : (
-            <div className="flex h-full w-full items-center justify-center text-sm text-text-disabled">
-              Sin foto
-            </div>
+            <StorefrontImagePlaceholder colorPrimary={store.color_primary} iconClassName="h-16 w-16" />
           )}
         </div>
 
@@ -139,20 +139,26 @@ export default async function StorefrontProductPage({
             <p className="text-sm font-medium text-status-danger">Agotado</p>
           )}
 
-          {store.whatsapp ? (
-            <a
-              href={storefrontWhatsappHref(
-                store.whatsapp,
-                `Hola, quiero consultar por "${product.name}" (${formatCurrency(product.effective_price)}) en ${store.name}`,
-              )}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 rounded-md bg-status-success px-4 py-2 text-sm font-medium text-text-inverse shadow-sm hover:opacity-90"
-            >
-              <MessageCircle className="h-4 w-4" aria-hidden="true" />
-              Consultar por WhatsApp
-            </a>
-          ) : null}
+          <div className="flex flex-wrap gap-2">
+            {store.whatsapp ? (
+              <a
+                href={storefrontWhatsappHref(
+                  store.whatsapp,
+                  `Hola, quiero consultar por "${product.name}" (${formatCurrency(product.effective_price)}) en ${store.name}`,
+                )}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 rounded-md bg-status-success px-4 py-2 text-sm font-medium text-text-inverse shadow-sm hover:opacity-90"
+              >
+                <MessageCircle className="h-4 w-4" aria-hidden="true" />
+                Consultar por WhatsApp
+              </a>
+            ) : null}
+            <StorefrontShareButton
+              title={product.name}
+              text={`${product.name} - ${formatCurrency(product.effective_price)} en ${store.name}`}
+            />
+          </div>
         </div>
       </div>
 

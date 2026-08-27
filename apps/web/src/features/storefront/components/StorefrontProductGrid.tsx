@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { formatCurrency } from "@/lib/format/currency";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { StorefrontImagePlaceholder } from "./StorefrontImagePlaceholder";
 import type { PublicStorefrontProduct } from "../types";
 
 export function StorefrontProductGrid({
@@ -63,9 +64,7 @@ export function StorefrontProductGrid({
                   className={`h-full w-full object-cover transition-transform group-hover:scale-105 ${!product.available ? "opacity-60" : ""}`}
                 />
               ) : (
-                <div className="flex h-full w-full items-center justify-center text-sm text-text-disabled">
-                  Sin foto
-                </div>
+                <StorefrontImagePlaceholder colorPrimary={colorPrimary} />
               )}
             </div>
             <div className="space-y-1 p-3">

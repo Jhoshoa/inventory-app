@@ -4,6 +4,7 @@ import { useRef } from "react";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { formatCurrency } from "@/lib/format/currency";
+import { StorefrontImagePlaceholder } from "./StorefrontImagePlaceholder";
 import type { PublicStorefrontProduct } from "../types";
 
 export function StorefrontFeaturedCarousel({
@@ -80,9 +81,7 @@ export function StorefrontFeaturedCarousel({
                     className="h-full w-full object-cover transition-transform group-hover:scale-105"
                   />
                 ) : (
-                  <div className="flex h-full w-full items-center justify-center text-xs text-text-disabled">
-                    Sin foto
-                  </div>
+                  <StorefrontImagePlaceholder colorPrimary={colorPrimary} iconClassName="h-6 w-6" />
                 )}
               </div>
               <div className="space-y-0.5 p-2.5">

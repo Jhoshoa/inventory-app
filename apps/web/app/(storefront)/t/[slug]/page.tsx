@@ -1,3 +1,4 @@
+import { Search } from "lucide-react";
 import { notFound } from "next/navigation";
 import type { StorefrontSort } from "@/features/storefront/api";
 import {
@@ -32,7 +33,11 @@ export default async function StorefrontCatalogPage({
     getPublicStorefront(slug),
     listPublicStorefrontCategories(slug),
     listPublicStorefrontProducts(slug, { q, categoryId: category, sort, limit: PAGE_SIZE, offset }),
-    q || category ? Promise.resolve(null) : listPublicStorefrontProducts(slug, { onSale: true, limit: 10 }),
+    // Solo se muestra en la primera pagina del catalogo sin filtros — repetirlo
+    // en cada pagina de paginacion es ruido, no ayuda a encontrar productos.
+    q || category || offset > 0
+      ? Promise.resolve(null)
+      : listPublicStorefrontProducts(slug, { onSale: true, limit: 10 }),
   ]);
 
   if (!store || !productList) notFound();
@@ -51,15 +56,16 @@ export default async function StorefrontCatalogPage({
 
   return (
     <div className="space-y-6">
-      <form className="flex gap-2" action="">
+      <form className="relative" action="">
         {category ? <input type="hidden" name="category" value={category} /> : null}
         {sort !== "name" ? <input type="hidden" name="sort" value={sort} /> : null}
+        <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-disabled" aria-hidden="true" />
         <input
           type="search"
           name="q"
           defaultValue={q ?? ""}
           placeholder="Buscar producto..."
-          className="w-full rounded-md border border-app-borderStrong bg-app-surface px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-focus"
+          className="w-full rounded-full border border-app-borderStrong bg-app-surface py-2.5 pl-10 pr-3 text-sm outline-none focus:ring-2 focus:ring-focus"
         />
       </form>
 
