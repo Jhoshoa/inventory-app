@@ -150,6 +150,7 @@ class SyncRepository(ISyncRepository):
         device_id: str,
         changes: list[SyncChangeDTO],
         user_id: UUID | None = None,
+        user_role: str | None = None,
     ) -> list[SyncChangeResultDTO]:
         results: list[SyncChangeResultDTO] = []
         for change in changes:
@@ -158,7 +159,7 @@ class SyncRepository(ISyncRepository):
                 results.append(self._duplicate_result(change, duplicate))
                 continue
 
-            result = await self._apply_change(store_id, device_id, user_id, change)
+            result = await self._apply_change(store_id, device_id, user_id, user_role, change)
             await self._record_processed_change(store_id, device_id, change, result)
             results.append(result)
 
@@ -166,8 +167,24 @@ class SyncRepository(ISyncRepository):
         return results
 
     async def _apply_change(
-        self, store_id: UUID, device_id: str, user_id: UUID | None, change: SyncChangeDTO
+        self,
+        store_id: UUID,
+        device_id: str,
+        user_id: UUID | None,
+        user_role: str | None,
+        change: SyncChangeDTO,
     ) -> SyncChangeResultDTO:
+        # Editar el catalogo (crear/actualizar/borrar productos) es una accion
+        # de owner en el resto de la API (ver require_owner en products.py) —
+        # el push offline no debe ser una via alterna para que un cajero
+        # cambie precio/costo/sku saltandose esa restriccion.
+        if change.entity == SyncEntity.PRODUCT and user_role != "owner":
+            return self._error_result(
+                change,
+                SyncResultStatus.REJECTED,
+                "forbidden",
+                "Solo el propietario de la tienda puede editar el catalogo",
+            )
         try:
             if change.entity == SyncEntity.PRODUCT and change.operation == SyncOperation.UPSERT:
                 version, updated_at = await self._apply_product_upsert(store_id, change)

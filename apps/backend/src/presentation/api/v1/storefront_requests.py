@@ -23,7 +23,7 @@ from src.application.use_cases.storefront_requests.update_storefront_request_sta
 from src.infrastructure.database.repositories.storefront_request_repository import (
     StorefrontRequestRepository,
 )
-from src.presentation.dependencies import get_current_user, get_storefront_request_repo
+from src.presentation.dependencies import get_storefront_request_repo, require_active_user
 
 router = APIRouter(prefix="/storefront-requests", tags=["storefront-requests"])
 
@@ -32,11 +32,11 @@ router = APIRouter(prefix="/storefront-requests", tags=["storefront-requests"])
 async def list_storefront_requests(
     limit: int = Query(default=50, ge=1, le=100),
     offset: int = Query(default=0, ge=0),
-    user: dict = Depends(get_current_user),
+    user=Depends(require_active_user),
     repo: StorefrontRequestRepository = Depends(get_storefront_request_repo),
 ):
     result = await ListStorefrontRequestsUseCase(repo).execute(
-        user["store_id"], limit=limit, offset=offset
+        user.store_id, limit=limit, offset=offset
     )
     return StorefrontRequestListResponseDTO(
         items=result.items,
@@ -51,13 +51,13 @@ async def list_storefront_requests(
 async def update_storefront_request_status(
     request_id: UUID,
     dto: UpdateStorefrontRequestStatusDTO,
-    user: dict = Depends(get_current_user),
+    user=Depends(require_active_user),
     repo: StorefrontRequestRepository = Depends(get_storefront_request_repo),
 ):
     try:
         return await UpdateStorefrontRequestStatusUseCase(repo).execute(
             UpdateStorefrontRequestStatusInput(
-                store_id=user["store_id"],
+                store_id=user.store_id,
                 request_id=request_id,
                 status=dto.status,
             )
@@ -70,13 +70,13 @@ async def update_storefront_request_status(
 async def update_storefront_request_payment(
     request_id: UUID,
     dto: UpdateStorefrontRequestPaymentDTO,
-    user: dict = Depends(get_current_user),
+    user=Depends(require_active_user),
     repo: StorefrontRequestRepository = Depends(get_storefront_request_repo),
 ):
     try:
         return await UpdateStorefrontRequestPaymentUseCase(repo).execute(
             UpdateStorefrontRequestPaymentInput(
-                store_id=user["store_id"],
+                store_id=user.store_id,
                 request_id=request_id,
                 payment_confirmed=dto.payment_confirmed,
             )

@@ -231,9 +231,10 @@ async def test_sync_push_rejects_cross_store_product(client, db_session):
         json={"name": "Cafe", "price": "20.00", "stock": 4},
     )
     product_id = product_response.json()["id"]
+    other_user_id = uuid4()
 
     async def other_store_user():
-        return {"id": uuid4(), "email": "other@local.dev", "store_id": other_store_id}
+        return {"id": other_user_id, "email": "other@local.dev", "store_id": other_store_id}
 
     app.dependency_overrides[dependencies.get_current_user] = other_store_user
 
@@ -255,6 +256,51 @@ async def test_sync_push_rejects_cross_store_product(client, db_session):
 
     assert response.status_code == 200
     assert response.json()["results"][0]["status"] == "conflict"
+
+
+async def test_sync_push_rejects_product_upsert_from_cashier(client):
+    """Regresion de seguridad: editar el catalogo (precio/costo/sku) es una
+    accion de owner en /products (require_owner) — el push offline no debe
+    ser una via alterna para que un cajero se salte esa restriccion."""
+    product_response = await client.post(
+        "/api/v1/products",
+        json={"name": "Detergente", "price": "15.00", "stock": 10},
+    )
+    product_id = product_response.json()["id"]
+
+    async def cashier_user():
+        return {
+            "id": dependencies.DEV_CASHIER_USER_ID,
+            "email": "cashier@local.dev",
+            "store_id": dependencies.DEV_STORE_ID,
+            "role": "cashier",
+        }
+
+    app.dependency_overrides[dependencies.get_current_user] = cashier_user
+    try:
+        response = await client.post(
+            "/api/v1/sync/push",
+            json={
+                "device_id": "device-cashier",
+                "changes": [
+                    _change(
+                        client_change_id="cashier-price-change",
+                        entity="product",
+                        operation="upsert",
+                        entity_id=product_id,
+                        payload={"name": "Detergente", "price": "1.00", "stock": 10},
+                    )
+                ],
+            },
+        )
+    finally:
+        app.dependency_overrides.pop(dependencies.get_current_user, None)
+
+    assert response.status_code == 200
+    assert response.json()["results"][0]["status"] == "rejected"
+
+    unchanged = await client.get(f"/api/v1/products/{product_id}")
+    assert unchanged.json()["price"] == "15.00"
 
 
 async def test_sync_pull_includes_products_sales_and_stock_movements(client):
@@ -363,9 +409,10 @@ async def test_sync_pull_does_not_leak_other_store_data(client, db_session):
     await db_session.flush()
 
     await client.post("/api/v1/products", json={"name": "Arroz", "price": "12.00", "stock": 1})
+    other_user_id = uuid4()
 
     async def other_store_user():
-        return {"id": uuid4(), "email": "other@local.dev", "store_id": other_store_id}
+        return {"id": other_user_id, "email": "other@local.dev", "store_id": other_store_id}
 
     app.dependency_overrides[dependencies.get_current_user] = other_store_user
     await client.post("/api/v1/products", json={"name": "Cafe", "price": "20.00", "stock": 1})

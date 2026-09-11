@@ -324,7 +324,11 @@ async def upload_product_photo(
 
     if product.photo_url:
         old_public_id = parse_public_id_from_url(product.photo_url)
-        if old_public_id:
+        # `photo_url` puede venir de un import CSV o de un PATCH con una URL
+        # cualquiera (no necesariamente subida por esta tienda) — solo
+        # intentamos borrar en Cloudinary si el public_id es realmente uno
+        # de los nuestros, para no destruir un asset de otra tienda.
+        if old_public_id and old_public_id.startswith(f"products/{user.store_id}/"):
             try:
                 await storage.delete(old_public_id)
             except Exception:
@@ -369,7 +373,7 @@ async def delete_product_photo(
         return await repo.save(product)
 
     public_id = parse_public_id_from_url(product.photo_url)
-    if public_id:
+    if public_id and public_id.startswith(f"products/{user.store_id}/"):
         try:
             await storage.delete(public_id)
         except Exception:

@@ -15,4 +15,5 @@ class ISyncRepository(ABC):
         device_id: str,
         changes: list[Any],
         user_id: UUID | None = None,
+        user_role: str | None = None,
     ) -> list[Any]: ...

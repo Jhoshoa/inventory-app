@@ -1,8 +1,24 @@
 from uuid import uuid4
 
+from src.application.ports.photo_storage import IPhotoStorage
 from src.infrastructure.database.models import StoreModel, UserModel
 from src.main import app
 from src.presentation import dependencies
+
+_PNG_BYTES = b"\x89PNG\r\n\x1a\n" + b"0" * 32
+
+
+class _FakePhotoStorage(IPhotoStorage):
+    def __init__(self):
+        self.uploaded: list[str] = []
+        self.deleted: list[str] = []
+
+    async def upload(self, image_bytes: bytes, public_id: str) -> str:
+        self.uploaded.append(public_id)
+        return f"https://res.cloudinary.com/demo/image/upload/{public_id}.png"
+
+    async def delete(self, public_id: str) -> None:
+        self.deleted.append(public_id)
 
 
 async def test_products_search_filters_and_pagination(client):
@@ -303,3 +319,58 @@ async def test_low_stock_endpoint_returns_ordered_products(client):
     response = await client.get("/api/v1/products/low-stock")
     assert response.status_code == 200
     assert [item["name"] for item in response.json()] == ["Cero", "Tres"]
+
+
+async def test_photo_upload_does_not_delete_another_stores_cloudinary_asset(client):
+    """Regresion de seguridad: photo_url es texto libre (se puede fijar via
+    PATCH o import CSV) y no necesariamente fue subido por esta tienda. Al
+    reemplazar la foto no debe borrarse en Cloudinary un public_id que no le
+    pertenece a esta tienda."""
+    fake_storage = _FakePhotoStorage()
+    app.dependency_overrides[dependencies.get_photo_storage] = lambda: fake_storage
+    try:
+        create = await client.post(
+            "/api/v1/products", json={"name": "Fideo", "price": "8.00", "stock": 5}
+        )
+        product_id = create.json()["id"]
+
+        foreign_public_id = "products/00000000-0000-0000-0000-0000000000ff/foreign-product_123"
+        patch = await client.patch(
+            f"/api/v1/products/{product_id}",
+            json={"photo_url": f"https://res.cloudinary.com/demo/image/upload/{foreign_public_id}.png"},
+        )
+        assert patch.status_code == 200
+
+        upload = await client.post(
+            f"/api/v1/products/{product_id}/photo",
+            files={"file": ("new.png", _PNG_BYTES, "image/png")},
+        )
+
+        assert upload.status_code == 200
+        assert foreign_public_id not in fake_storage.deleted
+    finally:
+        app.dependency_overrides.pop(dependencies.get_photo_storage, None)
+
+
+async def test_photo_delete_does_not_delete_another_stores_cloudinary_asset(client):
+    fake_storage = _FakePhotoStorage()
+    app.dependency_overrides[dependencies.get_photo_storage] = lambda: fake_storage
+    try:
+        create = await client.post(
+            "/api/v1/products", json={"name": "Aceite", "price": "18.00", "stock": 5}
+        )
+        product_id = create.json()["id"]
+
+        foreign_public_id = "products/00000000-0000-0000-0000-0000000000ff/foreign-product_456"
+        await client.patch(
+            f"/api/v1/products/{product_id}",
+            json={"photo_url": f"https://res.cloudinary.com/demo/image/upload/{foreign_public_id}.png"},
+        )
+
+        delete = await client.delete(f"/api/v1/products/{product_id}/photo")
+
+        assert delete.status_code == 200
+        assert delete.json()["photo_url"] is None
+        assert foreign_public_id not in fake_storage.deleted
+    finally:
+        app.dependency_overrides.pop(dependencies.get_photo_storage, None)
