@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from decimal import Decimal
 from enum import StrEnum
 from uuid import UUID
@@ -6,6 +6,10 @@ from uuid import UUID
 from pydantic import BaseModel, Field, computed_field, field_validator, model_validator
 
 from src.domain.entities.product import product_discount_per_unit
+
+
+def _as_aware(dt: datetime) -> datetime:
+    return dt if dt.tzinfo is not None else dt.replace(tzinfo=timezone.utc)
 
 
 class ProductDiscountTypeDTO(StrEnum):
@@ -47,11 +51,17 @@ class CreateProductDTO(BaseModel):
     extra_data: dict = {}
     discount_type: ProductDiscountTypeDTO | None = None
     discount_value: Decimal = Field(default=Decimal(0), ge=0)
+    discount_ends_at: datetime | None = None
 
     @model_validator(mode="after")
     def validate_discount(self) -> "CreateProductDTO":
         if self.discount_type == ProductDiscountTypeDTO.PERCENTAGE and self.discount_value > 100:
             raise ValueError("El porcentaje de descuento no puede superar 100%")
+        if self.discount_ends_at is not None:
+            if self.discount_type is None:
+                raise ValueError("No se puede fijar una fecha de vencimiento sin un descuento")
+            if _as_aware(self.discount_ends_at) <= datetime.now(timezone.utc):
+                raise ValueError("La fecha de vencimiento del descuento debe ser futura")
         return self
 
 
@@ -73,6 +83,11 @@ class UpdateProductDTO(BaseModel):
     # campos opcionales de este DTO), asi que se necesita una senal explicita
     # aparte para poder quitar un descuento ya configurado.
     remove_discount: bool = False
+    discount_ends_at: datetime | None = None
+    # Igual que remove_discount: None ya significa "no lo toques", asi que
+    # hace falta una senal explicita para poder quitar solo el vencimiento
+    # y dejar el descuento activo indefinidamente.
+    clear_discount_ends_at: bool = False
 
     @model_validator(mode="after")
     def validate_discount(self) -> "UpdateProductDTO":
@@ -84,6 +99,10 @@ class UpdateProductDTO(BaseModel):
             and self.discount_value > 100
         ):
             raise ValueError("El porcentaje de descuento no puede superar 100%")
+        if self.discount_ends_at is not None and self.clear_discount_ends_at:
+            raise ValueError("No se puede fijar y quitar la fecha de vencimiento al mismo tiempo")
+        if self.discount_ends_at is not None and _as_aware(self.discount_ends_at) <= datetime.now(timezone.utc):
+            raise ValueError("La fecha de vencimiento del descuento debe ser futura")
         return self
 
 
@@ -121,13 +140,16 @@ class ProductResponseDTO(BaseModel):
     version: int
     discount_type: str | None = None
     discount_value: Decimal = Decimal(0)
+    discount_ends_at: datetime | None = None
 
     model_config = {"from_attributes": True}
 
     @computed_field  # type: ignore[prop-decorator]
     @property
     def effective_price(self) -> Decimal:
-        return self.price - product_discount_per_unit(self.price, self.discount_type, self.discount_value)
+        return self.price - product_discount_per_unit(
+            self.price, self.discount_type, self.discount_value, self.discount_ends_at
+        )
 
 
 class ProductCompactResponseDTO(BaseModel):
@@ -139,13 +161,16 @@ class ProductCompactResponseDTO(BaseModel):
     qr_code: str | None
     discount_type: str | None = None
     discount_value: Decimal = Decimal(0)
+    discount_ends_at: datetime | None = None
 
     model_config = {"from_attributes": True}
 
     @computed_field  # type: ignore[prop-decorator]
     @property
     def effective_price(self) -> Decimal:
-        return self.price - product_discount_per_unit(self.price, self.discount_type, self.discount_value)
+        return self.price - product_discount_per_unit(
+            self.price, self.discount_type, self.discount_value, self.discount_ends_at
+        )
 
 
 class ProductListResponseDTO(BaseModel):

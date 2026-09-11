@@ -1,3 +1,4 @@
+from datetime import datetime
 from decimal import Decimal
 from uuid import UUID
 
@@ -41,11 +42,14 @@ class PublicStorefrontProductDTO(BaseModel):
     category_id: UUID | None = None
     discount_type: str | None = None
     discount_value: Decimal = Decimal(0)
+    discount_ends_at: datetime | None = None
 
     @computed_field  # type: ignore[prop-decorator]
     @property
     def effective_price(self) -> Decimal:
-        return self.price - product_discount_per_unit(self.price, self.discount_type, self.discount_value)
+        return self.price - product_discount_per_unit(
+            self.price, self.discount_type, self.discount_value, self.discount_ends_at
+        )
 
     @staticmethod
     def from_product(product: Product) -> "PublicStorefrontProductDTO":
@@ -63,8 +67,9 @@ class PublicStorefrontProductDTO(BaseModel):
             low_stock=0 < product.stock <= LOW_STOCK_THRESHOLD,
             category=product.category,
             category_id=product.category_id,
-            discount_type=product.discount_type,
-            discount_value=product.discount_value,
+            discount_type=product.discount_type if product.is_discount_active else None,
+            discount_value=product.discount_value if product.is_discount_active else Decimal(0),
+            discount_ends_at=product.discount_ends_at,
         )
 
 

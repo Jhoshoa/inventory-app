@@ -64,6 +64,7 @@ from src.infrastructure.database.repositories.product_repository import (
 from src.infrastructure.database.repositories.stock_movement_repository import (
     StockMovementRepository,
 )
+from src.infrastructure.database.repositories.store_repository import StoreRepository
 from src.infrastructure.services.cloudinary.photo_storage import (
     parse_public_id_from_url,
 )
@@ -74,6 +75,7 @@ from src.presentation.dependencies import (
     get_product_category_repo,
     get_product_repo,
     get_stock_movement_repo,
+    get_store_repo,
     require_active_user,
     require_owner,
 )
@@ -139,6 +141,7 @@ async def list_products_for_pos(
                 qr_code=product.qr_code,
                 discount_type=product.discount_type,
                 discount_value=product.discount_value,
+                discount_ends_at=product.discount_ends_at,
             )
             for product in products
         ],
@@ -192,8 +195,9 @@ async def create_product(
     user=Depends(require_owner),
     repo: ProductRepository = Depends(get_product_repo),
     category_repo: ProductCategoryRepository = Depends(get_product_category_repo),
+    store_repo: StoreRepository = Depends(get_store_repo),
 ):
-    product = await CreateProductUseCase(repo, category_repo).execute(
+    product = await CreateProductUseCase(repo, category_repo, store_repo).execute(
         CreateProductInput(
             store_id=user.store_id,
             name=dto.name,
@@ -209,6 +213,7 @@ async def create_product(
             qr_code=dto.qr_code,
             discount_type=dto.discount_type.value if dto.discount_type else None,
             discount_value=dto.discount_value,
+            discount_ends_at=dto.discount_ends_at,
         )
     )
     return product
@@ -230,8 +235,9 @@ async def update_product(
     user=Depends(require_owner),
     repo: ProductRepository = Depends(get_product_repo),
     category_repo: ProductCategoryRepository = Depends(get_product_category_repo),
+    store_repo: StoreRepository = Depends(get_store_repo),
 ):
-    product = await UpdateProductUseCase(repo, category_repo).execute(
+    product = await UpdateProductUseCase(repo, category_repo, store_repo).execute(
         UpdateProductInput(
             store_id=user.store_id,
             product_id=product_id,
@@ -248,6 +254,8 @@ async def update_product(
             discount_type=dto.discount_type.value if dto.discount_type else None,
             discount_value=dto.discount_value,
             remove_discount=dto.remove_discount,
+            discount_ends_at=dto.discount_ends_at,
+            clear_discount_ends_at=dto.clear_discount_ends_at,
         )
     )
     if dto.stock is not None:

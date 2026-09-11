@@ -1,14 +1,19 @@
 from dataclasses import dataclass
+from datetime import datetime
 from decimal import Decimal
 from uuid import UUID
 
-from src.application.exceptions import ConflictError, NotFoundError
+from src.application.exceptions import ApplicationError, ConflictError, NotFoundError
 from src.application.use_cases.products.name_normalizer import normalize_product_name
+from src.application.use_cases.sales.discount_engine import (
+    validate_discount_against_policy,
+)
 from src.domain.entities.product import Product
 from src.domain.repositories.product_category_repository import (
     IProductCategoryRepository,
 )
 from src.domain.repositories.product_repository import IProductRepository
+from src.domain.repositories.store_repository import IStoreRepository
 
 
 @dataclass
@@ -28,12 +33,20 @@ class UpdateProductInput:
     discount_type: str | None = None
     discount_value: Decimal | None = None
     remove_discount: bool = False
+    discount_ends_at: datetime | None = None
+    clear_discount_ends_at: bool = False
 
 
 class UpdateProductUseCase:
-    def __init__(self, repo: IProductRepository, category_repo: IProductCategoryRepository | None = None):
+    def __init__(
+        self,
+        repo: IProductRepository,
+        category_repo: IProductCategoryRepository | None = None,
+        store_repo: IStoreRepository | None = None,
+    ):
         self._repo = repo
         self._category_repo = category_repo
+        self._store_repo = store_repo
 
     async def execute(self, input: UpdateProductInput) -> Product:
         product = await self._repo.get_by_id(input.store_id, input.product_id)
@@ -82,8 +95,23 @@ class UpdateProductUseCase:
         if input.remove_discount:
             product.discount_type = None
             product.discount_value = Decimal(0)
+            product.discount_ends_at = None
         elif input.discount_type is not None:
+            discount_value = input.discount_value if input.discount_value is not None else Decimal(0)
+            if self._store_repo is None:
+                raise NotFoundError("Tienda no encontrada")
+            store = await self._store_repo.get_by_id(input.store_id)
+            if store is None:
+                raise NotFoundError("Tienda no encontrada")
+            validate_discount_against_policy(store, input.discount_type, discount_value)
             product.discount_type = input.discount_type
-            product.discount_value = input.discount_value if input.discount_value is not None else Decimal(0)
+            product.discount_value = discount_value
+            product.discount_ends_at = input.discount_ends_at
+        elif input.clear_discount_ends_at:
+            product.discount_ends_at = None
+        elif input.discount_ends_at is not None:
+            if product.discount_type is None:
+                raise ApplicationError("El producto no tiene un descuento activo para fijarle vencimiento")
+            product.discount_ends_at = input.discount_ends_at
 
         return await self._repo.save(product)

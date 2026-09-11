@@ -41,6 +41,7 @@ class ProductModel(Base):
     is_active = Column(Boolean, default=True)
     discount_type = Column(String(20), nullable=True)
     discount_value = Column(Numeric(12, 2), nullable=False, default=0)
+    discount_ends_at = Column(DateTime(timezone=True), nullable=True)
     extra_data = Column("extra_data", JSON, default=dict)
     version = Column(Integer, default=1)
     deleted_at = Column(DateTime(timezone=True))

@@ -1,3 +1,6 @@
+from datetime import datetime, timedelta, timezone
+
+from src.infrastructure.database.models import ProductModel
 from src.infrastructure.services.rate_limit.in_memory_rate_limiter import (
     storefront_ip_rate_limiter,
 )
@@ -113,6 +116,7 @@ async def test_public_product_availability_reflects_zero_stock_without_exposing_
 
 async def test_public_product_price_reflects_discount(client):
     await _enable_storefront(client)
+    await client.patch("/api/v1/store", json={"allow_manual_discount": True, "max_manual_discount_amount": "50.00"})
     product_id = await _create_product(
         client, name="Pintura", price="100.00", stock=2, discount_type="fixed", discount_value="15.00"
     )
@@ -168,6 +172,7 @@ async def test_public_products_filtered_by_category(client):
 
 async def test_public_products_filtered_on_sale(client):
     await _enable_storefront(client)
+    await client.patch("/api/v1/store", json={"allow_manual_discount": True, "max_manual_discount_amount": "50.00"})
     on_sale_id = await _create_product(
         client, name="Pintura", discount_type="fixed", discount_value="10.00"
     )
@@ -177,6 +182,22 @@ async def test_public_products_filtered_on_sale(client):
 
     ids = [item["id"] for item in response.json()["items"]]
     assert ids == [on_sale_id]
+
+
+async def test_public_products_on_sale_excludes_expired_discount(client, db_session):
+    await _enable_storefront(client)
+    await client.patch("/api/v1/store", json={"allow_manual_discount": True, "max_manual_discount_amount": "50.00"})
+    expired_id = await _create_product(
+        client, name="Pintura Vencida", discount_type="fixed", discount_value="10.00"
+    )
+    model = await db_session.get(ProductModel, expired_id)
+    model.discount_ends_at = datetime.now(timezone.utc) - timedelta(minutes=1)
+    await db_session.commit()
+
+    response = await client.get("/api/v1/public/storefront/ferreteria-lopez/products?on_sale=true")
+
+    ids = [item["id"] for item in response.json()["items"]]
+    assert expired_id not in ids
 
 
 async def test_public_products_paginated_with_offset(client):

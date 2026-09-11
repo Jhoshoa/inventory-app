@@ -36,6 +36,7 @@ class ProductRepository(IProductRepository):
         model.version = product.version
         model.discount_type = product.discount_type
         model.discount_value = product.discount_value
+        model.discount_ends_at = product.discount_ends_at
         model.updated_at = datetime.now(UTC)
         await self._session.flush()
         return product
@@ -59,6 +60,7 @@ class ProductRepository(IProductRepository):
             version=model.version,
             discount_type=model.discount_type,
             discount_value=model.discount_value or Decimal(0),
+            discount_ends_at=model.discount_ends_at,
         )
 
     async def get_by_ids(self, store_id: UUID, product_ids: list[UUID]) -> list[Product]:
@@ -167,6 +169,12 @@ class ProductRepository(IProductRepository):
             filters.append(ProductModel.category_id == category_id)
         if on_sale:
             filters.append(ProductModel.discount_type.isnot(None))
+            filters.append(
+                or_(
+                    ProductModel.discount_ends_at.is_(None),
+                    ProductModel.discount_ends_at > datetime.now(UTC),
+                )
+            )
 
         total_result = await self._session.execute(select(func.count()).select_from(ProductModel).where(*filters))
         total = int(total_result.scalar_one())

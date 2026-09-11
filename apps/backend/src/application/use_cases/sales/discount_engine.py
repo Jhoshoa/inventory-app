@@ -7,6 +7,33 @@ DISCOUNT_SOURCES = ("auto", "product", "manual", "none")
 MANUAL_DISCOUNT_TYPES = ("percentage", "fixed")
 
 
+def validate_discount_against_policy(
+    store: Store,
+    discount_type: str | None,
+    discount_value: Decimal,
+) -> None:
+    """Valida un descuento contra la politica de la tienda, sin importar su
+    origen (rebaja manual del cajero al cobrar, o descuento fijado por el
+    owner directamente en el catalogo de un producto). Es una sola politica:
+    "cuanto descuento da esta tienda, como maximo" — no debe poder saltearse
+    poniendo el numero en el producto en vez de en el checkout."""
+    if discount_type is None:
+        return
+
+    if discount_type == "percentage":
+        if not store.allow_percentage_discount:
+            raise ForbiddenError("El descuento por porcentaje no esta habilitado para esta tienda")
+        if discount_value > store.max_percentage_discount:
+            raise ForbiddenError(f"El descuento maximo permitido es {store.max_percentage_discount}%")
+    elif discount_type == "fixed":
+        if not store.allow_manual_discount:
+            raise ForbiddenError("La rebaja manual no esta habilitada para esta tienda")
+        if discount_value > store.max_manual_discount_amount:
+            raise ForbiddenError(f"La rebaja maxima permitida es Bs. {store.max_manual_discount_amount}")
+    else:
+        raise ValueError("Tipo de descuento invalido")
+
+
 def compute_manual_discount_amount(
     store: Store,
     discount_type: str | None,
@@ -18,20 +45,11 @@ def compute_manual_discount_amount(
     if discount_type is None:
         return Decimal(0)
 
+    validate_discount_against_policy(store, discount_type, discount_value)
     if discount_type == "percentage":
-        if not store.allow_percentage_discount:
-            raise ForbiddenError("El descuento por porcentaje no esta habilitado para esta tienda")
-        if discount_value > store.max_percentage_discount:
-            raise ForbiddenError(f"El descuento maximo permitido es {store.max_percentage_discount}%")
         amount = (subtotal * discount_value / Decimal(100)).quantize(Decimal("0.01"))
-    elif discount_type == "fixed":
-        if not store.allow_manual_discount:
-            raise ForbiddenError("La rebaja manual no esta habilitada para esta tienda")
-        if discount_value > store.max_manual_discount_amount:
-            raise ForbiddenError(f"La rebaja maxima permitida es Bs. {store.max_manual_discount_amount}")
-        amount = discount_value
     else:
-        raise ValueError("Tipo de descuento invalido")
+        amount = discount_value
 
     return min(amount, subtotal)
 
