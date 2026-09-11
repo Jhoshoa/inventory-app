@@ -1,7 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { toast } from "sonner";
 import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { PageSection } from "@/components/layout/PageSection";
@@ -15,8 +17,20 @@ import { ProductStockDialog } from "./ProductStockDialog";
 import { StockBadge } from "./ProductTable";
 import type { Product } from "../types";
 
+function isDiscountExpired(product: Product) {
+  return Boolean(product.discount_ends_at) && new Date(product.discount_ends_at as string).getTime() <= Date.now();
+}
+
 export function ProductDetail({ product, role }: { product: Product; role: UserRole }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const discountActive = Boolean(product.discount_type) && !isDiscountExpired(product);
+
+  useEffect(() => {
+    if (searchParams.get("photo_error") !== "1") return;
+    toast.error("El producto se creo, pero la foto no se pudo subir. Podes intentar de nuevo desde Editar.");
+    router.replace(`/dashboard/products/${product.id}`);
+  }, [searchParams, router, product.id]);
 
   return (
     <PageSection className="space-y-6">
@@ -49,16 +63,26 @@ export function ProductDetail({ product, role }: { product: Product; role: UserR
       <div className="grid gap-4 md:grid-cols-3">
         <div className="rounded-lg border border-app-border bg-app-surface p-4 shadow-panel">
           <p className="text-sm text-text-muted">Precio</p>
-          {product.discount_type ? (
+          {discountActive ? (
             <>
               <p className="mt-2 text-sm text-text-muted line-through">{formatCurrency(product.price)}</p>
               <p className="text-2xl font-semibold text-status-success">{formatCurrency(product.effective_price)}</p>
               <Badge variant="success">
                 {product.discount_type === "percentage" ? `-${product.discount_value}%` : `-${formatCurrency(product.discount_value)}`}
               </Badge>
+              {product.discount_ends_at ? (
+                <p className="mt-1 text-xs text-text-muted">
+                  Vence el {new Date(product.discount_ends_at).toLocaleDateString("es-BO")}
+                </p>
+              ) : null}
             </>
           ) : (
-            <p className="mt-3 text-2xl font-semibold text-text-strong">{formatCurrency(product.price)}</p>
+            <>
+              <p className="mt-3 text-2xl font-semibold text-text-strong">{formatCurrency(product.price)}</p>
+              {product.discount_type ? (
+                <p className="mt-1 text-xs text-text-muted">Descuento vencido</p>
+              ) : null}
+            </>
           )}
         </div>
         <InfoCard label="Stock" value={`${product.stock} ${product.unit}`} />

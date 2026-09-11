@@ -23,6 +23,7 @@ export interface Product {
   version: number;
   discount_type: ProductDiscountType | null;
   discount_value: string;
+  discount_ends_at: string | null;
   effective_price: string;
 }
 
@@ -77,6 +78,7 @@ export interface ProductFormValues {
   photo_url: string;
   discount_type: ProductDiscountType | "";
   discount_value: string;
+  discount_ends_at: string;
 }
 
 export interface ProductActionState {

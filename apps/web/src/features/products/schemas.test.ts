@@ -81,6 +81,7 @@ describe("validateProductForm", () => {
           photo_url: "",
           discount_type: "",
           discount_value: "",
+          discount_ends_at: "",
         },
         "create",
       ),

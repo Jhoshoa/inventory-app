@@ -37,28 +37,37 @@ export async function createProductAction(
     };
   }
 
+  let photoUploadFailed = false;
   const photoEntry = findPhotoFile(formData);
   if (photoEntry) {
     try {
       const baseUrl = process.env.BACKEND_API_URL || "http://localhost:8001";
       const uploadForm = new FormData();
-      uploadForm.append("file", new Blob([await photoEntry.bytes()], { type: photoEntry.type || "image/jpeg" }), "photo.jpg");
-      await fetch(
-        `${baseUrl}/api/v1/products/${result.data.id}/photo`,
-        {
-          method: "POST",
-          headers: { authorization: `Bearer ${token}` },
-          body: uploadForm,
-        },
-      );
+      // Reenviamos el File tal cual llego en el FormData del formulario (ya
+      // optimizado por ImageUploader del lado del cliente): evita depender
+      // de File.prototype.bytes(), que no existe en el runtime de Node que
+      // corre esta Server Action y hacia que esto fallara siempre en
+      // silencio dentro del catch de abajo.
+      uploadForm.append("file", photoEntry, photoEntry.name || "photo.jpg");
+      const photoResponse = await fetch(`${baseUrl}/api/v1/products/${result.data.id}/photo`, {
+        method: "POST",
+        headers: { authorization: `Bearer ${token}` },
+        body: uploadForm,
+      });
+      if (!photoResponse.ok) {
+        photoUploadFailed = true;
+      }
     } catch {
-      // photo upload failure is non-blocking; product was already created
+      // El producto ya se creo; que la foto falle no debe bloquear el
+      // flujo, pero se lo avisamos al usuario via el parametro de la
+      // redireccion en vez de fallar en silencio.
+      photoUploadFailed = true;
     }
   }
 
   revalidatePath("/dashboard/products");
   revalidatePath(`/dashboard/products/${result.data.id}`);
-  redirect(`/dashboard/products/${result.data.id}`);
+  redirect(`/dashboard/products/${result.data.id}${photoUploadFailed ? "?photo_error=1" : ""}`);
 }
 
 export async function updateProductAction(
@@ -164,6 +173,7 @@ function createPayload(values: ReturnType<typeof formDataToProductValues>) {
     qr_code: nullable(values.qr_code),
     discount_type: values.discount_type || null,
     discount_value: values.discount_type ? values.discount_value || "0" : "0",
+    discount_ends_at: values.discount_type ? discountEndsAtIso(values.discount_ends_at) : null,
   };
 }
 
@@ -182,7 +192,12 @@ function updatePayload(values: ReturnType<typeof formDataToProductValues>) {
     discount_type: values.discount_type || null,
     discount_value: values.discount_type ? values.discount_value || "0" : null,
     remove_discount: !values.discount_type,
+    discount_ends_at: values.discount_type ? discountEndsAtIso(values.discount_ends_at) : null,
   };
+}
+
+function discountEndsAtIso(dateOnly: string): string | null {
+  return dateOnly ? `${dateOnly}T23:59:59.999Z` : null;
 }
 
 function nullable(value: string) {

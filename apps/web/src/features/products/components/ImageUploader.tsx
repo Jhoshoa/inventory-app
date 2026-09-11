@@ -9,7 +9,63 @@ import { errorFromResponse } from "@/lib/api/errors";
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
 const MAX_SIZE = 5 * 1024 * 1024;
 
-type UploadState = "idle" | "selected" | "uploading" | "error";
+// Las fotos tomadas con la camara del celular suelen pesar mucho mas de
+// MAX_SIZE (varios celulares capturan a 8-20 MB). Las redimensionamos y
+// recomprimimos en el navegador antes de subirlas para que casi nunca
+// choquen contra el limite, sin que el usuario tenga que preocuparse por eso.
+const COMPRESS_MAX_DIMENSION = 1600;
+const COMPRESS_QUALITY = 0.82;
+const SKIP_COMPRESSION_UNDER_BYTES = 1.5 * 1024 * 1024;
+
+async function compressImageIfNeeded(file: File): Promise<File> {
+  if (typeof createImageBitmap !== "function") return file;
+
+  let bitmap: ImageBitmap;
+  try {
+    bitmap = await createImageBitmap(file);
+  } catch {
+    // Formato que el navegador no puede decodificar en canvas (p. ej. HEIC
+    // en algunos navegadores): dejamos pasar el archivo original tal cual;
+    // la validacion de tipo/tamano de mas abajo hace de red de seguridad.
+    return file;
+  }
+
+  const scale = Math.min(
+    COMPRESS_MAX_DIMENSION / bitmap.width,
+    COMPRESS_MAX_DIMENSION / bitmap.height,
+    1,
+  );
+
+  if (scale >= 1 && file.size <= SKIP_COMPRESSION_UNDER_BYTES) {
+    bitmap.close();
+    return file;
+  }
+
+  const targetWidth = Math.max(1, Math.round(bitmap.width * scale));
+  const targetHeight = Math.max(1, Math.round(bitmap.height * scale));
+  const canvas = document.createElement("canvas");
+  canvas.width = targetWidth;
+  canvas.height = targetHeight;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) {
+    bitmap.close();
+    return file;
+  }
+  ctx.drawImage(bitmap, 0, 0, targetWidth, targetHeight);
+  bitmap.close();
+
+  const outputType = file.type === "image/png" ? "image/png" : "image/jpeg";
+  const blob = await new Promise<Blob | null>((resolve) =>
+    canvas.toBlob(resolve, outputType, COMPRESS_QUALITY),
+  );
+  if (!blob || blob.size >= file.size) return file;
+
+  const outputName =
+    outputType === "image/jpeg" ? file.name.replace(/\.\w+$/, "") + ".jpg" : file.name;
+  return new File([blob], outputName, { type: outputType, lastModified: Date.now() });
+}
+
+type UploadState = "idle" | "compressing" | "selected" | "uploading" | "error";
 
 interface ImageUploaderProps {
   currentUrl?: string | null;
@@ -154,9 +210,33 @@ export function ImageUploader({
     [productId, onPhotoChange, uploadPhoto],
   );
 
+  // El unico <input type=file> que el <form> envolvente sabe leer al crear
+  // un producto (todavia sin id, ver mas abajo) es fileInputRef, porque es
+  // el unico con `name`. Sea cual sea el origen del archivo (selector,
+  // camara o arrastrar-y-soltar), lo sincronizamos ahi via DataTransfer para
+  // que la creacion del producto siempre lo incluya en el FormData nativo.
+  const syncCanonicalInput = useCallback((file: File) => {
+    if (!fileInputRef.current) return;
+    try {
+      const transfer = new DataTransfer();
+      transfer.items.add(file);
+      fileInputRef.current.files = transfer.files;
+    } catch {
+      // Navegador sin soporte de DataTransfer.items: no deberia pasar en
+      // navegadores modernos, pero si pasa, la seleccion directa por el
+      // selector de archivos igual funciona (el navegador ya puso el
+      // archivo original ahi); solo se pierde la compresion en ese input.
+    }
+  }, []);
+
   const processFile = useCallback(
-    (file: File) => {
-      const validationError = validateFile(file);
+    async (file: File) => {
+      setErrorMessage("");
+      setState("compressing");
+
+      const optimized = await compressImageIfNeeded(file);
+
+      const validationError = validateFile(optimized);
       if (validationError) {
         setErrorMessage(validationError);
         setState("error");
@@ -167,30 +247,34 @@ export function ImageUploader({
         URL.revokeObjectURL(previewUrlRef.current);
       }
 
-      const objectUrl = URL.createObjectURL(file);
+      const objectUrl = URL.createObjectURL(optimized);
       previewUrlRef.current = objectUrl;
-      setSelectedFile(file);
+      setSelectedFile(optimized);
       setPreviewUrl(objectUrl);
-      setErrorMessage("");
       setState("selected");
 
+      syncCanonicalInput(optimized);
+      if (cameraInputRef.current) {
+        cameraInputRef.current.value = "";
+      }
+
       if (productId) {
-        handleUpload(file);
+        handleUpload(optimized);
       }
       if (photoRef) {
-        photoRef.current = file;
+        photoRef.current = optimized;
       }
     },
-    [validateFile, productId, handleUpload, photoRef],
+    [validateFile, productId, handleUpload, photoRef, syncCanonicalInput],
   );
 
   const handleFileInputChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
+      e.target.value = "";
       if (file) {
         processFile(file);
       }
-      e.target.value = "";
     },
     [processFile],
   );
@@ -198,10 +282,10 @@ export function ImageUploader({
   const handleCameraChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
+      e.target.value = "";
       if (file) {
         processFile(file);
       }
-      e.target.value = "";
     },
     [processFile],
   );
@@ -309,7 +393,14 @@ export function ImageUploader({
     <div className="space-y-2">
       <p className="text-sm font-medium text-text-strong">Foto</p>
 
-      {state === "uploading" ? (
+      {state === "compressing" ? (
+        <div className="flex aspect-square w-full items-center justify-center rounded-lg border border-app-border bg-app-surface-muted">
+          <div className="flex flex-col items-center gap-2">
+            <Loader2 className="h-8 w-8 animate-spin text-brand-700" />
+            <p className="text-sm text-text-muted">Optimizando foto...</p>
+          </div>
+        </div>
+      ) : state === "uploading" ? (
         <div className="flex aspect-square w-full items-center justify-center rounded-lg border border-app-border bg-app-surface-muted">
           <div className="flex flex-col items-center gap-2">
             <Loader2 className="h-8 w-8 animate-spin text-brand-700" />

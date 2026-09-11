@@ -34,6 +34,7 @@ const codedProduct: Product = {
   version: 1,
   discount_type: null,
   discount_value: "0",
+  discount_ends_at: null,
   effective_price: "12.50",
 };
 

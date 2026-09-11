@@ -88,6 +88,15 @@ export function validateProductForm(values: ProductFormValues, mode: "create" | 
     } else if (values.discount_type === "fixed" && price > 0 && discountValue > price) {
       errors.discount_value = "La rebaja no puede ser mayor al precio de venta";
     }
+
+    if (values.discount_ends_at) {
+      const endsAt = new Date(`${values.discount_ends_at}T23:59:59`);
+      if (Number.isNaN(endsAt.getTime()) || endsAt.getTime() <= Date.now()) {
+        errors.discount_ends_at = "La fecha de vencimiento debe ser futura";
+      }
+    }
+  } else if (values.discount_ends_at) {
+    errors.discount_ends_at = "No se puede fijar una fecha de vencimiento sin un descuento";
   }
 
   return errors;
@@ -134,6 +143,7 @@ export function formDataToProductValues(formData: FormData): ProductFormValues {
     photo_url: stringValue(formData, "photo_url"),
     discount_type: discountType === "percentage" || discountType === "fixed" ? discountType : "",
     discount_value: stringValue(formData, "discount_value"),
+    discount_ends_at: stringValue(formData, "discount_ends_at"),
   };
 }
 
@@ -151,6 +161,7 @@ export function productToFormValues(product?: {
   photo_url: string | null;
   discount_type?: ProductDiscountType | null;
   discount_value?: string;
+  discount_ends_at?: string | null;
 }): ProductFormValues {
   return {
     name: product?.name ?? "",
@@ -166,6 +177,7 @@ export function productToFormValues(product?: {
     photo_url: product?.photo_url ?? "",
     discount_type: product?.discount_type ?? "",
     discount_value: product?.discount_value ?? "",
+    discount_ends_at: product?.discount_ends_at ? product.discount_ends_at.slice(0, 10) : "",
   };
 }
 

@@ -259,8 +259,10 @@ export function ProductForm({
         formValues={formValues}
         price={Number(formValues.price) || 0}
         fieldError={state.fieldErrors.discount_value}
+        endsAtError={state.fieldErrors.discount_ends_at}
         onDiscountTypeChange={(value) => updateField("discount_type", value)}
         onDiscountValueChange={(value) => updateField("discount_value", value)}
+        onDiscountEndsAtChange={(value) => updateField("discount_ends_at", value)}
       />
 
       <div className="col-span-full max-w-64">
@@ -302,14 +304,18 @@ function DiscountSection({
   formValues,
   price,
   fieldError,
+  endsAtError,
   onDiscountTypeChange,
   onDiscountValueChange,
+  onDiscountEndsAtChange,
 }: {
-  formValues: { discount_type: "percentage" | "fixed" | ""; discount_value: string };
+  formValues: { discount_type: "percentage" | "fixed" | ""; discount_value: string; discount_ends_at: string };
   price: number;
   fieldError?: string;
+  endsAtError?: string;
   onDiscountTypeChange: (value: string) => void;
   onDiscountValueChange: (value: string) => void;
+  onDiscountEndsAtChange: (value: string) => void;
 }) {
   const discountValueNumber = Number(formValues.discount_value) || 0;
   const effectivePrice =
@@ -318,6 +324,12 @@ function DiscountSection({
       : formValues.discount_type === "fixed"
         ? Math.max(price - discountValueNumber, 0)
         : price;
+
+  function setEndsAtInDays(days: number) {
+    const date = new Date();
+    date.setDate(date.getDate() + days);
+    onDiscountEndsAtChange(date.toISOString().slice(0, 10));
+  }
 
   return (
     <div className="col-span-full space-y-3 rounded-md border border-app-border p-4">
@@ -358,6 +370,36 @@ function DiscountSection({
           </Field>
         ) : null}
       </div>
+      {formValues.discount_type ? (
+        <div className="space-y-2">
+          <Field name="discount_ends_at" label="Vence el (opcional)" error={endsAtError}>
+            <Input
+              id="discount_ends_at"
+              name="discount_ends_at"
+              type="date"
+              value={formValues.discount_ends_at}
+              onChange={(event) => onDiscountEndsAtChange(event.target.value)}
+              error={Boolean(endsAtError)}
+            />
+          </Field>
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-xs text-text-muted">Atajos:</span>
+            {[7, 15, 30].map((days) => (
+              <Button key={days} type="button" variant="secondary" onClick={() => setEndsAtInDays(days)}>
+                {days} dias
+              </Button>
+            ))}
+            {formValues.discount_ends_at ? (
+              <Button type="button" variant="secondary" onClick={() => onDiscountEndsAtChange("")}>
+                Sin vencimiento
+              </Button>
+            ) : null}
+          </div>
+          <p className="text-xs text-text-muted">
+            Si no fijas una fecha, el descuento queda activo hasta que lo quites manualmente.
+          </p>
+        </div>
+      ) : null}
       {formValues.discount_type && price > 0 ? (
         <p className="text-sm text-text-body">
           Precio final estimado: <span className="font-semibold text-text-strong">{formatCurrency(effectivePrice)}</span>
