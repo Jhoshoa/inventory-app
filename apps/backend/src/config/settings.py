@@ -1,4 +1,4 @@
-from pydantic import model_validator
+from pydantic import field_validator, model_validator
 from pydantic_settings import BaseSettings
 
 
@@ -60,9 +60,17 @@ class Settings(BaseSettings):
 
     EXPOSE_ERROR_DETAILS: bool | None = None
 
+    @field_validator("FRONTEND_URL")
+    @classmethod
+    def strip_trailing_slash(cls, value: str) -> str:
+        # Se concatena como f"{FRONTEND_URL}/invite/...": una barra final daria "//".
+        return value.strip().rstrip("/")
+
     @property
     def cors_allowed_origins(self) -> list[str]:
-        return [origin.strip() for origin in self.CORS_ALLOWED_ORIGINS.split(",") if origin.strip()]
+        # El header Origin del navegador nunca lleva barra final, asi que un origen
+        # configurado con ella no coincidiria jamas.
+        return [origin.strip().rstrip("/") for origin in self.CORS_ALLOWED_ORIGINS.split(",") if origin.strip()]
 
     @property
     def expose_error_details(self) -> bool:
@@ -82,6 +90,12 @@ class Settings(BaseSettings):
             raise ValueError("DATABASE_URL no puede usar SQLite en production")
         if "*" in self.cors_allowed_origins:
             raise ValueError("CORS_ALLOWED_ORIGINS no puede contener * en production")
+
+        if not self.FRONTEND_URL.startswith("https://"):
+            raise ValueError(
+                "FRONTEND_URL (APP_URL) debe usar https:// en production: las cookies de sesion son "
+                "Secure y el navegador no las guarda sobre http, asi que el login no se mantendria"
+            )
 
         if self.BREVO_API_KEY and not self.EMAIL_FROM_ADDRESS:
             raise ValueError("EMAIL_FROM_ADDRESS es requerido cuando BREVO_API_KEY esta configurada")

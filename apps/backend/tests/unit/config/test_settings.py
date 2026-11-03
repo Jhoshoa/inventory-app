@@ -57,6 +57,7 @@ _PRODUCTION = dict(
     SUPABASE_ANON_KEY="real-anon",
     SUPABASE_SERVICE_ROLE_KEY="real-service",
     JWT_SECRET="real-secret",
+    FRONTEND_URL="https://app.example.com",
     _env_file=None,
 )
 
@@ -76,3 +77,21 @@ def test_unknown_variables_in_the_env_file_do_not_stop_the_app_from_starting(tmp
     env_file.write_text("SUPABASE_JWT_SECRET=algo-que-el-backend-no-usa\nAPP_NAME=Prueba\n", encoding="utf-8")
 
     assert Settings(_env_file=str(env_file)).APP_NAME == "Prueba"
+
+
+def test_production_rejects_a_plain_http_public_url():
+    with pytest.raises(ValueError, match="https"):
+        Settings(**{**_PRODUCTION, "FRONTEND_URL": "http://app.example.com"})
+
+
+def test_a_trailing_slash_in_the_public_url_is_removed_so_links_do_not_get_a_double_slash():
+    settings = Settings(**{**_PRODUCTION, "FRONTEND_URL": "https://app.example.com/"})
+
+    assert settings.FRONTEND_URL == "https://app.example.com"
+    assert f"{settings.FRONTEND_URL}/invite/abc" == "https://app.example.com/invite/abc"
+
+
+def test_cors_origins_drop_trailing_slashes_because_browsers_never_send_them():
+    settings = Settings(**{**_PRODUCTION, "CORS_ALLOWED_ORIGINS": "https://app.example.com/, https://b.example.com"})
+
+    assert settings.cors_allowed_origins == ["https://app.example.com", "https://b.example.com"]
