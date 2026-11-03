@@ -4,9 +4,9 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y --no-install-recommends curl && \
     rm -rf /var/lib/apt/lists/*
 
-COPY pyproject.toml .
+COPY pyproject.toml constraints.txt ./
 COPY src/ src/
-RUN pip install --no-cache-dir --root-user-action=ignore .[prod]
+RUN pip install --no-cache-dir --root-user-action=ignore -c constraints.txt .[prod]
 
 COPY . .
 RUN chmod +x entrypoint.sh
