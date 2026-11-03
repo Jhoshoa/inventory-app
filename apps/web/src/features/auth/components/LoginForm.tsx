@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
@@ -16,7 +17,15 @@ interface LoginFormState {
 
 type LoginFormErrors = Partial<Record<keyof LoginFormState | "form", string>>;
 
-export function LoginForm({ verified }: { verified?: boolean }) {
+export function LoginForm({
+  verified,
+  sessionExpired,
+  passwordReset,
+}: {
+  verified?: boolean;
+  sessionExpired?: boolean;
+  passwordReset?: boolean;
+}) {
   const router = useRouter();
   const [values, setValues] = useState<LoginFormState>({ email: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
@@ -28,7 +37,13 @@ export function LoginForm({ verified }: { verified?: boolean }) {
     if (verified) {
       toast.success("Email confirmado. Ahora puedes iniciar sesión.");
     }
-  }, [verified]);
+    if (passwordReset) {
+      toast.success("Contraseña actualizada. Inicia sesión con la nueva.");
+    }
+    if (sessionExpired) {
+      toast("Tu sesión expiró. Inicia sesión nuevamente.");
+    }
+  }, [verified, passwordReset, sessionExpired]);
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -107,6 +122,14 @@ export function LoginForm({ verified }: { verified?: boolean }) {
           </button>
         </div>
         <FieldError message={errors.password} />
+        <div className="text-right">
+          <Link
+            href="/forgot-password"
+            className="text-sm font-medium text-brand-700 underline underline-offset-4 hover:text-brand-800"
+          >
+            ¿Olvidaste tu contraseña?
+          </Link>
+        </div>
       </div>
       <Button className="w-full" type="submit" disabled={isSubmitting}>
         {isSubmitting ? "Ingresando..." : "Iniciar sesión"}

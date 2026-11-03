@@ -1,7 +1,9 @@
 import { AuthShell } from "@/features/auth/components/AuthShell";
 import { LoginForm } from "@/features/auth/components/LoginForm";
 
-export default async function LoginPage(props: { searchParams: Promise<{ verified?: string }> }) {
+export default async function LoginPage(props: {
+  searchParams: Promise<{ verified?: string; session?: string; reset?: string }>;
+}) {
   const searchParams = await props.searchParams;
   return (
     <AuthShell
@@ -11,7 +13,11 @@ export default async function LoginPage(props: { searchParams: Promise<{ verifie
       footerHref="/register"
       footerLinkLabel="Crea una tienda"
     >
-      <LoginForm verified={searchParams.verified === "true"} />
+      <LoginForm
+        verified={searchParams.verified === "true"}
+        sessionExpired={searchParams.session === "expired"}
+        passwordReset={searchParams.reset === "success"}
+      />
     </AuthShell>
   );
 }

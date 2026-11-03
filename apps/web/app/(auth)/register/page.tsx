@@ -9,6 +9,7 @@ import { FieldError } from "@/components/ui/FieldError";
 import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
 import { AuthShell } from "@/features/auth/components/AuthShell";
+import { PASSWORD_HINT, passwordStrengthError } from "@/features/auth/passwordRules";
 
 interface RegisterFormState {
   full_name: string;
@@ -160,9 +161,7 @@ export default function RegisterPage() {
               {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
             </button>
           </div>
-          <p className="text-xs text-text-muted">
-            Mínimo 8 caracteres, una mayúscula, una minúscula, un número y un carácter especial.
-          </p>
+          <p className="text-xs text-text-muted">{PASSWORD_HINT}</p>
           <FieldError message={errors.password} />
         </div>
         <Button className="w-full" type="submit" disabled={isSubmitting}>
@@ -192,16 +191,9 @@ function validateRegister(values: RegisterFormState): RegisterFormErrors {
 
   if (!values.password) {
     errors.password = "Contraseña es requerida";
-  } else if (values.password.length < 8) {
-    errors.password = "La contraseña debe tener al menos 8 caracteres";
-  } else if (!/(?=.*[a-z])/.test(values.password)) {
-    errors.password = "La contraseña debe tener al menos una minúscula";
-  } else if (!/(?=.*[A-Z])/.test(values.password)) {
-    errors.password = "La contraseña debe tener al menos una mayúscula";
-  } else if (!/(?=.*\d)/.test(values.password)) {
-    errors.password = "La contraseña debe tener al menos un número";
-  } else if (!/(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?])/.test(values.password)) {
-    errors.password = "La contraseña debe tener al menos un carácter especial";
+  } else {
+    const strengthError = passwordStrengthError(values.password);
+    if (strengthError) errors.password = strengthError;
   }
 
   return errors;

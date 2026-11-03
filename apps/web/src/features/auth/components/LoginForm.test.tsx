@@ -1,5 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { toast } from "sonner";
 import { describe, expect, it, vi } from "vitest";
 import { LoginForm, validateLogin } from "./LoginForm";
 
@@ -55,5 +56,26 @@ describe("LoginForm", () => {
     });
 
     vi.unstubAllGlobals();
+  });
+
+  it("ofrece recuperar la contraseña", () => {
+    render(<LoginForm />);
+
+    expect(screen.getByRole("link", { name: "¿Olvidaste tu contraseña?" })).toHaveAttribute(
+      "href",
+      "/forgot-password",
+    );
+  });
+
+  it("avisa cuando la sesión expiró", () => {
+    render(<LoginForm sessionExpired />);
+
+    expect(toast).toHaveBeenCalledWith("Tu sesión expiró. Inicia sesión nuevamente.");
+  });
+
+  it("confirma el cambio de contraseña", () => {
+    render(<LoginForm passwordReset />);
+
+    expect(toastSuccess).toHaveBeenCalledWith("Contraseña actualizada. Inicia sesión con la nueva.");
   });
 });
