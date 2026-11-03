@@ -15,6 +15,7 @@ from src.infrastructure.services.rate_limit.in_memory_rate_limiter import (
     invitation_accept_rate_limiter,
     lead_rate_limiter,
     login_rate_limiter,
+    password_reset_rate_limiter,
     storefront_ip_rate_limiter,
     storefront_request_rate_limiter,
     storefront_slug_rate_limiter,
@@ -77,6 +78,7 @@ async def client(db_session: AsyncSession) -> AsyncGenerator[AsyncClient, None]:
     # fallar con 429 apenas la suite acumula suficientes requests.
     global_rate_limiter.reset()
     login_rate_limiter.reset()
+    password_reset_rate_limiter.reset()
     access_token_cache.clear()
     lead_rate_limiter.reset()
     invitation_accept_rate_limiter.reset()

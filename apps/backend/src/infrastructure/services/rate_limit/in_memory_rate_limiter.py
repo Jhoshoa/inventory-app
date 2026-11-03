@@ -50,6 +50,12 @@ login_rate_limiter = InMemoryRateLimiter(
     window_seconds=settings.RATE_LIMIT_LOGIN_WINDOW_SECONDS,
 )
 
+# Recuperacion de contrasena (pedir el enlace / fijar la nueva clave), por IP.
+# Aparte de login para que quien intenta recuperar su cuenta no gaste el cupo
+# de intentos de login (ni viceversa), y para que nadie use el endpoint para
+# bombardear la bandeja de entrada de otra persona.
+password_reset_rate_limiter = InMemoryRateLimiter(max_requests=5, window_seconds=600)
+
 # Catalogo publico por tienda (storefront): dos limites independientes.
 # Por IP, para frenar un scraper/bot puntual; por slug, para que ninguna
 # tienda pueda consumir la cuota de las demas ni ser tumbada por trafico

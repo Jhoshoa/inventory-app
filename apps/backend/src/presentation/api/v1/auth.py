@@ -3,7 +3,7 @@ import logging
 from datetime import datetime, timedelta, timezone
 from uuid import UUID, uuid4
 
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.concurrency import run_in_threadpool
@@ -32,7 +32,8 @@ from src.application.use_cases.trials.trial_status import BillingStatusUseCase
 from src.config.settings import settings
 from src.domain.entities.store import Store
 from src.infrastructure.auth.password import hash_password, verify_password
-from src.infrastructure.auth.supabase_client import get_supabase_client
+from src.infrastructure.auth.supabase_client import get_supabase_admin_client, get_supabase_client
+from src.infrastructure.auth.token_cache import access_token_cache
 from src.infrastructure.database.models.pkce_verifier_model import PkceVerifierModel
 from src.infrastructure.database.repositories.store_repository import StoreRepository
 from src.infrastructure.database.repositories.user_repository import UserRepository
@@ -402,6 +403,24 @@ async def refresh_token(
         subscription_status=store.subscription_status if store else "trial",
         access_status=store.access_status if store else "active",
     )
+
+
+@router.post("/logout", status_code=204)
+async def logout(request: Request) -> Response:
+    """Revoca en Supabase la sesion (solo la de este dispositivo) del access token.
+
+    Es best-effort: el frontend borra sus cookies pase lo que pase, asi que un
+    token ya vencido o un Supabase caido no deben impedir cerrar sesion.
+    """
+    authorization = request.headers.get("authorization", "")
+    scheme, _, token = authorization.partition(" ")
+    if scheme.lower() == "bearer" and token and not settings.DEBUG:
+        access_token_cache.invalidate(token)
+        try:
+            await run_in_threadpool(get_supabase_admin_client().auth.admin.sign_out, token, "local")
+        except Exception:
+            logger.info("Logout: no se pudo revocar la sesion en Supabase", exc_info=True)
+    return Response(status_code=204)
 
 
 @router.post("/dev-login", response_model=AuthResponseDTO)
