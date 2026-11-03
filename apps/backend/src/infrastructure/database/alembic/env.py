@@ -11,6 +11,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[4]))
 
 from src.config.settings import settings
 from src.infrastructure.database import models as _models
+from src.infrastructure.database.rls_lockdown import lock_down_public_schema
 from src.infrastructure.database.models.product_model import Base
 
 _ = _models
@@ -33,6 +34,7 @@ def do_run_migrations(connection):
     context.configure(connection=connection, target_metadata=target_metadata)
     with context.begin_transaction():
         context.run_migrations()
+        lock_down_public_schema(connection)
 
 
 async def run_async_migrations() -> None:
