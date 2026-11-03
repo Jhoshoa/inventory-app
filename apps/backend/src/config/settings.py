@@ -85,7 +85,9 @@ class Settings(BaseSettings):
             raise ValueError("Production no puede usar secretos placeholder")
         return self
 
-    model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}
+    # extra="ignore": un .env con variables que esta clase no declara (por ejemplo
+    # SUPABASE_JWT_SECRET, que el backend no usa) no debe impedir que arranque.
+    model_config = {"env_file": ".env", "env_file_encoding": "utf-8", "extra": "ignore"}
 
 
 settings = Settings()

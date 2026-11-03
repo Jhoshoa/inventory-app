@@ -3,6 +3,8 @@ from uuid import UUID
 from fastapi import Depends, HTTPException
 from fastapi.security import HTTPBearer
 from sqlalchemy.ext.asyncio import AsyncSession
+from starlette.concurrency import run_in_threadpool
+from supabase_auth.errors import AuthError, AuthRetryableError
 
 from src.application.exceptions import ForbiddenError, UnauthorizedError
 from src.application.ports.email_sender import IEmailSender
@@ -19,6 +21,7 @@ from src.config.dev_constants import DEV_CASHIER_USER_ID, DEV_STORE_ID, DEV_USER
 from src.config.settings import settings
 from src.domain.entities.store import Store
 from src.infrastructure.auth.supabase_auth import verify_jwt
+from src.infrastructure.auth.token_cache import access_token_cache
 from src.infrastructure.database.repositories.billing_audit_log_repository import (
     BillingAuditLogRepository,
 )
@@ -108,7 +111,10 @@ async def get_current_user(
             "role": "cashier",
         }
     try:
-        payload = verify_jwt(token.credentials)
+        if settings.DEBUG:
+            payload = dict(verify_jwt(token.credentials))
+        else:
+            payload = dict(await _verify_jwt_cached(token.credentials))
         if payload.get("store_id") is not None:
             payload["store_id"] = UUID(str(payload["store_id"]))
         elif payload.get("id") is not None:
@@ -118,8 +124,27 @@ async def get_current_user(
         if payload.get("id") is not None:
             payload["id"] = UUID(str(payload["id"]))
         return payload
+    except AuthRetryableError as e:
+        # Supabase Auth no responde: no es culpa del token, no hay que cerrar la sesion.
+        raise HTTPException(
+            status_code=503, detail="Servicio de autenticación no disponible. Intenta nuevamente."
+        ) from e
+    except AuthError as e:
+        # Token vencido, revocado o mal formado: Supabase lo rechaza con AuthApiError.
+        raise HTTPException(status_code=401, detail="Token inválido") from e
     except (ValueError, PermissionError) as e:
         raise HTTPException(status_code=401, detail="Token inválido") from e
+
+
+async def _verify_jwt_cached(token: str) -> dict:
+    """verify_jwt hace una llamada de red sincrona a Supabase: se ejecuta en un
+    hilo para no bloquear el event loop, y se cachea unos segundos."""
+    cached = access_token_cache.get(token)
+    if cached is not None:
+        return cached
+    payload = await run_in_threadpool(verify_jwt, token)
+    access_token_cache.set(token, payload)
+    return payload
 
 
 def get_product_repo(session: AsyncSession = Depends(get_db_session)) -> ProductRepository:

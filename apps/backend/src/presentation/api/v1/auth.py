@@ -6,7 +6,8 @@ from uuid import UUID, uuid4
 from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from supabase_auth.errors import AuthApiError
+from starlette.concurrency import run_in_threadpool
+from supabase_auth.errors import AuthApiError, AuthRetryableError
 
 from src.application.dto.auth_dto import (
     AuthResponseDTO,
@@ -38,6 +39,7 @@ from src.infrastructure.database.repositories.user_repository import UserReposit
 from src.infrastructure.services.rate_limit.in_memory_rate_limiter import (
     login_rate_limiter,
 )
+from src.presentation.api.v1._auth_errors import translate_auth_error
 from src.presentation.dependencies import (
     DEV_ACCESS_TOKEN,
     DEV_CASHIER_ACCESS_TOKEN,
@@ -192,9 +194,13 @@ async def login(
         )
 
     supabase = get_supabase_client()
-    response = supabase.auth.sign_in_with_password(
-        {"email": dto.email, "password": dto.password}
-    )
+    try:
+        response = await run_in_threadpool(
+            supabase.auth.sign_in_with_password,
+            {"email": dto.email, "password": dto.password},
+        )
+    except (AuthApiError, AuthRetryableError) as exc:
+        raise translate_auth_error(exc, action="login") from exc
     auth_response = _auth_response_from_supabase(response)
     raw_user = auth_response.user
 
@@ -294,7 +300,8 @@ async def register(
     store_id = str(uuid4())
     supabase = get_supabase_client()
     try:
-        response = supabase.auth.sign_up(
+        response = await run_in_threadpool(
+            supabase.auth.sign_up,
             {
                 "email": dto.email,
                 "password": dto.password,
@@ -307,12 +314,14 @@ async def register(
                     },
                     "redirect_to": f"{settings.FRONTEND_URL}/login?verified=true",
                 },
-            }
+            },
         )
     except AuthApiError as e:
         if "already registered" in str(e).lower():
             raise HTTPException(status_code=409, detail="Este email ya esta registrado")
         raise HTTPException(status_code=400, detail=str(e))
+    except AuthRetryableError as e:
+        raise translate_auth_error(e, action="login") from e
 
     if not response.session:
         return RegisterSuccessDTO(
@@ -355,7 +364,10 @@ async def refresh_token(
         return _dev_auth_response()
 
     supabase = get_supabase_client()
-    response = supabase.auth.refresh_session(dto.refresh_token)
+    try:
+        response = await run_in_threadpool(supabase.auth.refresh_session, dto.refresh_token)
+    except (AuthApiError, AuthRetryableError) as exc:
+        raise translate_auth_error(exc, action="refresh") from exc
     auth_response = _auth_response_from_supabase(response)
 
     raw_user = auth_response.user

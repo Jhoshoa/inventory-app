@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_asyn
 from sqlalchemy.pool import StaticPool
 
 from src.config.settings import settings
+from src.infrastructure.auth.token_cache import access_token_cache
 from src.infrastructure.database import models as _models
 from src.infrastructure.database.models import StoreModel, UserModel
 from src.infrastructure.database.models.product_model import Base
@@ -76,6 +77,7 @@ async def client(db_session: AsyncSession) -> AsyncGenerator[AsyncClient, None]:
     # fallar con 429 apenas la suite acumula suficientes requests.
     global_rate_limiter.reset()
     login_rate_limiter.reset()
+    access_token_cache.clear()
     lead_rate_limiter.reset()
     invitation_accept_rate_limiter.reset()
     storefront_ip_rate_limiter.reset()
