@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { ApiError } from "@/lib/api/errors";
 import { setAuthCookies } from "@/lib/auth/server";
 import { getBackendApiUrl } from "@/lib/env/server";
+import { clientIpFromHeaders, forwardedForHeaders } from "@/lib/http/clientIp";
 
 export async function POST(request: NextRequest) {
   try {
@@ -9,7 +10,10 @@ export async function POST(request: NextRequest) {
 
     const res = await fetch(`${getBackendApiUrl()}/api/v1/auth/register`, {
       method: "POST",
-      headers: { "content-type": "application/json" },
+      headers: {
+        "content-type": "application/json",
+        ...forwardedForHeaders(clientIpFromHeaders(request.headers)),
+      },
       body: JSON.stringify(payload),
     });
 

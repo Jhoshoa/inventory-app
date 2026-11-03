@@ -1,9 +1,14 @@
-import { getAuthToken, getRefreshToken } from "@/lib/auth/session";
+import { getAuthToken } from "@/lib/auth/session";
 import { getBackendApiUrl } from "@/lib/env/server";
+import { clientIpFromHeaders, forwardedForHeaders } from "@/lib/http/clientIp";
 
 const FORWARDED_REQUEST_HEADERS = ["accept", "content-type"] as const;
 const FORWARDED_RESPONSE_HEADERS = ["content-type"] as const;
 
+// La renovacion de tokens vencidos la hace el middleware antes de llegar aca
+// (es el unico lugar que puede reescribir las cookies). Un 401 del backend se
+// devuelve tal cual: quien llamo decide que hacer, en vez de recibir el HTML
+// de la pagina de login como respuesta a un fetch.
 export async function proxyRequest(
   request: Request,
   params: { path: string[] },
@@ -14,38 +19,12 @@ export async function proxyRequest(
   const isGetOrHead = request.method === "GET" || request.method === "HEAD";
   const body = isGetOrHead ? undefined : await request.clone().arrayBuffer();
 
-  let response = await fetch(target, {
+  const response = await fetch(target, {
     method: request.method,
     headers,
     body,
     cache: "no-store",
   });
-
-  if (response.status === 401) {
-    const refreshToken = await getRefreshToken();
-    if (refreshToken) {
-      const refreshRes = await fetch(`${getBackendApiUrl()}/api/v1/auth/refresh`, {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ refresh_token: refreshToken }),
-      });
-      if (refreshRes.ok) {
-        const data = await refreshRes.json();
-        headers.set("authorization", `Bearer ${data.access_token}`);
-
-        response = await fetch(target, {
-          method: request.method,
-          headers,
-          body,
-          cache: "no-store",
-        });
-      } else {
-        return Response.redirect(new URL("/login", request.url));
-      }
-    } else {
-      return Response.redirect(new URL("/login", request.url));
-    }
-  }
 
   const responseHeaders = new Headers();
   for (const header of FORWARDED_RESPONSE_HEADERS) {
@@ -78,10 +57,12 @@ async function buildProxyHeaders(source: Headers) {
     if (value) headers.set(header, value);
   }
 
+  for (const [name, value] of Object.entries(forwardedForHeaders(clientIpFromHeaders(source)))) {
+    headers.set(name, value);
+  }
+
   const token = await getAuthToken();
   if (token) headers.set("authorization", `Bearer ${token}`);
 
   return headers;
 }
-
-

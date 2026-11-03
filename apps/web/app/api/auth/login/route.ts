@@ -1,11 +1,12 @@
 import { NextResponse } from "next/server";
 import { ApiError } from "@/lib/api/errors";
 import { loginWithBackend, setAuthCookies } from "@/lib/auth/server";
+import { clientIpFromHeaders } from "@/lib/http/clientIp";
 
 export async function POST(request: Request) {
   try {
     const payload = await request.json();
-    const auth = await loginWithBackend(payload);
+    const auth = await loginWithBackend(payload, clientIpFromHeaders(request.headers));
     const response = NextResponse.json({ user: auth.user });
 
     setAuthCookies(response, auth);

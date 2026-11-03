@@ -1,11 +1,14 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { getBackendApiUrl } from "@/lib/env/server";
+import {
+  ACCESS_TOKEN_COOKIE,
+  REFRESH_TOKEN_COOKIE,
+  SESSION_COOKIE,
+  serializeSession,
+} from "./cookies";
 import type { AuthUser, UserRole } from "./types";
 
-export const ACCESS_TOKEN_COOKIE = "inventory_access_token";
-export const REFRESH_TOKEN_COOKIE = "inventory_refresh_token";
-export const SESSION_COOKIE = "inventory_session";
+export { ACCESS_TOKEN_COOKIE, REFRESH_TOKEN_COOKIE, SESSION_COOKIE, serializeSession };
 
 export interface Session {
   userId: string;
@@ -25,11 +28,6 @@ export async function getAuthToken() {
   return cookieStore.get(ACCESS_TOKEN_COOKIE)?.value ?? null;
 }
 
-export async function getRefreshToken() {
-  const cookieStore = await cookies();
-  return cookieStore.get(REFRESH_TOKEN_COOKIE)?.value ?? null;
-}
-
 export async function getSession(): Promise<Session | null> {
   const cookieStore = await cookies();
   const rawSession = cookieStore.get(SESSION_COOKIE)?.value;
@@ -43,32 +41,10 @@ export async function getSession(): Promise<Session | null> {
   }
 }
 
-export async function tryRefreshToken(): Promise<string | null> {
-  const refreshToken = await getRefreshToken();
-  if (!refreshToken) return null;
-
-  try {
-    const res = await fetch(`${getBackendApiUrl()}/api/v1/auth/refresh`, {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ refresh_token: refreshToken }),
-    });
-    if (!res.ok) return null;
-    const data = await res.json();
-    return data.access_token as string;
-  } catch {
-    return null;
-  }
-}
-
 export async function requireSession() {
   const session = await getSession();
   if (!session) redirect("/login");
   return session;
-}
-
-export function serializeSession(user: AuthUser) {
-  return Buffer.from(JSON.stringify(user), "utf8").toString("base64url");
 }
 
 function sessionFromUser(user: AuthUser): Session {

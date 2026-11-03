@@ -1,22 +1,15 @@
 import type { NextResponse } from "next/server";
 import { apiRequest } from "@/lib/api/client";
 import { ApiError } from "@/lib/api/errors";
-import {
-  ACCESS_TOKEN_COOKIE,
-  REFRESH_TOKEN_COOKIE,
-  SESSION_COOKIE,
-  serializeSession,
-} from "./session";
+import { ACCESS_TOKEN_COOKIE, REFRESH_TOKEN_COOKIE, SESSION_COOKIE, authCookies } from "./cookies";
 import type { AuthResponse, LoginPayload } from "./types";
 
-const AUTH_COOKIE_MAX_AGE_SECONDS = 60 * 60 * 8;
-const REFRESH_COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 30;
-
-export async function loginWithBackend(payload: unknown) {
+export async function loginWithBackend(payload: unknown, clientIp?: string | null) {
   const loginPayload = parseLoginPayload(payload);
   const result = await apiRequest<AuthResponse>("/auth/login", {
     method: "POST",
     body: loginPayload,
+    clientIp,
   });
 
   if (!result.ok) throw result.error;
@@ -25,29 +18,9 @@ export async function loginWithBackend(payload: unknown) {
 }
 
 export function setAuthCookies(response: NextResponse, auth: AuthResponse) {
-  const secure = process.env.NODE_ENV === "production";
-
-  response.cookies.set(ACCESS_TOKEN_COOKIE, auth.access_token, {
-    httpOnly: true,
-    sameSite: "lax",
-    secure,
-    path: "/",
-    maxAge: AUTH_COOKIE_MAX_AGE_SECONDS,
-  });
-  response.cookies.set(REFRESH_TOKEN_COOKIE, auth.refresh_token, {
-    httpOnly: true,
-    sameSite: "lax",
-    secure,
-    path: "/",
-    maxAge: REFRESH_COOKIE_MAX_AGE_SECONDS,
-  });
-  response.cookies.set(SESSION_COOKIE, serializeSession(auth.user), {
-    httpOnly: true,
-    sameSite: "lax",
-    secure,
-    path: "/",
-    maxAge: AUTH_COOKIE_MAX_AGE_SECONDS,
-  });
+  for (const { name, value, options } of authCookies(auth)) {
+    response.cookies.set(name, value, options);
+  }
 }
 
 export function clearAuthCookies(response: NextResponse) {

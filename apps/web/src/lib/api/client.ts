@@ -1,6 +1,7 @@
+import { headers as requestHeaders } from "next/headers";
 import { redirect } from "next/navigation";
 import { getBackendApiUrl } from "@/lib/env/server";
-import { tryRefreshToken } from "@/lib/auth/session";
+import { clientIpFromHeaders } from "@/lib/http/clientIp";
 import { ApiError, errorFromResponse } from "./errors";
 
 export type ApiResult<T> =
@@ -11,6 +12,11 @@ export type ApiRequestOptions = Omit<RequestInit, "body"> & {
   body?: unknown;
   token?: string;
   timeoutMs?: number;
+  /**
+   * IP del visitante que se reenvia al backend (para sus rate limiters).
+   * Si se omite se toma de la peticion en curso; `null` desactiva el reenvio.
+   */
+  clientIp?: string | null;
 };
 
 export async function apiRequest<T>(
@@ -27,7 +33,21 @@ export async function apiRequest<T>(
     headers.set("authorization", `Bearer ${options.token}`);
   }
 
-  const { timeoutMs = 20000, token, body, signal: callerSignal, ...fetchOptions } = options;
+  const {
+    timeoutMs = 20000,
+    token,
+    body,
+    signal: callerSignal,
+    clientIp,
+    ...fetchOptions
+  } = options;
+
+  // Sin esto el backend ve siempre la IP del contenedor web y sus limites por
+  // IP (login, formularios publicos...) se comparten entre todos los usuarios.
+  const forwardedIp = await resolveClientIp(clientIp);
+  if (forwardedIp && !headers.has("x-forwarded-for")) {
+    headers.set("x-forwarded-for", forwardedIp);
+  }
 
   const doFetch = async (): Promise<ApiResult<unknown>> => {
     try {
@@ -61,20 +81,36 @@ export async function apiRequest<T>(
     }
   };
 
-  let result = await doFetch();
+  const result = await doFetch();
 
+  // La renovacion de la sesion la hace el middleware antes de que la peticion
+  // llegue aca (y es el unico que puede guardar las cookies nuevas). Un 401 con
+  // token a esta altura significa sesion invalida o revocada.
   if (!result.ok && result.error.status === 401 && token) {
-    const newToken = await tryRefreshToken();
-    if (newToken) {
-      headers.set("authorization", `Bearer ${newToken}`);
-      options = { ...options, token: newToken };
-      result = await doFetch();
-    } else {
-      redirect("/login");
-    }
+    redirect("/login?session=expired");
   }
 
   return result as ApiResult<T>;
+}
+
+async function resolveClientIp(explicit: string | null | undefined) {
+  if (explicit !== undefined) return explicit;
+
+  try {
+    return clientIpFromHeaders(await requestHeaders());
+  } catch (error) {
+    // Fuera de una peticion (tests, build) no hay IP que reenviar. Los errores
+    // con que Next marca una pagina como dinamica se relanzan: no son nuestros.
+    if (isNextControlFlowError(error)) throw error;
+    return null;
+  }
+}
+
+function isNextControlFlowError(error: unknown) {
+  const digest = typeof error === "object" && error !== null && "digest" in error
+    ? String((error as { digest: unknown }).digest)
+    : "";
+  return digest.includes("DYNAMIC_SERVER_USAGE") || digest.includes("BAILOUT_TO_CLIENT_SIDE_RENDERING");
 }
 
 function serializeBody(body: unknown) {
