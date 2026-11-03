@@ -3,30 +3,39 @@ services:
     build:
       context: apps/backend
     restart: unless-stopped
+    init: true
     environment:
       APP_NAME: ${APP_NAME:-Inventory API}
       ENVIRONMENT: production
       DEBUG: "false"
       LOG_LEVEL: ${LOG_LEVEL:-info}
-      DATABASE_URL: ${DATABASE_URL:?DATABASE_URL is required — use your Supabase PostgreSQL connection string}
+      DATABASE_URL: ${DATABASE_URL:?DATABASE_URL is required — use your Supabase PostgreSQL (postgresql+asyncpg://) connection string}
       SUPABASE_URL: ${SUPABASE_URL:?SUPABASE_URL is required}
       SUPABASE_ANON_KEY: ${SUPABASE_ANON_KEY:?SUPABASE_ANON_KEY is required}
       SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY:?SUPABASE_SERVICE_ROLE_KEY is required}
       CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME:?CLOUDINARY_CLOUD_NAME is required}
       CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY:?CLOUDINARY_API_KEY is required}
       CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET:?CLOUDINARY_API_SECRET is required}
-      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET is required}
-      FRONTEND_URL: ${FRONTEND_URL:?FRONTEND_URL is required}
-      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:?CORS_ALLOWED_ORIGINS is required}
-      WORKERS: ${WORKERS:-4}
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET is required — any long random value (see .env.example)}
+      FRONTEND_URL: ${FRONTEND_URL:?FRONTEND_URL is required — public web URL, e.g. https://app.midominio.com}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:?CORS_ALLOWED_ORIGINS is required — public origins, comma separated}
+      WORKERS: ${WORKERS:-2}
+      # Jobs diarios (trial, mora, archivado). Con WORKERS>1 corren duplicados
+      # (son idempotentes). Dejalo true en UN solo proceso si quieres control.
+      ENABLE_SCHEDULER: ${ENABLE_SCHEDULER:-true}
+      BREVO_API_KEY: ${BREVO_API_KEY:-}
+      EMAIL_FROM_ADDRESS: ${EMAIL_FROM_ADDRESS:-}
+      EMAIL_FROM_NAME: ${EMAIL_FROM_NAME:-TiendaStock}
       SENTRY_DSN: ${SENTRY_DSN:-}
-    ports:
-      - "127.0.0.1:8001:8001"
+    # Sin `ports`: la API es interna (solo la ve el servicio web). Para probar en
+    # local publicando puertos usa docker-compose.local.yml.
+    expose:
+      - "8001"
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8001/health/live"]
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:8001/health/live"]
       interval: 10s
       timeout: 3s
-      start_period: 15s
+      start_period: 30s
       retries: 5
     logging:
       driver: "json-file"
@@ -39,31 +48,33 @@ services:
       context: apps/web
       args:
         NEXT_PUBLIC_APP_NAME: ${APP_NAME:-Inventory App}
-        NEXT_PUBLIC_APP_URL: ${APP_URL:-http://localhost:3010}
+        NEXT_PUBLIC_APP_URL: ${APP_URL:?APP_URL is required — public web URL, e.g. https://app.midominio.com}
         NEXT_PUBLIC_SENTRY_DSN: ${SENTRY_DSN:-}
         BACKEND_API_URL: ${BACKEND_API_URL:-http://api:8001}
         SENTRY_DSN: ${SENTRY_DSN:-}
     restart: unless-stopped
+    init: true
     depends_on:
-      - api
+      api:
+        condition: service_healthy
     environment:
       BACKEND_API_URL: ${BACKEND_API_URL:-http://api:8001}
       SENTRY_DSN: ${SENTRY_DSN:-}
       NEXT_PUBLIC_APP_NAME: ${APP_NAME:-Inventory App}
-      NEXT_PUBLIC_APP_URL: ${APP_URL:-http://localhost:3010}
+      NEXT_PUBLIC_APP_URL: ${APP_URL:?APP_URL is required}
       NEXT_PUBLIC_SENTRY_DSN: ${SENTRY_DSN:-}
-    ports:
-      - "127.0.0.1:3010:3010"
+    # El dominio publico se asigna a este servicio (puerto 3010) en Dokploy/Traefik.
+    expose:
+      - "3010"
+    healthcheck:
+      # 127.0.0.1 y no localhost: en Alpine localhost puede resolver a ::1 y Next solo escucha IPv4.
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:3010/"]
+      interval: 15s
+      timeout: 5s
+      start_period: 20s
+      retries: 5
     logging:
       driver: "json-file"
       options:
         max-size: "10m"
         max-file: "3"
-
-networks:
-  default:
-    enable_ipv6: true
-    ipam:
-      config:
-        - subnet: 172.20.0.0/16
-        - subnet: 2001:db8:2::/64

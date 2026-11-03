@@ -1,0 +1,10 @@
+# Para probar el stack de produccion en tu maquina (no se usa en Dokploy):
+#   docker compose -f docker-compose.yml -f docker-compose.local.yml --env-file .env up --build
+# Publica los puertos que docker-compose.yml deja internos.
+services:
+  api:
+    ports:
+      - "127.0.0.1:8001:8001"
+  web:
+    ports:
+      - "127.0.0.1:3010:3010"
