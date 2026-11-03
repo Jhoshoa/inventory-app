@@ -18,7 +18,7 @@ import type { StorefrontState } from "../types";
 const initialState: StorefrontState = { ok: false, message: "", fieldErrors: {} };
 
 function storefrontUrl(slug: string) {
-  const base = process.env.NEXT_PUBLIC_APP_URL || "";
+  const base = (process.env.NEXT_PUBLIC_APP_URL || "").replace(/\/+$/, "");
   return `${base}/t/${slug}`;
 }
 

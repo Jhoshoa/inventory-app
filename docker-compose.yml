@@ -52,6 +52,12 @@ services:
         NEXT_PUBLIC_APP_NAME: ${APP_NAME:-Inventory App}
         NEXT_PUBLIC_APP_URL: ${APP_URL:?APP_URL is required — public web URL, e.g. https://app.midominio.com}
         NEXT_PUBLIC_SENTRY_DSN: ${SENTRY_DSN:-}
+        # Marca y contacto publicos (landing, legales, boton de WhatsApp, manifiesto PWA).
+        # Se graban en el build; vacios usan los valores de relleno de src/lib/brand.ts.
+        NEXT_PUBLIC_BRAND_NAME: ${BRAND_NAME:-}
+        NEXT_PUBLIC_SITE_DOMAIN: ${SITE_DOMAIN:-}
+        NEXT_PUBLIC_SUPPORT_EMAIL: ${SUPPORT_EMAIL:-}
+        NEXT_PUBLIC_WHATSAPP_NUMBER: ${WHATSAPP_NUMBER:-}
         BACKEND_API_URL: ${BACKEND_API_URL:-http://api:8001}
         SENTRY_DSN: ${SENTRY_DSN:-}
     restart: unless-stopped

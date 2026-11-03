@@ -19,7 +19,7 @@ export const BRAND = {
   description:
     "Controla productos, stock, ventas, cierres de caja y reportes desde una plataforma simple para tiendas, almacenes y ferreterias en Bolivia.",
   domain: process.env.NEXT_PUBLIC_SITE_DOMAIN || "tiendastock.com.bo",
-  siteUrl: process.env.NEXT_PUBLIC_APP_URL || "https://tiendastock.com.bo",
+  siteUrl: (process.env.NEXT_PUBLIC_APP_URL || "https://tiendastock.com.bo").replace(/\/+$/, ""),
   supportEmail: process.env.NEXT_PUBLIC_SUPPORT_EMAIL || "hola@tiendastock.com.bo",
   whatsappNumber: (process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || FALLBACK_WHATSAPP_NUMBER).replace(/\D/g, ""),
   trialDays: 30,
