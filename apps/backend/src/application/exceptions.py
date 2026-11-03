@@ -59,3 +59,8 @@ class UnauthorizedError(ApplicationError):
 class ForbiddenError(ApplicationError):
     status_code = 403
     error = "forbidden"
+
+
+class EmailDeliveryError(ApplicationError):
+    status_code = 502
+    error = "email_delivery_failed"

@@ -64,6 +64,7 @@ from src.infrastructure.database.session import get_session
 from src.infrastructure.services.cloudinary.photo_storage import (
     CloudinaryPhotoStorage,
 )
+from src.infrastructure.services.email.brevo_email_sender import BrevoEmailSender
 from src.infrastructure.services.email.noop_email_sender import NoopEmailSender
 
 security_scheme = HTTPBearer(auto_error=False)
@@ -286,4 +287,10 @@ def get_user_invitation_repo(session: AsyncSession = Depends(get_db_session)) ->
 
 
 def get_email_sender() -> IEmailSender:
+    if settings.BREVO_API_KEY and settings.EMAIL_FROM_ADDRESS:
+        return BrevoEmailSender(
+            api_key=settings.BREVO_API_KEY,
+            from_address=settings.EMAIL_FROM_ADDRESS,
+            from_name=settings.EMAIL_FROM_NAME,
+        )
     return NoopEmailSender()

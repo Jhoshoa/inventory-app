@@ -31,6 +31,14 @@ class Settings(BaseSettings):
     # UN worker/proceso para evitar ejecuciones duplicadas del mismo dia.
     ENABLE_SCHEDULER: bool = True
 
+    # Correo transaccional (invitaciones de cajeros) via Brevo. Sin BREVO_API_KEY las
+    # invitaciones solo se registran en el log (NoopEmailSender): sirve en desarrollo,
+    # no en produccion. EMAIL_FROM_ADDRESS debe ser un remitente/dominio ya
+    # autenticado en Brevo (SPF/DKIM), si no los correos caen en spam.
+    BREVO_API_KEY: str | None = None
+    EMAIL_FROM_ADDRESS: str = ""
+    EMAIL_FROM_NAME: str = "TiendaStock"
+
     SENTRY_DSN: str | None = None
     FRONTEND_URL: str = "http://localhost:3010"
     INVITATION_EXPIRE_DAYS: int = 7
@@ -74,6 +82,9 @@ class Settings(BaseSettings):
             raise ValueError("DATABASE_URL no puede usar SQLite en production")
         if "*" in self.cors_allowed_origins:
             raise ValueError("CORS_ALLOWED_ORIGINS no puede contener * en production")
+
+        if self.BREVO_API_KEY and not self.EMAIL_FROM_ADDRESS:
+            raise ValueError("EMAIL_FROM_ADDRESS es requerido cuando BREVO_API_KEY esta configurada")
 
         placeholders = {
             self.SUPABASE_URL,
