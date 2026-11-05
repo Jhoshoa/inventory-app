@@ -31,4 +31,15 @@ describe("StorefrontSortSelect", () => {
 
     expect(mocks.push).toHaveBeenCalledWith("/t/mi-tienda");
   });
+
+  it("writes name in the URL when the store's default order is another one", async () => {
+    const user = userEvent.setup();
+    mocks.push.mockClear();
+
+    render(<StorefrontSortSelect slug="mi-tienda" sort="price_asc" defaultSort="price_asc" />);
+
+    await user.selectOptions(screen.getByRole("combobox"), "name");
+
+    expect(mocks.push).toHaveBeenCalledWith("/t/mi-tienda?sort=name");
+  });
 });

@@ -21,6 +21,8 @@ export function StorefrontRequestDialog({
   paymentQrUrl,
   paymentInstructions,
   storeWhatsapp,
+  pickupEnabled = true,
+  deliveryEnabled = false,
 }: {
   slug: string;
   productId: string;
@@ -29,6 +31,8 @@ export function StorefrontRequestDialog({
   paymentInstructions?: string | null;
   /** WhatsApp de la tienda: de ahi sale el pais por defecto del cliente. */
   storeWhatsapp?: string | null;
+  pickupEnabled?: boolean;
+  deliveryEnabled?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const [state, setState] = useState<StorefrontRequestState>(INITIAL_STOREFRONT_REQUEST_STATE);
@@ -124,11 +128,28 @@ export function StorefrontRequestDialog({
                     disabled={isSubmitting}
                   />
                 </Field>
+                {pickupEnabled && deliveryEnabled ? (
+                  <fieldset className="space-y-2">
+                    <legend className="text-sm font-medium text-text-strong">Como lo recibes</legend>
+                    <div className="flex flex-wrap gap-x-5 gap-y-2">
+                      <label className="flex items-center gap-2 text-sm text-text-body">
+                        <input type="radio" name="delivery" value="pickup" defaultChecked disabled={isSubmitting} />
+                        Recojo en tienda
+                      </label>
+                      <label className="flex items-center gap-2 text-sm text-text-body">
+                        <input type="radio" name="delivery" value="delivery" disabled={isSubmitting} />
+                        Envio a domicilio
+                      </label>
+                    </div>
+                  </fieldset>
+                ) : deliveryEnabled ? (
+                  <p className="text-sm text-text-muted">Esta tienda hace envios a domicilio: indica tu direccion en la nota.</p>
+                ) : null}
                 <Field name="note" label="Nota (opcional)" error={fieldErrors.note}>
                   <Textarea
                     id="note"
                     name="note"
-                    maxLength={500}
+                    maxLength={470}
                     rows={3}
                     placeholder="Ej. Cuantas unidades necesitas, cuando pasarias a recogerlo..."
                     disabled={isSubmitting}

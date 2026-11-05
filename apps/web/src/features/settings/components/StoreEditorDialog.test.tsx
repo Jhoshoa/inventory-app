@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { StoreEditorDialog } from "./StoreEditorDialog";
 import { updateStoreAction } from "../actions";
+import { DEFAULT_STOREFRONT_SETTINGS } from "@/features/storefront/settings";
 
 const mocks = vi.hoisted(() => ({
   refresh: vi.fn(),
@@ -38,6 +39,7 @@ const storeData = {
   storefront_whatsapp: null,
   storefront_payment_qr_url: null,
   storefront_payment_instructions: null,
+  storefront_settings: DEFAULT_STOREFRONT_SETTINGS,
 };
 
 describe("StoreEditorDialog", () => {

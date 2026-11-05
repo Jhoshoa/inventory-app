@@ -107,18 +107,22 @@ class ProductCategoryRepository(IProductCategoryRepository):
                 return sku, next_number + 1
             next_number += 1
 
-    async def list_public_with_counts(self, store_id: UUID) -> list[tuple[ProductCategory, int]]:
+    async def list_public_with_counts(
+        self, store_id: UUID, *, in_stock_only: bool = False
+    ) -> list[tuple[ProductCategory, int]]:
         # Solo categorias activas que tienen al menos un producto activo
         # visible: una categoria vacia en el sidebar publico es ruido, no
-        # informacion.
+        # informacion. Si la tienda oculta los agotados, tampoco se cuentan.
+        visible = (
+            (ProductModel.category_id == ProductCategoryModel.id)
+            & ProductModel.is_active.is_(True)
+            & ProductModel.deleted_at.is_(None)
+        )
+        if in_stock_only:
+            visible = visible & (ProductModel.stock > 0)
         result = await self._session.execute(
             select(ProductCategoryModel, func.count(ProductModel.id))
-            .join(
-                ProductModel,
-                (ProductModel.category_id == ProductCategoryModel.id)
-                & ProductModel.is_active.is_(True)
-                & ProductModel.deleted_at.is_(None),
-            )
+            .join(ProductModel, visible)
             .where(
                 ProductCategoryModel.store_id == store_id,
                 ProductCategoryModel.is_active.is_(True),

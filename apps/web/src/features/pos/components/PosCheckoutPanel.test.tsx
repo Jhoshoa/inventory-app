@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import { PosCheckoutPanel } from "./PosCheckoutPanel";
 import type { CartItem } from "../types";
 import type { StoreResponse } from "@/features/settings/types";
+import { DEFAULT_STOREFRONT_SETTINGS } from "@/features/storefront/settings";
 
 const discountPolicy: StoreResponse = {
   id: "store-1",
@@ -26,6 +27,7 @@ const discountPolicy: StoreResponse = {
   storefront_whatsapp: null,
   storefront_payment_qr_url: null,
   storefront_payment_instructions: null,
+  storefront_settings: DEFAULT_STOREFRONT_SETTINGS,
 };
 
 vi.mock("react", async () => {

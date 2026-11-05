@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { validateStorefrontRequestForm } from "./requestSchemas";
 
-const baseValues = { customerName: "Juan Perez", customerPhone: "70011122", note: "" };
+const baseValues = { customerName: "Juan Perez", customerPhone: "70011122", note: "", delivery: "" as const };
 
 describe("validateStorefrontRequestForm", () => {
   it("passes with valid values", () => {
@@ -28,8 +28,8 @@ describe("validateStorefrontRequestForm", () => {
     expect(errors.customerPhone).toBeTruthy();
   });
 
-  it("rejects a note over 500 characters", () => {
-    const errors = validateStorefrontRequestForm({ ...baseValues, note: "a".repeat(501) });
+  it("rejects a note over 470 characters (the delivery line takes the rest)", () => {
+    const errors = validateStorefrontRequestForm({ ...baseValues, note: "a".repeat(471) });
     expect(errors.note).toBeTruthy();
   });
 });

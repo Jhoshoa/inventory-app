@@ -1,3 +1,4 @@
+import { WEEKDAYS, type StorefrontSettings } from "@/features/storefront/settings";
 import type { DiscountPolicyFormValues, StoreFormValues, StorefrontFormValues } from "./types";
 
 const SLUG_RE = /^[a-z0-9](?:[a-z0-9-]{1,58}[a-z0-9])?$/;
@@ -52,6 +53,38 @@ export function validateStorefrontForm(values: StorefrontFormValues): Record<str
   if (values.paymentInstructions.length > 280) {
     errors.paymentInstructions = "Las instrucciones no pueden exceder 280 caracteres";
   }
+
+  return { ...errors, ...validateStorefrontSettings(values.settings) };
+}
+
+const MAPS_URL_RE = /^(https?:\/\/)?(maps\.app\.goo\.gl\/|maps\.google\.com\/|(www\.)?google\.com\/maps|goo\.gl\/maps)/i;
+
+/** Lo mismo que valida StorefrontSettingsDTO en el backend, para avisar antes de enviar. */
+export function validateStorefrontSettings(settings: StorefrontSettings): Record<string, string> {
+  const errors: Record<string, string> = {};
+
+  const announcement = settings.announcement_text ?? "";
+  if (settings.announcement_enabled && !announcement) {
+    errors.announcementText = "Escribe el texto de la cinta de anuncio o desactivala";
+  } else if (announcement.length > 140) {
+    errors.announcementText = "El anuncio no puede exceder 140 caracteres";
+  }
+
+  if ((settings.address ?? "").length > 200) {
+    errors.address = "La direccion no puede exceder 200 caracteres";
+  }
+  if (settings.maps_url && !MAPS_URL_RE.test(settings.maps_url)) {
+    errors.mapsUrl = "Pega el link que te da Google Maps al tocar Compartir";
+  }
+
+  settings.hours?.forEach((day, index) => {
+    if (!day.is_open) return;
+    if (!day.opens_at || !day.closes_at) {
+      errors[`hours.${index}`] = `${WEEKDAYS[index]}: indica la hora de apertura y de cierre`;
+    } else if (day.opens_at === day.closes_at) {
+      errors[`hours.${index}`] = `${WEEKDAYS[index]}: la apertura y el cierre no pueden ser iguales`;
+    }
+  });
 
   return errors;
 }

@@ -43,6 +43,7 @@ class IProductRepository(ABC):
         q: str | None = None,
         category_id: UUID | None = None,
         on_sale: bool = False,
+        in_stock_only: bool = False,
         sort: str = "name",
         limit: int = 24,
         offset: int = 0,

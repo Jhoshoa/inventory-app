@@ -177,6 +177,8 @@ export default async function StorefrontProductPage({
               paymentQrUrl={store.payment_qr_url}
               paymentInstructions={store.payment_instructions}
               storeWhatsapp={store.whatsapp}
+              pickupEnabled={store.settings.pickup_enabled}
+              deliveryEnabled={store.settings.delivery_enabled}
             />
             {store.whatsapp ? (
               <a

@@ -1,3 +1,5 @@
+import type { StorefrontSettings } from "./settings";
+
 export interface PublicStorefront {
   name: string;
   tier: string;
@@ -9,6 +11,8 @@ export interface PublicStorefront {
   whatsapp: string | null;
   payment_qr_url: string | null;
   payment_instructions: string | null;
+  timezone: string;
+  settings: StorefrontSettings;
 }
 
 export interface PublicStorefrontProduct {

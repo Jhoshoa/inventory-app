@@ -142,7 +142,93 @@ describe("updateStorefrontAction", () => {
       storefront_description: "",
       storefront_whatsapp: "59170000000",
       storefront_payment_instructions: "",
+      storefront_settings: expect.objectContaining({ hours: null, announcement_enabled: false }),
     });
+  });
+
+  it("sends the catalog settings read from the form", async () => {
+    apiRequest.mockResolvedValue({ ok: true, data: { id: "store-1", storefront_slug: "mi-tienda" } });
+
+    const formData = buildFormData({
+      storefront_slug: "mi-tienda",
+      settings_announcement_enabled: "on",
+      settings_announcement_text: "  Envios gratis  ",
+      settings_show_featured: "on",
+      settings_stock_display: "out_of_stock",
+      settings_default_sort: "price_asc",
+      settings_delivery_enabled: "on",
+      settings_instagram: "@mitienda",
+      settings_hours_enabled: "on",
+      hours_0_open: "on",
+      hours_0_opens_at: "08:00",
+      hours_0_closes_at: "20:00",
+    });
+
+    const result = await updateStorefrontAction(initialStorefrontState, formData);
+
+    expect(result.ok).toBe(true);
+    const [, options] = apiRequest.mock.calls[0];
+    const settings = options.body.storefront_settings;
+    expect(settings).toMatchObject({
+      announcement_enabled: true,
+      announcement_text: "Envios gratis",
+      show_featured: true,
+      show_payment: false,
+      stock_display: "out_of_stock",
+      default_sort: "price_asc",
+      pickup_enabled: false,
+      delivery_enabled: true,
+      instagram: "@mitienda",
+      facebook: null,
+    });
+    expect(settings.hours).toHaveLength(7);
+    expect(settings.hours[0]).toEqual({ is_open: true, opens_at: "08:00", closes_at: "20:00" });
+    expect(settings.hours[1]).toEqual({ is_open: false, opens_at: null, closes_at: null });
+  });
+
+  it("rejects an open day without hours and a cinta without text before calling the API", async () => {
+    const formData = buildFormData({
+      settings_announcement_enabled: "on",
+      settings_hours_enabled: "on",
+      hours_2_open: "on",
+      hours_2_opens_at: "08:00",
+      settings_maps_url: "https://example.com/mapa",
+    });
+
+    const result = await updateStorefrontAction(initialStorefrontState, formData);
+
+    expect(result.ok).toBe(false);
+    expect(result.fieldErrors.announcementText).toBeTruthy();
+    expect(result.fieldErrors["hours.2"]).toMatch(/^Miercoles/);
+    expect(result.fieldErrors.mapsUrl).toBeTruthy();
+    expect(apiRequest).not.toHaveBeenCalled();
+  });
+
+  it("shows the backend validation message next to the social field it belongs to", async () => {
+    apiRequest.mockResolvedValue({
+      ok: false,
+      error: {
+        status: 422,
+        message: "validation_error",
+        details: {
+          error: "validation_error",
+          detail: [
+            {
+              loc: ["body", "storefront_settings", "instagram"],
+              msg: "Value error, Escribe tu usuario de Instagram, ej. @mitienda",
+            },
+          ],
+        },
+      },
+    });
+
+    const result = await updateStorefrontAction(
+      initialStorefrontState,
+      buildFormData({ settings_instagram: "https://evil.example.com" }),
+    );
+
+    expect(result.ok).toBe(false);
+    expect(result.fieldErrors.instagram).toBe("Escribe tu usuario de Instagram, ej. @mitienda");
   });
 
   it("rejects a WhatsApp number without a country code", async () => {

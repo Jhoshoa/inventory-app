@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import { SettingsOverview } from "./SettingsOverview";
 import type { Session } from "@/lib/auth/session";
 import type { StoreDay } from "@/features/store-day/types";
+import { DEFAULT_STOREFRONT_SETTINGS } from "@/features/storefront/settings";
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ refresh: vi.fn() }),
@@ -96,6 +97,7 @@ describe("SettingsOverview", () => {
           storefront_whatsapp: null,
           storefront_payment_qr_url: null,
           storefront_payment_instructions: null,
+          storefront_settings: DEFAULT_STOREFRONT_SETTINGS,
         }}
         storeDay={{ ok: true, data: storeDay }}
         storeDayEvents={{
@@ -147,6 +149,7 @@ describe("SettingsOverview", () => {
           storefront_whatsapp: null,
           storefront_payment_qr_url: null,
           storefront_payment_instructions: null,
+          storefront_settings: DEFAULT_STOREFRONT_SETTINGS,
         }}
         storeDay={{ ok: true, data: storeDay }}
       />,

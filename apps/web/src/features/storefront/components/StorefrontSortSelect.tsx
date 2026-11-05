@@ -1,24 +1,23 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import type { StorefrontSort } from "../api";
+import { STOREFRONT_SORTS, STOREFRONT_SORT_LABELS, type StorefrontSort } from "../settings";
 
-const OPTIONS: Array<{ value: StorefrontSort; label: string }> = [
-  { value: "name", label: "Nombre (A-Z)" },
-  { value: "price_asc", label: "Precio: menor a mayor" },
-  { value: "price_desc", label: "Precio: mayor a menor" },
-];
+const OPTIONS = STOREFRONT_SORTS.map((value) => ({ value, label: STOREFRONT_SORT_LABELS[value] }));
 
 export function StorefrontSortSelect({
   slug,
   q,
   categoryId,
   sort,
+  defaultSort = "name",
 }: {
   slug: string;
   q?: string;
   categoryId?: string;
   sort: StorefrontSort;
+  /** El orden que la tienda eligio: no se escribe en la URL. */
+  defaultSort?: StorefrontSort;
 }) {
   const router = useRouter();
 
@@ -26,7 +25,7 @@ export function StorefrontSortSelect({
     const params = new URLSearchParams();
     if (q) params.set("q", q);
     if (categoryId) params.set("category", categoryId);
-    if (next !== "name") params.set("sort", next);
+    if (next !== defaultSort) params.set("sort", next);
     const qs = params.toString();
     router.push(`/t/${slug}${qs ? `?${qs}` : ""}`);
   }

@@ -62,6 +62,11 @@ async def update_store(
             storefront_description=dto.storefront_description,
             storefront_whatsapp=dto.storefront_whatsapp,
             storefront_payment_instructions=dto.storefront_payment_instructions,
+            storefront_settings=(
+                dto.storefront_settings.model_dump(mode="json")
+                if dto.storefront_settings is not None
+                else None
+            ),
         )
     )
 

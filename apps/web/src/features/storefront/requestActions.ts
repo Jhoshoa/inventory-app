@@ -15,6 +15,7 @@ export async function createStorefrontRequestAction(
     customerName: String(formData.get("customer_name") ?? "").trim(),
     customerPhone: String(formData.get("customer_phone") ?? "").trim(),
     note: String(formData.get("note") ?? "").trim(),
+    delivery: parseDelivery(formData.get("delivery")),
   };
 
   const fieldErrors = validateStorefrontRequestForm(values);
@@ -29,7 +30,7 @@ export async function createStorefrontRequestAction(
       body: {
         customer_name: values.customerName,
         customer_phone: values.customerPhone,
-        note: values.note || undefined,
+        note: requestNote(values) || undefined,
       },
     },
   );
@@ -50,4 +51,17 @@ export async function createStorefrontRequestAction(
   }
 
   return { ...INITIAL_STOREFRONT_REQUEST_STATE, ok: true, message: "Listo, la tienda te va a contactar pronto." };
+}
+
+function parseDelivery(value: FormDataEntryValue | null): StorefrontRequestFormValues["delivery"] {
+  return value === "pickup" || value === "delivery" ? value : "";
+}
+
+const DELIVERY_LABELS = { pickup: "Recojo en tienda", delivery: "Envio a domicilio" } as const;
+
+/** La forma de entrega viaja en la nota: la tienda la ve en Pedidos sin otro campo. */
+function requestNote(values: StorefrontRequestFormValues): string {
+  if (!values.delivery) return values.note;
+  const delivery = `Entrega: ${DELIVERY_LABELS[values.delivery]}`;
+  return values.note ? `${delivery}\n${values.note}` : delivery;
 }

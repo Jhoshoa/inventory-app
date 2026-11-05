@@ -1,3 +1,5 @@
+import type { StorefrontSettings } from "@/features/storefront/settings";
+
 export interface StoreResponse {
   id: string;
   name: string;
@@ -20,6 +22,7 @@ export interface StoreResponse {
   storefront_whatsapp: string | null;
   storefront_payment_qr_url: string | null;
   storefront_payment_instructions: string | null;
+  storefront_settings: StorefrontSettings;
 }
 
 export interface StorefrontFormValues {
@@ -30,6 +33,7 @@ export interface StorefrontFormValues {
   description: string;
   whatsapp: string;
   paymentInstructions: string;
+  settings: StorefrontSettings;
 }
 
 export type StorefrontState = {

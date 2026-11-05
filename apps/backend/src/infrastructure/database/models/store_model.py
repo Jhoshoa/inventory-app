@@ -1,7 +1,7 @@
 import uuid
 from datetime import UTC, datetime
 
-from sqlalchemy import Boolean, Column, Date, DateTime, Numeric, String
+from sqlalchemy import JSON, Boolean, Column, Date, DateTime, Numeric, String
 
 from src.infrastructure.database.models.product_model import Base
 from src.infrastructure.database.types import GUID
@@ -44,5 +44,6 @@ class StoreModel(Base):
     storefront_whatsapp = Column(String(20), nullable=True)
     storefront_payment_qr_url = Column(String(500), nullable=True)
     storefront_payment_instructions = Column(String(280), nullable=True)
+    storefront_settings = Column(JSON, nullable=True)
     created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(UTC))
     updated_at = Column(DateTime(timezone=True), default=lambda: datetime.now(UTC), onupdate=lambda: datetime.now(UTC))

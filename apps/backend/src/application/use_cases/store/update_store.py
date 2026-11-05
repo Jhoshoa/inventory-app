@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from decimal import Decimal
+from typing import Any
 from uuid import UUID
 
 from src.application.exceptions import NotFoundError
@@ -25,6 +26,7 @@ class UpdateStoreInput:
     storefront_description: str | None = None
     storefront_whatsapp: str | None = None
     storefront_payment_instructions: str | None = None
+    storefront_settings: dict[str, Any] | None = None
 
 
 def refresh_storefront_tier(store: Store) -> None:
@@ -81,6 +83,8 @@ class UpdateStoreUseCase:
             store.storefront_whatsapp = input.storefront_whatsapp or None
         if input.storefront_payment_instructions is not None:
             store.storefront_payment_instructions = input.storefront_payment_instructions or None
+        if input.storefront_settings is not None:
+            store.storefront_settings = input.storefront_settings
         if input.storefront_enabled is not None:
             if input.storefront_enabled and not store.storefront_slug:
                 raise ValueError("Define un slug antes de activar el catalogo publico")

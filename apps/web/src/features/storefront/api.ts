@@ -33,7 +33,8 @@ export async function getPublicStorefront(slug: string): Promise<PublicStorefron
   return fetchPublic<PublicStorefront>(slug, `/public/storefront/${encodeURIComponent(slug)}`);
 }
 
-export type StorefrontSort = "name" | "price_asc" | "price_desc";
+export type { StorefrontSort } from "./settings";
+import type { StorefrontSort } from "./settings";
 
 export async function listPublicStorefrontProducts(
   slug: string,

@@ -2,6 +2,8 @@ export interface StorefrontRequestFormValues {
   customerName: string;
   customerPhone: string;
   note: string;
+  /** Forma de entrega elegida; solo se pregunta si la tienda ofrece las dos. */
+  delivery: "pickup" | "delivery" | "";
 }
 
 export type StorefrontRequestState =

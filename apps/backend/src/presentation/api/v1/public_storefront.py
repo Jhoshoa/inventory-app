@@ -13,6 +13,7 @@ from src.application.dto.storefront_request_dto import (
     CreateStorefrontRequestDTO,
     StorefrontRequestResponseDTO,
 )
+from src.application.dto.storefront_settings_dto import storefront_settings_of
 from src.application.exceptions import NotFoundError
 from src.application.use_cases.storefront.get_public_storefront import (
     GetPublicStorefrontUseCase,
@@ -95,6 +96,8 @@ async def get_storefront(
         whatsapp=store.storefront_whatsapp or store.phone,
         payment_qr_url=store.storefront_payment_qr_url,
         payment_instructions=store.storefront_payment_instructions,
+        timezone=store.timezone,
+        settings=storefront_settings_of(store),
     )
 
 
@@ -138,8 +141,9 @@ async def list_storefront_products(
     except NotFoundError as e:
         raise HTTPException(status_code=404, detail=str(e)) from e
 
+    show_low_stock = storefront_settings_of(result.store).stock_display == "all"
     return PublicStorefrontProductListDTO(
-        items=[PublicStorefrontProductDTO.from_product(p) for p in result.items],
+        items=[PublicStorefrontProductDTO.from_product(p, show_low_stock=show_low_stock) for p in result.items],
         total=result.total,
         limit=limit,
         offset=offset,
@@ -156,11 +160,12 @@ async def get_storefront_product(
 ):
     _check_rate_limit(request, slug)
     try:
-        product = await GetPublicProductUseCase(store_repo, product_repo).execute(slug, product_id)
+        result = await GetPublicProductUseCase(store_repo, product_repo).execute(slug, product_id)
     except NotFoundError as e:
         raise HTTPException(status_code=404, detail=str(e)) from e
 
-    return PublicStorefrontProductDTO.from_product(product)
+    show_low_stock = storefront_settings_of(result.store).stock_display == "all"
+    return PublicStorefrontProductDTO.from_product(result.product, show_low_stock=show_low_stock)
 
 
 @router.post(

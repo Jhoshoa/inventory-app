@@ -64,6 +64,7 @@ class StoreRepository(IStoreRepository):
         model.storefront_whatsapp = store.storefront_whatsapp
         model.storefront_payment_qr_url = store.storefront_payment_qr_url
         model.storefront_payment_instructions = store.storefront_payment_instructions
+        model.storefront_settings = store.storefront_settings
         await self._session.flush()
         return store
 
@@ -258,4 +259,5 @@ class StoreRepository(IStoreRepository):
             storefront_whatsapp=model.storefront_whatsapp,
             storefront_payment_qr_url=model.storefront_payment_qr_url,
             storefront_payment_instructions=model.storefront_payment_instructions,
+            storefront_settings=model.storefront_settings,
         )

@@ -2,8 +2,9 @@ from datetime import datetime
 from decimal import Decimal
 from uuid import UUID
 
-from pydantic import BaseModel, computed_field
+from pydantic import BaseModel, Field, computed_field
 
+from src.application.dto.storefront_settings_dto import StorefrontSettingsDTO
 from src.domain.entities.product import Product, product_discount_per_unit
 
 
@@ -24,6 +25,9 @@ class PublicStorefrontDTO(BaseModel):
     whatsapp: str | None = None
     payment_qr_url: str | None = None
     payment_instructions: str | None = None
+    # Zona horaria de la tienda: con ella el catalogo dice "Abierto ahora".
+    timezone: str = "America/La_Paz"
+    settings: StorefrontSettingsDTO = Field(default_factory=StorefrontSettingsDTO)
 
 
 class PublicStorefrontProductDTO(BaseModel):
@@ -52,7 +56,7 @@ class PublicStorefrontProductDTO(BaseModel):
         )
 
     @staticmethod
-    def from_product(product: Product) -> "PublicStorefrontProductDTO":
+    def from_product(product: Product, *, show_low_stock: bool = True) -> "PublicStorefrontProductDTO":
         # "Pocas unidades" es un umbral fijo, no el stock real — el objetivo
         # es dar una senal de urgencia sin revelar cantidades exactas a la
         # competencia (ver docs/mejoras/06-storefront-publico-por-tienda.md).
@@ -64,7 +68,8 @@ class PublicStorefrontProductDTO(BaseModel):
             unit=product.unit,
             photo_url=product.photo_url,
             available=product.stock > 0,
-            low_stock=0 < product.stock <= LOW_STOCK_THRESHOLD,
+            # La tienda puede elegir no mostrar "Ultimas unidades": ni se envia.
+            low_stock=show_low_stock and 0 < product.stock <= LOW_STOCK_THRESHOLD,
             category=product.category,
             category_id=product.category_id,
             discount_type=product.discount_type if product.is_discount_active else None,

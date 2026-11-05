@@ -1,10 +1,13 @@
 from dataclasses import dataclass
 from datetime import UTC, date, datetime, timedelta
 from decimal import Decimal
+from typing import Any
 from uuid import UUID, uuid4
 
+from src.config.settings import settings
+
 TRIAL_DAYS = 30
-GRACE_PERIOD_DAYS = 7
+GRACE_PERIOD_DAYS = settings.GRACE_PERIOD_DAYS
 TRIAL_WARN_DAYS = 5
 
 
@@ -44,6 +47,9 @@ class Store:
     storefront_whatsapp: str | None = None
     storefront_payment_qr_url: str | None = None
     storefront_payment_instructions: str | None = None
+    # Ajustes del catalogo sin columna propia (anuncio, horario, redes...).
+    # Se validan en StorefrontSettingsDTO antes de guardarse.
+    storefront_settings: dict[str, Any] | None = None
 
     @staticmethod
     def create(name: str, address: str | None = None, phone: str | None = None) -> "Store":

@@ -4,6 +4,8 @@ from uuid import UUID
 
 from pydantic import BaseModel, Field, field_validator
 
+from src.application.dto.storefront_settings_dto import StorefrontSettingsDTO
+
 _SLUG_RE = re.compile(r"^[a-z0-9](?:[a-z0-9-]{1,58}[a-z0-9])?$")
 _HEX_COLOR_RE = re.compile(r"^#[0-9A-Fa-f]{6}$")
 # Numero internacional sin "+": codigo de pais + numero (E.164 admite hasta 15 digitos).
@@ -26,6 +28,8 @@ class StoreUpdateDTO(BaseModel):
     storefront_description: str | None = Field(default=None, max_length=280)
     storefront_whatsapp: str | None = Field(default=None, max_length=30)
     storefront_payment_instructions: str | None = Field(default=None, max_length=280)
+    # Reemplaza todos los ajustes del catalogo de una vez (el formulario los manda completos).
+    storefront_settings: StorefrontSettingsDTO | None = None
 
     @field_validator("storefront_whatsapp")
     @classmethod
@@ -84,5 +88,17 @@ class StoreResponseDTO(BaseModel):
     storefront_whatsapp: str | None = None
     storefront_payment_qr_url: str | None = None
     storefront_payment_instructions: str | None = None
+    storefront_settings: StorefrontSettingsDTO = Field(default_factory=StorefrontSettingsDTO)
 
     model_config = {"from_attributes": True}
+
+    @field_validator("storefront_settings", mode="before")
+    @classmethod
+    def default_settings(cls, v: object) -> object:
+        # NULL en la base (tienda que nunca guardo ajustes) = valores por defecto.
+        if v is None:
+            return {}
+        try:
+            return StorefrontSettingsDTO.model_validate(v)
+        except ValueError:
+            return {}

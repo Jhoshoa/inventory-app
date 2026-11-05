@@ -1,11 +1,12 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, Store as StoreIcon } from "lucide-react";
 import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { PageSection } from "@/components/layout/PageSection";
 import { DataFetchError } from "@/components/ui/DataFetchError";
 import { Badge } from "@/components/ui/Badge";
+import { Button } from "@/components/ui/Button";
 import { CollapsibleSection } from "@/components/ui/CollapsibleSection";
 import type { Session } from "@/lib/auth/session";
 import { ProductCategorySettings } from "@/features/product-categories/components/ProductCategorySettings";
@@ -16,7 +17,6 @@ import type { CashMovementListResult, StoreDayClosingPreviewResult, StoreDayEven
 import { UsersSection } from "@/features/users/components/UsersSection";
 import type { UserInvitationListResult, UserListResult } from "@/features/users/types";
 import { DiscountPolicyDialog } from "./DiscountPolicyDialog";
-import { StorefrontSettingsDialog } from "./StorefrontSettingsDialog";
 import { StoreEditorDialog } from "./StoreEditorDialog";
 import type { StoreResponse } from "../types";
 import { PermissionMatrix } from "./PermissionMatrix";
@@ -79,7 +79,12 @@ export function SettingsOverview({
               <div className="flex flex-wrap gap-2">
                 <StoreEditorDialog storeData={storeData} />
                 <DiscountPolicyDialog storeData={storeData} />
-                <StorefrontSettingsDialog storeData={storeData} />
+                <Button asChild variant="ghost">
+                  <Link href="/dashboard/settings/catalogo">
+                    <StoreIcon className="h-4 w-4" aria-hidden="true" />
+                    Catalogo publico
+                  </Link>
+                </Button>
               </div>
             ) : undefined
           }

@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 
+from src.application.dto.storefront_settings_dto import storefront_settings_of
 from src.application.use_cases.storefront.get_public_storefront import (
     GetPublicStorefrontUseCase,
 )
@@ -23,5 +24,8 @@ class ListPublicCategoriesUseCase:
 
     async def execute(self, slug: str) -> list[PublicCategoryWithCount]:
         resolved = await GetPublicStorefrontUseCase(self._store_repo).execute(slug)
-        pairs = await self._category_repo.list_public_with_counts(resolved.store.id)
+        settings = storefront_settings_of(resolved.store)
+        pairs = await self._category_repo.list_public_with_counts(
+            resolved.store.id, in_stock_only=settings.hide_out_of_stock
+        )
         return [PublicCategoryWithCount(category=c, product_count=n) for c, n in pairs]

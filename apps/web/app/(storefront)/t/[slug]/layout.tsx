@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getPublicStorefront } from "@/features/storefront/api";
+import { StorefrontAnnouncement } from "@/features/storefront/components/StorefrontAnnouncement";
 import { StorefrontFloatingContact } from "@/features/storefront/components/StorefrontFloatingContact";
 import { StorefrontHeader } from "@/features/storefront/components/StorefrontHeader";
 
@@ -52,11 +53,14 @@ export default async function StorefrontLayout({
     description: store.description ?? undefined,
     image: store.logo_url ?? undefined,
     telephone: store.whatsapp ?? undefined,
+    address: store.settings.show_contact && store.settings.address ? store.settings.address : undefined,
   };
+  const announcement = store.settings.announcement_enabled ? store.settings.announcement_text : null;
 
   return (
     <div className="flex min-h-screen flex-col bg-app-background">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      {announcement ? <StorefrontAnnouncement text={announcement} color={store.color_primary} /> : null}
       <StorefrontHeader store={store} />
       <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-6">{children}</main>
       <footer className="border-t border-app-border py-4 text-center text-xs text-text-disabled">

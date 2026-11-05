@@ -154,6 +154,7 @@ class ProductRepository(IProductRepository):
         q: str | None = None,
         category_id: UUID | None = None,
         on_sale: bool = False,
+        in_stock_only: bool = False,
         sort: str = "name",
         limit: int = 24,
         offset: int = 0,
@@ -167,6 +168,8 @@ class ProductRepository(IProductRepository):
             filters.append(ProductModel.name.ilike(f"%{q}%"))
         if category_id:
             filters.append(ProductModel.category_id == category_id)
+        if in_stock_only:
+            filters.append(ProductModel.stock > 0)
         if on_sale:
             filters.append(ProductModel.discount_type.isnot(None))
             filters.append(

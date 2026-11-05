@@ -2,6 +2,12 @@
 
 import { revalidatePath, revalidateTag } from "next/cache";
 import { storefrontCacheTag } from "@/features/storefront/api";
+import {
+  STOREFRONT_SORTS,
+  WEEKDAYS,
+  type StorefrontSettings,
+  type StorefrontSort,
+} from "@/features/storefront/settings";
 import { cookies } from "next/headers";
 import { apiRequest } from "@/lib/api/client";
 import { getAuthToken, SESSION_COOKIE, serializeSession } from "@/lib/auth/session";
@@ -133,6 +139,7 @@ export async function updateStorefrontAction(
     description: String(formData.get("storefront_description") ?? "").trim(),
     whatsapp: String(formData.get("storefront_whatsapp") ?? "").trim(),
     paymentInstructions: String(formData.get("storefront_payment_instructions") ?? "").trim(),
+    settings: storefrontSettingsFromForm(formData),
   };
 
   const fieldErrors = validateStorefrontForm(values);
@@ -157,10 +164,15 @@ export async function updateStorefrontAction(
       storefront_description: values.description,
       storefront_whatsapp: values.whatsapp,
       storefront_payment_instructions: values.paymentInstructions,
+      storefront_settings: values.settings,
     },
   });
 
   if (!result.ok) {
+    const serverErrors = settingsErrorsFromValidation(result.error.details);
+    if (Object.keys(serverErrors).length > 0) {
+      return { ok: false, message: "Corrige los errores del formulario", fieldErrors: serverErrors };
+    }
     return { ok: false, message: result.error.message, fieldErrors: {} };
   }
 
@@ -170,6 +182,73 @@ export async function updateStorefrontAction(
     revalidateTag(storefrontCacheTag(result.data.storefront_slug));
   }
   return { ok: true, message: "Catalogo publico actualizado", fieldErrors: {} };
+}
+
+function text(formData: FormData, name: string): string | null {
+  const value = String(formData.get(name) ?? "").trim();
+  return value || null;
+}
+
+function storefrontSettingsFromForm(formData: FormData): StorefrontSettings {
+  const sort = String(formData.get("settings_default_sort") ?? "name") as StorefrontSort;
+  return {
+    announcement_enabled: formData.get("settings_announcement_enabled") === "on",
+    announcement_text: text(formData, "settings_announcement_text"),
+    show_featured: formData.get("settings_show_featured") === "on",
+    show_payment: formData.get("settings_show_payment") === "on",
+    show_contact: formData.get("settings_show_contact") === "on",
+    stock_display: formData.get("settings_stock_display") === "out_of_stock" ? "out_of_stock" : "all",
+    hide_out_of_stock: formData.get("settings_hide_out_of_stock") === "on",
+    default_sort: STOREFRONT_SORTS.includes(sort) ? sort : "name",
+    pickup_enabled: formData.get("settings_pickup_enabled") === "on",
+    delivery_enabled: formData.get("settings_delivery_enabled") === "on",
+    address: text(formData, "settings_address"),
+    maps_url: text(formData, "settings_maps_url"),
+    facebook: text(formData, "settings_facebook"),
+    instagram: text(formData, "settings_instagram"),
+    tiktok: text(formData, "settings_tiktok"),
+    hours:
+      formData.get("settings_hours_enabled") === "on"
+        ? WEEKDAYS.map((_, index) => {
+            const isOpen = formData.get(`hours_${index}_open`) === "on";
+            return {
+              is_open: isOpen,
+              opens_at: isOpen ? text(formData, `hours_${index}_opens_at`) : null,
+              closes_at: isOpen ? text(formData, `hours_${index}_closes_at`) : null,
+            };
+          })
+        : null,
+  };
+}
+
+const SETTINGS_FIELD_KEYS: Record<string, string> = {
+  announcement_text: "announcementText",
+  address: "address",
+  maps_url: "mapsUrl",
+  facebook: "facebook",
+  instagram: "instagram",
+  tiktok: "tiktok",
+};
+
+/** Errores 422 del backend sobre storefront_settings, como errores de campo del formulario. */
+function settingsErrorsFromValidation(details: unknown): Record<string, string> {
+  const detail = (details as { detail?: unknown } | null)?.detail;
+  if (!Array.isArray(detail)) return {};
+  const errors: Record<string, string> = {};
+  for (const item of detail as Array<{ loc?: unknown[]; msg?: string }>) {
+    const loc = item.loc ?? [];
+    if (loc[1] !== "storefront_settings" || !item.msg) continue;
+    const message = item.msg.replace(/^Value error, /, "");
+    const field = typeof loc[2] === "string" ? loc[2] : undefined;
+    if (field === "hours") {
+      errors[typeof loc[3] === "number" ? `hours.${loc[3]}` : "hours"] = message;
+    } else if (field && SETTINGS_FIELD_KEYS[field]) {
+      errors[SETTINGS_FIELD_KEYS[field]] = message;
+    } else {
+      errors.settings = message;
+    }
+  }
+  return errors;
 }
 
 interface CheckoutResponse {
