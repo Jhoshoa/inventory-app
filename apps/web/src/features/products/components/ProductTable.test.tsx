@@ -45,12 +45,13 @@ describe("ProductTable", () => {
     expect(screen.getByRole("button", { name: "Eliminar" })).toBeInTheDocument();
   });
 
-  it("renders mobile card labels without removing row actions", () => {
+  it("renders compact mobile details without removing row actions", () => {
     render(<ProductTable products={[product]} role="owner" />);
 
     expect(screen.getAllByText("Producto").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Codigo").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Stock").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Abarrotes").length).toBeGreaterThan(0);
     expect(screen.getByRole("link", { name: "Ver" })).toHaveAttribute(
       "href",
       "/dashboard/products/product-1",

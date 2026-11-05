@@ -19,7 +19,7 @@ export function Table({
   }[density];
   const mobileClasses =
     mobile === "cards"
-      ? "[&_table]:block md:[&_table]:table [&_thead]:hidden md:[&_thead]:table-header-group [&_tbody]:grid [&_tbody]:gap-3 md:[&_tbody]:table-row-group [&_tr]:block md:[&_tr]:table-row [&_td]:flex [&_td]:items-start [&_td]:justify-between [&_td]:gap-4 md:[&_td]:table-cell"
+      ? "[&_table]:block md:[&_table]:table [&_thead]:hidden md:[&_thead]:table-header-group [&_tbody]:grid [&_tbody]:grid-cols-1 [&_tbody]:gap-3 md:[&_tbody]:table-row-group [&_tr]:block md:[&_tr]:table-row [&_td]:flex [&_td]:items-start [&_td]:justify-between [&_td]:gap-4 md:[&_td]:table-cell"
       : "";
 
   return (

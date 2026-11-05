@@ -25,8 +25,8 @@ import type { Product } from "../types";
 
 export function ProductTable({ products, role }: { products: Product[]; role: UserRole }) {
   return (
-    <Table density="compact" mobile="cards">
-      <thead>
+    <Table density="compact" className="max-md:block">
+      <thead className="max-md:hidden">
         <tr>
           <TableHeaderCell>Producto</TableHeaderCell>
           <TableHeaderCell>Codigo</TableHeaderCell>
@@ -37,33 +37,40 @@ export function ProductTable({ products, role }: { products: Product[]; role: Us
           <TableHeaderCell align="right">Acciones</TableHeaderCell>
         </tr>
       </thead>
-      <tbody>
+      <tbody className="max-md:block">
         {products.length === 0 ? (
           <TableEmptyRow colSpan={7}>No hay productos para mostrar</TableEmptyRow>
         ) : (
           products.map((product) => (
-            <TableRow key={product.id} tone={productRowTone(product)}>
-              <TableCell mobileLabel="Producto">
+            <TableRow key={product.id} tone={productRowTone(product)} className={mobileRowClass}>
+              <TableCell className={`${mobileCellClass} max-md:col-start-1 max-md:row-start-1`}>
                 <TableText className="font-medium text-text-strong">{product.name}</TableText>
                 <TableText muted>{product.unit}</TableText>
               </TableCell>
-              <TableCell mobileLabel="Codigo">
-                <TableText>{product.sku ?? "Sin SKU"}</TableText>
-                <TableText muted>{product.qr_code ?? "Sin QR"}</TableText>
+              <TableCell className={`${mobileCellClass} max-md:col-start-1 max-md:row-start-2`}>
+                <TableText className="max-md:text-xs max-md:text-text-muted">{product.sku ?? "Sin SKU"}</TableText>
+                <TableText muted className="max-md:hidden">{product.qr_code ?? "Sin QR"}</TableText>
+                <TableText muted className="md:hidden">{product.category ?? "Sin categoria"}</TableText>
               </TableCell>
-              <TableCell mobileLabel="Categoria">
+              <TableCell className="max-md:hidden">
                 <TableText>{product.category ?? "Sin categoria"}</TableText>
               </TableCell>
-              <TableCell align="right" mobileLabel="Precio" className="font-medium text-text-strong">
+              <TableCell
+                align="right"
+                className={`${mobileCellClass} font-medium text-text-strong max-md:col-start-2 max-md:row-start-1`}
+              >
                 {formatCurrency(product.price)}
               </TableCell>
-              <TableCell align="right" mobileLabel="Stock">
+              <TableCell
+                align="right"
+                className={`${mobileCellClass} max-md:col-start-2 max-md:row-start-2 max-md:text-xs max-md:text-text-muted`}
+              >
                 {product.stock} / mín {product.min_stock}
               </TableCell>
-              <TableCell mobileLabel="Estado">
+              <TableCell className={`${mobileCellClass} max-md:col-start-1 max-md:row-start-3 max-md:self-center`}>
                 <StockBadge product={product} />
               </TableCell>
-              <TableCell align="right" mobileLabel="Acciones">
+              <TableCell align="right" className={`${mobileCellClass} max-md:col-start-2 max-md:row-start-3`}>
                 <TableActionGroup>
                   <Tooltip content="Ver">
                     <Button variant="icon" asChild>
@@ -105,6 +112,11 @@ export function ProductTable({ products, role }: { products: Product[]; role: Us
     </Table>
   );
 }
+
+// Below md each row becomes a compact two-column card: name | price, SKU + category | stock, status | actions.
+const mobileRowClass =
+  "max-md:grid max-md:grid-cols-[minmax(0,1fr)_auto] max-md:gap-x-3 max-md:gap-y-1 max-md:px-3 max-md:py-3";
+const mobileCellClass = "max-md:border-t-0 max-md:p-0";
 
 export function StockBadge({ product }: { product: Pick<Product, "stock" | "min_stock"> }) {
   if (product.stock <= 0) return <Badge variant="danger">Sin stock</Badge>;

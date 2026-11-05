@@ -1,13 +1,15 @@
 "use client";
 
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
-import { ScanLine, Search } from "lucide-react";
+import { Camera, ScanLine, Search } from "lucide-react";
 import { Alert } from "@/components/ui/Alert";
 import { Badge } from "@/components/ui/Badge";
+import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { SEARCH_DEBOUNCE_MS } from "@/lib/constants/ui";
 import { MIN_PRODUCT_SEARCH_LENGTH } from "@/features/products/schemas";
 import { getOfflineDb, type OfflineProduct } from "@/lib/offline/db";
+import { PosCameraScanner } from "./PosCameraScanner";
 import { PosProductResults } from "./PosProductResults";
 import type { PosProduct, PosProductListResponse } from "../types";
 
@@ -43,6 +45,8 @@ export const PosProductSearch = forwardRef<PosProductSearchHandle, {
   const [products, setProducts] = useState<PosProduct[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [isLookupLoading, setIsLookupLoading] = useState(false);
+  const [canUseCamera, setCanUseCamera] = useState(false);
+  const [isScannerOpen, setIsScannerOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const lookupAbortRef = useRef<AbortController | null>(null);
   const loadedQueryRef = useRef("");
@@ -120,8 +124,19 @@ export const PosProductSearch = forwardRef<PosProductSearchHandle, {
     };
   }, []);
 
-  async function handleExactLookup() {
-    const code = query.trim();
+  useEffect(() => {
+    // mediaDevices only exists in secure contexts (https or localhost).
+    setCanUseCamera(typeof navigator.mediaDevices?.getUserMedia === "function");
+  }, []);
+
+  function handleCameraDetected(code: string) {
+    setIsScannerOpen(false);
+    setQuery(code);
+    // Refocusing the input after a camera scan would pop up the on-screen keyboard.
+    void handleExactLookup(code, false);
+  }
+
+  async function handleExactLookup(code: string, refocusInput = true) {
     if (!code) return;
 
     lookupAbortRef.current?.abort();
@@ -164,7 +179,9 @@ export const PosProductSearch = forwardRef<PosProductSearchHandle, {
       if (!abortController.signal.aborted) {
         setIsLookupLoading(false);
       }
-      window.setTimeout(() => inputRef.current?.focus(), 0);
+      if (refocusInput) {
+        window.setTimeout(() => inputRef.current?.focus(), 0);
+      }
     }
   }
 
@@ -179,24 +196,37 @@ export const PosProductSearch = forwardRef<PosProductSearchHandle, {
         </div>
         <Badge variant={isOnline ? "default" : "warning"}>{isOnline ? "Caja activa" : "Modo sin conexion"}</Badge>
       </div>
-      <label className="relative block">
-        <span className="sr-only">Buscar producto</span>
-        <Search className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-text-muted" aria-hidden />
-        <Input
-          ref={inputRef}
-          autoFocus
-          className="pl-9"
-          placeholder="Buscar por nombre o escanear codigo"
-          value={query}
-          onChange={(event) => setQuery(event.target.value)}
-          onKeyDown={(event) => {
-            if (event.key === "Enter") {
-              event.preventDefault();
-              void handleExactLookup();
-            }
-          }}
-        />
-      </label>
+      <div className="flex gap-2">
+        <label className="relative block min-w-0 flex-1">
+          <span className="sr-only">Buscar producto</span>
+          <Search className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-text-muted" aria-hidden />
+          <Input
+            ref={inputRef}
+            autoFocus
+            className="pl-9"
+            placeholder="Buscar por nombre o escanear codigo"
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === "Enter") {
+                event.preventDefault();
+                void handleExactLookup(query.trim());
+              }
+            }}
+          />
+        </label>
+        {canUseCamera ? (
+          <Button variant="secondary" className="shrink-0" onClick={() => setIsScannerOpen(true)}>
+            <Camera className="h-4 w-4" aria-hidden />
+            Escanear
+          </Button>
+        ) : null}
+      </div>
+      <PosCameraScanner
+        open={isScannerOpen}
+        onOpenChange={setIsScannerOpen}
+        onDetected={handleCameraDetected}
+      />
       {lastAddedProductName ? (
         <Alert>
           Agregado al carrito: <span className="font-medium text-text-strong">{lastAddedProductName}</span>
