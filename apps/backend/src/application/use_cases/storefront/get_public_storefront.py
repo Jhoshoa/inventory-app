@@ -22,6 +22,7 @@ class GetPublicStorefrontUseCase:
 
     async def execute(self, slug: str) -> GetPublicStorefrontResult:
         store = await self._store_repo.get_by_storefront_slug(slug)
-        if store is None or not store.storefront_enabled:
+        # Una tienda suspendida o archivada (sin pago) tampoco publica su catalogo.
+        if store is None or not store.storefront_enabled or store.is_access_restricted:
             raise NotFoundError("Catalogo no encontrado")
         return GetPublicStorefrontResult(store=store)

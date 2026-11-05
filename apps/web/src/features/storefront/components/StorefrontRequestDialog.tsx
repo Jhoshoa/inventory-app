@@ -7,7 +7,9 @@ import { Button } from "@/components/ui/Button";
 import { Dialog, DialogTitle, DialogDescription, DialogBody, DialogFooter } from "@/components/ui/Dialog";
 import { Field } from "@/components/ui/Field";
 import { Input } from "@/components/ui/Input";
+import { PhoneCountryInput } from "@/components/ui/PhoneCountryInput";
 import { Textarea } from "@/components/ui/Textarea";
+import { splitInternationalPhone } from "@/lib/format/phone";
 import { createStorefrontRequestAction } from "../requestActions";
 import { INITIAL_STOREFRONT_REQUEST_STATE } from "../requestTypes";
 import type { StorefrontRequestState } from "../requestTypes";
@@ -18,12 +20,15 @@ export function StorefrontRequestDialog({
   productName,
   paymentQrUrl,
   paymentInstructions,
+  storeWhatsapp,
 }: {
   slug: string;
   productId: string;
   productName: string;
   paymentQrUrl?: string | null;
   paymentInstructions?: string | null;
+  /** WhatsApp de la tienda: de ahi sale el pais por defecto del cliente. */
+  storeWhatsapp?: string | null;
 }) {
   const [open, setOpen] = useState(false);
   const [state, setState] = useState<StorefrontRequestState>(INITIAL_STOREFRONT_REQUEST_STATE);
@@ -110,13 +115,12 @@ export function StorefrontRequestDialog({
                   <Input id="customer_name" name="customer_name" required maxLength={150} disabled={isSubmitting} />
                 </Field>
                 <Field name="customer_phone" label="Tu telefono / WhatsApp" error={fieldErrors.customerPhone}>
-                  <Input
+                  <PhoneCountryInput
                     id="customer_phone"
                     name="customer_phone"
-                    type="tel"
+                    defaultCountry={splitInternationalPhone(storeWhatsapp).country}
                     required
-                    maxLength={30}
-                    placeholder="Ej. 70000000"
+                    placeholder="Tu numero"
                     disabled={isSubmitting}
                   />
                 </Field>

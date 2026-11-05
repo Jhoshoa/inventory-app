@@ -176,6 +176,7 @@ export default async function StorefrontProductPage({
               productName={product.name}
               paymentQrUrl={store.payment_qr_url}
               paymentInstructions={store.payment_instructions}
+              storeWhatsapp={store.whatsapp}
             />
             {store.whatsapp ? (
               <a

@@ -12,10 +12,15 @@ import type {
 // lo sirva desde cache/ISR para no golpear el backend en cada visita.
 const STOREFRONT_REVALIDATE_SECONDS = 300;
 
-async function fetchPublic<T>(path: string): Promise<T | null> {
+/** Etiqueta de cache de un catalogo: al guardar Ajustes se invalida con revalidateTag. */
+export function storefrontCacheTag(slug: string) {
+  return `storefront:${slug}`;
+}
+
+async function fetchPublic<T>(slug: string, path: string): Promise<T | null> {
   try {
     const response = await fetch(`${getBackendApiUrl()}/api/v1${path}`, {
-      next: { revalidate: STOREFRONT_REVALIDATE_SECONDS },
+      next: { revalidate: STOREFRONT_REVALIDATE_SECONDS, tags: [storefrontCacheTag(slug)] },
     });
     if (!response.ok) return null;
     return (await response.json()) as T;
@@ -25,7 +30,7 @@ async function fetchPublic<T>(path: string): Promise<T | null> {
 }
 
 export async function getPublicStorefront(slug: string): Promise<PublicStorefront | null> {
-  return fetchPublic<PublicStorefront>(`/public/storefront/${encodeURIComponent(slug)}`);
+  return fetchPublic<PublicStorefront>(slug, `/public/storefront/${encodeURIComponent(slug)}`);
 }
 
 export type StorefrontSort = "name" | "price_asc" | "price_desc";
@@ -50,12 +55,14 @@ export async function listPublicStorefrontProducts(
   if (params.offset) query.set("offset", String(params.offset));
   const qs = query.toString();
   return fetchPublic<PublicStorefrontProductList>(
+    slug,
     `/public/storefront/${encodeURIComponent(slug)}/products${qs ? `?${qs}` : ""}`,
   );
 }
 
 export async function listPublicStorefrontCategories(slug: string): Promise<PublicStorefrontCategory[]> {
   const result = await fetchPublic<PublicStorefrontCategory[]>(
+    slug,
     `/public/storefront/${encodeURIComponent(slug)}/categories`,
   );
   return result ?? [];
@@ -66,6 +73,7 @@ export async function getPublicStorefrontProduct(
   productId: string,
 ): Promise<PublicStorefrontProduct | null> {
   return fetchPublic<PublicStorefrontProduct>(
+    slug,
     `/public/storefront/${encodeURIComponent(slug)}/products/${encodeURIComponent(productId)}`,
   );
 }

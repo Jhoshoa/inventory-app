@@ -48,4 +48,26 @@ describe("StorefrontRequestDialog", () => {
     expect(await screen.findByText(/dejamos tu pedido registrado/i)).toBeInTheDocument();
     expect(screen.queryByLabelText("Tu nombre")).not.toBeInTheDocument();
   });
+
+  it("sends the customer phone with the store's country code", async () => {
+    vi.mocked(createStorefrontRequestAction).mockResolvedValue({
+      ok: true,
+      message: "Listo, la tienda te va a contactar pronto.",
+      fieldErrors: {},
+    });
+    const user = userEvent.setup();
+
+    render(
+      <StorefrontRequestDialog slug="mi-tienda" productId="prod-1" productName="Martillo" storeWhatsapp="51987654321" />,
+    );
+
+    await user.click(screen.getByRole("button", { name: "Solicitar" }));
+    expect(screen.getByLabelText("Codigo de pais")).toHaveValue("PE");
+    await user.type(screen.getByLabelText("Tu nombre"), "Juan Perez");
+    await user.type(screen.getByLabelText("Tu telefono / WhatsApp"), "912 345 678");
+    await user.click(screen.getByRole("button", { name: "Enviar solicitud" }));
+
+    const formData = vi.mocked(createStorefrontRequestAction).mock.calls[0][3] as FormData;
+    expect(formData.get("customer_phone")).toBe("51912345678");
+  });
 });

@@ -10,9 +10,10 @@ import { Dialog, DialogTitle, DialogBody, DialogFooter } from "@/components/ui/D
 import { FieldError } from "@/components/ui/FieldError";
 import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
+import { PhoneCountryInput } from "@/components/ui/PhoneCountryInput";
 import { Textarea } from "@/components/ui/Textarea";
 import { updateStorefrontAction } from "../actions";
-import { StorePaymentQrUploader } from "./StorePaymentQrUploader";
+import { STORE_IMAGE_KINDS, StoreImageUploader, StorePaymentQrUploader } from "./StoreImageUploader";
 import type { StorefrontState } from "../types";
 
 const initialState: StorefrontState = { ok: false, message: "", fieldErrors: {} };
@@ -149,30 +150,17 @@ export function StorefrontSettingsDialog({ storeData }: { storeData: StoreRespon
                 </div>
               </div>
 
-              <div className="space-y-1">
-                <Label htmlFor="storefront-logo">URL del logo</Label>
-                <Input
-                  id="storefront-logo"
-                  name="storefront_logo_url"
-                  type="url"
-                  defaultValue={storeData.storefront_logo_url ?? ""}
-                  placeholder="https://..."
-                  maxLength={500}
+              <div className="grid gap-4 sm:grid-cols-[auto_minmax(0,1fr)]">
+                <StoreImageUploader
+                  kind={STORE_IMAGE_KINDS.logo}
+                  currentUrl={storeData.storefront_logo_url}
+                  onChange={() => router.refresh()}
                 />
-                <FieldError message={fieldErrors.logoUrl} />
-              </div>
-
-              <div className="space-y-1">
-                <Label htmlFor="storefront-banner">URL del banner</Label>
-                <Input
-                  id="storefront-banner"
-                  name="storefront_banner_url"
-                  type="url"
-                  defaultValue={storeData.storefront_banner_url ?? ""}
-                  placeholder="https://..."
-                  maxLength={500}
+                <StoreImageUploader
+                  kind={STORE_IMAGE_KINDS.banner}
+                  currentUrl={storeData.storefront_banner_url}
+                  onChange={() => router.refresh()}
                 />
-                <FieldError message={fieldErrors.bannerUrl} />
               </div>
 
               <div className="space-y-1">
@@ -189,16 +177,16 @@ export function StorefrontSettingsDialog({ storeData }: { storeData: StoreRespon
 
               <div className="space-y-1">
                 <Label htmlFor="storefront-whatsapp">WhatsApp de contacto</Label>
-                <Input
+                <PhoneCountryInput
                   id="storefront-whatsapp"
                   name="storefront_whatsapp"
-                  type="tel"
-                  defaultValue={storeData.storefront_whatsapp ?? ""}
-                  placeholder={storeData.phone ?? "70000000"}
-                  maxLength={20}
+                  defaultValue={storeData.storefront_whatsapp ?? storeData.phone}
+                  placeholder="Numero sin el codigo de pais"
                 />
+                <FieldError message={fieldErrors.whatsapp} />
                 <p className="text-xs text-text-muted">
-                  Si lo dejas vacio, se usa el telefono de la tienda.
+                  Elige el pais y escribe el numero como lo marcas alli. Los clientes te escriben a este
+                  numero desde el catalogo.
                 </p>
               </div>
 

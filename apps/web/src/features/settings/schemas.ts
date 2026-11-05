@@ -44,11 +44,9 @@ export function validateStorefrontForm(values: StorefrontFormValues): Record<str
     errors.description = "La descripcion no puede exceder 280 caracteres";
   }
 
-  if (values.logoUrl && values.logoUrl.length > 500) {
-    errors.logoUrl = "La URL no puede exceder 500 caracteres";
-  }
-  if (values.bannerUrl && values.bannerUrl.length > 500) {
-    errors.bannerUrl = "La URL no puede exceder 500 caracteres";
+  // Codigo de pais + numero: wa.me no abre el chat con un numero local.
+  if (values.whatsapp && !/^[1-9]\d{9,14}$/.test(values.whatsapp)) {
+    errors.whatsapp = "Revisa el numero: con el codigo de pais debe tener entre 10 y 15 digitos";
   }
 
   if (values.paymentInstructions.length > 280) {

@@ -6,6 +6,8 @@ from pydantic import BaseModel, Field, field_validator
 
 _SLUG_RE = re.compile(r"^[a-z0-9](?:[a-z0-9-]{1,58}[a-z0-9])?$")
 _HEX_COLOR_RE = re.compile(r"^#[0-9A-Fa-f]{6}$")
+# Numero internacional sin "+": codigo de pais + numero (E.164 admite hasta 15 digitos).
+_INTERNATIONAL_PHONE_RE = re.compile(r"^[1-9][0-9]{9,14}$")
 
 
 class StoreUpdateDTO(BaseModel):
@@ -19,13 +21,23 @@ class StoreUpdateDTO(BaseModel):
     allow_cashier_discount_override: bool | None = None
     storefront_enabled: bool | None = None
     storefront_slug: str | None = Field(default=None, min_length=3, max_length=60)
-    storefront_logo_url: str | None = Field(default=None, max_length=500)
-    storefront_banner_url: str | None = Field(default=None, max_length=500)
     storefront_color_primary: str | None = None
     storefront_color_secondary: str | None = None
     storefront_description: str | None = Field(default=None, max_length=280)
-    storefront_whatsapp: str | None = Field(default=None, max_length=20)
+    storefront_whatsapp: str | None = Field(default=None, max_length=30)
     storefront_payment_instructions: str | None = Field(default=None, max_length=280)
+
+    @field_validator("storefront_whatsapp")
+    @classmethod
+    def validate_whatsapp(cls, v: str | None) -> str | None:
+        # wa.me solo abre el chat con el numero internacional (codigo de pais
+        # incluido). Se guardan solo los digitos; "" sigue significando "borrar".
+        if v is None or v.strip() == "":
+            return v
+        digits = re.sub(r"\D", "", v)
+        if not _INTERNATIONAL_PHONE_RE.match(digits):
+            raise ValueError("El WhatsApp debe incluir el codigo de pais, ej. 59170000000")
+        return digits
 
     @field_validator("storefront_slug")
     @classmethod

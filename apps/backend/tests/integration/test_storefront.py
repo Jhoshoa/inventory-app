@@ -55,7 +55,6 @@ async def test_public_storefront_hidden_when_disabled(client):
 async def test_public_storefront_exposes_only_public_fields(client):
     await _enable_storefront(
         client,
-        storefront_logo_url="https://cdn.example.com/logo.png",
         storefront_color_primary="#2563EB",
         storefront_description="La mejor ferreteria del barrio",
     )
@@ -66,7 +65,7 @@ async def test_public_storefront_exposes_only_public_fields(client):
     body = response.json()
     assert body["name"] == "Dev Store"
     assert body["tier"] == "branded"
-    assert body["logo_url"] == "https://cdn.example.com/logo.png"
+    assert body["logo_url"] is None
     assert body["color_primary"] == "#2563EB"
     assert "billing_email" not in body
     assert "billing_nit" not in body
@@ -251,3 +250,48 @@ async def test_public_storefront_rate_limited_per_ip(client):
 
     limited = await client.get("/api/v1/public/storefront/ferreteria-lopez")
     assert limited.status_code == 429
+
+
+async def test_storefront_whatsapp_requires_country_code(client):
+    response = await client.patch("/api/v1/store", json={"storefront_whatsapp": "70000000"})
+
+    assert response.status_code == 422
+
+
+async def test_storefront_whatsapp_is_stored_as_digits(client):
+    response = await client.patch("/api/v1/store", json={"storefront_whatsapp": "+591 700-00000"})
+
+    assert response.status_code == 200
+    assert response.json()["storefront_whatsapp"] == "59170000000"
+
+    cleared = await client.patch("/api/v1/store", json={"storefront_whatsapp": ""})
+    assert cleared.json()["storefront_whatsapp"] is None
+
+
+async def test_public_storefront_hidden_while_store_is_suspended(client, db_session):
+    from src.infrastructure.database.models import StoreModel
+    from src.presentation import dependencies
+
+    await _enable_storefront(client)
+    store = await db_session.get(StoreModel, dependencies.DEV_STORE_ID)
+    store.access_status = "suspended"
+    await db_session.flush()
+
+    response = await client.get("/api/v1/public/storefront/ferreteria-lopez")
+
+    assert response.status_code == 404
+
+
+async def test_public_storefront_omits_non_cloudinary_images(client, db_session):
+    from src.infrastructure.database.models import StoreModel
+    from src.presentation import dependencies
+
+    await _enable_storefront(client)
+    store = await db_session.get(StoreModel, dependencies.DEV_STORE_ID)
+    store.storefront_logo_url = "https://cdn.example.com/logo.png"
+    await db_session.flush()
+
+    response = await client.get("/api/v1/public/storefront/ferreteria-lopez")
+
+    assert response.status_code == 200
+    assert response.json()["logo_url"] is None

@@ -51,6 +51,12 @@ from src.presentation.dependencies import (
 router = APIRouter(prefix="/public/storefront", tags=["public"])
 
 
+def _servable_image(url: str | None) -> str | None:
+    # La web solo carga imagenes de Cloudinary (CSP img-src). Un logo/banner
+    # guardado como URL externa antes de que se subieran se veria roto: se omite.
+    return url if url and url.startswith("https://res.cloudinary.com/") else None
+
+
 def _client_ip(request: Request) -> str:
     forwarded = request.headers.get("x-forwarded-for")
     if forwarded:
@@ -81,8 +87,8 @@ async def get_storefront(
     return PublicStorefrontDTO(
         name=store.name,
         tier=store.storefront_tier,
-        logo_url=store.storefront_logo_url,
-        banner_url=store.storefront_banner_url,
+        logo_url=_servable_image(store.storefront_logo_url),
+        banner_url=_servable_image(store.storefront_banner_url),
         color_primary=store.storefront_color_primary,
         color_secondary=store.storefront_color_secondary,
         description=store.storefront_description,

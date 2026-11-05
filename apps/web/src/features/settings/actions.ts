@@ -1,6 +1,7 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
+import { storefrontCacheTag } from "@/features/storefront/api";
 import { cookies } from "next/headers";
 import { apiRequest } from "@/lib/api/client";
 import { getAuthToken, SESSION_COOKIE, serializeSession } from "@/lib/auth/session";
@@ -127,8 +128,6 @@ export async function updateStorefrontAction(
   const values: StorefrontFormValues = {
     enabled: formData.get("storefront_enabled") === "on",
     slug: String(formData.get("storefront_slug") ?? "").trim().toLowerCase(),
-    logoUrl: String(formData.get("storefront_logo_url") ?? "").trim(),
-    bannerUrl: String(formData.get("storefront_banner_url") ?? "").trim(),
     colorPrimary: String(formData.get("storefront_color_primary") ?? "").trim(),
     colorSecondary: String(formData.get("storefront_color_secondary") ?? "").trim(),
     description: String(formData.get("storefront_description") ?? "").trim(),
@@ -153,8 +152,6 @@ export async function updateStorefrontAction(
       // valor valido a guardar (min 3 caracteres en el backend), y omitirlo
       // deja el slug ya guardado intacto en vez de intentar borrarlo.
       ...(values.slug ? { storefront_slug: values.slug } : {}),
-      storefront_logo_url: values.logoUrl,
-      storefront_banner_url: values.bannerUrl,
       storefront_color_primary: values.colorPrimary,
       storefront_color_secondary: values.colorSecondary,
       storefront_description: values.description,
@@ -168,6 +165,10 @@ export async function updateStorefrontAction(
   }
 
   revalidatePath("/dashboard/settings");
+  // El catalogo publico se cachea 5 min (ISR): el dueno tiene que ver su cambio ya.
+  if (result.data.storefront_slug) {
+    revalidateTag(storefrontCacheTag(result.data.storefront_slug));
+  }
   return { ok: true, message: "Catalogo publico actualizado", fieldErrors: {} };
 }
 

@@ -11,17 +11,81 @@ const MAX_SIZE = 5 * 1024 * 1024;
 
 type UploadState = "idle" | "uploading" | "error";
 
-export function StorePaymentQrUploader({
+type StoreImageField = "storefront_payment_qr_url" | "storefront_logo_url" | "storefront_banner_url";
+
+export interface StoreImageKind {
+  endpoint: string;
+  field: StoreImageField;
+  label: string;
+  alt: string;
+  uploadLabel: string;
+  prompt: string;
+  frameClassName: string;
+  imageFit: "object-contain" | "object-cover";
+  uploadError: string;
+  removeError: string;
+}
+
+// Todas se suben a Cloudinary: el CSP solo permite imagenes de res.cloudinary.com.
+export const STORE_IMAGE_KINDS = {
+  paymentQr: {
+    endpoint: "/api/store/payment-qr",
+    field: "storefront_payment_qr_url",
+    label: "QR de pago",
+    alt: "QR de pago",
+    uploadLabel: "Subir foto de tu QR de pago",
+    prompt: "Arrastra o haz clic para subir tu QR",
+    frameClassName: "h-40 w-40",
+    imageFit: "object-contain",
+    uploadError: "Error al subir el QR",
+    removeError: "Error al quitar el QR",
+  },
+  logo: {
+    endpoint: "/api/store/storefront-logo",
+    field: "storefront_logo_url",
+    label: "Logo",
+    alt: "Logo de la tienda",
+    uploadLabel: "Subir logo de la tienda",
+    prompt: "Arrastra o haz clic para subir tu logo",
+    frameClassName: "h-28 w-28",
+    imageFit: "object-contain",
+    uploadError: "Error al subir el logo",
+    removeError: "Error al quitar el logo",
+  },
+  banner: {
+    endpoint: "/api/store/storefront-banner",
+    field: "storefront_banner_url",
+    label: "Banner",
+    alt: "Banner de la tienda",
+    uploadLabel: "Subir banner de la tienda",
+    prompt: "Arrastra o haz clic para subir una imagen horizontal",
+    frameClassName: "h-28 w-full max-w-sm",
+    imageFit: "object-cover",
+    uploadError: "Error al subir el banner",
+    removeError: "Error al quitar el banner",
+  },
+} satisfies Record<string, StoreImageKind>;
+
+export function StorePaymentQrUploader(props: {
+  currentUrl: string | null;
+  onChange: (url: string | null) => void;
+}) {
+  return <StoreImageUploader kind={STORE_IMAGE_KINDS.paymentQr} {...props} />;
+}
+
+export function StoreImageUploader({
+  kind,
   currentUrl,
   onChange,
 }: {
+  kind: StoreImageKind;
   currentUrl: string | null;
   onChange: (url: string | null) => void;
 }) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [state, setState] = useState<UploadState>("idle");
   const [errorMessage, setErrorMessage] = useState("");
-  const [qrUrl, setQrUrl] = useState<string | null>(currentUrl);
+  const [imageUrl, setImageUrl] = useState<string | null>(currentUrl);
 
   const validateFile = useCallback((file: File): string | null => {
     if (!ALLOWED_TYPES.includes(file.type)) {
@@ -40,18 +104,18 @@ export function StorePaymentQrUploader({
       try {
         const formData = new FormData();
         formData.append("file", file);
-        const response = await fetch("/api/store/payment-qr", { method: "POST", body: formData });
+        const response = await fetch(kind.endpoint, { method: "POST", body: formData });
         if (!response.ok) throw await errorFromResponse(response);
         const updated = await response.json();
-        setQrUrl(updated.storefront_payment_qr_url);
-        onChange(updated.storefront_payment_qr_url);
+        setImageUrl(updated[kind.field]);
+        onChange(updated[kind.field]);
         setState("idle");
       } catch (error) {
-        setErrorMessage(error instanceof Error ? error.message : "Error al subir el QR");
+        setErrorMessage(error instanceof Error ? error.message : kind.uploadError);
         setState("error");
       }
     },
-    [onChange],
+    [kind, onChange],
   );
 
   const processFile = useCallback(
@@ -89,29 +153,33 @@ export function StorePaymentQrUploader({
     setState("uploading");
     setErrorMessage("");
     try {
-      const response = await fetch("/api/store/payment-qr", { method: "DELETE" });
+      const response = await fetch(kind.endpoint, { method: "DELETE" });
       if (!response.ok) throw await errorFromResponse(response);
-      setQrUrl(null);
+      setImageUrl(null);
       onChange(null);
       setState("idle");
     } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : "Error al quitar el QR");
+      setErrorMessage(error instanceof Error ? error.message : kind.removeError);
       setState("error");
     }
-  }, [onChange]);
+  }, [kind, onChange]);
 
   return (
     <div className="space-y-2">
-      <p className="text-sm font-medium text-text-strong">QR de pago</p>
+      <p className="text-sm font-medium text-text-strong">{kind.label}</p>
 
       {state === "uploading" ? (
-        <div className="flex h-40 w-40 items-center justify-center rounded-lg border border-app-border bg-app-surface-muted">
+        <div className={`flex ${kind.frameClassName} items-center justify-center rounded-lg border border-app-border bg-app-surface-muted`}>
           <Loader2 className="h-6 w-6 animate-spin text-brand-700" />
         </div>
-      ) : qrUrl ? (
+      ) : imageUrl ? (
         <div className="space-y-2">
           {/* eslint-disable-next-line @next/next/no-img-element -- imagen remota (Cloudinary), sin loader configurado */}
-          <img src={qrUrl} alt="QR de pago" className="h-40 w-40 rounded-lg border border-app-border object-contain" />
+          <img
+            src={imageUrl}
+            alt={kind.alt}
+            className={`${kind.frameClassName} rounded-lg border border-app-border ${kind.imageFit}`}
+          />
           <div className="flex gap-2">
             <Button variant="secondary" onClick={() => fileInputRef.current?.click()}>
               Cambiar
@@ -134,10 +202,10 @@ export function StorePaymentQrUploader({
           }}
           role="button"
           tabIndex={0}
-          aria-label="Subir foto de tu QR de pago"
-          className="flex h-40 w-40 cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border-2 border-dashed border-app-border bg-app-surface-muted text-center transition-colors hover:border-brand-700 hover:bg-app-surface"
+          aria-label={kind.uploadLabel}
+          className={`flex ${kind.frameClassName} cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border-2 border-dashed border-app-border bg-app-surface-muted text-center transition-colors hover:border-brand-700 hover:bg-app-surface`}
         >
-          <p className="px-2 text-xs text-text-muted">Arrastra o haz clic para subir tu QR</p>
+          <p className="px-2 text-xs text-text-muted">{kind.prompt}</p>
         </div>
       )}
 

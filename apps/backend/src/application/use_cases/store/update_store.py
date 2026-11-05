@@ -20,13 +20,27 @@ class UpdateStoreInput:
     allow_cashier_discount_override: bool | None = None
     storefront_enabled: bool | None = None
     storefront_slug: str | None = None
-    storefront_logo_url: str | None = None
-    storefront_banner_url: str | None = None
     storefront_color_primary: str | None = None
     storefront_color_secondary: str | None = None
     storefront_description: str | None = None
     storefront_whatsapp: str | None = None
     storefront_payment_instructions: str | None = None
+
+
+def refresh_storefront_tier(store: Store) -> None:
+    """El nivel del catalogo se deriva de lo que la tienda tiene configurado."""
+    store.storefront_tier = (
+        "branded"
+        if any(
+            [
+                store.storefront_logo_url,
+                store.storefront_banner_url,
+                store.storefront_color_primary,
+                store.storefront_color_secondary,
+            ]
+        )
+        else ("standard" if store.storefront_slug else "none")
+    )
 
 
 class UpdateStoreUseCase:
@@ -57,10 +71,6 @@ class UpdateStoreUseCase:
             if await self._repo.storefront_slug_exists(input.storefront_slug, exclude_store_id=store.id):
                 raise ValueError("Ese slug ya esta en uso por otra tienda")
             store.storefront_slug = input.storefront_slug
-        if input.storefront_logo_url is not None:
-            store.storefront_logo_url = input.storefront_logo_url or None
-        if input.storefront_banner_url is not None:
-            store.storefront_banner_url = input.storefront_banner_url or None
         if input.storefront_color_primary is not None:
             store.storefront_color_primary = input.storefront_color_primary or None
         if input.storefront_color_secondary is not None:
@@ -76,18 +86,7 @@ class UpdateStoreUseCase:
                 raise ValueError("Define un slug antes de activar el catalogo publico")
             store.storefront_enabled = input.storefront_enabled
 
-        store.storefront_tier = (
-            "branded"
-            if any(
-                [
-                    store.storefront_logo_url,
-                    store.storefront_banner_url,
-                    store.storefront_color_primary,
-                    store.storefront_color_secondary,
-                ]
-            )
-            else ("standard" if store.storefront_slug else "none")
-        )
+        refresh_storefront_tier(store)
 
         if store.allow_percentage_discount and store.max_percentage_discount <= 0:
             raise ValueError(

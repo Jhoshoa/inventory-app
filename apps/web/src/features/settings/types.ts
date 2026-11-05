@@ -25,8 +25,6 @@ export interface StoreResponse {
 export interface StorefrontFormValues {
   enabled: boolean;
   slug: string;
-  logoUrl: string;
-  bannerUrl: string;
   colorPrimary: string;
   colorSecondary: string;
   description: string;

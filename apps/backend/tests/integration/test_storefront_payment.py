@@ -112,3 +112,52 @@ async def test_mark_payment_confirmed_rejects_unknown_request(client):
         json={"payment_confirmed": True},
     )
     assert response.status_code == 404
+
+
+async def test_upload_and_delete_storefront_logo_and_banner(client):
+    fake_storage = _FakePhotoStorage()
+    app.dependency_overrides[dependencies.get_photo_storage] = lambda: fake_storage
+    try:
+        await _enable_storefront(client)
+        logo = await client.post(
+            "/api/v1/store/storefront-logo",
+            files={"file": ("logo.png", _PNG_BYTES, "image/png")},
+        )
+        assert logo.status_code == 200, logo.text
+        assert logo.json()["storefront_logo_url"].startswith("https://res.cloudinary.com/")
+        assert logo.json()["storefront_tier"] == "branded"
+
+        banner = await client.post(
+            "/api/v1/store/storefront-banner",
+            files={"file": ("banner.png", _PNG_BYTES, "image/png")},
+        )
+        assert banner.status_code == 200, banner.text
+        assert fake_storage.uploaded[-1].endswith("/storefront-banner")
+
+        public = await client.get("/api/v1/public/storefront/ferreteria-lopez")
+        assert public.json()["logo_url"].startswith("https://res.cloudinary.com/")
+        assert public.json()["banner_url"].startswith("https://res.cloudinary.com/")
+
+        await client.delete("/api/v1/store/storefront-banner")
+        removed = await client.delete("/api/v1/store/storefront-logo")
+        assert removed.status_code == 200
+        assert removed.json()["storefront_logo_url"] is None
+        assert removed.json()["storefront_banner_url"] is None
+        assert removed.json()["storefront_tier"] == "standard"
+        assert len(fake_storage.deleted) == 2
+    finally:
+        app.dependency_overrides.pop(dependencies.get_photo_storage, None)
+
+
+async def test_upload_storefront_logo_rejects_non_images(client):
+    fake_storage = _FakePhotoStorage()
+    app.dependency_overrides[dependencies.get_photo_storage] = lambda: fake_storage
+    try:
+        response = await client.post(
+            "/api/v1/store/storefront-logo",
+            files={"file": ("logo.png", b"not an image", "image/png")},
+        )
+        assert response.status_code == 415
+        assert fake_storage.uploaded == []
+    finally:
+        app.dependency_overrides.pop(dependencies.get_photo_storage, None)

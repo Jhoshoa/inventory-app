@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const apiRequest = vi.fn();
 const getAuthToken = vi.fn();
 const revalidatePath = vi.fn();
+const revalidateTag = vi.fn();
 const cookiesGet = vi.fn();
 const cookiesSet = vi.fn();
 
@@ -18,6 +19,7 @@ vi.mock("@/lib/auth/session", () => ({
 
 vi.mock("next/cache", () => ({
   revalidatePath: (...args: unknown[]) => revalidatePath(...args),
+  revalidateTag: (...args: unknown[]) => revalidateTag(...args),
 }));
 
 vi.mock("next/headers", () => ({
@@ -118,30 +120,39 @@ describe("updateStorefrontAction", () => {
   });
 
   it("sends the slug only when provided, but always sends the other optional fields", async () => {
-    apiRequest.mockResolvedValue({ ok: true, data: { id: "store-1" } });
+    apiRequest.mockResolvedValue({ ok: true, data: { id: "store-1", storefront_slug: "mi-tienda" } });
 
     const formData = buildFormData({
       storefront_enabled: "on",
       storefront_slug: "mi-tienda",
-      storefront_logo_url: "",
       storefront_color_primary: "#2563EB",
+      storefront_whatsapp: "59170000000",
     });
 
     const result = await updateStorefrontAction(initialStorefrontState, formData);
 
     expect(result.ok).toBe(true);
+    expect(revalidateTag).toHaveBeenCalledWith("storefront:mi-tienda");
     const [, options] = apiRequest.mock.calls[0];
     expect(options.body).toEqual({
       storefront_enabled: true,
       storefront_slug: "mi-tienda",
-      storefront_logo_url: "",
-      storefront_banner_url: "",
       storefront_color_primary: "#2563EB",
       storefront_color_secondary: "",
       storefront_description: "",
-      storefront_whatsapp: "",
+      storefront_whatsapp: "59170000000",
       storefront_payment_instructions: "",
     });
+  });
+
+  it("rejects a WhatsApp number without a country code", async () => {
+    const formData = buildFormData({ storefront_whatsapp: "70000000" });
+
+    const result = await updateStorefrontAction(initialStorefrontState, formData);
+
+    expect(result.ok).toBe(false);
+    expect(result.fieldErrors.whatsapp).toBeTruthy();
+    expect(apiRequest).not.toHaveBeenCalled();
   });
 
   it("omits the slug key entirely when left blank on a disable-only save", async () => {

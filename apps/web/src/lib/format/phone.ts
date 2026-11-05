@@ -1,0 +1,79 @@
+export interface PhoneCountry {
+  iso: string;
+  name: string;
+  dialCode: string;
+}
+
+// Paises de habla hispana (y EE. UU., por su comunidad hispana). Los numeros se
+// guardan internacionales sin "+", que es lo que necesita wa.me.
+export const PHONE_COUNTRIES: PhoneCountry[] = [
+  { iso: "AR", name: "Argentina", dialCode: "54" },
+  { iso: "BO", name: "Bolivia", dialCode: "591" },
+  { iso: "CL", name: "Chile", dialCode: "56" },
+  { iso: "CO", name: "Colombia", dialCode: "57" },
+  { iso: "CR", name: "Costa Rica", dialCode: "506" },
+  { iso: "CU", name: "Cuba", dialCode: "53" },
+  { iso: "EC", name: "Ecuador", dialCode: "593" },
+  { iso: "SV", name: "El Salvador", dialCode: "503" },
+  { iso: "ES", name: "España", dialCode: "34" },
+  { iso: "US", name: "Estados Unidos", dialCode: "1" },
+  { iso: "GT", name: "Guatemala", dialCode: "502" },
+  { iso: "GQ", name: "Guinea Ecuatorial", dialCode: "240" },
+  { iso: "HN", name: "Honduras", dialCode: "504" },
+  { iso: "MX", name: "México", dialCode: "52" },
+  { iso: "NI", name: "Nicaragua", dialCode: "505" },
+  { iso: "PA", name: "Panamá", dialCode: "507" },
+  { iso: "PY", name: "Paraguay", dialCode: "595" },
+  { iso: "PE", name: "Perú", dialCode: "51" },
+  { iso: "PR", name: "Puerto Rico", dialCode: "1" },
+  { iso: "DO", name: "República Dominicana", dialCode: "1" },
+  { iso: "UY", name: "Uruguay", dialCode: "598" },
+  { iso: "VE", name: "Venezuela", dialCode: "58" },
+];
+
+export const DEFAULT_PHONE_COUNTRY = "BO";
+
+// +1 lo comparten EE. UU., Puerto Rico y Rep. Dominicana: se distinguen por el codigo de area.
+const NANP_AREA_CODES: Record<string, string> = {
+  "787": "PR",
+  "939": "PR",
+  "809": "DO",
+  "829": "DO",
+  "849": "DO",
+};
+
+const BY_DIAL_CODE_LENGTH = [...PHONE_COUNTRIES].sort((a, b) => b.dialCode.length - a.dialCode.length);
+
+function digitsOf(value: string) {
+  return value.replace(/\D/g, "");
+}
+
+export function phoneCountry(iso: string): PhoneCountry {
+  return PHONE_COUNTRIES.find((country) => country.iso === iso) ?? phoneCountry(DEFAULT_PHONE_COUNTRY);
+}
+
+/** Separa un numero internacional guardado en pais + numero local. */
+export function splitInternationalPhone(
+  value: string | null | undefined,
+  fallbackCountry: string = DEFAULT_PHONE_COUNTRY,
+): { country: string; local: string } {
+  const digits = digitsOf(value ?? "");
+  const match = BY_DIAL_CODE_LENGTH.find(
+    (country) => digits.startsWith(country.dialCode) && digits.length - country.dialCode.length >= 6,
+  );
+  if (!match) return { country: fallbackCountry, local: digits };
+
+  const local = digits.slice(match.dialCode.length);
+  if (match.dialCode === "1") {
+    return { country: NANP_AREA_CODES[local.slice(0, 3)] ?? "US", local };
+  }
+  return { country: match.iso, local };
+}
+
+/** Une pais + numero local en el formato internacional que espera el backend. */
+export function joinInternationalPhone(countryIso: string, local: string): string {
+  // El 0 inicial es el prefijo de llamada nacional; en formato internacional no va.
+  const digits = digitsOf(local).replace(/^0+/, "");
+  if (!digits) return "";
+  return `${phoneCountry(countryIso).dialCode}${digits}`;
+}

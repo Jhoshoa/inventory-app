@@ -94,4 +94,18 @@ describe("StorefrontSettingsDialog", () => {
     expect(screen.getByDisplayValue("ferreteria-lopez")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /copiar enlace/i })).toBeInTheDocument();
   });
+
+  it("prefills the WhatsApp with the store phone and offers logo and banner uploads", async () => {
+    const user = userEvent.setup();
+
+    render(<StorefrontSettingsDialog storeData={storeData} />);
+    await user.click(screen.getByRole("button", { name: "Catalogo publico" }));
+
+    expect(screen.getByLabelText("WhatsApp de contacto")).toHaveValue("70000000");
+    expect(screen.getByLabelText("Codigo de pais")).toHaveValue("BO");
+    expect(document.querySelector('input[name="storefront_whatsapp"]')).toHaveValue("59170000000");
+    expect(screen.getByLabelText("Subir logo de la tienda")).toBeInTheDocument();
+    expect(screen.getByLabelText("Subir banner de la tienda")).toBeInTheDocument();
+    expect(screen.queryByPlaceholderText("https://...")).not.toBeInTheDocument();
+  });
 });

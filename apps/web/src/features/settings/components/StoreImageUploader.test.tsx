@@ -1,7 +1,7 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { StorePaymentQrUploader } from "./StorePaymentQrUploader";
+import { STORE_IMAGE_KINDS, StoreImageUploader, StorePaymentQrUploader } from "./StoreImageUploader";
 
 function makePngFile(name = "qr.png") {
   return new File([new Uint8Array([1, 2, 3])], name, { type: "image/png" });
@@ -70,5 +70,24 @@ describe("StorePaymentQrUploader", () => {
 
     await waitFor(() => expect(onChange).toHaveBeenCalledWith(null));
     expect(fetch).toHaveBeenCalledWith("/api/store/payment-qr", expect.objectContaining({ method: "DELETE" }));
+  });
+
+  it("uploads the storefront logo to its own endpoint", async () => {
+    vi.mocked(fetch).mockResolvedValue({
+      ok: true,
+      json: async () => ({ storefront_logo_url: "https://res.cloudinary.com/demo/logo.png" }),
+    } as Response);
+    const onChange = vi.fn();
+    const user = userEvent.setup();
+
+    render(<StoreImageUploader kind={STORE_IMAGE_KINDS.logo} currentUrl={null} onChange={onChange} />);
+
+    expect(screen.getByLabelText("Subir logo de la tienda")).toBeInTheDocument();
+    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+    await user.upload(input, makePngFile("logo.png"));
+
+    await waitFor(() => expect(onChange).toHaveBeenCalledWith("https://res.cloudinary.com/demo/logo.png"));
+    expect(fetch).toHaveBeenCalledWith("/api/store/storefront-logo", expect.objectContaining({ method: "POST" }));
+    expect(await screen.findByAltText("Logo de la tienda")).toBeInTheDocument();
   });
 });
