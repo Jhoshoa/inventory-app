@@ -30,8 +30,10 @@ FROM node:20-alpine AS runner
 WORKDIR /app
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nextjs
-COPY --from=builder /app/.next/standalone ./
-COPY --from=builder /app/.next/static ./.next/static
+# .next tiene que ser del usuario que corre el server: Next escribe ahi su cache
+# (ISR, revalidatePath). Siendo de root fallaba con EACCES en .next/cache.
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 COPY --from=builder /app/public ./public
 USER nextjs
 EXPOSE 3010
