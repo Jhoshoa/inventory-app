@@ -190,13 +190,13 @@ function AdminSummaryCard({
 }) {
   return (
     <section className="rounded-lg border border-app-border bg-app-surface p-4 shadow-panel">
-      <div className="flex items-start justify-between gap-3">
-        <div>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0">
           <p className="text-xs font-medium uppercase text-text-muted">Administracion</p>
           <h2 className="mt-1 text-lg font-semibold text-text-strong">{title}</h2>
           <p className="mt-1 text-sm text-text-muted">{description}</p>
         </div>
-        <div className="flex shrink-0 items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2 sm:shrink-0">
           {action}
           {badge ? <div>{badge}</div> : null}
         </div>
