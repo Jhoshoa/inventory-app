@@ -13,14 +13,14 @@
 const FALLBACK_WHATSAPP_NUMBER = "59170000000";
 
 export const BRAND = {
-  name: process.env.NEXT_PUBLIC_BRAND_NAME || "TiendaStock",
-  legalName: process.env.NEXT_PUBLIC_BRAND_NAME || "TiendaStock",
+  name: process.env.NEXT_PUBLIC_BRAND_NAME || "Tu Tiendamiga",
+  legalName: process.env.NEXT_PUBLIC_BRAND_NAME || "Tu Tiendamiga",
   tagline: "Sistema de inventario y punto de venta para negocios en Bolivia",
   description:
     "Controla productos, stock, ventas, cierres de caja y reportes desde una plataforma simple para tiendas, almacenes y ferreterias en Bolivia.",
-  domain: process.env.NEXT_PUBLIC_SITE_DOMAIN || "tiendastock.com.bo",
-  siteUrl: (process.env.NEXT_PUBLIC_APP_URL || "https://tiendastock.com.bo").replace(/\/+$/, ""),
-  supportEmail: process.env.NEXT_PUBLIC_SUPPORT_EMAIL || "hola@tiendastock.com.bo",
+  domain: process.env.NEXT_PUBLIC_SITE_DOMAIN || "tutiendamiga.digital",
+  siteUrl: (process.env.NEXT_PUBLIC_APP_URL || "https://tutiendamiga.digital").replace(/\/+$/, ""),
+  supportEmail: process.env.NEXT_PUBLIC_SUPPORT_EMAIL || "hola@tutiendamiga.digital",
   whatsappNumber: (process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || FALLBACK_WHATSAPP_NUMBER).replace(/\D/g, ""),
   trialDays: 30,
 } as const;

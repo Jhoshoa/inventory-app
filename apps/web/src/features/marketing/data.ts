@@ -96,34 +96,116 @@ export interface FaqItem {
 // docs/mejoras/04-offline-first-pwa.md).
 export const FAQS: FaqItem[] = [
   {
-    question: "Cuanto cuesta el sistema?",
+    question: "¿Cuánto cuesta el sistema?",
     answer:
-      "El precio depende del tamano de tu negocio. Escribenos por WhatsApp y te damos una cotizacion en minutos. Todos los planes incluyen una prueba gratuita.",
+      "El precio depende del tamaño de tu negocio. Escríbenos por WhatsApp y te damos una cotización en minutos. Todos los planes incluyen una prueba gratuita.",
   },
   {
-    question: "Cuanto tiempo toma empezar a usarlo?",
+    question: "¿Cuánto tiempo toma empezar a usarlo?",
     answer:
-      "Puedes crear tu cuenta y empezar a cargar productos el mismo dia. Si tienes un catalogo grande, la importacion por CSV lo hace mas rapido.",
+      "Puedes crear tu cuenta y empezar a cargar productos el mismo día. Si tienes un catálogo grande, la importación por CSV lo hace más rápido.",
   },
   {
-    question: "Funciona sin conexion a internet?",
+    question: "¿Funciona sin conexión a internet?",
     answer:
-      "Hoy la plataforma funciona con conexion a internet estable. Estamos trabajando en soporte para ventas sin conexion, pensado para negocios con internet inestable.",
+      "Hoy la plataforma funciona con conexión a internet estable. Estamos trabajando en soporte para ventas sin conexión, pensado para negocios con internet inestable.",
   },
   {
-    question: "Puedo migrar mis productos actuales?",
+    question: "¿Puedo migrar mis productos actuales?",
     answer:
-      "Si. Puedes importar tu catalogo completo desde un archivo CSV en la seccion de productos, sin cargar cada producto manualmente.",
+      "Sí. Puedes importar tu catálogo completo desde un archivo CSV en la sección de productos, sin cargar cada producto manualmente.",
   },
   {
-    question: "Que tan seguro es mi informacion?",
+    question: "¿Qué tan segura está mi información?",
     answer:
-      "Cada tienda tiene su informacion completamente separada de las demas. El acceso requiere inicio de sesion y los datos se respaldan en una base de datos administrada.",
+      "Cada tienda tiene su información completamente separada de las demás. El acceso requiere inicio de sesión y los datos se respaldan en una base de datos administrada.",
   },
   {
-    question: "Ofrecen soporte si tengo problemas?",
-    answer: "Si, puedes escribirnos directamente por WhatsApp y te ayudamos a resolver cualquier duda o problema.",
+    question: "¿Ofrecen soporte si tengo problemas?",
+    answer: "Sí, puedes escribirnos directamente por WhatsApp y te ayudamos a resolver cualquier duda o problema.",
   },
+];
+
+// ---------------------------------------------------------------------------
+// Landing "boleta de mercado". Textos cortos para la portada; el detalle de
+// cada funcion vive en FEATURES (pagina /funcionalidades).
+// ---------------------------------------------------------------------------
+
+/** Color de sticker: amarillo, acento (naranja) o papel blanco. */
+export type StickerTone = "sun" | "accent" | "white";
+
+export interface LandingFeature {
+  number: string;
+  tone: StickerTone;
+  title: string;
+  description: string;
+}
+
+export const LANDING_FEATURES: LandingFeature[] = [
+  { number: "01", tone: "sun", title: "Control de inventario", description: "Productos, categorías, stock mínimo y alertas antes de quedarte sin nada." },
+  { number: "02", tone: "accent", title: "Punto de venta", description: "Vende rápido desde el mostrador; el stock se descuenta solo." },
+  { number: "03", tone: "sun", title: "Ventas y reportes", description: "Historial de ventas, ingresos y movimientos de stock, día por día." },
+  { number: "04", tone: "accent", title: "Cierre de caja", description: "Efectivo esperado vs. contado, para detectar diferencias a tiempo." },
+  { number: "05", tone: "accent", title: "Etiquetas y QR", description: "Imprime etiquetas con QR por producto y cobra más rápido." },
+  { number: "06", tone: "sun", title: "Importación CSV", description: "Tu catálogo completo desde una planilla, en minutos." },
+  { number: "07", tone: "accent", title: "Roles y permisos", description: "Dueño y cajero, cada uno ve solo lo que necesita." },
+  { number: "08", tone: "sun", title: "Tipo de cambio", description: "Oficial BCB y paralelo, para precios en bolivianos y dólares." },
+];
+
+export interface LandingStep {
+  number: string;
+  tone: StickerTone;
+  title: string;
+  description: string;
+}
+
+export const LANDING_STEPS: LandingStep[] = [
+  { number: "1", tone: "sun", title: "Crea tu cuenta", description: "Solo necesitas tu correo. Sin tarjeta de crédito." },
+  { number: "2", tone: "accent", title: "Sube tus productos", description: "Importa tu planilla CSV o cárgalos a mano." },
+  { number: "3", tone: "white", title: "Vende y cierra caja", description: "Cada venta registrada, cada caja cuadrada." },
+];
+
+export interface LandingSegment {
+  number: string;
+  tone: StickerTone;
+  /** Inclinacion de la tarjeta, en grados. */
+  tilt: number;
+  title: string;
+  description: string;
+}
+
+export const LANDING_SEGMENTS: LandingSegment[] = [
+  {
+    number: "01",
+    tone: "sun",
+    tilt: -1.5,
+    title: "Tiendas y minimarkets",
+    description: "Decenas o cientos de productos, sin depender de cuadernos ni hojas de cálculo sueltas.",
+  },
+  {
+    number: "02",
+    tone: "white",
+    tilt: 1,
+    title: "Ferreterías",
+    description: "Catálogos grandes y variados, con categorías, SKU y stock mínimo por producto.",
+  },
+  {
+    number: "03",
+    tone: "accent",
+    tilt: -1,
+    title: "Almacenes y distribuidoras",
+    description: "Entradas, salidas y ventas con reportes claros para decidir qué reponer.",
+  },
+];
+
+export const LANDING_TICKER = [
+  "Stock bajo: cemento 50 kg",
+  "Venta registrada",
+  "Caja abierta",
+  "Etiqueta QR impresa",
+  "Catálogo importado desde CSV",
+  "Tipo de cambio actualizado",
+  "Cierre de caja OK",
 ];
 
 export const TRIAL_DAYS = 30;

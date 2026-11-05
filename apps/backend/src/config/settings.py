@@ -37,7 +37,7 @@ class Settings(BaseSettings):
     # autenticado en Brevo (SPF/DKIM), si no los correos caen en spam.
     BREVO_API_KEY: str | None = None
     EMAIL_FROM_ADDRESS: str = ""
-    EMAIL_FROM_NAME: str = "TiendaStock"
+    EMAIL_FROM_NAME: str = "Tu Tiendamiga"
 
     SENTRY_DSN: str | None = None
     FRONTEND_URL: str = "http://localhost:3010"

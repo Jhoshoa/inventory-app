@@ -37,6 +37,17 @@ const config: Config = {
           700: "#1e40af",
           800: "#1e3a8a",
         },
+        mkt: {
+          paper: "#F5F3EE",
+          ink: "#111111",
+          cobalt: "#1F3BFF",
+          sun: "#FFE14D",
+          accent: "#FF4A1C",
+          body: "#3A3A38",
+          haze: "#E2E6FF",
+          dots: "#8A8A86",
+          muted: "#4D4D4A",
+        },
         status: {
           success: "var(--color-status-success)",
           successBg: "var(--color-status-success-bg)",
@@ -52,6 +63,21 @@ const config: Config = {
           infoBg: "var(--color-status-info-bg)",
           infoBorder: "var(--color-status-info-border)",
         },
+      },
+      // Sitio publico (landing "boleta de mercado"): papel, cobalto, amarillo y tinta.
+      fontFamily: {
+        archivo: ["var(--font-archivo)", "system-ui", "sans-serif"],
+        display: ["var(--font-display)", "var(--font-archivo)", "sans-serif"],
+        receipt: ["var(--font-receipt)", "ui-monospace", "monospace"],
+      },
+      keyframes: {
+        ticker: {
+          from: { transform: "translateX(0)" },
+          to: { transform: "translateX(-50%)" },
+        },
+      },
+      animation: {
+        ticker: "ticker 40s linear infinite",
       },
       boxShadow: {
         panel: "0 1px 2px 0 rgb(15 23 42 / 0.04), 0 1px 3px 0 rgb(15 23 42 / 0.06)",

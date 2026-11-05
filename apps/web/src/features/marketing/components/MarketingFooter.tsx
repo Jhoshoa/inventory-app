@@ -1,36 +1,40 @@
 import Link from "next/link";
 import { BRAND } from "@/lib/brand";
+import { BrandMark } from "./BrandLogo";
 
 const FOOTER_LINKS = [
-  { href: "/funcionalidades", label: "Funcionalidades" },
+  { href: "/funcionalidades", label: "Funciones" },
   { href: "/precios", label: "Precios" },
   { href: "/contacto", label: "Contacto" },
-  { href: "/legal/terminos", label: "Terminos de servicio" },
-  { href: "/legal/privacidad", label: "Politica de privacidad" },
+  { href: "/legal/terminos", label: "Términos de servicio" },
+  { href: "/legal/privacidad", label: "Política de privacidad" },
 ];
 
 export function MarketingFooter() {
   const year = new Date().getFullYear();
 
   return (
-    <footer className="border-t border-app-border bg-app-surface">
-      <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-        <div className="flex flex-col gap-8 sm:flex-row sm:justify-between">
-          <div className="max-w-sm space-y-2">
-            <p className="text-lg font-semibold text-text-strong">{BRAND.name}</p>
-            <p className="text-sm text-text-muted">{BRAND.description}</p>
+    <footer className="border-t-[3px] border-mkt-ink bg-mkt-cobalt text-mkt-haze">
+      <div className="mx-auto flex max-w-[1240px] flex-wrap justify-between gap-6 px-6 py-12 text-sm">
+        <div className="max-w-[380px]">
+          <div className="flex items-center gap-2.5 text-white">
+            <BrandMark size={34} />
+            <span className="font-display text-lg uppercase">{BRAND.name}</span>
           </div>
-          <nav className="flex flex-wrap gap-x-6 gap-y-2 sm:justify-end">
-            {FOOTER_LINKS.map((link) => (
-              <Link key={link.href} href={link.href} className="text-sm text-text-body hover:text-text-strong">
-                {link.label}
-              </Link>
-            ))}
-          </nav>
+          <p className="mt-3 leading-relaxed">
+            Inventario, ventas y cierre de caja para tiendas, almacenes y ferreterías en Bolivia.
+          </p>
+          <p className="mt-4 font-receipt text-xs">
+            © {year} · {BRAND.domain}
+          </p>
         </div>
-        <p className="mt-8 border-t border-app-border pt-6 text-xs text-text-muted">
-          © {year} {BRAND.legalName}. Todos los derechos reservados.
-        </p>
+        <nav aria-label="Pie de página" className="flex flex-wrap items-start gap-x-6 gap-y-2">
+          {FOOTER_LINKS.map((link) => (
+            <Link key={link.href} href={link.href} className="text-white underline-offset-4 hover:text-mkt-sun hover:underline">
+              {link.label}
+            </Link>
+          ))}
+        </nav>
       </div>
     </footer>
   );

@@ -27,7 +27,7 @@ services:
       ENABLE_SCHEDULER: ${ENABLE_SCHEDULER:-true}
       BREVO_API_KEY: ${BREVO_API_KEY:-}
       EMAIL_FROM_ADDRESS: ${EMAIL_FROM_ADDRESS:-}
-      EMAIL_FROM_NAME: ${EMAIL_FROM_NAME:-TiendaStock}
+      EMAIL_FROM_NAME: ${EMAIL_FROM_NAME:-Tu Tiendamiga}
       SENTRY_DSN: ${SENTRY_DSN:-}
     # Sin `ports`: la API es interna (solo la ve el servicio web). Para probar en
     # local publicando puertos usa docker-compose.local.yml.
