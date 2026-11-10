@@ -1,5 +1,6 @@
 import type { NextConfig } from "next";
 import withPWAInit from "@ducanh2912/next-pwa";
+import { pwaRuntimeCaching } from "./src/lib/pwa/runtimeCaching";
 
 const withPWA = withPWAInit({
   dest: "public",
@@ -10,22 +11,11 @@ const withPWA = withPWAInit({
   },
   workboxOptions: {
     skipWaiting: true,
-    // El shell de la app (JS/CSS/fuentes) se cachea para que cargue al
-    // instante en visitas repetidas, incluso sin red. Las llamadas a la API
-    // (backend y rutas /api/*) nunca se sirven desde cache: el offline real
-    // de datos (productos, ventas) lo maneja IndexedDB, no el service worker.
-    runtimeCaching: [
-      {
-        urlPattern: /^\/api\/.*/,
-        handler: "NetworkOnly",
-      },
-      {
-        urlPattern: /.*/,
-        handler: "StaleWhileRevalidate",
-        options: { cacheName: "app-shell" },
-      },
-    ],
+    // Ver src/lib/pwa/runtimeCaching.ts: que se guarda y que va directo a la red.
+    runtimeCaching: pwaRuntimeCaching,
   },
+  // worker/index.ts: borra la cache vieja al activarse.
+  customWorkerSrc: "worker",
 });
 
 const nextConfig: NextConfig = {
