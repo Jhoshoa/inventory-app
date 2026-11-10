@@ -207,3 +207,68 @@ async def test_featured_allows_at_most_ten_products(client):
     response = await _save_settings(client, featured_product_ids=[str(uuid4()) for _ in range(11)])
 
     assert response.status_code == 422
+
+
+async def _sell(client, product_id: str, quantity: int) -> str:
+    current = await client.get("/api/v1/store-day/current")
+    if current.json()["status"] != "open":
+        assert (await client.post("/api/v1/store-day/open")).status_code == 201
+    response = await client.post(
+        "/api/v1/sales", json={"items": [{"product_id": product_id, "quantity": quantity}]}
+    )
+    assert response.status_code == 201, response.text
+    return response.json()["id"]
+
+
+async def test_popular_sort_orders_by_units_sold_without_exposing_them(client, db_session):
+    from datetime import UTC, datetime, timedelta
+
+    from sqlalchemy import update
+
+    from src.infrastructure.database.models import SaleModel
+
+    await _enable_storefront(client)
+    rice = await _create_product(client, name="Arroz", stock=50)
+    milk = await _create_product(client, name="Leche", stock=50)
+    bread = await _create_product(client, name="Pan", stock=50)
+    unsold = await _create_product(client, name="Aceite", stock=50)
+    await _sell(client, milk, 5)
+    await _sell(client, rice, 2)
+    await _sell(client, rice, 1)
+    # Una venta vieja (fuera de los 90 dias) no cuenta.
+    old_sale = await _sell(client, bread, 20)
+    await db_session.execute(
+        update(SaleModel)
+        .where(SaleModel.id == old_sale)
+        .values(created_at=datetime.now(UTC) - timedelta(days=120))
+    )
+    await db_session.commit()
+
+    body = (await client.get("/api/v1/public/storefront/ferreteria-lopez/products?sort=popular")).json()
+
+    # Sin ventas recientes, Aceite y Pan quedan al final, por nombre.
+    assert [item["id"] for item in body["items"]] == [milk, rice, unsold, bread]
+    assert all("sold" not in item and "units" not in item for item in body["items"])
+
+
+async def test_voided_sales_do_not_count_for_popular(client):
+    await _enable_storefront(client)
+    rice = await _create_product(client, name="Arroz", stock=50)
+    milk = await _create_product(client, name="Leche", stock=50)
+    await _sell(client, rice, 1)
+    voided = await _sell(client, milk, 10)
+    response = await client.post(f"/api/v1/sales/{voided}/void", json={"reason": "Error de cobro"})
+    assert response.status_code == 200, response.text
+
+    body = (await client.get("/api/v1/public/storefront/ferreteria-lopez/products?sort=popular")).json()
+
+    assert [item["id"] for item in body["items"]] == [rice, milk]
+
+
+async def test_popular_can_be_the_default_sort(client):
+    await _enable_storefront(client)
+
+    response = await _save_settings(client, default_sort="popular")
+
+    assert response.status_code == 200
+    assert response.json()["storefront_settings"]["default_sort"] == "popular"

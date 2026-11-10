@@ -134,7 +134,7 @@ async def list_storefront_products(
     q: str | None = Query(default=None, max_length=100),
     category_id: UUID | None = Query(default=None),
     on_sale: bool = Query(default=False),
-    sort: Literal["name", "price_asc", "price_desc"] = Query(default="name"),
+    sort: Literal["name", "price_asc", "price_desc", "popular"] = Query(default="name"),
     limit: int = Query(default=24, ge=1, le=60),
     offset: int = Query(default=0, ge=0),
     store_repo: StoreRepository = Depends(get_store_repo),

@@ -32,6 +32,18 @@ describe("StorefrontSortSelect", () => {
     expect(mocks.push).toHaveBeenCalledWith("/t/mi-tienda");
   });
 
+  it("offers the most ordered products as an order", async () => {
+    const user = userEvent.setup();
+    mocks.push.mockClear();
+
+    render(<StorefrontSortSelect slug="mi-tienda" sort="name" />);
+
+    expect(screen.getByRole("option", { name: "Mas pedidos" })).toBeInTheDocument();
+    await user.selectOptions(screen.getByRole("combobox"), "popular");
+
+    expect(mocks.push).toHaveBeenCalledWith("/t/mi-tienda?sort=popular");
+  });
+
   it("writes name in the URL when the store's default order is another one", async () => {
     const user = userEvent.setup();
     mocks.push.mockClear();

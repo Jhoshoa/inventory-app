@@ -1,6 +1,7 @@
 /** Ajustes del catalogo publico (columna `storefront_settings` del backend). */
 
-export type StorefrontSort = "name" | "price_asc" | "price_desc";
+/** "popular": lo mas vendido en los ultimos 90 dias (solo el orden, nunca las cantidades). */
+export type StorefrontSort = "name" | "popular" | "price_asc" | "price_desc";
 export type StorefrontStockDisplay = "all" | "out_of_stock";
 
 export interface StorefrontDayHours {
@@ -51,12 +52,13 @@ export const DEFAULT_STOREFRONT_SETTINGS: StorefrontSettings = {
   featured_product_ids: [],
 };
 
-export const STOREFRONT_SORTS: StorefrontSort[] = ["name", "price_asc", "price_desc"];
+export const STOREFRONT_SORTS: StorefrontSort[] = ["name", "popular", "price_asc", "price_desc"];
 
 export const STOREFRONT_SORT_LABELS: Record<StorefrontSort, string> = {
   name: "Nombre (A-Z)",
   price_asc: "Precio: menor a mayor",
   price_desc: "Precio: mayor a menor",
+  popular: "Mas pedidos",
 };
 
 export const WEEKDAYS = ["Lunes", "Martes", "Miercoles", "Jueves", "Viernes", "Sabado", "Domingo"] as const;

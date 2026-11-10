@@ -1,4 +1,4 @@
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from decimal import Decimal
 from uuid import UUID
 
@@ -9,7 +9,11 @@ from src.application.exceptions import StockConflictError
 from src.domain.entities.product import Product
 from src.domain.repositories.product_repository import IProductRepository
 from src.infrastructure.database.models.product_model import ProductModel
+from src.infrastructure.database.models.sale_model import SaleItemModel, SaleModel
 from src.infrastructure.database.models.stock_movement_model import StockMovementModel
+
+# Ventana del orden "Mas pedidos" del catalogo publico.
+POPULAR_WINDOW_DAYS = 90
 
 
 class ProductRepository(IProductRepository):
@@ -182,19 +186,35 @@ class ProductRepository(IProductRepository):
         total_result = await self._session.execute(select(func.count()).select_from(ProductModel).where(*filters))
         total = int(total_result.scalar_one())
 
-        sort_columns = {
-            "name": ProductModel.name.asc(),
-            "price_asc": ProductModel.price.asc(),
-            "price_desc": ProductModel.price.desc(),
-        }
-        order_by = sort_columns.get(sort, ProductModel.name.asc())
+        query = select(ProductModel).where(*filters)
+        if sort == "popular":
+            # Unidades vendidas en los ultimos 90 dias (ventas completadas). Solo
+            # ordena: la cantidad nunca sale del backend.
+            sold = (
+                select(SaleItemModel.product_id, func.sum(SaleItemModel.quantity).label("units"))
+                .join(SaleModel, SaleModel.id == SaleItemModel.sale_id)
+                .where(
+                    SaleModel.store_id == store_id,
+                    SaleModel.status == "completed",
+                    SaleModel.deleted_at.is_(None),
+                    SaleModel.created_at >= datetime.now(UTC) - timedelta(days=POPULAR_WINDOW_DAYS),
+                )
+                .group_by(SaleItemModel.product_id)
+                .subquery()
+            )
+            query = query.outerjoin(sold, sold.c.product_id == ProductModel.id).order_by(
+                func.coalesce(sold.c.units, 0).desc(), ProductModel.name.asc()
+            )
+        else:
+            sort_columns = {
+                "name": ProductModel.name.asc(),
+                "price_asc": ProductModel.price.asc(),
+                "price_desc": ProductModel.price.desc(),
+            }
+            query = query.order_by(sort_columns.get(sort, ProductModel.name.asc()))
 
         result = await self._session.execute(
-            select(ProductModel)
-            .where(*filters)
-            .order_by(order_by, ProductModel.id.asc())
-            .limit(limit)
-            .offset(offset)
+            query.order_by(ProductModel.id.asc()).limit(limit).offset(offset)
         )
         return [self._to_entity(m) for m in result.scalars().all()], total
 

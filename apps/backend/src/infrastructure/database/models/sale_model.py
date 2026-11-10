@@ -69,4 +69,7 @@ class SaleItemModel(Base):
 
     sale = relationship("SaleModel", back_populates="items")
 
-    __table_args__ = (Index("ix_sale_items_product_id", "product_id"),)
+    __table_args__ = (
+        Index("ix_sale_items_product_id", "product_id"),
+        Index("ix_sale_items_sale_id", "sale_id"),
+    )

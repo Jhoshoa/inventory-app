@@ -85,7 +85,7 @@ class StorefrontSettingsDTO(BaseModel):
     show_contact: bool = True
     stock_display: Literal["all", "out_of_stock"] = "all"
     hide_out_of_stock: bool = False
-    default_sort: Literal["name", "price_asc", "price_desc"] = "name"
+    default_sort: Literal["name", "price_asc", "price_desc", "popular"] = "name"
     pickup_enabled: bool = True
     delivery_enabled: bool = False
     address: str | None = Field(default=None, max_length=200)
