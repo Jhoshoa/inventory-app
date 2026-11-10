@@ -272,3 +272,26 @@ async def test_popular_can_be_the_default_sort(client):
 
     assert response.status_code == 200
     assert response.json()["storefront_settings"]["default_sort"] == "popular"
+
+
+async def test_template_defaults_to_vitrina_and_accepts_lista(client):
+    body = await _enable_storefront(client)
+    assert body["storefront_settings"]["template"] == "vitrina"
+
+    saved = await _save_settings(client, template="lista")
+    invalid = await _save_settings(client, template="revista")
+
+    assert saved.json()["storefront_settings"]["template"] == "lista"
+    assert invalid.status_code == 422
+    public = (await client.get("/api/v1/public/storefront/ferreteria-lopez")).json()
+    assert public["settings"]["template"] == "lista"
+
+
+async def test_price_list_can_ask_for_up_to_200_products(client):
+    await _enable_storefront(client)
+
+    ok = await client.get("/api/v1/public/storefront/ferreteria-lopez/products?limit=200")
+    too_many = await client.get("/api/v1/public/storefront/ferreteria-lopez/products?limit=201")
+
+    assert ok.status_code == 200
+    assert too_many.status_code == 422

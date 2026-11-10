@@ -151,6 +151,7 @@ describe("updateStorefrontAction", () => {
 
     const formData = buildFormData({
       storefront_slug: "mi-tienda",
+      settings_template: "lista",
       settings_announcement_enabled: "on",
       settings_announcement_text: "  Envios gratis  ",
       settings_show_featured: "on",
@@ -172,6 +173,7 @@ describe("updateStorefrontAction", () => {
     const [, options] = apiRequest.mock.calls[0];
     const settings = options.body.storefront_settings;
     expect(settings).toMatchObject({
+      template: "lista",
       announcement_enabled: true,
       announcement_text: "Envios gratis",
       show_featured: true,

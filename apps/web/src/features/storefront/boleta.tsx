@@ -26,6 +26,10 @@ interface BoletaContextValue {
   add: (product: PublicStorefrontProduct, quantity?: number) => void;
   setQuantity: (productId: string, quantity: number) => void;
   remove: (productId: string) => void;
+  /** Suma uno a un producto que ya esta en la boleta. */
+  increment: (productId: string) => void;
+  /** Resta uno; en cero lo quita de la boleta. */
+  decrement: (productId: string) => void;
   markUnavailable: (productIds: string[]) => void;
   clear: () => void;
   quantityOf: (productId: string) => number;
@@ -118,6 +122,22 @@ export function StorefrontBoletaProvider({ slug, children }: { slug: string; chi
     setLines((current) => current.filter((line) => line.productId !== productId));
   }, []);
 
+  const increment = useCallback((productId: string) => {
+    setLines((current) =>
+      current.map((line) =>
+        line.productId === productId ? { ...line, quantity: Math.min(line.quantity + 1, MAX_LINE_QUANTITY) } : line,
+      ),
+    );
+  }, []);
+
+  const decrement = useCallback((productId: string) => {
+    setLines((current) =>
+      current.flatMap((line) =>
+        line.productId !== productId ? [line] : line.quantity > 1 ? [{ ...line, quantity: line.quantity - 1 }] : [],
+      ),
+    );
+  }, []);
+
   const markUnavailable = useCallback((productIds: string[]) => {
     const ids = new Set(productIds);
     setLines((current) => current.map((line) => (ids.has(line.productId) ? { ...line, unavailable: true } : line)));
@@ -135,11 +155,13 @@ export function StorefrontBoletaProvider({ slug, children }: { slug: string; chi
       add,
       setQuantity,
       remove,
+      increment,
+      decrement,
       markUnavailable,
       clear,
       quantityOf: (productId) => lines.find((line) => line.productId === productId)?.quantity ?? 0,
     };
-  }, [lines, add, setQuantity, remove, markUnavailable, clear]);
+  }, [lines, add, setQuantity, remove, increment, decrement, markUnavailable, clear]);
 
   return <BoletaContext.Provider value={value}>{children}</BoletaContext.Provider>;
 }

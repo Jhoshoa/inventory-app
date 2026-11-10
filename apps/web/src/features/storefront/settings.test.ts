@@ -42,3 +42,29 @@ describe("readableTextColor", () => {
     expect(readableTextColor("#111111")).toBe("#FFFFFF");
   });
 });
+
+describe("storefrontTheme", () => {
+  it("uses the template colors when the store has none", async () => {
+    const { storefrontTheme } = await import("./settings");
+    const vitrina = storefrontTheme({ color_primary: null, color_secondary: null, settings: { template: "vitrina" } });
+    const lista = storefrontTheme({ color_primary: null, color_secondary: null, settings: { template: "lista" } });
+
+    expect(vitrina).toMatchObject({ primary: "#1F3BFF", sticker: "#FFE14D", ink: "#111111", onSticker: "#111111" });
+    expect(lista).toMatchObject({ primary: "#0F766E", ink: "#1E293B" });
+  });
+
+  it("keeps a dark sticker readable on dark backgrounds", async () => {
+    const { storefrontTheme } = await import("./settings");
+    const light = storefrontTheme({ color_primary: "#0F766E", color_secondary: "#FFE14D", settings: { template: "vitrina" } });
+    const dark = storefrontTheme({ color_primary: "#0F766E", color_secondary: "#1E293B", settings: { template: "vitrina" } });
+
+    expect(light.stickerOnDark).toBe("#FFE14D");
+    expect(dark.stickerOnDark).toBe("#FFFFFF");
+    expect(dark.onSticker).toBe("#FFFFFF");
+  });
+
+  it("summarizes the open days for the header", async () => {
+    const { hoursSummary } = await import("./settings");
+    expect(hoursSummary(WEEK)).toBe("Lun – Sab 08:00 – 21:00");
+  });
+});

@@ -10,7 +10,23 @@ export interface StorefrontDayHours {
   closes_at: string | null;
 }
 
+export type StorefrontTemplate = "vitrina" | "lista";
+
+export const STOREFRONT_TEMPLATES: Array<{ value: StorefrontTemplate; label: string; description: string }> = [
+  {
+    value: "vitrina",
+    label: "Vitrina",
+    description: "Tarjetas grandes con stickers de precio. Ideal para tiendas y minimarkets.",
+  },
+  {
+    value: "lista",
+    label: "Lista de precios",
+    description: "Una boleta larga y compacta. Ideal para ferreterias y catalogos grandes.",
+  },
+];
+
 export interface StorefrontSettings {
+  template: StorefrontTemplate;
   announcement_enabled: boolean;
   announcement_text: string | null;
   show_featured: boolean;
@@ -33,6 +49,7 @@ export interface StorefrontSettings {
 }
 
 export const DEFAULT_STOREFRONT_SETTINGS: StorefrontSettings = {
+  template: "vitrina",
   announcement_enabled: false,
   announcement_text: null,
   show_featured: true,
@@ -156,4 +173,84 @@ export function groupHours(hours: StorefrontDayHours[]): Array<{ days: string; l
     label: g.label,
     open: g.open,
   }));
+}
+
+/** Colores de una plantilla: los de la tienda, o los de la plantilla si no eligio. */
+export interface StorefrontTheme {
+  template: StorefrontTemplate;
+  primary: string;
+  onPrimary: string;
+  sticker: string;
+  onSticker: string;
+  /** El sticker sobre fondo oscuro (barra de la boleta, contacto): si es oscuro, blanco. */
+  stickerOnDark: string;
+  ink: string;
+}
+
+const TEMPLATE_DEFAULTS: Record<StorefrontTemplate, { primary: string; ink: string }> = {
+  vitrina: { primary: "#1F3BFF", ink: "#111111" },
+  lista: { primary: "#0F766E", ink: "#1E293B" },
+};
+const DEFAULT_STICKER = "#FFE14D";
+
+export function storefrontTheme(store: {
+  color_primary: string | null;
+  color_secondary: string | null;
+  settings: { template?: StorefrontTemplate };
+}): StorefrontTheme {
+  const template = store.settings.template === "lista" ? "lista" : "vitrina";
+  const defaults = TEMPLATE_DEFAULTS[template];
+  const primary = store.color_primary ?? defaults.primary;
+  const sticker = store.color_secondary ?? DEFAULT_STICKER;
+  return {
+    template,
+    primary,
+    onPrimary: readableTextColor(primary),
+    sticker,
+    onSticker: readableTextColor(sticker),
+    stickerOnDark: readableTextColor(sticker) === "#111111" ? sticker : "#FFFFFF",
+    ink: defaults.ink,
+  };
+}
+
+/** Variables CSS que usan las clases `sf-*` de Tailwind. */
+export function themeStyle(theme: StorefrontTheme): Record<string, string> {
+  return {
+    "--sf-primary": theme.primary,
+    "--sf-on-primary": theme.onPrimary,
+    "--sf-sticker": theme.sticker,
+    "--sf-on-sticker": theme.onSticker,
+    "--sf-sticker-on-dark": theme.stickerOnDark,
+    "--sf-ink": theme.ink,
+  };
+}
+
+const CATEGORY_TINTS = ["#FFE9A3", "#C4D7FF", "#F1EDE3", "#BDEFD9", "#FFC9B8", "#E2E6FF"];
+
+/** Fondo pastel estable por categoria, para productos sin foto. */
+export function categoryTint(category: string | null | undefined): string {
+  if (!category) return CATEGORY_TINTS[2];
+  let hash = 0;
+  for (const char of category) hash = (hash * 31 + char.charCodeAt(0)) >>> 0;
+  return CATEGORY_TINTS[hash % CATEGORY_TINTS.length];
+}
+
+/** "AF" para "Aceite Fino 1l": las iniciales de las dos primeras palabras. */
+export function initials(name: string): string {
+  return name
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((word) => word[0])
+    .join("")
+    .toUpperCase();
+}
+
+/** "Lun – Sab 08:00 – 21:00" con los dias abiertos del horario, para el hero. */
+export function hoursSummary(hours: StorefrontDayHours[]): string | null {
+  const open = groupHours(hours).filter((group) => group.open);
+  if (open.length === 0) return null;
+  return open
+    .map((group) => `${group.days.replace(/([A-Za-z]{3})[a-z]*/g, "$1")} ${group.label}`)
+    .join(" · ");
 }

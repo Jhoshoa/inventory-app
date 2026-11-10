@@ -8,6 +8,8 @@ import type { StoreResponse } from "@/features/settings/types";
 import {
   STOREFRONT_SORTS,
   STOREFRONT_SORT_LABELS,
+  STOREFRONT_TEMPLATES,
+  type StorefrontTemplate,
   WEEKDAYS,
   withStorefrontDefaults,
   type StorefrontDayHours,
@@ -20,6 +22,7 @@ import { PhoneCountryInput } from "@/components/ui/PhoneCountryInput";
 import { Select } from "@/components/ui/Select";
 import { Textarea } from "@/components/ui/Textarea";
 import { updateStorefrontAction } from "../actions";
+import { StorefrontPreview } from "./StorefrontPreview";
 import { FeaturedProductsPicker, type FeaturedProductOption } from "./FeaturedProductsPicker";
 import { STORE_IMAGE_KINDS, StoreImageUploader, StorePaymentQrUploader } from "./StoreImageUploader";
 import type { StorefrontState } from "../types";
@@ -58,6 +61,8 @@ export function StorefrontSettingsForm({
   const [colorPrimary, setColorPrimary] = useState(storeData.storefront_color_primary ?? "");
   const [colorSecondary, setColorSecondary] = useState(storeData.storefront_color_secondary ?? "");
   const [announcementEnabled, setAnnouncementEnabled] = useState(settings.announcement_enabled);
+  const [announcementText, setAnnouncementText] = useState(settings.announcement_text ?? "");
+  const [template, setTemplate] = useState<StorefrontTemplate>(settings.template);
   const [showHours, setShowHours] = useState(settings.hours !== null);
   const [hours, setHours] = useState(() => initialHours(settings.hours));
   const router = useRouter();
@@ -164,6 +169,35 @@ export function StorefrontSettingsForm({
           </div>
         </SettingsCard>
 
+        <SettingsCard title="Plantilla" description="El diseno de tu catalogo. Puedes cambiarlo cuando quieras.">
+          <fieldset className="grid gap-3 sm:grid-cols-2">
+            <legend className="sr-only">Plantilla del catalogo</legend>
+            {STOREFRONT_TEMPLATES.map((option) => {
+              const selected = template === option.value;
+              return (
+                <label
+                  key={option.value}
+                  className={`flex cursor-pointer flex-col gap-2 rounded-lg border-2 p-3 transition-colors ${
+                    selected ? "border-accent-primary bg-app-surface-muted" : "border-app-border hover:border-app-borderStrong"
+                  }`}
+                >
+                  <span className="flex items-center gap-2 text-sm font-semibold text-text-strong">
+                    <input
+                      type="radio"
+                      name="settings_template"
+                      value={option.value}
+                      checked={selected}
+                      onChange={() => setTemplate(option.value)}
+                    />
+                    {option.label}
+                  </span>
+                  <span className="text-xs text-text-muted">{option.description}</span>
+                </label>
+              );
+            })}
+          </fieldset>
+        </SettingsCard>
+
         <SettingsCard title="Identidad" description="Como se ve tu tienda arriba del catalogo.">
           <div className="grid gap-4 sm:grid-cols-[auto_minmax(0,1fr)]">
             <StoreImageUploader
@@ -191,15 +225,16 @@ export function StorefrontSettingsForm({
             <ColorField
               id="storefront-color-secondary"
               name="storefront_color_secondary"
-              label="Color secundario"
+              label="Color de sticker"
               value={colorSecondary}
               onChange={setColorSecondary}
-              placeholder="#1E293B"
+              placeholder="#FFE14D"
               error={fieldErrors.colorSecondary}
             />
           </div>
           <p className="text-xs text-text-muted">
-            El texto sobre tus colores se pone blanco o negro solo, para que siempre se lea.
+            El principal pinta el encabezado; el de sticker, los precios y botones. Si los dejas vacios usamos
+            los de la plantilla. El texto encima se pone blanco o negro solo, para que siempre se lea.
           </p>
           <div className="space-y-1">
             <Label htmlFor="storefront-description">Descripcion corta</Label>
@@ -219,7 +254,7 @@ export function StorefrontSettingsForm({
             <CheckboxField
               name="settings_show_featured"
               label="Destacados"
-              description="Carrusel arriba del catalogo."
+              description="La boleta de destacados del encabezado (Vitrina)."
               defaultChecked={settings.show_featured}
             />
             <CheckboxField
@@ -248,20 +283,21 @@ export function StorefrontSettingsForm({
               <Input
                 id="settings-announcement-text"
                 name="settings_announcement_text"
-                defaultValue={settings.announcement_text ?? ""}
+                value={announcementText}
+                onChange={(e) => setAnnouncementText(e.target.value)}
                 placeholder="Envios gratis los sabados · Paga con QR"
                 maxLength={140}
               />
               <FieldError message={fieldErrors.announcementText} />
             </div>
           ) : (
-            <input type="hidden" name="settings_announcement_text" value={settings.announcement_text ?? ""} />
+            <input type="hidden" name="settings_announcement_text" value={announcementText} />
           )}
         </SettingsCard>
 
         <SettingsCard
           title="Productos destacados"
-          description="Elige hasta 10 productos para el carrusel, en el orden en que quieres mostrarlos. Si no eliges ninguno, mostramos tus productos en oferta."
+          description="Elige hasta 10 productos para el encabezado de la Vitrina, en el orden en que quieres mostrarlos. Si no eliges ninguno, mostramos tus productos en oferta."
         >
           <FeaturedProductsPicker
             name="settings_featured_product_ids"
@@ -494,6 +530,18 @@ export function StorefrontSettingsForm({
       </div>
 
       <aside className="min-w-0 space-y-4 lg:sticky lg:top-4 lg:self-start">
+        <div className="rounded-lg border border-app-border bg-app-surface p-4 shadow-panel">
+          <p className="mb-4 text-xs font-semibold uppercase tracking-wide text-text-muted">Vista previa</p>
+          <StorefrontPreview
+            template={template}
+            storeName={storeData.name}
+            logoUrl={storeData.storefront_logo_url}
+            colorPrimary={colorPrimary}
+            colorSticker={colorSecondary}
+            announcement={announcementEnabled ? announcementText.trim() || null : null}
+          />
+          <p className="mt-4 text-center text-xs text-text-muted">Cambia con lo que vas editando. Guarda para publicarlo.</p>
+        </div>
         <div className="rounded-lg border border-app-border bg-app-surface p-4 shadow-panel">
           <div className="flex flex-col gap-2">
             <Button type="submit" disabled={isSubmitting}>

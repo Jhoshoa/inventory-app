@@ -148,3 +148,16 @@ describe("StorefrontSettingsForm", () => {
     expect(screen.getByLabelText("Facebook")).toHaveValue("facebook.com/mitienda");
   });
 });
+
+describe("StorefrontSettingsForm templates", () => {
+  it("switches the live preview when another template is picked", async () => {
+    const user = userEvent.setup();
+    render(<StorefrontSettingsForm storeData={storeData} />);
+
+    expect(screen.getByRole("img", { name: "Vista previa de la plantilla Vitrina" })).toBeInTheDocument();
+    await user.click(screen.getByRole("radio", { name: /Lista de precios/ }));
+
+    expect(screen.getByRole("img", { name: "Vista previa de la plantilla Lista de precios" })).toBeInTheDocument();
+    expect(screen.getByLabelText("Color de sticker")).toHaveAttribute("placeholder", "#FFE14D");
+  });
+});

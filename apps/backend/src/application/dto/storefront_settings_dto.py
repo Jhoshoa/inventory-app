@@ -78,6 +78,8 @@ class StorefrontSettingsDTO(BaseModel):
     vean sus clientes), asi que el catalogo lo expone tal cual.
     """
 
+    # Diseno del catalogo: "vitrina" (tarjetas grandes) o "lista" (lista de precios).
+    template: Literal["vitrina", "lista"] = "vitrina"
     announcement_enabled: bool = False
     announcement_text: str | None = Field(default=None, max_length=140)
     show_featured: bool = True

@@ -37,6 +37,19 @@ const config: Config = {
           700: "#1e40af",
           800: "#1e3a8a",
         },
+        // Catalogo publico: los colores de cada tienda, como variables CSS
+        // (ver storefrontTheme en features/storefront/settings.ts).
+        sf: {
+          primary: "var(--sf-primary)",
+          onPrimary: "var(--sf-on-primary)",
+          sticker: "var(--sf-sticker)",
+          onSticker: "var(--sf-on-sticker)",
+          stickerOnDark: "var(--sf-sticker-on-dark)",
+          ink: "var(--sf-ink)",
+          paper: "#F5F3EE",
+          muted: "#55554F",
+          line: "#8A8A86",
+        },
         mkt: {
           paper: "#F5F3EE",
           ink: "#111111",

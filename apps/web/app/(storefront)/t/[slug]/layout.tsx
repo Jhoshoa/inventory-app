@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getPublicStorefront } from "@/features/storefront/api";
-import { BRAND } from "@/lib/brand";
 import { StorefrontBoletaProvider } from "@/features/storefront/boleta";
-import { StorefrontBoleta } from "@/features/storefront/components/StorefrontBoleta";
-import { StorefrontAnnouncement } from "@/features/storefront/components/StorefrontAnnouncement";
-import { StorefrontFloatingContact } from "@/features/storefront/components/StorefrontFloatingContact";
-import { StorefrontHeader } from "@/features/storefront/components/StorefrontHeader";
+import { storefrontTheme, themeStyle } from "@/features/storefront/settings";
+import { BoletaBar } from "@/features/storefront/templates/BoletaDock";
+import { boletaStoreOf } from "@/features/storefront/templates/catalogData";
+import { MadeWithPill } from "@/features/storefront/templates/shared";
+import { publicFontVariables } from "@/lib/fonts";
 
 export async function generateMetadata({
   params,
@@ -59,34 +59,46 @@ export default async function StorefrontLayout({
     address: store.settings.show_contact && store.settings.address ? store.settings.address : undefined,
   };
   const announcement = store.settings.announcement_enabled ? store.settings.announcement_text : null;
+  const theme = storefrontTheme(store);
+  const isList = theme.template === "lista";
 
   return (
     <StorefrontBoletaProvider slug={slug}>
-    {/* Con la barra de la boleta abierta, el pie deja lugar para que no la tape. */}
-    <div className="flex min-h-screen flex-col bg-app-background [[data-boleta]_&]:pb-20">
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-      {announcement ? <StorefrontAnnouncement text={announcement} color={store.color_primary} /> : null}
-      <StorefrontHeader store={store} />
-      <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-6">{children}</main>
-      <footer className="border-t border-app-border py-4 text-center text-xs text-text-disabled">
-        {/* La marca de la plataforma, no APP_NAME: esa variable es el nombre interno de la API. */}
-        Catalogo creado con{" "}
-        <a href={BRAND.siteUrl} className="font-medium text-text-muted hover:text-text-strong">
-          {BRAND.name}
-        </a>
-      </footer>
-      {store.whatsapp ? <StorefrontFloatingContact whatsapp={store.whatsapp} storeName={store.name} /> : null}
-      <StorefrontBoleta
-        slug={slug}
-        storeName={store.name}
-        storeWhatsapp={store.whatsapp}
-        paymentQrUrl={store.payment_qr_url}
-        paymentInstructions={store.payment_instructions}
-        pickupEnabled={store.settings.pickup_enabled}
-        deliveryEnabled={store.settings.delivery_enabled}
-        colorPrimary={store.color_primary}
-      />
-    </div>
+      <div
+        className={`${publicFontVariables} flex min-h-screen flex-col overflow-x-clip font-archivo text-sf-ink ${
+          isList ? "bg-sf-primary" : "bg-sf-paper"
+        }`}
+        style={themeStyle(theme)}
+      >
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+        {announcement ? (
+          <div
+            role="note"
+            className="border-b-2 border-sf-ink bg-sf-sticker px-4 py-2.5 text-center font-receipt text-[11px] font-bold uppercase tracking-[0.06em] text-sf-onSticker sm:text-[13px]"
+          >
+            <p className="mx-auto max-w-5xl break-words">★ {announcement} ★</p>
+          </div>
+        ) : null}
+        <main className="flex-1">{children}</main>
+        <footer
+          className={`mx-auto flex w-full max-w-[1240px] flex-wrap items-center gap-4 px-4 py-8 text-sm sm:px-6 ${
+            isList ? "justify-center text-sf-onPrimary" : "justify-between text-sf-muted"
+          }`}
+        >
+          {isList ? null : (
+            <span>
+              © {new Date().getFullYear()} {store.name}
+            </span>
+          )}
+          <MadeWithPill />
+        </footer>
+        <BoletaBar
+          store={boletaStoreOf(slug, store)}
+          variant={theme.template}
+          themeVars={themeStyle(theme)}
+          fontClassName={publicFontVariables}
+        />
+      </div>
     </StorefrontBoletaProvider>
   );
 }

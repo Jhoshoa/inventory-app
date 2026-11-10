@@ -192,6 +192,7 @@ function text(formData: FormData, name: string): string | null {
 function storefrontSettingsFromForm(formData: FormData): StorefrontSettings {
   const sort = String(formData.get("settings_default_sort") ?? "name") as StorefrontSort;
   return {
+    template: formData.get("settings_template") === "lista" ? "lista" : "vitrina",
     announcement_enabled: formData.get("settings_announcement_enabled") === "on",
     announcement_text: text(formData, "settings_announcement_text"),
     show_featured: formData.get("settings_show_featured") === "on",

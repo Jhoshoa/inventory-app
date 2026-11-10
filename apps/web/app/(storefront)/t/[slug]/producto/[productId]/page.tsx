@@ -7,9 +7,9 @@ import {
   getPublicStorefrontProduct,
   listPublicStorefrontProducts,
 } from "@/features/storefront/api";
-import { StorefrontImagePlaceholder } from "@/features/storefront/components/StorefrontImagePlaceholder";
-import { StorefrontProductGrid } from "@/features/storefront/components/StorefrontProductGrid";
-import { StorefrontProductBoletaControls } from "@/features/storefront/components/StorefrontAddToBoleta";
+import { CardBoletaButton } from "@/features/storefront/templates/BoletaControls";
+import { PriceSticker, ProductVisual } from "@/features/storefront/templates/shared";
+import { VitrinaCard } from "@/features/storefront/templates/Vitrina";
 import { StorefrontShareButton } from "@/features/storefront/components/StorefrontShareButton";
 import { formatCurrency } from "@/lib/format/currency";
 import { storefrontWhatsappHref } from "@/features/storefront/whatsapp";
@@ -112,65 +112,60 @@ export default async function StorefrontProductPage({
     },
   };
 
+  const isList = store.settings.template === "lista";
+
   return (
-    <div className="space-y-4">
+    <div className={`mx-auto max-w-[1240px] px-4 pb-12 pt-5 sm:px-6 ${isList ? "text-sf-onPrimary" : ""}`}>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 
-      <nav aria-label="Miga de pan" className="flex flex-wrap items-center gap-1 text-sm text-text-muted">
-        <Link href={`/t/${slug}`} className="inline-flex items-center gap-1 hover:text-text-strong">
+      <nav aria-label="Miga de pan" className="flex flex-wrap items-center gap-1.5 font-receipt text-[13px] font-bold">
+        <Link href={`/t/${slug}`} className="inline-flex items-center gap-1.5 hover:opacity-70">
           <ArrowLeft className="h-3.5 w-3.5" aria-hidden="true" />
-          Catalogo
+          {store.name.toUpperCase()}
         </Link>
-        {product.category_id ? (
+        {product.category_id && !isList ? (
           <>
-            <span>/</span>
-            <Link href={`/t/${slug}?category=${product.category_id}`} className="hover:text-text-strong">
-              {product.category}
+            <span aria-hidden="true">/</span>
+            <Link href={`/t/${slug}?category=${product.category_id}`} className="hover:opacity-70">
+              {product.category?.toUpperCase()}
             </Link>
           </>
         ) : null}
-        <span>/</span>
-        <span className="truncate text-text-body">{product.name}</span>
       </nav>
 
-      <div className="grid gap-6 sm:grid-cols-2">
-        <div className="aspect-square w-full overflow-hidden rounded-lg border border-app-border bg-app-surface-muted">
-          {product.photo_url ? (
-            // eslint-disable-next-line @next/next/no-img-element -- imagen remota de producto, sin loader configurado
-            <img src={product.photo_url} alt={product.name} className="h-full w-full object-cover" />
-          ) : (
-            <StorefrontImagePlaceholder colorPrimary={store.color_primary} iconClassName="h-16 w-16" />
-          )}
+      <div className="mt-5 grid gap-6 border-2 border-sf-ink bg-white p-4 text-sf-ink sm:grid-cols-2 sm:gap-10 sm:p-8">
+        <div className="relative">
+          <div className="aspect-square w-full overflow-hidden border-2 border-sf-ink">
+            <ProductVisual product={product} textClassName="text-[96px]" />
+          </div>
+          <PriceSticker
+            price={product.effective_price}
+            className="absolute -bottom-5 right-4 h-24 w-24 rotate-[8deg] text-2xl sm:h-28 sm:w-28"
+          />
         </div>
 
-        <div className="space-y-4">
-          <h1 className="text-2xl font-semibold text-text-strong">{product.name}</h1>
-
+        <div className="flex flex-col gap-4 pt-4 sm:pt-0">
+          {product.category ? (
+            <span className="self-start border-[1.5px] border-[#111111] px-2 py-0.5 font-receipt text-xs font-bold">
+              {product.category}
+            </span>
+          ) : null}
+          <h1 className="font-display text-[clamp(28px,4vw,48px)] uppercase leading-[0.95]">{product.name}</h1>
           <div>
-            <p
-              className="text-3xl font-bold text-text-strong"
-              style={store.color_primary ? { color: store.color_primary } : undefined}
-            >
+            <p className="font-display text-3xl">
               {formatCurrency(product.effective_price)}
-              <span className="ml-1 text-base font-normal text-text-muted">/ {product.unit}</span>
+              <span className="ml-1.5 font-archivo text-base font-normal text-sf-muted">/ {product.unit}</span>
             </p>
             {product.effective_price !== product.price ? (
-              <p className="text-sm text-text-disabled line-through">{formatCurrency(product.price)}</p>
+              <p className="text-sm text-sf-muted line-through">{formatCurrency(product.price)}</p>
             ) : null}
           </div>
-
-          {product.available ? (
-            product.low_stock ? (
-              <p className="text-sm font-medium text-status-warning">Disponible &middot; ultimas unidades</p>
-            ) : (
-              <p className="text-sm font-medium text-status-success">Disponible</p>
-            )
-          ) : (
-            <p className="text-sm font-medium text-status-danger">Agotado</p>
-          )}
-
-          <StorefrontProductBoletaControls product={product} />
-
+          <p className="font-receipt text-[13px] font-bold">
+            {product.available ? (product.low_stock ? "DISPONIBLE · ULTIMAS UNIDADES" : "DISPONIBLE") : "AGOTADO"}
+          </p>
+          <div className="max-w-sm">
+            <CardBoletaButton product={product} />
+          </div>
           <div className="flex flex-wrap gap-2">
             {store.whatsapp ? (
               <a
@@ -180,7 +175,7 @@ export default async function StorefrontProductPage({
                 )}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 rounded-md bg-status-success px-4 py-2 text-sm font-medium text-text-inverse shadow-sm hover:opacity-90"
+                className="inline-flex items-center gap-2 rounded-full border-2 border-sf-ink bg-sf-sticker px-4 py-2.5 text-sm font-bold text-sf-onSticker hover:opacity-90"
               >
                 <MessageCircle className="h-4 w-4" aria-hidden="true" />
                 Consultar por WhatsApp
@@ -195,10 +190,16 @@ export default async function StorefrontProductPage({
       </div>
 
       {relatedItems.length > 0 ? (
-        <div className="space-y-3 pt-4">
-          <h2 className="text-base font-semibold text-text-strong">Tambien te puede interesar</h2>
-          <StorefrontProductGrid slug={slug} products={relatedItems} colorPrimary={store.color_primary} />
-        </div>
+        <section className="mt-10 space-y-4">
+          <h2 className="font-display text-2xl uppercase">Tambien te puede interesar</h2>
+          <ul className="grid grid-cols-2 gap-x-3 gap-y-5 sm:grid-cols-4 sm:gap-x-5">
+            {relatedItems.map((item) => (
+              <li key={item.id}>
+                <VitrinaCard slug={slug} product={item} />
+              </li>
+            ))}
+          </ul>
+        </section>
       ) : null}
     </div>
   );
