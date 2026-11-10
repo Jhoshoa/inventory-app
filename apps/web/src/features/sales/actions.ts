@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { revalidateStorefrontCatalog } from "@/features/storefront/revalidate";
 import { apiRequest } from "@/lib/api/client";
 import { getAuthToken } from "@/lib/auth/session";
 import { validateVoidSale } from "./schemas";
@@ -26,6 +27,7 @@ export async function voidSaleAction(
 
   if (!result.ok) return { ok: false, message: result.error.message, fieldErrors: {} };
 
+  await revalidateStorefrontCatalog();
   revalidatePath("/dashboard/sales");
   revalidatePath(`/dashboard/sales/${saleId}`);
   revalidatePath("/dashboard/products");

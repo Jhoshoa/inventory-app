@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { revalidateStorefrontCatalog } from "@/features/storefront/revalidate";
 import { apiRequest } from "@/lib/api/client";
 import { getAuthToken } from "@/lib/auth/session";
 import { formDataToProductCategoryValues, validateProductCategoryForm } from "./schemas";
@@ -24,6 +25,7 @@ export async function createProductCategoryAction(
   if (!result.ok) return { ok: false, message: result.error.message, fieldErrors: {} };
 
   revalidateCategoryPaths();
+  await revalidateStorefrontCatalog();
   return { ok: true, message: "Categoria creada", category: result.data, fieldErrors: {} };
 }
 
@@ -43,6 +45,7 @@ export async function deactivateProductCategoryAction(
   if (!result.ok) return { ok: false, message: result.error.message, fieldErrors: {} };
 
   revalidateCategoryPaths();
+  await revalidateStorefrontCatalog();
   return { ok: true, message: "Categoria desactivada", category: result.data, fieldErrors: {} };
 }
 

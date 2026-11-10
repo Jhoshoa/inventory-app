@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { revalidateStorefrontCatalog } from "@/features/storefront/revalidate";
 import { redirect } from "next/navigation";
 import { apiRequest } from "@/lib/api/client";
 import { getAuthToken } from "@/lib/auth/session";
@@ -65,6 +66,7 @@ export async function createProductAction(
     }
   }
 
+  await revalidateStorefrontCatalog();
   revalidatePath("/dashboard/products");
   revalidatePath(`/dashboard/products/${result.data.id}`);
   redirect(`/dashboard/products/${result.data.id}${photoUploadFailed ? "?photo_error=1" : ""}`);
@@ -95,6 +97,7 @@ export async function updateProductAction(
     return { ok: false, message: result.error.message, fieldErrors: {}, values };
   }
 
+  await revalidateStorefrontCatalog();
   revalidatePath("/dashboard/products");
   revalidatePath(`/dashboard/products/${productId}`);
   redirect(`/dashboard/products/${productId}`);
@@ -126,6 +129,7 @@ export async function adjustStockAction(
 
   if (!result.ok) return { ok: false, message: result.error.message, fieldErrors: {} };
 
+  await revalidateStorefrontCatalog();
   revalidatePath("/dashboard/products");
   revalidatePath(`/dashboard/products/${productId}`);
   return { ok: true, message: "Stock actualizado", fieldErrors: {} };
@@ -154,6 +158,7 @@ export async function deleteProductAction(
 
   if (!result.ok) return { ok: false, message: result.error.message, fieldErrors: {} };
 
+  await revalidateStorefrontCatalog();
   revalidatePath("/dashboard/products");
   return { ok: true, message: "Producto eliminado", fieldErrors: {} };
 }

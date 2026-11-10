@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { revalidateStorefrontCatalog } from "@/features/storefront/revalidate";
 import { redirect } from "next/navigation";
 import { apiRequest } from "@/lib/api/client";
 import { getAuthToken } from "@/lib/auth/session";
@@ -78,6 +79,7 @@ export async function createSaleAction(
     };
   }
 
+  await revalidateStorefrontCatalog();
   revalidatePath("/dashboard");
   revalidatePath("/dashboard/products");
   revalidatePath("/dashboard/sales");
