@@ -19,6 +19,7 @@ from src.infrastructure.database.models.store_business_day_model import (
     StoreBusinessDayModel,
 )
 from src.infrastructure.database.models.storefront_request_model import (
+    StorefrontRequestItemModel,
     StorefrontRequestModel,
 )
 from src.infrastructure.database.models.store_model import StoreModel
@@ -42,5 +43,6 @@ __all__ = [
     "PkceVerifierModel",
     "LeadModel",
     "BillingAuditLogModel",
+    "StorefrontRequestItemModel",
     "StorefrontRequestModel",
 ]

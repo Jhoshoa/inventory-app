@@ -3,11 +3,15 @@ from uuid import UUID
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.domain.entities.storefront_request import StorefrontRequest
+from src.domain.entities.storefront_request import (
+    StorefrontRequest,
+    StorefrontRequestItem,
+)
 from src.domain.repositories.storefront_request_repository import (
     IStorefrontRequestRepository,
 )
 from src.infrastructure.database.models.storefront_request_model import (
+    StorefrontRequestItemModel,
     StorefrontRequestModel,
 )
 
@@ -28,8 +32,23 @@ class StorefrontRequestRepository(IStorefrontRequestRepository):
             status=request.status,
             payment_confirmed=request.payment_confirmed,
             created_at=request.created_at,
+            total=request.total,
+            delivery_method=request.delivery_method,
         )
         self._session.add(model)
+        await self._session.flush()
+        for position, item in enumerate(request.items):
+            self._session.add(
+                StorefrontRequestItemModel(
+                    request_id=request.id,
+                    position=position,
+                    product_id=item.product_id,
+                    product_name=item.product_name,
+                    unit=item.unit,
+                    quantity=item.quantity,
+                    unit_price=item.unit_price,
+                )
+            )
         await self._session.flush()
         return request
 
@@ -41,7 +60,7 @@ class StorefrontRequestRepository(IStorefrontRequestRepository):
             )
         )
         model = result.scalar_one_or_none()
-        return self._to_entity(model) if model else None
+        return (await self._with_items([model]))[0] if model else None
 
     async def list_by_store(
         self, store_id: UUID, *, limit: int = 50, offset: int = 0
@@ -60,8 +79,7 @@ class StorefrontRequestRepository(IStorefrontRequestRepository):
             .limit(limit)
             .offset(offset)
         )
-        items = [self._to_entity(model) for model in result.scalars().all()]
-        return items, total
+        return await self._with_items(list(result.scalars().all())), total
 
     async def count_pending(self, store_id: UUID) -> int:
         result = await self._session.execute(
@@ -86,7 +104,7 @@ class StorefrontRequestRepository(IStorefrontRequestRepository):
             return None
         model.status = status
         await self._session.flush()
-        return self._to_entity(model)
+        return (await self._with_items([model]))[0]
 
     async def update_payment_confirmed(
         self, store_id: UUID, request_id: UUID, payment_confirmed: bool
@@ -102,9 +120,33 @@ class StorefrontRequestRepository(IStorefrontRequestRepository):
             return None
         model.payment_confirmed = payment_confirmed
         await self._session.flush()
-        return self._to_entity(model)
+        return (await self._with_items([model]))[0]
 
-    def _to_entity(self, model: StorefrontRequestModel) -> StorefrontRequest:
+    async def _with_items(self, models: list[StorefrontRequestModel]) -> list[StorefrontRequest]:
+        """Entidades con sus lineas, cargadas en una sola consulta para toda la pagina."""
+        if not models:
+            return []
+        result = await self._session.execute(
+            select(StorefrontRequestItemModel)
+            .where(StorefrontRequestItemModel.request_id.in_([m.id for m in models]))
+            .order_by(StorefrontRequestItemModel.position.asc())
+        )
+        items_by_request: dict[UUID, list[StorefrontRequestItem]] = {}
+        for item in result.scalars().all():
+            items_by_request.setdefault(item.request_id, []).append(
+                StorefrontRequestItem(
+                    product_id=item.product_id,
+                    product_name=item.product_name,
+                    unit=item.unit,
+                    quantity=item.quantity,
+                    unit_price=item.unit_price,
+                )
+            )
+        return [self._to_entity(m, items_by_request.get(m.id, [])) for m in models]
+
+    def _to_entity(
+        self, model: StorefrontRequestModel, items: list[StorefrontRequestItem] | None = None
+    ) -> StorefrontRequest:
         return StorefrontRequest(
             id=model.id,
             store_id=model.store_id,
@@ -116,4 +158,7 @@ class StorefrontRequestRepository(IStorefrontRequestRepository):
             status=model.status,
             payment_confirmed=model.payment_confirmed,
             created_at=model.created_at,
+            items=items or [],
+            total=model.total,
+            delivery_method=model.delivery_method,
         )

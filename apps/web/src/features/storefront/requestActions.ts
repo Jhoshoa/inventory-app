@@ -2,15 +2,23 @@
 
 import { apiRequest } from "@/lib/api/client";
 import { validateStorefrontRequestForm } from "./requestSchemas";
-import { INITIAL_STOREFRONT_REQUEST_STATE } from "./requestTypes";
-import type { StorefrontRequestFormValues, StorefrontRequestState } from "./requestTypes";
+import type {
+  StorefrontOrder,
+  StorefrontOrderLineInput,
+  StorefrontOrderState,
+  StorefrontRequestFormValues,
+} from "./requestTypes";
 
-export async function createStorefrontRequestAction(
+function failure(message: string, extra: Partial<{ fieldErrors: Record<string, string>; unavailableProductIds: string[] }> = {}): StorefrontOrderState {
+  return { ok: false, message, fieldErrors: extra.fieldErrors ?? {}, unavailableProductIds: extra.unavailableProductIds ?? [] };
+}
+
+/** Envia la boleta: solo ids y cantidades, los precios los pone el backend. */
+export async function createStorefrontOrderAction(
   slug: string,
-  productId: string,
-  _previousState: StorefrontRequestState,
+  items: StorefrontOrderLineInput[],
   formData: FormData,
-): Promise<StorefrontRequestState> {
+): Promise<StorefrontOrderState> {
   const values: StorefrontRequestFormValues = {
     customerName: String(formData.get("customer_name") ?? "").trim(),
     customerPhone: String(formData.get("customer_phone") ?? "").trim(),
@@ -19,49 +27,36 @@ export async function createStorefrontRequestAction(
   };
 
   const fieldErrors = validateStorefrontRequestForm(values);
+  if (items.length === 0) fieldErrors.items = "Tu boleta esta vacia";
   if (Object.keys(fieldErrors).length > 0) {
-    return { ok: false, message: "Corrige los errores del formulario", fieldErrors };
+    return failure("Corrige los errores del formulario", { fieldErrors });
   }
 
-  const result = await apiRequest(
-    `/public/storefront/${encodeURIComponent(slug)}/products/${encodeURIComponent(productId)}/requests`,
-    {
-      method: "POST",
-      body: {
-        customer_name: values.customerName,
-        customer_phone: values.customerPhone,
-        note: requestNote(values) || undefined,
-      },
+  const result = await apiRequest<StorefrontOrder>(`/public/storefront/${encodeURIComponent(slug)}/orders`, {
+    method: "POST",
+    body: {
+      customer_name: values.customerName,
+      customer_phone: values.customerPhone,
+      note: values.note || undefined,
+      delivery_method: values.delivery || undefined,
+      items: items.map((item) => ({ product_id: item.product_id, quantity: item.quantity })),
     },
-  );
+  });
 
   if (!result.ok) {
     if (result.error.status === 429) {
-      return {
-        ok: false,
-        message: "Enviaste varias solicitudes seguidas. Espera unos minutos e intenta de nuevo.",
-        fieldErrors: {},
-      };
+      return failure("Enviaste varios pedidos seguidos. Espera unos minutos e intenta de nuevo.");
     }
-    return {
-      ok: false,
-      message: result.error.message || "No se pudo enviar tu solicitud. Intenta nuevamente.",
-      fieldErrors: {},
-    };
+    const details = result.error.details as { unavailable_product_ids?: unknown } | null;
+    if (result.error.status === 409 && Array.isArray(details?.unavailable_product_ids)) {
+      return failure(result.error.message, { unavailableProductIds: details.unavailable_product_ids.map(String) });
+    }
+    return failure(result.error.message || "No se pudo enviar tu pedido. Intenta nuevamente.");
   }
 
-  return { ...INITIAL_STOREFRONT_REQUEST_STATE, ok: true, message: "Listo, la tienda te va a contactar pronto." };
+  return { ok: true, message: "Listo, la tienda recibio tu pedido.", order: result.data };
 }
 
 function parseDelivery(value: FormDataEntryValue | null): StorefrontRequestFormValues["delivery"] {
   return value === "pickup" || value === "delivery" ? value : "";
-}
-
-const DELIVERY_LABELS = { pickup: "Recojo en tienda", delivery: "Envio a domicilio" } as const;
-
-/** La forma de entrega viaja en la nota: la tienda la ve en Pedidos sin otro campo. */
-function requestNote(values: StorefrontRequestFormValues): string {
-  if (!values.delivery) return values.note;
-  const delivery = `Entrega: ${DELIVERY_LABELS[values.delivery]}`;
-  return values.note ? `${delivery}\n${values.note}` : delivery;
 }

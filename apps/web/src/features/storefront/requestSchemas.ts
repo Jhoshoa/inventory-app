@@ -21,9 +21,8 @@ export function validateStorefrontRequestForm(values: StorefrontRequestFormValue
     errors.customerPhone = "Ingresa un telefono valido";
   }
 
-  // La forma de entrega se suma a la nota: el limite de 500 es del total.
-  if (values.note.length > 470) {
-    errors.note = "La nota no puede exceder 470 caracteres";
+  if (values.note.length > 500) {
+    errors.note = "La nota no puede exceder 500 caracteres";
   }
 
   return errors;

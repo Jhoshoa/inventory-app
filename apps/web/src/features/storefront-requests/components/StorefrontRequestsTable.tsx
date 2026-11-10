@@ -14,6 +14,7 @@ import {
   TableHeaderCell,
   TableRow,
 } from "@/components/ui/Table";
+import { formatCurrency } from "@/lib/format/currency";
 import { formatDateTimeShort } from "@/lib/format/datetime";
 import { storefrontWhatsappHref } from "@/features/storefront/whatsapp";
 import { updateStorefrontRequestPaymentAction, updateStorefrontRequestStatusAction } from "../actions";
@@ -24,6 +25,15 @@ const STATUS_LABELS: Record<StorefrontRequestStatus, string> = {
   contacted: "Contactado",
   closed: "Cerrado",
 };
+
+const DELIVERY_LABELS = { pickup: "Recojo en tienda", delivery: "Envio a domicilio" } as const;
+
+function customerMessage(request: StorefrontRequestResponse) {
+  if (request.items.length > 0 && request.total) {
+    return `Hola ${request.customer_name}, te contacto por tu pedido de ${formatCurrency(request.total)} en el catalogo`;
+  }
+  return `Hola ${request.customer_name}, te contacto por tu consulta de "${request.product_name}"`;
+}
 
 const STATUS_VARIANTS: Record<StorefrontRequestStatus, "default" | "success" | "warning"> = {
   pending: "warning",
@@ -68,7 +78,7 @@ export function StorefrontRequestsTable({ requests }: { requests: StorefrontRequ
     <Table wrapperClassName="w-full">
       <thead>
         <tr>
-          <TableHeaderCell>Producto</TableHeaderCell>
+          <TableHeaderCell>Pedido</TableHeaderCell>
           <TableHeaderCell>Cliente</TableHeaderCell>
           <TableHeaderCell>Estado</TableHeaderCell>
           <TableHeaderCell>Pago</TableHeaderCell>
@@ -84,8 +94,31 @@ export function StorefrontRequestsTable({ requests }: { requests: StorefrontRequ
             const rowPending = isPending && pendingId === request.id;
             return (
               <TableRow key={request.id}>
-                <TableCell mobileLabel="Producto">
-                  <p className="truncate text-text-strong">{request.product_name}</p>
+                <TableCell mobileLabel="Pedido">
+                  {request.items.length > 0 ? (
+                    <div className="min-w-0 space-y-0.5">
+                      <ul className="space-y-0.5">
+                        {request.items.map((item, index) => (
+                          <li key={`${item.product_id ?? item.product_name}-${index}`} className="flex gap-2 text-sm">
+                            <span className="min-w-0 flex-1 truncate text-text-strong">
+                              {item.quantity} x {item.product_name}
+                            </span>
+                            <span className="shrink-0 tabular-nums text-text-muted">{formatCurrency(item.line_total)}</span>
+                          </li>
+                        ))}
+                      </ul>
+                      {request.total ? (
+                        <p className="text-sm font-semibold tabular-nums text-text-strong">
+                          Total {formatCurrency(request.total)}
+                        </p>
+                      ) : null}
+                      {request.delivery_method ? (
+                        <p className="text-xs text-text-muted">{DELIVERY_LABELS[request.delivery_method]}</p>
+                      ) : null}
+                    </div>
+                  ) : (
+                    <p className="truncate text-text-strong">{request.product_name}</p>
+                  )}
                 </TableCell>
                 <TableCell mobileLabel="Cliente">
                   <p className="truncate text-text-strong">{request.customer_name}</p>
@@ -110,10 +143,7 @@ export function StorefrontRequestsTable({ requests }: { requests: StorefrontRequ
                 <TableCell align="right">
                   <TableActionGroup>
                     <a
-                      href={storefrontWhatsappHref(
-                        request.customer_phone,
-                        `Hola ${request.customer_name}, te contacto por tu consulta de "${request.product_name}"`,
-                      )}
+                      href={storefrontWhatsappHref(request.customer_phone, customerMessage(request))}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="inline-flex h-10 items-center gap-2 rounded-md bg-status-success px-4 text-sm font-medium text-text-inverse shadow-sm hover:opacity-90"

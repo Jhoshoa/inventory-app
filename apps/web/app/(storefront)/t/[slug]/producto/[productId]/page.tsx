@@ -9,7 +9,7 @@ import {
 } from "@/features/storefront/api";
 import { StorefrontImagePlaceholder } from "@/features/storefront/components/StorefrontImagePlaceholder";
 import { StorefrontProductGrid } from "@/features/storefront/components/StorefrontProductGrid";
-import { StorefrontRequestDialog } from "@/features/storefront/components/StorefrontRequestDialog";
+import { StorefrontProductBoletaControls } from "@/features/storefront/components/StorefrontAddToBoleta";
 import { StorefrontShareButton } from "@/features/storefront/components/StorefrontShareButton";
 import { formatCurrency } from "@/lib/format/currency";
 import { storefrontWhatsappHref } from "@/features/storefront/whatsapp";
@@ -169,17 +169,9 @@ export default async function StorefrontProductPage({
             <p className="text-sm font-medium text-status-danger">Agotado</p>
           )}
 
+          <StorefrontProductBoletaControls product={product} />
+
           <div className="flex flex-wrap gap-2">
-            <StorefrontRequestDialog
-              slug={slug}
-              productId={product.id}
-              productName={product.name}
-              paymentQrUrl={store.payment_qr_url}
-              paymentInstructions={store.payment_instructions}
-              storeWhatsapp={store.whatsapp}
-              pickupEnabled={store.settings.pickup_enabled}
-              deliveryEnabled={store.settings.delivery_enabled}
-            />
             {store.whatsapp ? (
               <a
                 href={storefrontWhatsappHref(

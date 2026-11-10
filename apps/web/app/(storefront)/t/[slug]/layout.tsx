@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getPublicStorefront } from "@/features/storefront/api";
+import { StorefrontBoletaProvider } from "@/features/storefront/boleta";
+import { StorefrontBoleta } from "@/features/storefront/components/StorefrontBoleta";
 import { StorefrontAnnouncement } from "@/features/storefront/components/StorefrontAnnouncement";
 import { StorefrontFloatingContact } from "@/features/storefront/components/StorefrontFloatingContact";
 import { StorefrontHeader } from "@/features/storefront/components/StorefrontHeader";
@@ -58,7 +60,9 @@ export default async function StorefrontLayout({
   const announcement = store.settings.announcement_enabled ? store.settings.announcement_text : null;
 
   return (
-    <div className="flex min-h-screen flex-col bg-app-background">
+    <StorefrontBoletaProvider slug={slug}>
+    {/* Con la barra de la boleta abierta, el pie deja lugar para que no la tape. */}
+    <div className="flex min-h-screen flex-col bg-app-background [[data-boleta]_&]:pb-20">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       {announcement ? <StorefrontAnnouncement text={announcement} color={store.color_primary} /> : null}
       <StorefrontHeader store={store} />
@@ -67,6 +71,17 @@ export default async function StorefrontLayout({
         Catalogo generado con {process.env.NEXT_PUBLIC_APP_NAME || "TiendaStock"}
       </footer>
       {store.whatsapp ? <StorefrontFloatingContact whatsapp={store.whatsapp} storeName={store.name} /> : null}
+      <StorefrontBoleta
+        slug={slug}
+        storeName={store.name}
+        storeWhatsapp={store.whatsapp}
+        paymentQrUrl={store.payment_qr_url}
+        paymentInstructions={store.payment_instructions}
+        pickupEnabled={store.settings.pickup_enabled}
+        deliveryEnabled={store.settings.delivery_enabled}
+        colorPrimary={store.color_primary}
+      />
     </div>
+    </StorefrontBoletaProvider>
   );
 }

@@ -11,7 +11,9 @@ from src.application.dto.storefront_dto import (
     PublicStorefrontProductListDTO,
 )
 from src.application.dto.storefront_request_dto import (
+    CreateStorefrontOrderDTO,
     CreateStorefrontRequestDTO,
+    StorefrontOrderResponseDTO,
     StorefrontRequestResponseDTO,
 )
 from src.application.dto.storefront_settings_dto import storefront_settings_of
@@ -28,8 +30,11 @@ from src.application.use_cases.storefront.list_public_products import (
     ListPublicProductsUseCase,
 )
 from src.application.use_cases.storefront_requests.create_storefront_request import (
+    CreateStorefrontOrderInput,
+    CreateStorefrontOrderUseCase,
     CreateStorefrontRequestInput,
     CreateStorefrontRequestUseCase,
+    StorefrontOrderLineInput,
 )
 from src.infrastructure.database.repositories.product_category_repository import (
     ProductCategoryRepository,
@@ -222,3 +227,31 @@ async def create_storefront_request(
         raise HTTPException(status_code=404, detail=str(e)) from e
 
     return result
+
+
+@router.post("/{slug}/orders", response_model=StorefrontOrderResponseDTO, status_code=201)
+async def create_storefront_order(
+    slug: str,
+    dto: CreateStorefrontOrderDTO,
+    request: Request,
+    store_repo: StoreRepository = Depends(get_store_repo),
+    product_repo: ProductRepository = Depends(get_product_repo),
+    request_repo: StorefrontRequestRepository = Depends(get_storefront_request_repo),
+):
+    _check_rate_limit(request, slug)
+    if not storefront_request_rate_limiter.is_allowed(_client_ip(request)):
+        raise HTTPException(status_code=429, detail="Demasiadas solicitudes. Intenta nuevamente en unos minutos.")
+
+    try:
+        return await CreateStorefrontOrderUseCase(store_repo, product_repo, request_repo).execute(
+            CreateStorefrontOrderInput(
+                slug=slug,
+                items=[StorefrontOrderLineInput(product_id=i.product_id, quantity=i.quantity) for i in dto.items],
+                customer_name=dto.customer_name,
+                customer_phone=dto.customer_phone,
+                note=dto.note,
+                delivery_method=dto.delivery_method,
+            )
+        )
+    except NotFoundError as e:
+        raise HTTPException(status_code=404, detail=str(e)) from e

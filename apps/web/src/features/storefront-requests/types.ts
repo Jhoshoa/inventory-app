@@ -2,6 +2,15 @@ import type { ApiResult } from "@/lib/api/client";
 
 export type StorefrontRequestStatus = "pending" | "contacted" | "closed";
 
+export interface StorefrontRequestItem {
+  product_id: string | null;
+  product_name: string;
+  unit: string;
+  quantity: number;
+  unit_price: string;
+  line_total: string;
+}
+
 export interface StorefrontRequestResponse {
   id: string;
   product_id: string | null;
@@ -12,6 +21,10 @@ export interface StorefrontRequestResponse {
   status: StorefrontRequestStatus;
   payment_confirmed: boolean;
   created_at: string;
+  /** Boleta con varios productos. Vacio en solicitudes viejas de un producto. */
+  items: StorefrontRequestItem[];
+  total: string | null;
+  delivery_method: "pickup" | "delivery" | null;
 }
 
 export interface StorefrontRequestListResponse {

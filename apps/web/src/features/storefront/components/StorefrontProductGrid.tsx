@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { formatCurrency } from "@/lib/format/currency";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { StorefrontAddToBoletaButton } from "./StorefrontAddToBoleta";
 import { StorefrontImagePlaceholder } from "./StorefrontImagePlaceholder";
 import type { PublicStorefrontProduct } from "../types";
 
@@ -32,11 +33,12 @@ export function StorefrontProductGrid({
           : 0;
 
         return (
-          <Link
+          // El boton "Agregar" queda fuera del link: un boton dentro de <a> no es valido.
+          <div
             key={product.id}
-            href={`/t/${slug}/producto/${product.id}`}
-            className="group relative overflow-hidden rounded-lg border border-app-border bg-app-surface shadow-panel transition-shadow hover:shadow-floating"
+            className="group relative flex flex-col overflow-hidden rounded-lg border border-app-border bg-app-surface shadow-panel transition-shadow hover:shadow-floating"
           >
+          <Link href={`/t/${slug}/producto/${product.id}`} className="flex-1">
             {onSale ? (
               <span
                 className="absolute left-2 top-2 z-10 rounded-full bg-status-danger px-2 py-0.5 text-xs font-semibold text-text-inverse"
@@ -85,6 +87,10 @@ export function StorefrontProductGrid({
               </p>
             </div>
           </Link>
+          <div className="px-3 pb-3">
+            <StorefrontAddToBoletaButton product={product} />
+          </div>
+          </div>
         );
       })}
     </div>

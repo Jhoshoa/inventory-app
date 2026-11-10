@@ -6,12 +6,35 @@ export interface StorefrontRequestFormValues {
   delivery: "pickup" | "delivery" | "";
 }
 
-export type StorefrontRequestState =
-  | { ok: true; message: string; fieldErrors: Record<string, string> }
-  | { ok: false; message: string; fieldErrors: Record<string, string> };
+export interface StorefrontOrderLineInput {
+  product_id: string;
+  quantity: number;
+}
 
-export const INITIAL_STOREFRONT_REQUEST_STATE: StorefrontRequestState = {
-  ok: false,
-  message: "",
-  fieldErrors: {},
-};
+export interface StorefrontOrderItem {
+  product_id: string | null;
+  product_name: string;
+  unit: string;
+  quantity: number;
+  unit_price: string;
+  line_total: string;
+}
+
+/** Respuesta del backend al enviar la boleta: precios y total reales. */
+export interface StorefrontOrder {
+  id: string;
+  items: StorefrontOrderItem[];
+  total: string;
+  delivery_method: "pickup" | "delivery" | null;
+  created_at: string;
+}
+
+export type StorefrontOrderState =
+  | { ok: true; message: string; order: StorefrontOrder }
+  | {
+      ok: false;
+      message: string;
+      fieldErrors: Record<string, string>;
+      /** Productos que ya no se pueden pedir (agotados o retirados). */
+      unavailableProductIds: string[];
+    };

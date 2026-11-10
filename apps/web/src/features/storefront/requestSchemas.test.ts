@@ -28,8 +28,8 @@ describe("validateStorefrontRequestForm", () => {
     expect(errors.customerPhone).toBeTruthy();
   });
 
-  it("rejects a note over 470 characters (the delivery line takes the rest)", () => {
-    const errors = validateStorefrontRequestForm({ ...baseValues, note: "a".repeat(471) });
+  it("rejects a note over 500 characters", () => {
+    const errors = validateStorefrontRequestForm({ ...baseValues, note: "a".repeat(501) });
     expect(errors.note).toBeTruthy();
   });
 });
