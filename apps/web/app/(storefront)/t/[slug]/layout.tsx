@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getPublicStorefront } from "@/features/storefront/api";
+import { BRAND } from "@/lib/brand";
 import { StorefrontBoletaProvider } from "@/features/storefront/boleta";
 import { StorefrontBoleta } from "@/features/storefront/components/StorefrontBoleta";
 import { StorefrontAnnouncement } from "@/features/storefront/components/StorefrontAnnouncement";
@@ -68,7 +69,11 @@ export default async function StorefrontLayout({
       <StorefrontHeader store={store} />
       <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-6">{children}</main>
       <footer className="border-t border-app-border py-4 text-center text-xs text-text-disabled">
-        Catalogo generado con {process.env.NEXT_PUBLIC_APP_NAME || "TiendaStock"}
+        {/* La marca de la plataforma, no APP_NAME: esa variable es el nombre interno de la API. */}
+        Catalogo creado con{" "}
+        <a href={BRAND.siteUrl} className="font-medium text-text-muted hover:text-text-strong">
+          {BRAND.name}
+        </a>
       </footer>
       {store.whatsapp ? <StorefrontFloatingContact whatsapp={store.whatsapp} storeName={store.name} /> : null}
       <StorefrontBoleta
