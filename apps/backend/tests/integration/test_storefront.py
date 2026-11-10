@@ -244,11 +244,13 @@ async def test_public_products_expose_low_stock_hint_without_exact_count(client)
 async def test_public_storefront_rate_limited_per_ip(client):
     await _enable_storefront(client)
     storefront_ip_rate_limiter.reset()
+    # Un visitante que llega por el proxy (con su IP en X-Forwarded-For).
+    visitor = {"x-forwarded-for": "200.87.1.2"}
     for _ in range(60):
-        ok = await client.get("/api/v1/public/storefront/ferreteria-lopez")
+        ok = await client.get("/api/v1/public/storefront/ferreteria-lopez", headers=visitor)
         assert ok.status_code == 200
 
-    limited = await client.get("/api/v1/public/storefront/ferreteria-lopez")
+    limited = await client.get("/api/v1/public/storefront/ferreteria-lopez", headers=visitor)
     assert limited.status_code == 429
 
 
@@ -295,3 +297,25 @@ async def test_public_storefront_omits_non_cloudinary_images(client, db_session)
 
     assert response.status_code == 200
     assert response.json()["logo_url"] is None
+
+
+async def test_internal_calls_from_the_web_server_skip_the_per_ip_limit(client):
+    from httpx import ASGITransport, AsyncClient
+
+    from src.main import app
+
+    await _enable_storefront(client)
+    storefront_ip_rate_limiter.reset()
+    # Mismo cliente pero desde una IP privada sin X-Forwarded-For: el servidor web.
+    transport = ASGITransport(app=app, client=("172.18.0.5", 41000))
+    async with AsyncClient(transport=transport, base_url="http://test") as web_server:
+        for _ in range(61):
+            response = await web_server.get("/api/v1/public/storefront/ferreteria-lopez")
+            assert response.status_code == 200
+        # Lo que llega por el proxy (con X-Forwarded-For) sigue limitado por IP.
+        for _ in range(60):
+            await web_server.get("/api/v1/public/storefront/ferreteria-lopez", headers={"x-forwarded-for": "200.87.1.2"})
+        limited = await web_server.get(
+            "/api/v1/public/storefront/ferreteria-lopez", headers={"x-forwarded-for": "200.87.1.2"}
+        )
+    assert limited.status_code == 429

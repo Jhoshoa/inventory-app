@@ -1,3 +1,4 @@
+import ipaddress
 from typing import Literal
 from uuid import UUID
 
@@ -72,8 +73,26 @@ def _client_ip(request: Request) -> str:
     return request.client.host if request.client else "unknown"
 
 
+def _is_internal_call(request: Request) -> bool:
+    """El servidor web pidiendo por la red interna, no un visitante.
+
+    Las paginas del catalogo se arman en el servidor de Next, que llama a la
+    API sin X-Forwarded-For (sus fetch se cachean por URL, no pueden llevar la
+    IP de cada visitante). Limitar esas llamadas por IP sumaba a todos los
+    visitantes de todas las tiendas en un solo cupo. Lo que llega de internet
+    pasa por el proxy, que agrega X-Forwarded-For, y sigue limitado por IP.
+    """
+    if request.headers.get("x-forwarded-for") or request.client is None:
+        return False
+    try:
+        address = ipaddress.ip_address(request.client.host)
+    except ValueError:
+        return False
+    return address.is_private or address.is_loopback
+
+
 def _check_rate_limit(request: Request, slug: str) -> None:
-    if not storefront_ip_rate_limiter.is_allowed(_client_ip(request)):
+    if not _is_internal_call(request) and not storefront_ip_rate_limiter.is_allowed(_client_ip(request)):
         raise HTTPException(status_code=429, detail="Demasiadas solicitudes. Intenta nuevamente en unos minutos.")
     if not storefront_slug_rate_limiter.is_allowed(slug):
         raise HTTPException(status_code=429, detail="Este catalogo esta recibiendo mucho trafico. Intenta nuevamente en unos minutos.")
