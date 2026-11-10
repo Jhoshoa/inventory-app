@@ -16,12 +16,19 @@ function useKeepBoletaPriceCurrent(product: PublicStorefrontProduct, inBoleta: b
   }, [inBoleta, product, refresh]);
 }
 
-export function CardBoletaButton({ product }: { product: PublicStorefrontProduct }) {
+export function CardBoletaButton({
+  product,
+  size = "card",
+}: {
+  product: PublicStorefrontProduct;
+  /** "large": pagina del producto, comodo de tocar tambien en el celular. */
+  size?: "card" | "large";
+}) {
   const { add, decrement, quantityOf } = useBoleta();
   const quantity = quantityOf(product.id);
   useKeepBoletaPriceCurrent(product, quantity > 0);
   // En el celular las tarjetas van de a dos: boton compacto, como en el diseno.
-  const height = "h-9 text-xs sm:h-11 sm:text-sm";
+  const height = size === "large" ? "h-12 text-sm" : "h-9 text-xs sm:h-11 sm:text-sm";
 
   if (!product.available) {
     return (
@@ -42,7 +49,7 @@ export function CardBoletaButton({ product }: { product: PublicStorefrontProduct
         aria-label={`Agregar ${product.name} a la boleta`}
         className={`w-full border-2 border-sf-ink bg-sf-ink font-bold text-white hover:opacity-90 ${height}`}
       >
-        + Agregar<span className="hidden sm:inline"> a la boleta</span>
+        + Agregar<span className={size === "large" ? "" : "hidden sm:inline"}> a la boleta</span>
       </button>
     );
   }
@@ -58,7 +65,7 @@ export function CardBoletaButton({ product }: { product: PublicStorefrontProduct
       </button>
       <span className="whitespace-nowrap font-receipt font-bold">
         {quantity}
-        <span className="hidden min-[400px]:inline sm:inline"> en boleta</span>
+        <span className={size === "large" ? "" : "hidden min-[400px]:inline sm:inline"}> en boleta</span>
       </span>
       <button
         type="button"

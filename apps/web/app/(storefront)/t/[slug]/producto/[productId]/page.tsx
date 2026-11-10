@@ -135,32 +135,35 @@ export default async function StorefrontProductPage({
         ) : null}
       </nav>
 
-      <div className="mt-5 grid gap-6 border-2 border-sf-ink bg-white p-4 text-sf-ink sm:grid-cols-2 sm:gap-10 sm:p-8">
-        <div className="relative">
-          <div className="aspect-square w-full overflow-hidden border-2 border-sf-ink">
-            <ProductVisual product={product} textClassName="text-[96px]" />
+      {/* En el celular la imagen no pasa de ~38% de la pantalla: nombre, precio y
+          "Agregar" se ven sin bajar. Desde 768px, imagen cuadrada al lado (entre 640 y 768 la columna de
+          la derecha quedaba muy angosta para los botones). */}
+      <div className="mt-3 grid grid-cols-[minmax(0,1fr)] gap-4 border-2 border-sf-ink bg-white p-3 text-sf-ink md:mt-5 md:grid-cols-2 md:gap-10 md:p-8">
+        <div className="relative min-w-0">
+          <div className="aspect-[4/3] max-h-[38vh] w-full overflow-hidden border-2 border-sf-ink md:aspect-square md:max-h-none">
+            <ProductVisual product={product} fit="contain" textClassName="text-[72px] md:text-[96px]" />
           </div>
           <PriceSticker
             price={product.effective_price}
-            className="absolute -bottom-5 right-4 h-24 w-24 rotate-[8deg] text-2xl sm:h-28 sm:w-28"
+            className="absolute -bottom-3 right-3 h-16 w-16 rotate-[8deg] text-base md:-bottom-5 md:right-4 md:h-28 md:w-28 md:text-2xl"
           />
         </div>
 
-        <div className="flex flex-col gap-4 pt-4 sm:pt-0">
+        <div className="flex min-w-0 flex-col gap-3 md:gap-4">
           <div className="flex flex-wrap items-center gap-2">
             {percent ? <DiscountTag percent={percent} className="border-[1.5px] border-[#111111] px-2 text-xs" /> : null}
             {product.category ? (
               <span className="border-[1.5px] border-[#111111] px-2 py-0.5 font-receipt text-xs font-bold">{product.category}</span>
             ) : null}
           </div>
-          <h1 className="font-display text-[clamp(28px,4vw,48px)] uppercase leading-[0.95]">{product.name}</h1>
+          <h1 className="font-display text-[clamp(22px,4vw,48px)] uppercase leading-[0.95]">{product.name}</h1>
           <div>
-            <p className="font-display text-3xl">
+            <p className="font-display text-2xl md:text-3xl">
               {formatCurrency(product.effective_price)}
               <span className="ml-1.5 font-archivo text-base font-normal text-sf-muted">/ {product.unit}</span>
             </p>
             {percent ? (
-              <p className="mt-1 text-base text-sf-ink">
+              <p className="mt-1 text-sm text-sf-ink md:text-base">
                 Antes <span className="line-through decoration-[#FF4A1C] decoration-2">{formatCurrency(product.price)}</span>
                 <span className="ml-2 font-semibold">
                   Ahorras {formatCurrency(Number(product.price) - Number(product.effective_price))}
@@ -172,8 +175,8 @@ export default async function StorefrontProductPage({
           <p className="font-receipt text-[13px] font-bold">
             {product.available ? (product.low_stock ? "DISPONIBLE · ULTIMAS UNIDADES" : "DISPONIBLE") : "AGOTADO"}
           </p>
-          <div className="max-w-sm">
-            <CardBoletaButton product={product} />
+          <div className="md:max-w-sm">
+            <CardBoletaButton product={product} size="large" />
           </div>
           <div className="flex flex-wrap gap-2">
             {store.whatsapp ? (
@@ -184,10 +187,13 @@ export default async function StorefrontProductPage({
                 )}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 rounded-full border-2 border-sf-ink bg-sf-sticker px-4 py-2.5 text-sm font-bold text-sf-onSticker hover:opacity-90"
+                className="inline-flex min-w-[9rem] flex-1 items-center justify-center gap-2 rounded-full border-2 border-sf-ink bg-sf-sticker px-4 py-2.5 text-sm font-bold text-sf-onSticker hover:opacity-90 lg:flex-none"
               >
-                <MessageCircle className="h-4 w-4" aria-hidden="true" />
-                Consultar por WhatsApp
+                <MessageCircle className="h-4 w-4 shrink-0" aria-hidden="true" />
+                <span className="truncate">
+                  {/* El texto largo solo donde la columna es ancha: una columna desde 400px, o dos desde 1024px. */}
+                  <span className="hidden min-[400px]:inline md:hidden lg:inline">Consultar por </span>WhatsApp
+                </span>
               </a>
             ) : null}
             <StorefrontShareButton
@@ -201,7 +207,7 @@ export default async function StorefrontProductPage({
       {relatedItems.length > 0 ? (
         <section className="mt-10 space-y-4">
           <h2 className="font-display text-2xl uppercase">Tambien te puede interesar</h2>
-          <ul className="grid grid-cols-2 gap-x-3 gap-y-5 sm:grid-cols-4 sm:gap-x-5">
+          <ul className="grid grid-cols-2 gap-x-3 gap-y-5 sm:grid-cols-3 sm:gap-x-5 lg:grid-cols-4">
             {relatedItems.map((item) => (
               <li key={item.id}>
                 <VitrinaCard slug={slug} product={item} />

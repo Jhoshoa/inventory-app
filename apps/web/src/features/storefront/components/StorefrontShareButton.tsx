@@ -31,7 +31,7 @@ export function StorefrontShareButton({ title, text }: { title: string; text: st
     <button
       type="button"
       onClick={handleShare}
-      className="inline-flex items-center gap-2 rounded-full border-2 border-sf-ink bg-white px-4 py-2.5 text-sm font-bold text-sf-ink hover:opacity-80"
+      className="inline-flex shrink-0 items-center gap-2 rounded-full border-2 border-sf-ink bg-white px-4 py-2.5 text-sm font-bold text-sf-ink hover:opacity-80"
     >
       {copied ? <Check className="h-4 w-4" aria-hidden="true" /> : <Share2 className="h-4 w-4" aria-hidden="true" />}
       {copied ? "Copiado" : "Compartir"}

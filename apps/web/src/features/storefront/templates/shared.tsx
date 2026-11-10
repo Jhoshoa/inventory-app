@@ -39,9 +39,12 @@ export function StoreLogo({
 export function ProductVisual({
   product,
   textClassName = "text-[54px]",
+  fit = "cover",
 }: {
   product: Pick<PublicStorefrontProduct, "name" | "photo_url" | "category" | "available">;
   textClassName?: string;
+  /** "contain" en la pagina del producto: se ve la foto entera, sin recortar. */
+  fit?: "cover" | "contain";
 }) {
   if (product.photo_url) {
     return (
@@ -50,7 +53,7 @@ export function ProductVisual({
         src={product.photo_url}
         alt={product.name}
         loading="lazy"
-        className={`h-full w-full object-cover ${product.available ? "" : "opacity-60 grayscale"}`}
+        className={`h-full w-full bg-white ${fit === "contain" ? "object-contain" : "object-cover"} ${product.available ? "" : "opacity-60 grayscale"}`}
       />
     );
   }
