@@ -10,7 +10,7 @@ import { type CatalogPageData, catalogHref, catalogSections } from "./catalogDat
 import { CatalogLink, CatalogNavigationProvider, CatalogResults } from "./CatalogNavigation";
 import { CatalogSearch } from "./CatalogSearch";
 import { CategoryPicker } from "./CategoryPicker";
-import { StoreLogo } from "./shared";
+import { DiscountTag, StoreLogo, discountPercent } from "./shared";
 
 interface ProductGroup {
   id: string;
@@ -181,7 +181,7 @@ export function ListaCatalog(data: CatalogPageData) {
 
 function ListaRow({ slug, product }: { slug: string; product: PublicStorefrontProduct }) {
   const out = !product.available;
-  const onSale = product.effective_price !== product.price;
+  const percent = out ? null : discountPercent(product);
   return (
     <li className="flex items-center gap-2.5 border-b border-[#E2E8F0] py-2">
       <a
@@ -190,13 +190,16 @@ function ListaRow({ slug, product }: { slug: string; product: PublicStorefrontPr
       >
         {product.name}
       </a>
+      {percent ? <DiscountTag percent={percent} /> : null}
       {product.available && product.low_stock ? (
         <span className="shrink-0 bg-sf-ink px-1.5 py-0.5 text-[11px] font-bold text-white">ULTIMAS</span>
       ) : null}
       <span aria-hidden="true" className="min-w-4 flex-1 translate-y-1 border-b-2 border-dotted border-[#94A3B8]" />
       <span className={`shrink-0 text-right font-bold ${out ? "text-[#64748B]" : ""}`}>
         {formatCurrency(product.effective_price)}
-        {onSale ? <span className="block text-[11px] font-normal text-[#64748B] line-through">{formatCurrency(product.price)}</span> : null}
+        {percent ? (
+          <span className="block text-[11px] font-normal text-[#64748B] line-through decoration-[#FF4A1C]">{formatCurrency(product.price)}</span>
+        ) : null}
       </span>
       <RowBoletaButton product={product} />
     </li>

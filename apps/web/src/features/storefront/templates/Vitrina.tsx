@@ -14,7 +14,7 @@ import { CatalogSearch } from "./CatalogSearch";
 import { CategoryMenu } from "./CategoryMenu";
 import { CategoryPicker } from "./CategoryPicker";
 import { boletaStoreOf, type CatalogPageData, catalogHref, catalogSections } from "./catalogData";
-import { DottedRow, PriceSticker, ProductVisual, ReceiptEdge, StoreLogo, WhatsappIcon } from "./shared";
+import { DiscountTag, DottedRow, PriceSticker, ProductVisual, ReceiptEdge, StoreLogo, WhatsappIcon, discountPercent } from "./shared";
 
 const container = "mx-auto max-w-[1240px] px-4 sm:px-6";
 
@@ -121,7 +121,15 @@ function VitrinaHero({
                 {featured.items.slice(0, 6).map((product) => (
                   <li key={product.id}>
                     <Link href={`/t/${slug}/producto/${product.id}`} prefetch={false} className="block hover:opacity-70">
-                      <DottedRow left={<span className="line-clamp-1">{product.name}</span>} right={formatCurrency(product.effective_price)} />
+                      <DottedRow
+                        left={
+                          <span className="flex min-w-0 items-center gap-1.5">
+                            <span className="line-clamp-1">{product.name}</span>
+                            {discountPercent(product) ? <DiscountTag percent={discountPercent(product) ?? 0} /> : null}
+                          </span>
+                        }
+                        right={formatCurrency(product.effective_price)}
+                      />
                     </Link>
                   </li>
                 ))}
@@ -266,7 +274,7 @@ function VitrinaProducts({ data }: { data: CatalogPageData }) {
 
 export function VitrinaCard({ slug, product }: { slug: string; product: PublicStorefrontProduct }) {
   const href = `/t/${slug}/producto/${product.id}`;
-  const onSale = product.effective_price !== product.price;
+  const percent = discountPercent(product);
   return (
     <div className="flex h-full flex-col border-2 border-sf-ink bg-white text-sf-ink">
       {/* Sin precarga: una pagina de productos son 2 links por tarjeta, y cada
@@ -275,7 +283,10 @@ export function VitrinaCard({ slug, product }: { slug: string; product: PublicSt
         <div className="h-full w-full overflow-hidden">
           <ProductVisual product={product} textClassName="text-[34px] sm:text-[54px]" />
         </div>
-        {product.category ? (
+        {/* En oferta, la etiqueta del descuento va donde iba la categoria (y tambien en el celular). */}
+        {percent ? (
+          <DiscountTag percent={percent} className="absolute left-2 top-2 border-[1.5px] border-[#111111] sm:left-2.5 sm:top-2.5" />
+        ) : product.category ? (
           <span className="absolute left-2.5 top-2.5 hidden border-[1.5px] border-[#111111] bg-white px-1.5 py-0.5 font-receipt text-[11px] font-bold text-[#111111] sm:inline">
             {product.category}
           </span>
@@ -296,9 +307,9 @@ export function VitrinaCard({ slug, product }: { slug: string; product: PublicSt
             {product.name}
           </Link>
         </h3>
-        {onSale ? (
-          <p className="-mt-1 text-xs text-sf-muted">
-            Antes <span className="line-through">{formatCurrency(product.price)}</span>
+        {percent ? (
+          <p className="-mt-1 text-xs font-semibold text-sf-ink">
+            Antes <span className="font-normal line-through decoration-[#FF4A1C] decoration-2">{formatCurrency(product.price)}</span>
           </p>
         ) : null}
         <div className="mt-auto">

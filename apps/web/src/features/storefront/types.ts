@@ -27,6 +27,8 @@ export interface PublicStorefrontProduct {
   category_id: string | null;
   discount_type: "percentage" | "fixed" | null;
   discount_value: string;
+  /** Hasta cuando vale el descuento; null = sin vencimiento. */
+  discount_ends_at?: string | null;
   effective_price: string;
 }
 

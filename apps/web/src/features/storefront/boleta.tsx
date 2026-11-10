@@ -31,6 +31,8 @@ interface BoletaContextValue {
   /** Resta uno; en cero lo quita de la boleta. */
   decrement: (productId: string) => void;
   markUnavailable: (productIds: string[]) => void;
+  /** Pone al dia nombre y precio de una linea con el producto que se ve en pantalla. */
+  refresh: (product: PublicStorefrontProduct) => void;
   clear: () => void;
   quantityOf: (productId: string) => number;
 }
@@ -143,6 +145,16 @@ export function StorefrontBoletaProvider({ slug, children }: { slug: string; chi
     setLines((current) => current.map((line) => (ids.has(line.productId) ? { ...line, unavailable: true } : line)));
   }, []);
 
+  const refresh = useCallback((product: PublicStorefrontProduct) => {
+    setLines((current) => {
+      const line = current.find((item) => item.productId === product.id);
+      if (!line || (line.unitPrice === product.effective_price && line.name === product.name)) return current;
+      return current.map((item) =>
+        item.productId === product.id ? { ...item, name: product.name, unitPrice: product.effective_price } : item,
+      );
+    });
+  }, []);
+
   const clear = useCallback(() => setLines([]), []);
 
   const value = useMemo<BoletaContextValue>(() => {
@@ -158,10 +170,11 @@ export function StorefrontBoletaProvider({ slug, children }: { slug: string; chi
       increment,
       decrement,
       markUnavailable,
+      refresh,
       clear,
       quantityOf: (productId) => lines.find((line) => line.productId === productId)?.quantity ?? 0,
     };
-  }, [lines, add, setQuantity, remove, increment, decrement, markUnavailable, clear]);
+  }, [lines, add, setQuantity, remove, increment, decrement, markUnavailable, refresh, clear]);
 
   return <BoletaContext.Provider value={value}>{children}</BoletaContext.Provider>;
 }

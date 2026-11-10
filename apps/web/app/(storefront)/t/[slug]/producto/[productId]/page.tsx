@@ -8,7 +8,7 @@ import {
   listPublicStorefrontProducts,
 } from "@/features/storefront/api";
 import { CardBoletaButton } from "@/features/storefront/templates/BoletaControls";
-import { PriceSticker, ProductVisual } from "@/features/storefront/templates/shared";
+import { DiscountTag, PriceSticker, ProductVisual, discountPercent, offerUntilLabel } from "@/features/storefront/templates/shared";
 import { VitrinaCard } from "@/features/storefront/templates/Vitrina";
 import { StorefrontShareButton } from "@/features/storefront/components/StorefrontShareButton";
 import { formatCurrency } from "@/lib/format/currency";
@@ -113,6 +113,8 @@ export default async function StorefrontProductPage({
   };
 
   const isList = store.settings.template === "lista";
+  const percent = product.available ? discountPercent(product) : null;
+  const offerUntil = percent ? offerUntilLabel(product.discount_ends_at, store.timezone) : null;
 
   return (
     <div className={`mx-auto max-w-[1240px] px-4 pb-12 pt-5 sm:px-6 ${isList ? "text-sf-onPrimary" : ""}`}>
@@ -145,20 +147,27 @@ export default async function StorefrontProductPage({
         </div>
 
         <div className="flex flex-col gap-4 pt-4 sm:pt-0">
-          {product.category ? (
-            <span className="self-start border-[1.5px] border-[#111111] px-2 py-0.5 font-receipt text-xs font-bold">
-              {product.category}
-            </span>
-          ) : null}
+          <div className="flex flex-wrap items-center gap-2">
+            {percent ? <DiscountTag percent={percent} className="border-[1.5px] border-[#111111] px-2 text-xs" /> : null}
+            {product.category ? (
+              <span className="border-[1.5px] border-[#111111] px-2 py-0.5 font-receipt text-xs font-bold">{product.category}</span>
+            ) : null}
+          </div>
           <h1 className="font-display text-[clamp(28px,4vw,48px)] uppercase leading-[0.95]">{product.name}</h1>
           <div>
             <p className="font-display text-3xl">
               {formatCurrency(product.effective_price)}
               <span className="ml-1.5 font-archivo text-base font-normal text-sf-muted">/ {product.unit}</span>
             </p>
-            {product.effective_price !== product.price ? (
-              <p className="text-sm text-sf-muted line-through">{formatCurrency(product.price)}</p>
+            {percent ? (
+              <p className="mt-1 text-base text-sf-ink">
+                Antes <span className="line-through decoration-[#FF4A1C] decoration-2">{formatCurrency(product.price)}</span>
+                <span className="ml-2 font-semibold">
+                  Ahorras {formatCurrency(Number(product.price) - Number(product.effective_price))}
+                </span>
+              </p>
             ) : null}
+            {offerUntil ? <p className="mt-1 font-receipt text-[13px] font-bold uppercase">{offerUntil}</p> : null}
           </div>
           <p className="font-receipt text-[13px] font-bold">
             {product.available ? (product.low_stock ? "DISPONIBLE · ULTIMAS UNIDADES" : "DISPONIBLE") : "AGOTADO"}

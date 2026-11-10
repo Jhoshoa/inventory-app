@@ -112,3 +112,34 @@ export function WhatsappIcon({ className = "h-[18px] w-[18px]" }: { className?: 
     </svg>
   );
 }
+
+/** Cuanto se ahorra en porcentaje (tambien para descuentos de monto fijo). */
+export function discountPercent(product: Pick<PublicStorefrontProduct, "price" | "effective_price" | "discount_type" | "discount_value">): number | null {
+  const price = Number(product.price);
+  const effective = Number(product.effective_price);
+  if (!(price > 0) || !(effective < price)) return null;
+  if (product.discount_type === "percentage") return Math.round(Number(product.discount_value));
+  return Math.max(1, Math.round((1 - effective / price) * 100));
+}
+
+/** Etiqueta "-25%" en el naranja de la marca (el acento de la landing). */
+export function DiscountTag({ percent, className = "" }: { percent: number; className?: string }) {
+  return (
+    <span className={`inline-block shrink-0 bg-[#FF4A1C] px-1.5 py-0.5 font-receipt text-[11px] font-bold leading-tight text-[#111111] ${className}`}>
+      -{percent}%
+    </span>
+  );
+}
+
+/** "Oferta hasta el jue 13/11" en la zona horaria de la tienda. */
+export function offerUntilLabel(endsAt: string | null | undefined, timeZone: string): string | null {
+  if (!endsAt) return null;
+  const date = new Date(endsAt);
+  if (Number.isNaN(date.getTime())) return null;
+  try {
+    const label = new Intl.DateTimeFormat("es-BO", { timeZone, weekday: "short", day: "numeric", month: "numeric" }).format(date);
+    return `Oferta hasta el ${label.replace(",", "")}`;
+  } catch {
+    return null;
+  }
+}

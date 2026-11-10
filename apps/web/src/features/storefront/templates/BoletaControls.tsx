@@ -1,12 +1,25 @@
 "use client";
 
+import { useEffect } from "react";
 import { MAX_LINE_QUANTITY, useBoleta } from "../boleta";
 import type { PublicStorefrontProduct } from "../types";
 
 /** Pie de la tarjeta de Vitrina: agregar, "N en boleta" con +/- o agotado. */
+/**
+ * Si el producto ya esta en la boleta con otro precio (empezo o termino un
+ * descuento desde que se agrego), la boleta toma el precio que se ve ahora.
+ */
+function useKeepBoletaPriceCurrent(product: PublicStorefrontProduct, inBoleta: boolean) {
+  const { refresh } = useBoleta();
+  useEffect(() => {
+    if (inBoleta) refresh(product);
+  }, [inBoleta, product, refresh]);
+}
+
 export function CardBoletaButton({ product }: { product: PublicStorefrontProduct }) {
   const { add, decrement, quantityOf } = useBoleta();
   const quantity = quantityOf(product.id);
+  useKeepBoletaPriceCurrent(product, quantity > 0);
   // En el celular las tarjetas van de a dos: boton compacto, como en el diseno.
   const height = "h-9 text-xs sm:h-11 sm:text-sm";
 
@@ -64,6 +77,7 @@ export function CardBoletaButton({ product }: { product: PublicStorefrontProduct
 export function RowBoletaButton({ product }: { product: PublicStorefrontProduct }) {
   const { add, decrement, quantityOf } = useBoleta();
   const quantity = quantityOf(product.id);
+  useKeepBoletaPriceCurrent(product, quantity > 0);
 
   if (!product.available) {
     return <span className="w-11 shrink-0 text-center text-[11px] font-bold text-[#64748B]">AGOT.</span>;
