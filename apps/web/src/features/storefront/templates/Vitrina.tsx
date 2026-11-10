@@ -173,7 +173,7 @@ function VitrinaProducts({ data }: { data: CatalogPageData }) {
   return (
     <section id="productos" className={`${container} scroll-mt-4 pb-16 pt-4 sm:pb-24 sm:pt-10`}>
       <div className="flex flex-wrap items-center gap-3">
-        <form action={`/t/${slug}`} className="flex min-w-0 flex-[1_1_360px] items-center gap-2.5 rounded-full border-2 border-sf-ink bg-white px-4 sm:px-[18px]">
+        <form action={`/t/${slug}`} className="flex min-w-0 flex-[1_1_360px] items-center gap-2.5 rounded-full border-2 border-sf-ink bg-white px-4 transition-shadow focus-within:shadow-[3px_3px_0_var(--sf-ink)] sm:px-[18px]">
           {category ? <input type="hidden" name="category" value={category} /> : null}
           {sort !== defaultSort ? <input type="hidden" name="sort" value={sort} /> : null}
           <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">

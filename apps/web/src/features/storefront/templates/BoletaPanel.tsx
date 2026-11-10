@@ -27,7 +27,7 @@ export interface SentOrder {
 }
 
 const inputClass =
-  "block w-full border-2 border-[#111111] bg-white px-3 py-2.5 font-archivo text-[15px] text-[#111111] outline-none focus:ring-2 focus:ring-sf-primary disabled:opacity-60";
+  "block w-full border-2 border-[#111111] bg-white px-3 py-2.5 font-archivo text-[15px] text-[#111111] outline-none transition-shadow focus:shadow-[3px_3px_0_#111111] disabled:opacity-60";
 
 /** La boleta como recibo: lineas, total, entrega y datos del cliente. */
 export function BoletaReceipt({

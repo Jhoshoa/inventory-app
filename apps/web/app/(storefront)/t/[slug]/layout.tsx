@@ -65,6 +65,7 @@ export default async function StorefrontLayout({
   return (
     <StorefrontBoletaProvider slug={slug}>
       <div
+        data-storefront
         className={`${publicFontVariables} flex min-h-screen flex-col overflow-x-clip font-archivo text-sf-ink ${
           isList ? "bg-sf-primary" : "bg-sf-paper"
         }`}

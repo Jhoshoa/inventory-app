@@ -54,6 +54,27 @@ body {
   outline-offset: 2px;
 }
 
+/* Catalogo publico: el foco de teclado con la tinta de la tienda, no el azul
+   del panel. Los buscadores y campos marcan el foco en su propio contenedor. */
+[data-storefront] :focus-visible {
+  outline-color: var(--sf-ink);
+}
+[data-storefront] input:focus-visible,
+[data-storefront] textarea:focus-visible {
+  outline: none;
+}
+/* La "x" nativa para borrar la busqueda viene azul en Chrome: en negro. */
+[data-storefront] input[type="search"]::-webkit-search-cancel-button {
+  filter: grayscale(1) brightness(0);
+  cursor: pointer;
+}
+/* Campos compartidos con el panel (telefono de la boleta): anillo en tinta. */
+[data-storefront] input:focus,
+[data-storefront] select:focus {
+  --tw-ring-color: var(--sf-ink);
+  border-color: var(--sf-ink);
+}
+
 .label-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(50mm, 50mm));

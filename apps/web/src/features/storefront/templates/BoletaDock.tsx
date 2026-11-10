@@ -89,7 +89,7 @@ export function BoletaBar({
         size="lg"
         className="h-full w-full max-w-lg overflow-hidden rounded-3xl border-0 bg-transparent"
       >
-        <div style={themeVars} className={`${fontClassName} h-full overflow-y-auto rounded-3xl border-2 border-[#111111] bg-sf-primary font-archivo`}>
+        <div data-storefront style={themeVars} className={`${fontClassName} h-full overflow-y-auto rounded-3xl border-2 border-[#111111] bg-sf-primary font-archivo`}>
         <div className="flex items-center gap-3 px-4 pb-3 pt-5 text-sf-onPrimary">
           <button
             type="button"
