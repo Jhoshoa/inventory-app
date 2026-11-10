@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useCatalogNavigation } from "../templates/CatalogNavigation";
 import { STOREFRONT_SORTS, STOREFRONT_SORT_LABELS, type StorefrontSort } from "../settings";
 
 const OPTIONS = STOREFRONT_SORTS.map((value) => ({ value, label: STOREFRONT_SORT_LABELS[value] }));
@@ -25,6 +26,7 @@ export function StorefrontSortSelect({
   selectClassName?: string;
 }) {
   const router = useRouter();
+  const navigation = useCatalogNavigation();
 
   function handleChange(next: string) {
     const params = new URLSearchParams();
@@ -32,7 +34,10 @@ export function StorefrontSortSelect({
     if (categoryId) params.set("category", categoryId);
     if (next !== defaultSort) params.set("sort", next);
     const qs = params.toString();
-    router.push(`/t/${slug}${qs ? `?${qs}` : ""}`);
+    const href = `/t/${slug}${qs ? `?${qs}` : ""}`;
+    // Dentro del catalogo: sin recargar ni subir al principio.
+    if (navigation) navigation.navigate(href);
+    else router.push(href);
   }
 
   return (

@@ -6,7 +6,9 @@ import { StorefrontSortSelect } from "./StorefrontSortSelect";
 const mocks = vi.hoisted(() => ({ push: vi.fn() }));
 
 vi.mock("next/navigation", () => ({
-  useRouter: () => ({ push: mocks.push }),
+  useRouter: () => ({ push: mocks.push, replace: vi.fn() }),
+  usePathname: () => "/t/mi-tienda",
+  useSearchParams: () => new URLSearchParams(),
 }));
 
 describe("StorefrontSortSelect", () => {
@@ -53,5 +55,22 @@ describe("StorefrontSortSelect", () => {
     await user.selectOptions(screen.getByRole("combobox"), "name");
 
     expect(mocks.push).toHaveBeenCalledWith("/t/mi-tienda?sort=name");
+  });
+});
+
+describe("StorefrontSortSelect inside the catalog", () => {
+  it("changes the order without reloading or scrolling to the top", async () => {
+    const { CatalogNavigationProvider } = await import("../templates/CatalogNavigation");
+    const user = userEvent.setup();
+    mocks.push.mockClear();
+
+    render(
+      <CatalogNavigationProvider>
+        <StorefrontSortSelect slug="mi-tienda" sort="name" />
+      </CatalogNavigationProvider>,
+    );
+    await user.selectOptions(screen.getByRole("combobox"), "price_asc");
+
+    expect(mocks.push).toHaveBeenCalledWith("/t/mi-tienda?sort=price_asc", { scroll: false });
   });
 });

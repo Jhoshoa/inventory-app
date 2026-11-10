@@ -6,6 +6,8 @@ import type { PublicStorefront, PublicStorefrontProduct } from "../types";
 import { storefrontWhatsappHref } from "../whatsapp";
 import { RowBoletaButton } from "./BoletaControls";
 import { type CatalogPageData, catalogHref, catalogSections } from "./catalogData";
+import { CatalogLink, CatalogNavigationProvider, CatalogResults } from "./CatalogNavigation";
+import { CatalogSearch } from "./CatalogSearch";
 import { StoreLogo } from "./shared";
 
 interface ProductGroup {
@@ -50,6 +52,7 @@ export function ListaCatalog(data: CatalogPageData) {
   const subline = [hours?.toUpperCase(), address?.toUpperCase()].filter(Boolean).join(" · ");
 
   return (
+    <CatalogNavigationProvider>
     <div className="pb-6">
       <ListaHeader store={store} showPayment={sections.payment} showContact={sections.contact} />
 
@@ -76,30 +79,23 @@ export function ListaCatalog(data: CatalogPageData) {
           </div>
 
           <div className="mb-5 mt-7 border-t-2 border-dashed border-sf-ink" />
-          <form action={`/t/${slug}`} className="flex items-center gap-2.5 border-2 border-dashed border-sf-ink px-4 transition-shadow focus-within:border-solid focus-within:shadow-[3px_3px_0_var(--sf-ink)]">
-            {sort !== defaultSort ? <input type="hidden" name="sort" value={sort} /> : null}
-            <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
-              <circle cx="11" cy="11" r="7" />
-              <path d="M20 20l-3.5-3.5" />
-            </svg>
-            <label htmlFor="storefront-search" className="sr-only">
-              Buscar en la lista
-            </label>
-            <input
-              id="storefront-search"
-              type="search"
-              name="q"
-              defaultValue={q ?? ""}
-              placeholder="Buscar en la lista…"
-              className="min-w-0 flex-1 bg-transparent py-3.5 font-receipt text-[15px] text-sf-ink outline-none"
-            />
-          </form>
+          <CatalogSearch
+            slug={slug}
+            q={q}
+            sort={sort}
+            defaultSort={defaultSort}
+            placeholder="Buscar en la lista…"
+            formClassName="flex items-center gap-2.5 border-2 border-dashed border-sf-ink pl-4 pr-1.5 transition-shadow focus-within:border-solid focus-within:shadow-[3px_3px_0_var(--sf-ink)]"
+            inputClassName="min-w-0 flex-1 bg-transparent py-3.5 font-receipt text-[15px] text-sf-ink outline-none"
+            buttonClassName="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 border-sf-ink bg-sf-sticker text-sf-onSticker hover:opacity-85"
+          />
+          <CatalogResults>
           {q ? (
             <p className="mt-3 font-receipt text-[13px]">
               {productList.total} resultado{productList.total === 1 ? "" : "s"} para &quot;{q}&quot; ·{" "}
-              <a href={catalogHref(slug, { sort, defaultSort })} className="font-bold underline">
+              <CatalogLink href={catalogHref(slug, { sort, defaultSort })} className="font-bold underline">
                 Ver toda la lista
-              </a>
+              </CatalogLink>
             </p>
           ) : null}
           {groups.length > 1 ? (
@@ -143,6 +139,7 @@ export function ListaCatalog(data: CatalogPageData) {
             <span>TOTAL DE PRODUCTOS</span>
             <span>{productList.total}</span>
           </div>
+          </CatalogResults>
           {productList.total > pageSize ? (
             <div className="mt-6">
               <Pagination
@@ -174,6 +171,7 @@ export function ListaCatalog(data: CatalogPageData) {
         ) : null}
       </main>
     </div>
+    </CatalogNavigationProvider>
   );
 }
 

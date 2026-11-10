@@ -8,6 +8,8 @@ import type { PublicStorefront, PublicStorefrontProduct } from "../types";
 import { storefrontWhatsappHref } from "../whatsapp";
 import { CardBoletaButton } from "./BoletaControls";
 import { BoletaAside } from "./BoletaDock";
+import { CatalogLink, CatalogNavigationProvider, CatalogResults } from "./CatalogNavigation";
+import { CatalogSearch } from "./CatalogSearch";
 import { CategoryMenu } from "./CategoryMenu";
 import { boletaStoreOf, type CatalogPageData, catalogHref, catalogSections } from "./catalogData";
 import { DottedRow, PriceSticker, ProductVisual, ReceiptEdge, StoreLogo, WhatsappIcon } from "./shared";
@@ -20,7 +22,7 @@ export function VitrinaCatalog(data: CatalogPageData) {
   const sections = catalogSections(store);
 
   return (
-    <>
+    <CatalogNavigationProvider>
       <VitrinaHero store={store} slug={slug} featured={data.featured} showPayment={sections.payment} />
       {store.banner_url ? (
         <div className="h-40 overflow-hidden border-b-2 border-sf-ink sm:h-56">
@@ -32,7 +34,7 @@ export function VitrinaCatalog(data: CatalogPageData) {
       <VitrinaProducts data={data} />
       {sections.payment ? <PaySection store={store} /> : null}
       {sections.contact ? <ContactSection store={store} /> : null}
-    </>
+    </CatalogNavigationProvider>
   );
 }
 
@@ -116,7 +118,7 @@ function VitrinaHero({
               <ul>
                 {featured.items.slice(0, 6).map((product) => (
                   <li key={product.id}>
-                    <Link href={`/t/${slug}/producto/${product.id}`} className="block hover:opacity-70">
+                    <Link href={`/t/${slug}/producto/${product.id}`} prefetch={false} className="block hover:opacity-70">
                       <DottedRow left={<span className="line-clamp-1">{product.name}</span>} right={formatCurrency(product.effective_price)} />
                     </Link>
                   </li>
@@ -173,25 +175,17 @@ function VitrinaProducts({ data }: { data: CatalogPageData }) {
   return (
     <section id="productos" className={`${container} scroll-mt-4 pb-16 pt-4 sm:pb-24 sm:pt-10`}>
       <div className="flex flex-wrap items-center gap-3">
-        <form action={`/t/${slug}`} className="flex min-w-0 flex-[1_1_360px] items-center gap-2.5 rounded-full border-2 border-sf-ink bg-white px-4 transition-shadow focus-within:shadow-[3px_3px_0_var(--sf-ink)] sm:px-[18px]">
-          {category ? <input type="hidden" name="category" value={category} /> : null}
-          {sort !== defaultSort ? <input type="hidden" name="sort" value={sort} /> : null}
-          <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
-            <circle cx="11" cy="11" r="7" />
-            <path d="M20 20l-3.5-3.5" />
-          </svg>
-          <label htmlFor="storefront-search" className="sr-only">
-            Buscar producto
-          </label>
-          <input
-            id="storefront-search"
-            type="search"
-            name="q"
-            defaultValue={q ?? ""}
-            placeholder="Buscar producto…"
-            className="min-w-0 flex-1 bg-transparent py-3 font-archivo text-base text-sf-ink outline-none sm:py-3.5"
-          />
-        </form>
+        <CatalogSearch
+          slug={slug}
+          q={q}
+          category={category}
+          sort={sort}
+          defaultSort={defaultSort}
+          placeholder="Buscar producto…"
+          formClassName="flex min-w-0 flex-[1_1_360px] items-center gap-2 rounded-full border-2 border-sf-ink bg-white pl-4 pr-1.5 transition-shadow focus-within:shadow-[3px_3px_0_var(--sf-ink)] sm:pl-[18px]"
+          inputClassName="min-w-0 flex-1 bg-transparent py-3 font-archivo text-base text-sf-ink outline-none sm:py-3.5"
+          buttonClassName="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-sf-ink text-white hover:opacity-85 sm:h-10 sm:w-10"
+        />
         <StorefrontSortSelect
           slug={slug}
           q={q}
@@ -205,17 +199,17 @@ function VitrinaProducts({ data }: { data: CatalogPageData }) {
 
       {categories.length > 0 ? (
         <nav aria-label="Categorias" className="-mx-4 mt-3 flex gap-1.5 overflow-x-auto px-4 pb-1 [scrollbar-width:none] sm:mx-0 sm:mt-4 sm:flex-wrap sm:gap-2 sm:overflow-visible sm:px-0">
-          <Link
+          <CatalogLink
             href={catalogHref(slug, { q, sort, defaultSort })}
             aria-current={!category ? "page" : undefined}
             className={`${chip} ${!category ? "bg-sf-ink text-white" : "bg-white text-sf-ink"}`}
           >
             Todos
-          </Link>
+          </CatalogLink>
           {categories.map((item) => {
             const active = item.id === category;
             return (
-              <Link
+              <CatalogLink
                 key={item.id}
                 href={catalogHref(slug, { q, category: item.id, sort, defaultSort })}
                 aria-current={active ? "page" : undefined}
@@ -223,14 +217,14 @@ function VitrinaProducts({ data }: { data: CatalogPageData }) {
               >
                 {item.name}
                 <span className="font-receipt text-xs opacity-75">{item.product_count}</span>
-              </Link>
+              </CatalogLink>
             );
           })}
         </nav>
       ) : null}
 
       <div className="mt-6 flex flex-wrap items-start gap-8 sm:mt-8">
-        <div className="min-w-0 flex-[999_1_560px]">
+        <CatalogResults className="min-w-0 flex-[999_1_560px]">
           <p className="mb-4 font-receipt text-[13px] text-sf-ink">
             {productList.total} {productList.total === 1 ? "producto" : "productos"}
             {activeCategory ? ` en ${activeCategory.name}` : ""}
@@ -259,7 +253,7 @@ function VitrinaProducts({ data }: { data: CatalogPageData }) {
               />
             </div>
           ) : null}
-        </div>
+        </CatalogResults>
         <BoletaAside store={boletaStoreOf(slug, store)} />
       </div>
     </section>
@@ -271,7 +265,9 @@ export function VitrinaCard({ slug, product }: { slug: string; product: PublicSt
   const onSale = product.effective_price !== product.price;
   return (
     <div className="flex h-full flex-col border-2 border-sf-ink bg-white text-sf-ink">
-      <Link href={href} className="relative block h-[92px] border-b-2 border-sf-ink sm:h-40" tabIndex={-1} aria-hidden="true">
+      {/* Sin precarga: una pagina de productos son 2 links por tarjeta, y cada
+          precarga es una llamada mas a la API. El producto carga al tocarlo. */}
+      <Link href={href} prefetch={false} className="relative block h-[92px] border-b-2 border-sf-ink sm:h-40" tabIndex={-1} aria-hidden="true">
         <div className="h-full w-full overflow-hidden">
           <ProductVisual product={product} textClassName="text-[34px] sm:text-[54px]" />
         </div>
@@ -292,7 +288,7 @@ export function VitrinaCard({ slug, product }: { slug: string; product: PublicSt
       </Link>
       <div className="flex flex-1 flex-col gap-2 px-2.5 pb-2.5 pt-3 sm:gap-3 sm:px-3.5 sm:pb-3.5 sm:pt-4">
         <h3 className="min-h-[2.5em] pr-8 text-[13px] font-bold leading-tight sm:pr-16 sm:text-base">
-          <Link href={href} className="hover:underline">
+          <Link href={href} prefetch={false} className="hover:underline">
             {product.name}
           </Link>
         </h3>

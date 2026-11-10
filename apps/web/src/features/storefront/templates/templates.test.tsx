@@ -10,7 +10,11 @@ import { boletaStoreOf, type CatalogPageData } from "./catalogData";
 import { ListaCatalog } from "./Lista";
 import { VitrinaCatalog } from "./Vitrina";
 
-vi.mock("next/navigation", () => ({ useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }) }));
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push: vi.fn(), replace: vi.fn(), refresh: vi.fn() }),
+  usePathname: () => "/t/tienda",
+  useSearchParams: () => new URLSearchParams(),
+}));
 vi.mock("../requestActions", () => ({ createStorefrontOrderAction: vi.fn() }));
 
 const product = (id: string, name: string, overrides: Partial<PublicStorefrontProduct> = {}): PublicStorefrontProduct => ({
