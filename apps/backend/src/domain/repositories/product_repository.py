@@ -50,6 +50,11 @@ class IProductRepository(ABC):
     ) -> tuple[list[Product], int]: ...
 
     @abstractmethod
+    async def list_public_by_ids(
+        self, store_id: UUID, product_ids: list[UUID], *, in_stock_only: bool = False
+    ) -> list[Product]: ...
+
+    @abstractmethod
     async def get_public_by_id(self, store_id: UUID, product_id: UUID) -> Product | None: ...
 
     @abstractmethod

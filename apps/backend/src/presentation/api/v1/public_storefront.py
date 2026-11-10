@@ -6,6 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from src.application.dto.storefront_dto import (
     PublicStorefrontCategoryDTO,
     PublicStorefrontDTO,
+    PublicStorefrontFeaturedDTO,
     PublicStorefrontProductDTO,
     PublicStorefrontProductListDTO,
 )
@@ -23,6 +24,7 @@ from src.application.use_cases.storefront.list_public_categories import (
 )
 from src.application.use_cases.storefront.list_public_products import (
     GetPublicProductUseCase,
+    ListFeaturedProductsUseCase,
     ListPublicProductsUseCase,
 )
 from src.application.use_cases.storefront_requests.create_storefront_request import (
@@ -147,6 +149,26 @@ async def list_storefront_products(
         total=result.total,
         limit=limit,
         offset=offset,
+    )
+
+
+@router.get("/{slug}/featured", response_model=PublicStorefrontFeaturedDTO)
+async def list_storefront_featured(
+    slug: str,
+    request: Request,
+    store_repo: StoreRepository = Depends(get_store_repo),
+    product_repo: ProductRepository = Depends(get_product_repo),
+):
+    _check_rate_limit(request, slug)
+    try:
+        result = await ListFeaturedProductsUseCase(store_repo, product_repo).execute(slug)
+    except NotFoundError as e:
+        raise HTTPException(status_code=404, detail=str(e)) from e
+
+    show_low_stock = storefront_settings_of(result.store).stock_display == "all"
+    return PublicStorefrontFeaturedDTO(
+        items=[PublicStorefrontProductDTO.from_product(p, show_low_stock=show_low_stock) for p in result.items],
+        source=result.source,
     )
 
 

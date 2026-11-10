@@ -85,6 +85,11 @@ class PublicStorefrontProductListDTO(BaseModel):
     offset: int
 
 
+class PublicStorefrontFeaturedDTO(BaseModel):
+    items: list[PublicStorefrontProductDTO]
+    source: str
+
+
 class PublicStorefrontCategoryDTO(BaseModel):
     id: UUID
     name: str

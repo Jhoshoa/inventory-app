@@ -163,6 +163,8 @@ describe("updateStorefrontAction", () => {
       hours_0_opens_at: "08:00",
       hours_0_closes_at: "20:00",
     });
+    formData.append("settings_featured_product_ids", "p-2");
+    formData.append("settings_featured_product_ids", "p-1");
 
     const result = await updateStorefrontAction(initialStorefrontState, formData);
 
@@ -180,6 +182,7 @@ describe("updateStorefrontAction", () => {
       delivery_enabled: true,
       instagram: "@mitienda",
       facebook: null,
+      featured_product_ids: ["p-2", "p-1"],
     });
     expect(settings.hours).toHaveLength(7);
     expect(settings.hours[0]).toEqual({ is_open: true, opens_at: "08:00", closes_at: "20:00" });

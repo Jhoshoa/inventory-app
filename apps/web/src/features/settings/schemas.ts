@@ -77,6 +77,10 @@ export function validateStorefrontSettings(settings: StorefrontSettings): Record
     errors.mapsUrl = "Pega el link que te da Google Maps al tocar Compartir";
   }
 
+  if (settings.featured_product_ids.length > 10) {
+    errors.featured = "Puedes destacar hasta 10 productos";
+  }
+
   settings.hours?.forEach((day, index) => {
     if (!day.is_open) return;
     if (!day.opens_at || !day.closes_at) {

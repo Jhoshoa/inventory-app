@@ -20,6 +20,14 @@ class ListPublicProductsResult:
 
 
 @dataclass
+class ListFeaturedProductsResult:
+    items: list[Product]
+    store: Store
+    # "manual": los eligio el dueno. "on_sale": no eligio, se muestran ofertas.
+    source: str
+
+
+@dataclass
 class GetPublicProductResult:
     product: Product
     store: Store
@@ -69,3 +77,30 @@ class GetPublicProductUseCase:
         if product is None:
             raise NotFoundError("Producto no encontrado")
         return GetPublicProductResult(product=product, store=resolved.store)
+
+
+class ListFeaturedProductsUseCase:
+    def __init__(self, store_repo: IStoreRepository, product_repo: IProductRepository):
+        self._store_repo = store_repo
+        self._product_repo = product_repo
+
+    async def execute(self, slug: str, *, limit: int = 10) -> ListFeaturedProductsResult:
+        resolved = await GetPublicStorefrontUseCase(self._store_repo).execute(slug)
+        settings = storefront_settings_of(resolved.store)
+        if settings.featured_product_ids:
+            items = await self._product_repo.list_public_by_ids(
+                resolved.store.id,
+                settings.featured_product_ids,
+                in_stock_only=settings.hide_out_of_stock,
+            )
+            # Si todos los elegidos se borraron o agotaron, mejor las ofertas
+            # que un carrusel vacio.
+            if items:
+                return ListFeaturedProductsResult(items=items[:limit], store=resolved.store, source="manual")
+        items, _ = await self._product_repo.list_public(
+            resolved.store.id,
+            on_sale=True,
+            in_stock_only=settings.hide_out_of_stock,
+            limit=limit,
+        )
+        return ListFeaturedProductsResult(items=items, store=resolved.store, source="on_sale")

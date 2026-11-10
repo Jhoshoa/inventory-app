@@ -27,6 +27,8 @@ export interface StorefrontSettings {
   tiktok: string | null;
   /** Lunes primero, 7 dias. null = la tienda no cargo horario. */
   hours: StorefrontDayHours[] | null;
+  /** Productos del carrusel, en orden. Vacio = los productos en oferta. */
+  featured_product_ids: string[];
 }
 
 export const DEFAULT_STOREFRONT_SETTINGS: StorefrontSettings = {
@@ -46,6 +48,7 @@ export const DEFAULT_STOREFRONT_SETTINGS: StorefrontSettings = {
   instagram: null,
   tiktok: null,
   hours: null,
+  featured_product_ids: [],
 };
 
 export const STOREFRONT_SORTS: StorefrontSort[] = ["name", "price_asc", "price_desc"];

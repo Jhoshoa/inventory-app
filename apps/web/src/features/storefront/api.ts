@@ -2,6 +2,7 @@ import { getBackendApiUrl } from "@/lib/env/server";
 import type {
   PublicStorefront,
   PublicStorefrontCategory,
+  PublicStorefrontFeatured,
   PublicStorefrontProduct,
   PublicStorefrontProductList,
 } from "./types";
@@ -59,6 +60,11 @@ export async function listPublicStorefrontProducts(
     slug,
     `/public/storefront/${encodeURIComponent(slug)}/products${qs ? `?${qs}` : ""}`,
   );
+}
+
+/** Carrusel: los productos que eligio la tienda o, si no eligio, los en oferta. */
+export async function listPublicStorefrontFeatured(slug: string): Promise<PublicStorefrontFeatured | null> {
+  return fetchPublic<PublicStorefrontFeatured>(slug, `/public/storefront/${encodeURIComponent(slug)}/featured`);
 }
 
 export async function listPublicStorefrontCategories(slug: string): Promise<PublicStorefrontCategory[]> {

@@ -218,6 +218,10 @@ function storefrontSettingsFromForm(formData: FormData): StorefrontSettings {
             };
           })
         : null,
+    featured_product_ids: formData
+      .getAll("settings_featured_product_ids")
+      .map(String)
+      .filter(Boolean),
   };
 }
 
@@ -228,6 +232,7 @@ const SETTINGS_FIELD_KEYS: Record<string, string> = {
   facebook: "facebook",
   instagram: "instagram",
   tiktok: "tiktok",
+  featured_product_ids: "featured",
 };
 
 /** Errores 422 del backend sobre storefront_settings, como errores de campo del formulario. */

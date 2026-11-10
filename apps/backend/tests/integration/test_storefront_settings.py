@@ -144,3 +144,66 @@ async def test_stock_display_out_of_stock_only_never_sends_the_low_stock_hint(cl
     assert listing["items"][0]["low_stock"] is False
     assert detail["low_stock"] is False
     assert detail["available"] is True
+
+
+async def test_featured_falls_back_to_products_on_sale(client):
+    await _enable_storefront(client)
+    await client.patch("/api/v1/store", json={"allow_manual_discount": True, "max_manual_discount_amount": "50.00"})
+    on_sale = await _create_product(client, name="En oferta", discount_type="fixed", discount_value="2.00")
+    await _create_product(client, name="Precio normal")
+
+    body = (await client.get("/api/v1/public/storefront/ferreteria-lopez/featured")).json()
+
+    assert body["source"] == "on_sale"
+    assert [item["id"] for item in body["items"]] == [on_sale]
+
+
+async def test_featured_shows_the_chosen_products_in_the_chosen_order(client):
+    await _enable_storefront(client)
+    first = await _create_product(client, name="Zapallo")
+    second = await _create_product(client, name="Arroz")
+    deleted = await _create_product(client, name="Borrado")
+    await client.delete(f"/api/v1/products/{deleted}")
+    response = await _save_settings(client, featured_product_ids=[first, deleted, second, first])
+    assert response.status_code == 200, response.text
+    # Los repetidos se guardan una sola vez.
+    assert response.json()["storefront_settings"]["featured_product_ids"] == [first, deleted, second]
+
+    body = (await client.get("/api/v1/public/storefront/ferreteria-lopez/featured")).json()
+
+    assert body["source"] == "manual"
+    assert [item["id"] for item in body["items"]] == [first, second]
+
+
+async def test_featured_hides_sold_out_choices_when_the_store_hides_them(client):
+    await _enable_storefront(client)
+    sold_out = await _create_product(client, name="Agotado", stock=0)
+    in_stock = await _create_product(client, name="Con stock", stock=3)
+    await _save_settings(client, featured_product_ids=[sold_out, in_stock], hide_out_of_stock=True)
+
+    body = (await client.get("/api/v1/public/storefront/ferreteria-lopez/featured")).json()
+
+    assert [item["id"] for item in body["items"]] == [in_stock]
+
+
+async def test_featured_ignores_products_from_another_store(client, db_session):
+    from uuid import uuid4
+
+    await _enable_storefront(client)
+    await _save_settings(client, featured_product_ids=[str(uuid4())])
+
+    body = (await client.get("/api/v1/public/storefront/ferreteria-lopez/featured")).json()
+
+    # Ninguno elegido existe en esta tienda: se vuelve a las ofertas.
+    assert body["source"] == "on_sale"
+    assert body["items"] == []
+
+
+async def test_featured_allows_at_most_ten_products(client):
+    from uuid import uuid4
+
+    await _enable_storefront(client)
+
+    response = await _save_settings(client, featured_product_ids=[str(uuid4()) for _ in range(11)])
+
+    assert response.status_code == 422

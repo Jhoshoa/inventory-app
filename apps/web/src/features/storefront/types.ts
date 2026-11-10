@@ -37,6 +37,12 @@ export interface PublicStorefrontProductList {
   offset: number;
 }
 
+export interface PublicStorefrontFeatured {
+  items: PublicStorefrontProduct[];
+  /** "manual": los eligio la tienda. "on_sale": productos en oferta. */
+  source: "manual" | "on_sale";
+}
+
 export interface PublicStorefrontCategory {
   id: string;
   name: string;

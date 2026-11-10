@@ -198,6 +198,24 @@ class ProductRepository(IProductRepository):
         )
         return [self._to_entity(m) for m in result.scalars().all()], total
 
+    async def list_public_by_ids(
+        self, store_id: UUID, product_ids: list[UUID], *, in_stock_only: bool = False
+    ) -> list[Product]:
+        if not product_ids:
+            return []
+        filters = [
+            ProductModel.store_id == store_id,
+            ProductModel.id.in_(product_ids),
+            ProductModel.deleted_at.is_(None),
+            ProductModel.is_active.is_(True),
+        ]
+        if in_stock_only:
+            filters.append(ProductModel.stock > 0)
+        result = await self._session.execute(select(ProductModel).where(*filters))
+        by_id = {m.id: self._to_entity(m) for m in result.scalars().all()}
+        # En el orden que eligio el dueno, no en el de la base.
+        return [by_id[pid] for pid in product_ids if pid in by_id]
+
     async def get_public_by_id(self, store_id: UUID, product_id: UUID) -> Product | None:
         result = await self._session.execute(
             select(ProductModel).where(

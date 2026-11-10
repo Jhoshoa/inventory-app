@@ -4,6 +4,7 @@ import type { StorefrontSort } from "@/features/storefront/api";
 import {
   getPublicStorefront,
   listPublicStorefrontCategories,
+  listPublicStorefrontFeatured,
   listPublicStorefrontProducts,
 } from "@/features/storefront/api";
 import { Pagination } from "@/components/ui/Pagination";
@@ -41,9 +42,7 @@ export default async function StorefrontCatalogPage({
     listPublicStorefrontProducts(slug, { q, categoryId: category, sort, limit: PAGE_SIZE, offset }),
     // Solo se muestra en la primera pagina del catalogo sin filtros — repetirlo
     // en cada pagina de paginacion es ruido, no ayuda a encontrar productos.
-    isFirstPage && store.settings.show_featured
-      ? listPublicStorefrontProducts(slug, { onSale: true, limit: 10 })
-      : Promise.resolve(null),
+    isFirstPage && store.settings.show_featured ? listPublicStorefrontFeatured(slug) : Promise.resolve(null),
   ]);
 
   if (!productList) notFound();
@@ -76,7 +75,12 @@ export default async function StorefrontCatalogPage({
       </form>
 
       {featured && featured.items.length > 0 ? (
-        <StorefrontFeaturedCarousel slug={slug} products={featured.items} colorPrimary={store.color_primary} />
+        <StorefrontFeaturedCarousel
+          slug={slug}
+          products={featured.items}
+          title={featured.source === "manual" ? "Destacados" : "Ofertas destacadas"}
+          colorPrimary={store.color_primary}
+        />
       ) : null}
 
       <div className="flex flex-col gap-6 lg:flex-row">

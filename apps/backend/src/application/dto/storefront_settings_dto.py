@@ -1,6 +1,7 @@
 import re
 from typing import Literal
 from urllib.parse import parse_qs, urlparse
+from uuid import UUID
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
@@ -15,6 +16,7 @@ _FACEBOOK_RE = re.compile(r"^(?:[A-Za-z0-9.\-]{3,80}|profile\.php\?id=[0-9]{5,20
 _MAPS_HOSTS = {"maps.app.goo.gl", "goo.gl", "maps.google.com", "www.google.com", "google.com"}
 
 DAYS_IN_WEEK = 7
+MAX_FEATURED_PRODUCTS = 10
 
 
 def _blank_to_none(v: str | None) -> str | None:
@@ -93,6 +95,8 @@ class StorefrontSettingsDTO(BaseModel):
     tiktok: str | None = Field(default=None, max_length=120)
     # Lunes primero. None = el dueno no cargo horario (no se muestra).
     hours: list[StorefrontDayHoursDTO] | None = None
+    # Productos del carrusel, en el orden elegido. Vacio = productos en oferta.
+    featured_product_ids: list[UUID] = Field(default_factory=list)
 
     @field_validator("announcement_text", "address", mode="before")
     @classmethod
@@ -174,6 +178,14 @@ class StorefrontSettingsDTO(BaseModel):
             # Todo cerrado equivale a "sin horario": no se muestra "Cerrado" los 7 dias.
             return None
         return v
+
+    @field_validator("featured_product_ids")
+    @classmethod
+    def validate_featured(cls, v: list[UUID]) -> list[UUID]:
+        unique = list(dict.fromkeys(v))
+        if len(unique) > MAX_FEATURED_PRODUCTS:
+            raise ValueError(f"Puedes destacar hasta {MAX_FEATURED_PRODUCTS} productos")
+        return unique
 
     @model_validator(mode="after")
     def validate_announcement(self) -> "StorefrontSettingsDTO":

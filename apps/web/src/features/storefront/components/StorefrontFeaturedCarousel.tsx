@@ -10,10 +10,12 @@ import type { PublicStorefrontProduct } from "../types";
 export function StorefrontFeaturedCarousel({
   slug,
   products,
+  title = "Ofertas destacadas",
   colorPrimary,
 }: {
   slug: string;
   products: PublicStorefrontProduct[];
+  title?: string;
   colorPrimary?: string | null;
 }) {
   const trackRef = useRef<HTMLDivElement>(null);
@@ -27,9 +29,9 @@ export function StorefrontFeaturedCarousel({
   }
 
   return (
-    <section aria-label="Ofertas destacadas" className="relative">
+    <section aria-label={title} className="relative">
       <div className="mb-3 flex items-center justify-between">
-        <h2 className="text-base font-semibold text-text-strong">Ofertas destacadas</h2>
+        <h2 className="text-base font-semibold text-text-strong">{title}</h2>
         {products.length > 2 ? (
           <div className="hidden gap-1 sm:flex">
             <button
@@ -56,6 +58,8 @@ export function StorefrontFeaturedCarousel({
         className="flex snap-x snap-mandatory gap-4 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       >
         {products.map((product) => {
+          // Un destacado elegido a mano puede no tener descuento: sin "-0%" ni tachado.
+          const onSale = product.effective_price !== product.price;
           const discountPercent =
             product.discount_type === "percentage"
               ? Number(product.discount_value)
@@ -66,12 +70,14 @@ export function StorefrontFeaturedCarousel({
               href={`/t/${slug}/producto/${product.id}`}
               className="group relative w-40 shrink-0 snap-start overflow-hidden rounded-lg border border-app-border bg-app-surface shadow-panel sm:w-48"
             >
-              <span
-                className="absolute left-2 top-2 z-10 rounded-full bg-status-danger px-2 py-0.5 text-xs font-semibold text-text-inverse"
-                style={colorPrimary ? { backgroundColor: colorPrimary } : undefined}
-              >
-                -{discountPercent}%
-              </span>
+              {onSale ? (
+                <span
+                  className="absolute left-2 top-2 z-10 rounded-full bg-status-danger px-2 py-0.5 text-xs font-semibold text-text-inverse"
+                  style={colorPrimary ? { backgroundColor: colorPrimary } : undefined}
+                >
+                  -{discountPercent}%
+                </span>
+              ) : null}
               <div className="aspect-square w-full bg-app-surface-muted">
                 {product.photo_url ? (
                   // eslint-disable-next-line @next/next/no-img-element -- imagen remota de producto, sin loader configurado
@@ -90,7 +96,9 @@ export function StorefrontFeaturedCarousel({
                   <p className="text-sm font-semibold text-text-strong">
                     {formatCurrency(product.effective_price)}
                   </p>
-                  <p className="text-xs text-text-disabled line-through">{formatCurrency(product.price)}</p>
+                  {onSale ? (
+                    <p className="text-xs text-text-disabled line-through">{formatCurrency(product.price)}</p>
+                  ) : null}
                 </div>
               </div>
             </Link>

@@ -20,6 +20,7 @@ import { PhoneCountryInput } from "@/components/ui/PhoneCountryInput";
 import { Select } from "@/components/ui/Select";
 import { Textarea } from "@/components/ui/Textarea";
 import { updateStorefrontAction } from "../actions";
+import { FeaturedProductsPicker, type FeaturedProductOption } from "./FeaturedProductsPicker";
 import { STORE_IMAGE_KINDS, StoreImageUploader, StorePaymentQrUploader } from "./StoreImageUploader";
 import type { StorefrontState } from "../types";
 
@@ -40,7 +41,14 @@ function initialHours(hours: StorefrontDayHours[] | null): StorefrontDayHours[] 
   );
 }
 
-export function StorefrontSettingsForm({ storeData }: { storeData: StoreResponse }) {
+export function StorefrontSettingsForm({
+  storeData,
+  featuredProducts = [],
+}: {
+  storeData: StoreResponse;
+  /** Los productos ya elegidos como destacados, con nombre y precio para mostrarlos. */
+  featuredProducts?: FeaturedProductOption[];
+}) {
   const settings = withStorefrontDefaults(storeData.storefront_settings);
   const [state, setState] = useState<StorefrontState>(initialState);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -210,8 +218,8 @@ export function StorefrontSettingsForm({ storeData }: { storeData: StoreResponse
           <div className="grid gap-3 sm:grid-cols-2">
             <CheckboxField
               name="settings_show_featured"
-              label="Ofertas destacadas"
-              description="Carrusel con tus productos en oferta."
+              label="Destacados"
+              description="Carrusel arriba del catalogo."
               defaultChecked={settings.show_featured}
             />
             <CheckboxField
@@ -249,6 +257,17 @@ export function StorefrontSettingsForm({ storeData }: { storeData: StoreResponse
           ) : (
             <input type="hidden" name="settings_announcement_text" value={settings.announcement_text ?? ""} />
           )}
+        </SettingsCard>
+
+        <SettingsCard
+          title="Productos destacados"
+          description="Elige hasta 10 productos para el carrusel, en el orden en que quieres mostrarlos. Si no eliges ninguno, mostramos tus productos en oferta."
+        >
+          <FeaturedProductsPicker
+            name="settings_featured_product_ids"
+            initialProducts={featuredProducts}
+            error={fieldErrors.featured}
+          />
         </SettingsCard>
 
         <SettingsCard title="Productos" description="Como se listan tus productos en el catalogo.">
