@@ -1,13 +1,15 @@
 import { Pagination } from "@/components/ui/Pagination";
 import { formatCurrency } from "@/lib/format/currency";
+import { publicFontVariables } from "@/lib/fonts";
 import { StorefrontOpenStatus } from "../components/StorefrontOpenStatus";
-import { categoryTint, facebookUrl, hoursSummary, instagramUrl, tiktokUrl } from "../settings";
+import { categoryTint, facebookUrl, hoursSummary, instagramUrl, storefrontTheme, themeStyle, tiktokUrl } from "../settings";
 import type { PublicStorefront, PublicStorefrontProduct } from "../types";
 import { storefrontWhatsappHref } from "../whatsapp";
 import { RowBoletaButton } from "./BoletaControls";
 import { type CatalogPageData, catalogHref, catalogSections } from "./catalogData";
 import { CatalogLink, CatalogNavigationProvider, CatalogResults } from "./CatalogNavigation";
 import { CatalogSearch } from "./CatalogSearch";
+import { CategoryPicker } from "./CategoryPicker";
 import { StoreLogo } from "./shared";
 
 interface ProductGroup {
@@ -99,13 +101,15 @@ export function ListaCatalog(data: CatalogPageData) {
             </p>
           ) : null}
           {groups.length > 1 ? (
-            <nav aria-label="Categorias" className="mt-4 flex flex-wrap gap-2 font-receipt text-[13px] font-bold">
-              {groups.map((group) => (
-                <a key={group.id} href={`#${group.id}`} className="border-2 border-sf-ink px-3 py-2 text-sf-ink hover:bg-sf-paper">
-                  {group.name} · {group.items.length}
-                </a>
-              ))}
-            </nav>
+            <div className="mt-4">
+              <CategoryPicker
+                mode="anchor"
+                variant="lista"
+                themeVars={themeStyle(storefrontTheme(store))}
+                fontClassName={publicFontVariables}
+                items={groups.map((group) => ({ id: group.id, name: group.name, count: group.items.length, href: `#${group.id}` }))}
+              />
+            </div>
           ) : null}
 
           {groups.length === 0 ? (

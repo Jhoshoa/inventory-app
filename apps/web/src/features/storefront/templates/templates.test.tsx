@@ -148,7 +148,7 @@ describe("Plantilla Lista de precios", () => {
     expect(headings).toEqual(["Lacteos", "Limpieza", "Otros"]);
     expect(screen.getByText("AGOT.")).toBeInTheDocument();
     expect(screen.getByText("ULTIMAS")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Lacteos · 2" })).toHaveAttribute("href", "#cat-c-lacteos");
+    expect(screen.getByRole("link", { name: /^Lacteos/ })).toHaveAttribute("href", "#cat-c-lacteos");
     expect(screen.getByText("PEDIDOS", { exact: false })).toBeInTheDocument();
   });
 

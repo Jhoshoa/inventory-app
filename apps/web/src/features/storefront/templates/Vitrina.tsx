@@ -1,16 +1,18 @@
 import Link from "next/link";
 import { Pagination } from "@/components/ui/Pagination";
 import { formatCurrency } from "@/lib/format/currency";
+import { publicFontVariables } from "@/lib/fonts";
 import { StorefrontOpenStatus } from "../components/StorefrontOpenStatus";
 import { StorefrontSortSelect } from "../components/StorefrontSortSelect";
-import { facebookUrl, groupHours, hoursSummary, instagramUrl, tiktokUrl } from "../settings";
+import { facebookUrl, groupHours, hoursSummary, instagramUrl, storefrontTheme, themeStyle, tiktokUrl } from "../settings";
 import type { PublicStorefront, PublicStorefrontProduct } from "../types";
 import { storefrontWhatsappHref } from "../whatsapp";
 import { CardBoletaButton } from "./BoletaControls";
 import { BoletaAside } from "./BoletaDock";
-import { CatalogLink, CatalogNavigationProvider, CatalogResults } from "./CatalogNavigation";
+import { CatalogNavigationProvider, CatalogResults } from "./CatalogNavigation";
 import { CatalogSearch } from "./CatalogSearch";
 import { CategoryMenu } from "./CategoryMenu";
+import { CategoryPicker } from "./CategoryPicker";
 import { boletaStoreOf, type CatalogPageData, catalogHref, catalogSections } from "./catalogData";
 import { DottedRow, PriceSticker, ProductVisual, ReceiptEdge, StoreLogo, WhatsappIcon } from "./shared";
 
@@ -170,7 +172,17 @@ function VitrinaTabs({ data, showPayment, showContact }: { data: CatalogPageData
 function VitrinaProducts({ data }: { data: CatalogPageData }) {
   const { slug, store, categories, productList, q, category, sort, defaultSort, offset, pageSize } = data;
   const activeCategory = category ? categories.find((c) => c.id === category) : undefined;
-  const chip = "inline-flex shrink-0 items-center gap-2 rounded-full border-2 border-sf-ink px-3 py-[7px] text-[13px] font-bold sm:px-4 sm:py-2.5 sm:text-sm";
+  const sortSelect = (fullWidth: boolean) => (
+    <StorefrontSortSelect
+      slug={slug}
+      q={q}
+      categoryId={category}
+      sort={sort}
+      defaultSort={defaultSort}
+      className={`flex items-center gap-2.5 text-sm font-semibold text-sf-ink ${fullWidth ? "w-full" : ""}`}
+      selectClassName={`rounded-full border-2 border-sf-ink bg-white px-3 py-2.5 font-archivo text-[13px] font-semibold text-sf-ink sm:px-3.5 sm:py-3 sm:text-[15px] ${fullWidth ? "w-full min-w-0" : ""}`}
+    />
+  );
 
   return (
     <section id="productos" className={`${container} scroll-mt-4 pb-16 pt-4 sm:pb-24 sm:pt-10`}>
@@ -186,42 +198,34 @@ function VitrinaProducts({ data }: { data: CatalogPageData }) {
           inputClassName="min-w-0 flex-1 bg-transparent py-3 font-archivo text-base text-sf-ink outline-none sm:py-3.5"
           buttonClassName="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-sf-ink text-white hover:opacity-85 sm:h-10 sm:w-10"
         />
-        <StorefrontSortSelect
-          slug={slug}
-          q={q}
-          categoryId={category}
-          sort={sort}
-          defaultSort={defaultSort}
-          className="flex items-center gap-2.5 text-sm font-semibold text-sf-ink"
-          selectClassName="rounded-full border-2 border-sf-ink bg-white px-3 py-2 font-archivo text-[13px] font-semibold text-sf-ink sm:px-3.5 sm:py-3 sm:text-[15px]"
-        />
+        <div className="hidden sm:block">{sortSelect(false)}</div>
       </div>
 
-      {categories.length > 0 ? (
-        <nav aria-label="Categorias" className="-mx-4 mt-3 flex gap-1.5 overflow-x-auto px-4 pb-1 [scrollbar-width:none] sm:mx-0 sm:mt-4 sm:flex-wrap sm:gap-2 sm:overflow-visible sm:px-0">
-          <CatalogLink
-            href={catalogHref(slug, { q, sort, defaultSort })}
-            aria-current={!category ? "page" : undefined}
-            className={`${chip} ${!category ? "bg-sf-ink text-white" : "bg-white text-sf-ink"}`}
-          >
-            Todos
-          </CatalogLink>
-          {categories.map((item) => {
-            const active = item.id === category;
-            return (
-              <CatalogLink
-                key={item.id}
-                href={catalogHref(slug, { q, category: item.id, sort, defaultSort })}
-                aria-current={active ? "page" : undefined}
-                className={`${chip} ${active ? "bg-sf-ink text-white" : "bg-white text-sf-ink"}`}
-              >
-                {item.name}
-                <span className="font-receipt text-xs opacity-75">{item.product_count}</span>
-              </CatalogLink>
-            );
-          })}
-        </nav>
-      ) : null}
+      {/* Celular: categorias (chips o boton con lista) y el orden en una fila. */}
+      <div className="mt-3 flex items-start gap-2 sm:mt-4">
+        {categories.length > 0 ? (
+          <div className="min-w-0 flex-1">
+            <CategoryPicker
+              mode="link"
+              variant="vitrina"
+              themeVars={themeStyle(storefrontTheme(store))}
+              fontClassName={publicFontVariables}
+              allItem={{ href: catalogHref(slug, { q, sort, defaultSort }), active: !category }}
+              items={categories.map((item) => ({
+                id: item.id,
+                name: item.name,
+                count: item.product_count,
+                href: catalogHref(slug, { q, category: item.id, sort, defaultSort }),
+                active: item.id === category,
+              }))}
+            />
+          </div>
+        ) : (
+          <div className="flex-1" />
+        )}
+        {/* En el celular, categorias y orden comparten la fila mitad y mitad. */}
+        <div className="min-w-0 flex-1 sm:hidden">{sortSelect(true)}</div>
+      </div>
 
       <div className="mt-6 flex flex-wrap items-start gap-8 sm:mt-8">
         <CatalogResults className="min-w-0 flex-[999_1_560px]">

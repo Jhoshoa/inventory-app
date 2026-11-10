@@ -87,7 +87,7 @@ export function BoletaBar({
         open={open}
         onOpenChange={(next) => (next ? setOpen(true) : close())}
         size="lg"
-        className="h-full w-full max-w-lg overflow-hidden rounded-3xl border-0 bg-transparent"
+        className="h-full w-full max-w-lg overflow-hidden !rounded-3xl !border-0 !bg-transparent !shadow-none"
       >
         <div data-storefront style={themeVars} className={`${fontClassName} h-full overflow-y-auto rounded-3xl border-2 border-[#111111] bg-sf-primary font-archivo`}>
         <div className="flex items-center gap-3 px-4 pb-3 pt-5 text-sf-onPrimary">
@@ -99,7 +99,7 @@ export function BoletaBar({
           >
             ←
           </button>
-          <DialogTitle className="p-0">
+          <DialogTitle className="!p-0">
             <span className="font-display text-[22px] font-normal uppercase text-sf-onPrimary">
               {sent ? "Pedido enviado" : "Tu boleta"}
             </span>

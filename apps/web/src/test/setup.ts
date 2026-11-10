@@ -11,3 +11,8 @@ vi.mock("sonner", () => ({
   },
   Toaster: () => null,
 }));
+
+// next/font/local solo existe al compilar con Next: en los tests basta el nombre de la clase.
+vi.mock("next/font/local", () => ({
+  default: () => ({ className: "font-local", variable: "font-local", style: { fontFamily: "font-local" } }),
+}));
