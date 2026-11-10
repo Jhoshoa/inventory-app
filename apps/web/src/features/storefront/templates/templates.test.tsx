@@ -120,6 +120,20 @@ describe("Plantilla Vitrina", () => {
   });
 });
 
+describe("Menu de categorias", () => {
+  it("closes after picking a category", async () => {
+    const user = userEvent.setup();
+    renderInStore(<VitrinaCatalog {...pageData()} />);
+    const menu = screen.getByText("Categorias", { selector: "summary" }).closest("details") as HTMLDetailsElement;
+
+    await user.click(screen.getByText("Categorias", { selector: "summary" }));
+    expect(menu.open).toBe(true);
+    await user.click(within(menu).getByRole("link", { name: /Limpieza/ }));
+
+    expect(menu.open).toBe(false);
+  });
+});
+
 describe("Plantilla Lista de precios", () => {
   beforeEach(() => window.localStorage.clear());
 
