@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { joinInternationalPhone, splitInternationalPhone } from "./phone";
+import {
+  formatPhone,
+  joinInternationalPhone,
+  sanitizeLocalPhone,
+  splitInternationalPhone,
+  validateInternationalPhone,
+} from "./phone";
 
 describe("splitInternationalPhone", () => {
   it.each([
@@ -35,3 +41,44 @@ describe("joinInternationalPhone", () => {
     expect(joinInternationalPhone("BO", "  ")).toBe("");
   });
 });
+
+describe("phone validation (same rules as the backend)", () => {
+  it.each([
+    ["59170012345", undefined],
+    ["59122123456", undefined],
+    ["5491123456789", undefined],
+    ["", undefined],
+    ["5917001234", "Un numero de Bolivia tiene 8 digitos, ej. 70012345"],
+    ["59190012345", "Un numero de Bolivia tiene 8 digitos, ej. 70012345"],
+    ["59170o12345", "El telefono solo puede tener numeros"],
+    ["123456", "Revisa el numero: con el codigo de pais debe tener entre 10 y 15 digitos"],
+  ])("%s -> %s", (value, error) => {
+    expect(validateInternationalPhone(value)).toBe(error);
+  });
+
+  it("can require a number", () => {
+    expect(validateInternationalPhone(" ", { required: true })).toBe("El telefono es requerido");
+  });
+});
+
+describe("sanitizeLocalPhone", () => {
+  it("keeps only digits and the length of the country", () => {
+    expect(sanitizeLocalPhone("BO", "7a0-01 2345")).toBe("70012345");
+    expect(sanitizeLocalPhone("BO", "700123456789")).toBe("70012345");
+  });
+
+  it("drops the country code of a pasted international number", () => {
+    expect(sanitizeLocalPhone("BO", "+591 700 12345")).toBe("70012345");
+    expect(sanitizeLocalPhone("AR", "+54 9 11 2345 6789")).toBe("91123456789");
+  });
+});
+
+describe("formatPhone", () => {
+  it("shows the country code, assuming Bolivia for old local numbers", () => {
+    expect(formatPhone("59170012345")).toBe("+591 70012345");
+    expect(formatPhone("70012345")).toBe("+591 70012345");
+    expect(formatPhone("5491123456789")).toBe("+54 91123456789");
+    expect(formatPhone(null)).toBe("");
+  });
+});
+

@@ -4,7 +4,6 @@ import { type FormEvent, useState } from "react";
 import { toast } from "sonner";
 import { PhoneCountryInput } from "@/components/ui/PhoneCountryInput";
 import { formatCurrency } from "@/lib/format/currency";
-import { splitInternationalPhone } from "@/lib/format/phone";
 import { MAX_LINE_QUANTITY, useBoleta } from "../boleta";
 import { createStorefrontOrderAction } from "../requestActions";
 import type { StorefrontOrder } from "../requestTypes";
@@ -218,13 +217,17 @@ export function BoletaReceipt({
               <PhoneCountryInput
                 id="customer_phone"
                 name="customer_phone"
-                defaultCountry={splitInternationalPhone(store.whatsapp).country}
                 required
-                placeholder="Tu numero"
                 disabled={isSubmitting}
+                error={Boolean(fieldErrors.customerPhone)}
+                errorId="customer_phone-error"
               />
             </div>
-            {fieldErrors.customerPhone ? <span className="mt-1 block text-xs text-[#B42318]">{fieldErrors.customerPhone}</span> : null}
+            {fieldErrors.customerPhone ? (
+              <span id="customer_phone-error" className="mt-1 block text-xs text-[#B42318]">
+                {fieldErrors.customerPhone}
+              </span>
+            ) : null}
           </div>
           <label className="block font-bold">
             Nota (opcional)

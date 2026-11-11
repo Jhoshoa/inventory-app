@@ -1,4 +1,5 @@
 import { WEEKDAYS, type StorefrontSettings } from "@/features/storefront/settings";
+import { validateInternationalPhone } from "@/lib/format/phone";
 import type { DiscountPolicyFormValues, StoreFormValues, StorefrontFormValues } from "./types";
 
 const SLUG_RE = /^[a-z0-9](?:[a-z0-9-]{1,58}[a-z0-9])?$/;
@@ -17,9 +18,8 @@ export function validateStoreForm(values: StoreFormValues): Record<string, strin
     errors.address = "La direccion no puede exceder 255 caracteres";
   }
 
-  if (values.phone && values.phone.length > 20) {
-    errors.phone = "El telefono no puede exceder 20 caracteres";
-  }
+  const phoneError = validateInternationalPhone(values.phone ?? "");
+  if (phoneError) errors.phone = phoneError;
 
   return errors;
 }
@@ -46,9 +46,8 @@ export function validateStorefrontForm(values: StorefrontFormValues): Record<str
   }
 
   // Codigo de pais + numero: wa.me no abre el chat con un numero local.
-  if (values.whatsapp && !/^[1-9]\d{9,14}$/.test(values.whatsapp)) {
-    errors.whatsapp = "Revisa el numero: con el codigo de pais debe tener entre 10 y 15 digitos";
-  }
+  const whatsappError = validateInternationalPhone(values.whatsapp);
+  if (whatsappError) errors.whatsapp = whatsappError;
 
   if (values.paymentInstructions.length > 280) {
     errors.paymentInstructions = "Las instrucciones no pueden exceder 280 caracteres";

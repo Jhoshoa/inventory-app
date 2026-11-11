@@ -1,5 +1,6 @@
 import { formatCurrency } from "@/lib/format/currency";
 import { formatDateTimeShort } from "@/lib/format/datetime";
+import { formatPhone } from "@/lib/format/phone";
 import { discountLabel } from "../schemas";
 import type { Sale } from "../types";
 
@@ -16,7 +17,7 @@ export function SaleReceipt({ sale, store }: { sale: Sale; store: ReceiptStoreIn
       <div className="space-y-1 text-center">
         <p className="text-lg font-semibold text-text-strong">{store.name}</p>
         {store.address ? <p className="text-xs text-text-muted">{store.address}</p> : null}
-        {store.phone ? <p className="text-xs text-text-muted">Tel: {store.phone}</p> : null}
+        {store.phone ? <p className="text-xs text-text-muted">Tel: {formatPhone(store.phone)}</p> : null}
         {store.nit ? <p className="text-xs text-text-muted">NIT: {store.nit}</p> : null}
       </div>
 

@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/Table";
 import { formatCurrency } from "@/lib/format/currency";
 import { formatDateTimeShort } from "@/lib/format/datetime";
+import { formatPhone } from "@/lib/format/phone";
 import { storefrontWhatsappHref } from "@/features/storefront/whatsapp";
 import { updateStorefrontRequestPaymentAction, updateStorefrontRequestStatusAction } from "../actions";
 import type { StorefrontRequestResponse, StorefrontRequestStatus } from "../types";
@@ -122,7 +123,7 @@ export function StorefrontRequestsTable({ requests }: { requests: StorefrontRequ
                 </TableCell>
                 <TableCell mobileLabel="Cliente">
                   <p className="truncate text-text-strong">{request.customer_name}</p>
-                  <p className="truncate text-xs text-text-muted">{request.customer_phone}</p>
+                  <p className="truncate text-xs text-text-muted">{formatPhone(request.customer_phone)}</p>
                   {request.note ? (
                     <p className="mt-1 truncate text-xs text-text-muted" title={request.note}>
                       &ldquo;{request.note}&rdquo;

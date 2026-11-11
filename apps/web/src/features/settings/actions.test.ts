@@ -71,15 +71,15 @@ describe("updateStoreAction", () => {
   it("still sends a provided address and phone", async () => {
     apiRequest.mockResolvedValue({
       ok: true,
-      data: { id: "store-1", name: "Tienda", address: "Calle 1", phone: "123" },
+      data: { id: "store-1", name: "Tienda", address: "Calle 1", phone: "59170012345" },
     });
 
-    const formData = buildFormData({ name: "Tienda", address: "Calle 1", phone: "123" });
+    const formData = buildFormData({ name: "Tienda", address: "Calle 1", phone: "59170012345" });
 
     await updateStoreAction(initialState, formData);
 
     const [, options] = apiRequest.mock.calls[0];
-    expect(options.body).toEqual({ name: "Tienda", address: "Calle 1", phone: "123" });
+    expect(options.body).toEqual({ name: "Tienda", address: "Calle 1", phone: "59170012345" });
   });
 });
 
@@ -236,13 +236,16 @@ describe("updateStorefrontAction", () => {
     expect(result.fieldErrors.instagram).toBe("Escribe tu usuario de Instagram, ej. @mitienda");
   });
 
-  it("rejects a WhatsApp number without a country code", async () => {
-    const formData = buildFormData({ storefront_whatsapp: "70000000" });
+  it.each([
+    ["7000abc0", "El telefono solo puede tener numeros"],
+    ["5917000000", "Un numero de Bolivia tiene 8 digitos, ej. 70012345"],
+  ])("rejects the WhatsApp number %s", async (whatsapp, message) => {
+    const formData = buildFormData({ storefront_whatsapp: whatsapp });
 
     const result = await updateStorefrontAction(initialStorefrontState, formData);
 
     expect(result.ok).toBe(false);
-    expect(result.fieldErrors.whatsapp).toBeTruthy();
+    expect(result.fieldErrors.whatsapp).toBe(message);
     expect(apiRequest).not.toHaveBeenCalled();
   });
 

@@ -3,8 +3,9 @@ from uuid import UUID
 
 from pydantic import BaseModel, Field, field_validator
 
+from src.domain.value_objects.phone import normalize_phone
+
 _EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
-_PHONE_RE = re.compile(r"^[0-9+\s()-]{7,30}$")
 
 
 class LeadCreateDTO(BaseModel):
@@ -29,10 +30,7 @@ class LeadCreateDTO(BaseModel):
     @field_validator("phone")
     @classmethod
     def validate_phone(cls, value: str) -> str:
-        normalized = value.strip()
-        if not _PHONE_RE.match(normalized):
-            raise ValueError("El telefono no es valido")
-        return normalized
+        return normalize_phone(value)
 
     @field_validator("email")
     @classmethod

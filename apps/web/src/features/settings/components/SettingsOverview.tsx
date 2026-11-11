@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { CollapsibleSection } from "@/components/ui/CollapsibleSection";
 import type { Session } from "@/lib/auth/session";
+import { formatPhone } from "@/lib/format/phone";
 import { ProductCategorySettings } from "@/features/product-categories/components/ProductCategorySettings";
 import type { ProductCategoryListResult } from "@/features/product-categories/types";
 import { StoreLocationSettings } from "@/features/store-locations/components/StoreLocationSettings";
@@ -71,7 +72,7 @@ export function SettingsOverview({
                   { label: "Nombre", value: storeData.name },
                   { label: "ID tienda", value: shortId(session.storeId ?? "") },
                   { label: "Direccion", value: storeData.address ?? "—" },
-                  { label: "Telefono", value: storeData.phone ?? "—" },
+                  { label: "Telefono", value: formatPhone(storeData.phone) || "—" },
                 ]
               : [
                   { label: "Nombre", value: session.storeName },

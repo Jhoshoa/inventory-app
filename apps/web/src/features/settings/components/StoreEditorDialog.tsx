@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/Button";
 import { Dialog, DialogTitle, DialogBody, DialogFooter } from "@/components/ui/Dialog";
 import { FieldError } from "@/components/ui/FieldError";
 import { Input } from "@/components/ui/Input";
+import { PhoneCountryInput } from "@/components/ui/PhoneCountryInput";
 import { Label } from "@/components/ui/Label";
 import { updateStoreAction } from "../actions";
 import type { StoreEditorState } from "../types";
@@ -86,14 +87,14 @@ export function StoreEditorDialog({ storeData }: { storeData: StoreResponse }) {
               </div>
               <div className="space-y-1">
                 <Label htmlFor="store-phone">Telefono</Label>
-                <Input
+                <PhoneCountryInput
                   id="store-phone"
                   name="phone"
-                  type="tel"
-                  defaultValue={storeData.phone ?? ""}
-                  maxLength={20}
+                  defaultValue={storeData.phone}
+                  error={Boolean(fieldErrors.phone)}
+                  errorId="store-phone-error"
                 />
-                <FieldError message={fieldErrors.phone} />
+                <FieldError id="store-phone-error" message={fieldErrors.phone} />
               </div>
             </div>
           </DialogBody>

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Pagination } from "@/components/ui/Pagination";
 import { formatCurrency } from "@/lib/format/currency";
+import { formatPhone } from "@/lib/format/phone";
 import { publicFontVariables } from "@/lib/fonts";
 import { StorefrontOpenStatus } from "../components/StorefrontOpenStatus";
 import { StorefrontSortSelect } from "../components/StorefrontSortSelect";
@@ -394,7 +395,7 @@ function ContactSection({ store }: { store: PublicStorefront }) {
               className={`${card} hover:opacity-90`}
             >
               <span className="font-receipt text-xs font-bold">WHATSAPP</span>
-              <span className="font-display text-[22px]">+{store.whatsapp}</span>
+              <span className="font-display text-[22px]">{formatPhone(store.whatsapp)}</span>
               <span className="text-sm text-sf-muted">Respuesta en horario de atencion</span>
             </a>
           ) : null}

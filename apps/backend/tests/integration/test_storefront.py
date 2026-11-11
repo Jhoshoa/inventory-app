@@ -254,10 +254,24 @@ async def test_public_storefront_rate_limited_per_ip(client):
     assert limited.status_code == 429
 
 
-async def test_storefront_whatsapp_requires_country_code(client):
+async def test_storefront_whatsapp_without_country_code_defaults_to_bolivia(client):
     response = await client.patch("/api/v1/store", json={"storefront_whatsapp": "70000000"})
 
-    assert response.status_code == 422
+    assert response.status_code == 200
+    assert response.json()["storefront_whatsapp"] == "59170000000"
+
+
+async def test_store_phones_only_accept_numbers(client):
+    for field in ("phone", "storefront_whatsapp"):
+        response = await client.patch("/api/v1/store", json={field: "7000abc0"})
+        assert response.status_code == 422, field
+        assert "solo puede tener numeros" in response.text
+
+    short = await client.patch("/api/v1/store", json={"phone": "+591 7000000"})
+    assert short.status_code == 422
+
+    saved = await client.patch("/api/v1/store", json={"phone": "2 2123456"})
+    assert saved.json()["phone"] == "59122123456"
 
 
 async def test_storefront_whatsapp_is_stored_as_digits(client):

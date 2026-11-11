@@ -341,9 +341,10 @@ export function StorefrontSettingsForm({
               id="storefront-whatsapp"
               name="storefront_whatsapp"
               defaultValue={storeData.storefront_whatsapp ?? storeData.phone}
-              placeholder="Numero sin el codigo de pais"
+              error={Boolean(fieldErrors.whatsapp)}
+              errorId="storefront-whatsapp-error"
             />
-            <FieldError message={fieldErrors.whatsapp} />
+            <FieldError id="storefront-whatsapp-error" message={fieldErrors.whatsapp} />
             <p className="text-xs text-text-muted">
               Elige el pais y escribe el numero como lo marcas alli. Los clientes te escriben a este numero desde
               el catalogo.

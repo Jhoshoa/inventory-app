@@ -119,7 +119,7 @@ describe("SettingsOverview", () => {
 
     expect(screen.getByText("Mi Tienda Editada")).toBeInTheDocument();
     expect(screen.getByText("Av. Siempre Viva 123")).toBeInTheDocument();
-    expect(screen.getByText("77712345")).toBeInTheDocument();
+    expect(screen.getByText("+591 77712345")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /editar/i })).toBeInTheDocument();
   });
 

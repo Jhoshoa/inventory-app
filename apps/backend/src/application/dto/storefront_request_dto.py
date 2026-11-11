@@ -1,4 +1,3 @@
-import re
 from datetime import datetime
 from decimal import Decimal
 from typing import Literal
@@ -6,7 +5,8 @@ from uuid import UUID
 
 from pydantic import BaseModel, Field, field_validator
 
-_PHONE_RE = re.compile(r"^[0-9+\s()-]{7,30}$")
+from src.domain.value_objects.phone import normalize_phone
+
 
 
 class CreateStorefrontRequestDTO(BaseModel):
@@ -25,10 +25,7 @@ class CreateStorefrontRequestDTO(BaseModel):
     @field_validator("customer_phone")
     @classmethod
     def validate_phone(cls, value: str) -> str:
-        normalized = value.strip()
-        if not _PHONE_RE.match(normalized):
-            raise ValueError("El telefono no es valido")
-        return normalized
+        return normalize_phone(value)
 
     @field_validator("note")
     @classmethod

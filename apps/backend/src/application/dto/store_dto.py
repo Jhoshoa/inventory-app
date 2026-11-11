@@ -5,17 +5,16 @@ from uuid import UUID
 from pydantic import BaseModel, Field, field_validator
 
 from src.application.dto.storefront_settings_dto import StorefrontSettingsDTO
+from src.domain.value_objects.phone import normalize_phone
 
 _SLUG_RE = re.compile(r"^[a-z0-9](?:[a-z0-9-]{1,58}[a-z0-9])?$")
 _HEX_COLOR_RE = re.compile(r"^#[0-9A-Fa-f]{6}$")
-# Numero internacional sin "+": codigo de pais + numero (E.164 admite hasta 15 digitos).
-_INTERNATIONAL_PHONE_RE = re.compile(r"^[1-9][0-9]{9,14}$")
 
 
 class StoreUpdateDTO(BaseModel):
     name: str | None = Field(default=None, min_length=1, max_length=100)
     address: str | None = Field(default=None, max_length=255)
-    phone: str | None = Field(default=None, max_length=20)
+    phone: str | None = Field(default=None, max_length=30)
     allow_percentage_discount: bool | None = None
     max_percentage_discount: Decimal | None = Field(default=None, ge=0, le=100)
     allow_manual_discount: bool | None = None
@@ -31,17 +30,14 @@ class StoreUpdateDTO(BaseModel):
     # Reemplaza todos los ajustes del catalogo de una vez (el formulario los manda completos).
     storefront_settings: StorefrontSettingsDTO | None = None
 
-    @field_validator("storefront_whatsapp")
+    @field_validator("phone", "storefront_whatsapp")
     @classmethod
-    def validate_whatsapp(cls, v: str | None) -> str | None:
-        # wa.me solo abre el chat con el numero internacional (codigo de pais
-        # incluido). Se guardan solo los digitos; "" sigue significando "borrar".
+    def validate_phone(cls, v: str | None) -> str | None:
+        # Se guardan solo los digitos con codigo de pais (wa.me lo necesita;
+        # sin codigo se asume Bolivia). "" sigue significando "borrar".
         if v is None or v.strip() == "":
             return v
-        digits = re.sub(r"\D", "", v)
-        if not _INTERNATIONAL_PHONE_RE.match(digits):
-            raise ValueError("El WhatsApp debe incluir el codigo de pais, ej. 59170000000")
-        return digits
+        return normalize_phone(v)
 
     @field_validator("storefront_slug")
     @classmethod

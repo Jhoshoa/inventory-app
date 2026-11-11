@@ -77,3 +77,55 @@ export function joinInternationalPhone(countryIso: string, local: string): strin
   if (!digits) return "";
   return `${phoneCountry(countryIso).dialCode}${digits}`;
 }
+
+// Mismas reglas que el backend (domain/value_objects/phone.py).
+const BOLIVIA_DIAL_CODE = "591";
+const BOLIVIA_LOCAL_RE = /^[2-7]\d{7}$/;
+const INTERNATIONAL_RE = /^[1-9]\d{9,14}$/;
+
+/** Cuantos digitos puede tener el numero local de ese pais (Bolivia: 8). */
+export function localPhoneMaxLength(countryIso: string): number {
+  const { dialCode } = phoneCountry(countryIso);
+  return dialCode === BOLIVIA_DIAL_CODE ? 8 : 15 - dialCode.length;
+}
+
+/**
+ * Lo que la persona escribio o pego en el campo del numero local, dejando
+ * solo digitos. Si pego el numero con el codigo de pais, se lo quita.
+ */
+export function sanitizeLocalPhone(countryIso: string, typed: string): string {
+  let digits = digitsOf(typed);
+  const max = localPhoneMaxLength(countryIso);
+  const { dialCode } = phoneCountry(countryIso);
+  const pastedWithCode = typed.trim().startsWith("+") || digits.length > max;
+  if (pastedWithCode && digits.startsWith(dialCode)) digits = digits.slice(dialCode.length);
+  return digits.slice(0, max);
+}
+
+/** Valida el numero internacional que arma PhoneCountryInput; undefined si esta bien. */
+export function validateInternationalPhone(value: string, { required = false } = {}): string | undefined {
+  const trimmed = value.trim();
+  if (!trimmed) return required ? "El telefono es requerido" : undefined;
+  if (!/^\+?[\d\s()-]+$/.test(trimmed)) return "El telefono solo puede tener numeros";
+  let digits = digitsOf(trimmed);
+  if (!trimmed.startsWith("+")) {
+    // Sin codigo de pais se asume Bolivia, como en el backend.
+    digits = digits.replace(/^0+/, "");
+    if (digits.length === 8) digits = BOLIVIA_DIAL_CODE + digits;
+  }
+  if (digits.startsWith(BOLIVIA_DIAL_CODE)) {
+    return BOLIVIA_LOCAL_RE.test(digits.slice(BOLIVIA_DIAL_CODE.length))
+      ? undefined
+      : "Un numero de Bolivia tiene 8 digitos, ej. 70012345";
+  }
+  return INTERNATIONAL_RE.test(digits)
+    ? undefined
+    : "Revisa el numero: con el codigo de pais debe tener entre 10 y 15 digitos";
+}
+
+/** Para mostrar: "+591 70012345". Numeros viejos sin codigo se toman como de Bolivia. */
+export function formatPhone(value: string | null | undefined): string {
+  if (!value) return "";
+  const { country, local } = splitInternationalPhone(value);
+  return local ? `+${phoneCountry(country).dialCode} ${local}` : "";
+}

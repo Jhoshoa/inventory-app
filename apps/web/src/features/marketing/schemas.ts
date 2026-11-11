@@ -1,7 +1,7 @@
+import { validateInternationalPhone } from "@/lib/format/phone";
 import type { ContactFormValues } from "./types";
 
 const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
-const PHONE_RE = /^[0-9+\s()-]{7,30}$/;
 
 export function validateContactForm(values: ContactFormValues): Record<string, string> {
   const errors: Record<string, string> = {};
@@ -16,8 +16,9 @@ export function validateContactForm(values: ContactFormValues): Record<string, s
 
   if (!values.phone.trim()) {
     errors.phone = "Tu telefono es requerido para poder contactarte";
-  } else if (!PHONE_RE.test(values.phone.trim())) {
-    errors.phone = "Ingresa un telefono valido";
+  } else {
+    const phoneError = validateInternationalPhone(values.phone);
+    if (phoneError) errors.phone = phoneError;
   }
 
   if (values.email.trim() && !EMAIL_RE.test(values.email.trim())) {

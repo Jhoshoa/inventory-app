@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/Button";
 import { Field } from "@/components/ui/Field";
 import { Input } from "@/components/ui/Input";
+import { PhoneCountryInput } from "@/components/ui/PhoneCountryInput";
 import { Textarea } from "@/components/ui/Textarea";
 import { submitContactLeadAction } from "../actions";
 import { INITIAL_CONTACT_FORM_STATE } from "../types";
@@ -58,14 +59,12 @@ export function ContactForm() {
           <Input id="name" name="name" required maxLength={150} placeholder="Ej. Maria Perez" disabled={isSubmitting} />
         </Field>
         <Field name="phone" label="Telefono / WhatsApp" error={fieldErrors.phone}>
-          <Input
+          <PhoneCountryInput
             id="phone"
             name="phone"
-            type="tel"
             required
-            maxLength={30}
-            placeholder="Ej. 70000000"
             disabled={isSubmitting}
+            error={Boolean(fieldErrors.phone)}
           />
         </Field>
       </div>

@@ -197,7 +197,7 @@ describe("Boleta en el celular", () => {
     const sheet = screen.getByRole("dialog");
     expect(within(sheet).getByText("ASI LLEGA A LA TIENDA:")).toBeInTheDocument();
     await user.type(within(sheet).getByLabelText("Tu nombre"), "Ana");
-    await user.type(within(sheet).getByPlaceholderText("Tu numero"), "71234567");
+    await user.type(within(sheet).getByPlaceholderText("70012345"), "71234567");
     await user.click(within(sheet).getByRole("button", { name: /Enviar pedido/ }));
 
     expect(vi.mocked(createStorefrontOrderAction).mock.calls[0][1]).toEqual([{ product_id: "p-milk", quantity: 2 }]);
@@ -228,7 +228,7 @@ describe("Boleta en el celular", () => {
     await user.click(screen.getByRole("button", { name: "Ver pedido →" }));
     const sheet = screen.getByRole("dialog");
     await user.type(within(sheet).getByLabelText("Tu nombre"), "Ana");
-    await user.type(within(sheet).getByPlaceholderText("Tu numero"), "71234567");
+    await user.type(within(sheet).getByPlaceholderText("70012345"), "71234567");
     await user.click(within(sheet).getByRole("button", { name: /Enviar pedido/ }));
 
     expect(await within(sheet).findByText("Ya no esta disponible")).toBeInTheDocument();

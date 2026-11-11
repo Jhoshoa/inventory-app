@@ -1,5 +1,6 @@
 import { Pagination } from "@/components/ui/Pagination";
 import { formatCurrency } from "@/lib/format/currency";
+import { formatPhone } from "@/lib/format/phone";
 import { publicFontVariables } from "@/lib/fonts";
 import { StorefrontOpenStatus } from "../components/StorefrontOpenStatus";
 import { categoryTint, facebookUrl, hoursSummary, instagramUrl, storefrontTheme, themeStyle, tiktokUrl } from "../settings";
@@ -281,7 +282,7 @@ function ListaContactCard({ store }: { store: PublicStorefront }) {
               rel="noopener noreferrer"
               className="font-bold text-sf-ink hover:underline"
             >
-              +{store.whatsapp}
+              {formatPhone(store.whatsapp)}
             </a>
           </p>
         ) : null}

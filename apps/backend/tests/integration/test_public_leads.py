@@ -28,7 +28,7 @@ async def test_create_lead_succeeds_without_authentication(client, db_session):
     result = await db_session.execute(select(LeadModel))
     saved = result.scalars().all()
     assert len(saved) == 1
-    assert saved[0].phone == "+591 700 00000"
+    assert saved[0].phone == "59170000000"
 
 
 async def test_create_lead_rejects_invalid_email(client):
