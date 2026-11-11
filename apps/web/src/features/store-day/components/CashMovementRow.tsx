@@ -1,19 +1,23 @@
 "use client";
 
 import type { FormEvent } from "react";
-import { useState } from "react";
+import { useId, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/Button";
+import { FieldError } from "@/components/ui/FieldError";
 import { Input } from "@/components/ui/Input";
 import { formatCurrency } from "@/lib/format/currency";
 import { voidCashMovementAction } from "../actions";
+import { VOID_REASON_MAX_LENGTH } from "../schemas";
 import type { CashMovement } from "../types";
 import { cashMovementLabel, initialState } from "../utils/store-day-helpers";
 
 export function CashMovementRow({ movement }: { movement: CashMovement }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [reasonError, setReasonError] = useState("");
   const router = useRouter();
+  const reasonErrorId = useId();
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -22,10 +26,11 @@ export function CashMovementRow({ movement }: { movement: CashMovement }) {
     setIsSubmitting(true);
     try {
       const nextState = await voidCashMovementAction(initialState, new FormData(event.currentTarget));
+      setReasonError(nextState.fieldErrors.void_reason ?? "");
       if (nextState.ok) {
         toast.success("Movimiento anulado");
         router.refresh();
-      } else {
+      } else if (!nextState.fieldErrors.void_reason) {
         toast.error(nextState.message || "No se pudo anular el movimiento");
       }
     } catch (error) {
@@ -45,14 +50,22 @@ export function CashMovementRow({ movement }: { movement: CashMovement }) {
         </p>
         {movement.note ? <p className="text-xs text-text-muted">{movement.note}</p> : null}
       </div>
-      <form onSubmit={onSubmit} className="flex flex-wrap items-center gap-2">
+      <form onSubmit={onSubmit} noValidate className="flex flex-wrap items-start gap-2">
         <input type="hidden" name="movement_id" value={movement.id} />
-        <Input
-          aria-label="Razon de anulacion"
-          name="void_reason"
-          placeholder="Razon (opcional)"
-          className="h-9 w-40 text-xs"
-        />
+        <div className="flex flex-col gap-1">
+          <Input
+            aria-label="Razón de anulación"
+            name="void_reason"
+            placeholder="Razón (obligatoria)"
+            maxLength={VOID_REASON_MAX_LENGTH}
+            required
+            aria-invalid={reasonError ? true : undefined}
+            aria-describedby={reasonError ? reasonErrorId : undefined}
+            onChange={() => reasonError && setReasonError("")}
+            className="h-9 w-48 text-xs"
+          />
+          <FieldError id={reasonErrorId} message={reasonError} />
+        </div>
         <Button type="submit" variant="secondary" disabled={isSubmitting}>
           {isSubmitting ? "Anulando..." : "Anular"}
         </Button>

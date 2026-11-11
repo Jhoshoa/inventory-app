@@ -80,6 +80,7 @@ export async function pullCatalog(): Promise<{ ok: boolean; updated: number }> {
         qr_code: string | null;
         discount_type?: "percentage" | "fixed" | null;
         discount_value?: string;
+        discount_ends_at?: string | null;
         locations?: unknown;
       };
       const record: OfflineProduct = {
@@ -91,10 +92,12 @@ export async function pullCatalog(): Promise<{ ok: boolean; updated: number }> {
         qr_code: payload.qr_code ?? null,
         discount_type: payload.discount_type ?? null,
         discount_value: payload.discount_value ?? "0",
+        discount_ends_at: payload.discount_ends_at ?? null,
         effective_price: computeEffectivePrice(
           payload.price,
           payload.discount_type ?? null,
           payload.discount_value ?? "0",
+          payload.discount_ends_at ?? null,
         ),
         locations: parseLocations(payload.locations),
         deleted: false,
@@ -119,14 +122,24 @@ export async function seedCatalogIfEmpty(): Promise<void> {
   await pullCatalog();
 }
 
-function computeEffectivePrice(
+/** El descuento de producto deja de valer al llegar su fecha (igual que en la API). */
+export function isDiscountExpired(discountEndsAt: string | null | undefined, now: Date = new Date()): boolean {
+  if (!discountEndsAt) return false;
+  const endsAt = new Date(discountEndsAt).getTime();
+  return Number.isFinite(endsAt) && endsAt <= now.getTime();
+}
+
+export function computeEffectivePrice(
   price: string,
   discountType: "percentage" | "fixed" | null,
   discountValue: string,
+  discountEndsAt: string | null = null,
+  now: Date = new Date(),
 ): string {
   const priceNum = Number(price);
   const valueNum = Number(discountValue);
   if (!discountType || Number.isNaN(priceNum) || Number.isNaN(valueNum)) return price;
+  if (isDiscountExpired(discountEndsAt, now)) return price;
   const discount = discountType === "percentage" ? (priceNum * valueNum) / 100 : valueNum;
   const effective = Math.max(0, priceNum - Math.min(discount, priceNum));
   return effective.toFixed(2);

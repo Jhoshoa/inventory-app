@@ -3,7 +3,14 @@
 import { revalidatePath } from "next/cache";
 import { apiRequest } from "@/lib/api/client";
 import { getAuthToken } from "@/lib/auth/session";
-import { moneyValue, noteValue, validateCashMovementType, validateMoneyAmount, validateStoreDayNote } from "./schemas";
+import {
+  moneyValue,
+  noteValue,
+  validateCashMovementType,
+  validateMoneyAmount,
+  validateStoreDayNote,
+  validateVoidReason,
+} from "./schemas";
 import type { CashMovement, StoreDay, StoreDayActionState } from "./types";
 
 export async function openStoreDayAction(
@@ -12,7 +19,7 @@ export async function openStoreDayAction(
 ): Promise<StoreDayActionState> {
   const noteError = validateStoreDayNote(formData.get("note"));
   if (noteError) return { ok: false, fieldErrors: { note: noteError } };
-  const cashError = validateMoneyAmount(formData.get("opening_cash_amount"), "Caja inicial");
+  const cashError = validateMoneyAmount(formData.get("opening_cash_amount"), "Caja inicial", { allowZero: true });
   if (cashError) return { ok: false, fieldErrors: { opening_cash_amount: cashError } };
 
   const token = await getAuthToken();
@@ -38,7 +45,10 @@ export async function closeStoreDayAction(
   const noteError = validateStoreDayNote(formData.get("note"));
   if (noteError) return { ok: false, fieldErrors: { note: noteError } };
   const skipCashCount = formData.get("skip_cash_count") === "on";
-  const cashError = validateMoneyAmount(formData.get("counted_cash_amount"), "Efectivo contado", !skipCashCount);
+  const cashError = validateMoneyAmount(formData.get("counted_cash_amount"), "Efectivo contado", {
+    required: !skipCashCount,
+    allowZero: true,
+  });
   if (cashError) return { ok: false, fieldErrors: { counted_cash_amount: cashError } };
 
   const token = await getAuthToken();
@@ -84,7 +94,7 @@ export async function createCashMovementAction(
 ): Promise<StoreDayActionState> {
   const typeError = validateCashMovementType(formData.get("movement_type"));
   if (typeError) return { ok: false, fieldErrors: { movement_type: typeError } };
-  const amountError = validateMoneyAmount(formData.get("amount"), "Monto", true);
+  const amountError = validateMoneyAmount(formData.get("amount"), "Monto", { required: true });
   if (amountError) return { ok: false, fieldErrors: { amount: amountError } };
   const noteError = validateStoreDayNote(formData.get("note"));
   if (noteError) return { ok: false, fieldErrors: { note: noteError } };
@@ -114,12 +124,14 @@ export async function voidCashMovementAction(
   if (typeof movementId !== "string" || !movementId) {
     return { ok: false, message: "Movimiento no valido", fieldErrors: {} };
   }
+  const reasonError = validateVoidReason(formData.get("void_reason"));
+  if (reasonError) return { ok: false, fieldErrors: { void_reason: reasonError } };
+
   const token = await getAuthToken();
-  const voidReason = formData.get("void_reason");
   const result = await apiRequest<CashMovement>(`/cash-movements/${movementId}/void`, {
     method: "POST",
     token: token ?? undefined,
-    body: { void_reason: typeof voidReason === "string" && voidReason.trim() ? voidReason.trim() : "Anulado desde Ajustes" },
+    body: { void_reason: String(formData.get("void_reason")).trim() },
   });
 
   if (!result.ok) return { ok: false, message: result.error.message, fieldErrors: {} };

@@ -39,7 +39,9 @@ export interface StoreDayActionState {
   ok: boolean;
   message?: string;
   storeDay?: StoreDay;
-  fieldErrors: Partial<Record<"note" | "opening_cash_amount" | "counted_cash_amount" | "movement_type" | "amount", string>>;
+  fieldErrors: Partial<
+    Record<"note" | "opening_cash_amount" | "counted_cash_amount" | "movement_type" | "amount" | "void_reason", string>
+  >;
 }
 
 export interface StoreDayClosingPreview {

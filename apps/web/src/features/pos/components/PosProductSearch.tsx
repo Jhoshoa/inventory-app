@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/Input";
 import { SEARCH_DEBOUNCE_MS } from "@/lib/constants/ui";
 import { MIN_PRODUCT_SEARCH_LENGTH } from "@/features/products/schemas";
 import { getOfflineDb, type OfflineProduct } from "@/lib/offline/db";
+import { isDiscountExpired } from "@/lib/offline/syncEngine";
 import { PosCameraScanner } from "./PosCameraScanner";
 import { PosProductResults } from "./PosProductResults";
 import type { PosProduct, PosProductListResponse } from "../types";
@@ -19,6 +20,8 @@ export interface PosProductSearchHandle {
 }
 
 function toPosProduct(product: OfflineProduct): PosProduct {
+  // Sin conexion el descuento puede vencer despues del ultimo sync: se recalcula al leer.
+  const expired = isDiscountExpired(product.discount_ends_at);
   return {
     id: product.id,
     name: product.name,
@@ -26,9 +29,9 @@ function toPosProduct(product: OfflineProduct): PosProduct {
     stock: product.stock,
     unit: product.unit,
     qr_code: product.qr_code,
-    discount_type: product.discount_type,
-    discount_value: product.discount_value,
-    effective_price: product.effective_price,
+    discount_type: expired ? null : product.discount_type,
+    discount_value: expired ? "0" : product.discount_value,
+    effective_price: expired ? product.price : product.effective_price,
     locations: product.locations ?? [],
   };
 }

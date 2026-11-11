@@ -2,8 +2,10 @@ import "fake-indexeddb/auto";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { getOfflineDb } from "./db";
 import {
+  computeEffectivePrice,
   discardPendingSale,
   flushPendingSales,
+  isDiscountExpired,
   listConflictedSales,
   pullCatalog,
   queueSale,
@@ -407,5 +409,64 @@ describe("pullCatalog", () => {
     await pullCatalog();
     const product = await db.products.get("product-10");
     expect(product).toBeUndefined();
+  });
+});
+
+describe("product discounts offline", () => {
+  const now = new Date("2026-11-11T12:00:00Z");
+
+  it("applies a discount until its end date", () => {
+    expect(computeEffectivePrice("10.00", "percentage", "10", "2026-11-12T00:00:00Z", now)).toBe("9.00");
+    expect(computeEffectivePrice("10.00", "fixed", "2.5", null, now)).toBe("7.50");
+    expect(computeEffectivePrice("10.00", "percentage", "10", "2026-11-11T12:00:00Z", now)).toBe("10.00");
+    expect(computeEffectivePrice("10.00", "percentage", "10", "2026-11-01T00:00:00Z", now)).toBe("10.00");
+    expect(computeEffectivePrice("10.00", "fixed", "15", null, now)).toBe("0.00");
+  });
+
+  it("knows when a discount expired", () => {
+    expect(isDiscountExpired(null, now)).toBe(false);
+    expect(isDiscountExpired(undefined, now)).toBe(false);
+    expect(isDiscountExpired("2026-11-11T11:59:59Z", now)).toBe(true);
+    expect(isDiscountExpired("2026-11-11T12:00:01Z", now)).toBe(false);
+    expect(isDiscountExpired("no-es-fecha", now)).toBe(false);
+  });
+
+  it("stores the discount end date from the server", async () => {
+    const db = getOfflineDb();
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          changes: [
+            {
+              entity: "product",
+              operation: "upsert",
+              entity_id: "product-20",
+              server_version: 1,
+              server_updated_at: "2026-11-11T10:00:00Z",
+              payload: {
+                id: "product-20",
+                name: "Yogur",
+                price: "10.00",
+                stock: 4,
+                unit: "unidad",
+                qr_code: null,
+                discount_type: "percentage",
+                discount_value: "10",
+                discount_ends_at: "2999-01-01T00:00:00Z",
+              },
+            },
+          ],
+          server_time: "2026-11-11T10:00:01Z",
+        }),
+      }),
+    );
+
+    await pullCatalog();
+
+    const product = await db.products.get("product-20");
+    expect(product?.discount_ends_at).toBe("2999-01-01T00:00:00Z");
+    expect(product?.effective_price).toBe("9.00");
   });
 });
