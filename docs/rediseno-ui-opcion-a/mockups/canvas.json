@@ -140,6 +140,13 @@
       "x": 0,
       "y": 0
     },
+    "P00-Navegacion-Celular.dc.html": {
+      "h": 1043,
+      "title": "Navegación en el celular · barra de abajo",
+      "w": 1854,
+      "x": 0,
+      "y": 10300
+    },
     "P01-Productos-Lista.dc.html": {
       "h": 960,
       "title": "Productos · lista, filtros y acciones",
@@ -244,13 +251,6 @@
       "w": 4590,
       "x": 0,
       "y": 26800
-    },
-    "P00-Navegacion-Celular.dc.html": {
-      "h": 1000,
-      "title": "Navegación en el celular · barra de abajo",
-      "w": 1830,
-      "x": 0,
-      "y": 10300
     }
   },
   "createdOnFiles": {
@@ -329,7 +329,7 @@
     },
     "rowPaginas": {
       "kind": "title1",
-      "maxW": 8470,
+      "maxW": 8000,
       "text": "A · Todas las páginas (para implementar)",
       "w": 240,
       "x": 0,

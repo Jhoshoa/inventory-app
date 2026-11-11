@@ -233,10 +233,13 @@ Si no se hacen los opcionales, la pantalla se muestra sin ese dato (sin "Aviso d
 ## Correcciones de la web que salieron al revisar
 
 - Aceptar coma decimal en montos (hoy `validateMoneyAmount` solo acepta punto).
+- Permitir 0 en la apertura de caja y en el efectivo contado (hoy `validateMoneyAmount` rechaza 0 siempre; la API lo acepta).
 - Razón obligatoria al anular un movimiento de caja (la API ya la exige).
 - Textos: Configuración, Venta actual, Pedidos, Vender, Inicio, "Tu pedido" en el catálogo, Lugares en la tienda, Dónde está, Categorías.
 
 ## Orden de implementación sugerido
+
+El orden detallado, con la Fase 0 (backend y arreglos), las reglas para todas las pantallas, los errores E1–E6, las decisiones pendientes y la lista de paridad, está en [PLAN-DE-IMPLEMENTACION.md](PLAN-DE-IMPLEMENTACION.md). Este resumen queda como referencia de tamaños.
 
 1. **Base** (2 días): tokens de la opción A, layout (barra lateral, barra angosta, pestañas, menú Más), nuevos nombres, franjas de estado (sin conexión, prueba, suspendida), estados vacíos, de error y de carga. B3.
 2. **Inicio y Caja** (1,5 días): Inicio nuevo y página Caja con sus ventanas.
