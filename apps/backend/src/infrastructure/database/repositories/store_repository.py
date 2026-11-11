@@ -53,6 +53,7 @@ class StoreRepository(IStoreRepository):
         model.allow_manual_discount = store.allow_manual_discount
         model.max_manual_discount_amount = store.max_manual_discount_amount
         model.allow_cashier_discount_override = store.allow_cashier_discount_override
+        model.default_alert_days = store.default_alert_days
         model.storefront_enabled = store.storefront_enabled
         model.storefront_slug = store.storefront_slug
         model.storefront_tier = store.storefront_tier
@@ -248,6 +249,7 @@ class StoreRepository(IStoreRepository):
             allow_manual_discount=bool(model.allow_manual_discount),
             max_manual_discount_amount=model.max_manual_discount_amount or Decimal(0),
             allow_cashier_discount_override=bool(model.allow_cashier_discount_override),
+            default_alert_days=model.default_alert_days if model.default_alert_days is not None else 5,
             storefront_enabled=bool(model.storefront_enabled),
             storefront_slug=model.storefront_slug,
             storefront_tier=model.storefront_tier or "none",

@@ -13,8 +13,11 @@ class IStorefrontRequestRepository(ABC):
 
     @abstractmethod
     async def list_by_store(
-        self, store_id: UUID, *, limit: int = 50, offset: int = 0
+        self, store_id: UUID, *, limit: int = 50, offset: int = 0, status: str | None = None
     ) -> tuple[list[StorefrontRequest], int]: ...
+
+    @abstractmethod
+    async def count_by_status(self, store_id: UUID) -> dict[str, int]: ...
 
     @abstractmethod
     async def count_pending(self, store_id: UUID) -> int: ...

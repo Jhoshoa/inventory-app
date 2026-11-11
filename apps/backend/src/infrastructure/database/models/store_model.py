@@ -1,7 +1,7 @@
 import uuid
 from datetime import UTC, datetime
 
-from sqlalchemy import JSON, Boolean, Column, Date, DateTime, Numeric, String
+from sqlalchemy import JSON, Boolean, Column, Date, DateTime, Integer, Numeric, String
 
 from src.infrastructure.database.models.product_model import Base
 from src.infrastructure.database.types import GUID
@@ -33,6 +33,7 @@ class StoreModel(Base):
     allow_manual_discount = Column(Boolean, nullable=False, default=False)
     max_manual_discount_amount = Column(Numeric(12, 2), nullable=False, default=0)
     allow_cashier_discount_override = Column(Boolean, nullable=False, default=False)
+    default_alert_days = Column(Integer, nullable=False, default=5, server_default="5")
     storefront_enabled = Column(Boolean, nullable=False, default=False)
     storefront_slug = Column(String(60), unique=True, nullable=True)
     storefront_tier = Column(String(20), nullable=False, default="none")

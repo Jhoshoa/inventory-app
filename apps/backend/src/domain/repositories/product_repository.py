@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from datetime import date
 from uuid import UUID
 
 from src.domain.entities.product import Product
@@ -31,6 +32,7 @@ class IProductRepository(ABC):
         offset: int = 0,
         sort: str = "name",
         direction: str = "asc",
+        today: date | None = None,
     ) -> tuple[list[Product], int]: ...
 
     @abstractmethod

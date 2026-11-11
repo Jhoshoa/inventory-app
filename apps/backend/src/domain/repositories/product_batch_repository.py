@@ -17,5 +17,8 @@ class IProductBatchRepository(ABC):
     async def list_alerts(self, store_id: UUID, today: date, *, limit: int = 20) -> list[ProductBatch]: ...
 
     @abstractmethod
+    async def next_expiry_for_products(self, store_id: UUID, product_ids: list[UUID]) -> dict[UUID, date]: ...
+
+    @abstractmethod
     async def count_alerts(self, store_id: UUID, today: date) -> tuple[int, int]:
         """(por vencer, vencidos) de lotes con unidades de productos no eliminados."""

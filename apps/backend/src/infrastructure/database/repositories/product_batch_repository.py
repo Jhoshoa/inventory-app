@@ -64,6 +64,21 @@ class ProductBatchRepository(IProductBatchRepository):
             self._to_entity(model, product_name=name, product_unit=unit) for model, name, unit in result.all()
         ]
 
+    async def next_expiry_for_products(self, store_id: UUID, product_ids: list[UUID]) -> dict[UUID, date]:
+        """Vencimiento mas cercano entre los lotes con unidades de cada producto."""
+        if not product_ids:
+            return {}
+        result = await self._session.execute(
+            select(ProductBatchModel.product_id, func.min(ProductBatchModel.expires_on))
+            .where(
+                ProductBatchModel.store_id == store_id,
+                ProductBatchModel.product_id.in_(product_ids),
+                ProductBatchModel.quantity_remaining > 0,
+            )
+            .group_by(ProductBatchModel.product_id)
+        )
+        return {product_id: expires_on for product_id, expires_on in result.all()}
+
     async def count_alerts(self, store_id: UUID, today: date) -> tuple[int, int]:
         expired = case((ProductBatchModel.expires_on < today, 1), else_=0)
         result = await self._session.execute(

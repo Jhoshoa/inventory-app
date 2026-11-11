@@ -9,6 +9,7 @@ from sqlalchemy.orm import selectinload
 from src.domain.entities.sale import Sale, SaleItem
 from src.domain.repositories.sale_repository import ISaleRepository
 from src.infrastructure.database.models.sale_model import SaleItemModel, SaleModel
+from src.infrastructure.database.models.user_model import UserModel
 
 
 class SaleRepository(ISaleRepository):
@@ -58,7 +59,8 @@ class SaleRepository(ISaleRepository):
         model = result.scalar_one_or_none()
         if not model:
             return None
-        return self._to_entity(model)
+        names = await self._user_names([model])
+        return self._to_entity(model, names)
 
     async def list_by_store(
         self,
@@ -87,9 +89,9 @@ class SaleRepository(ISaleRepository):
             .limit(limit)
             .offset(offset)
         )
-        sales = []
-        for model in result.scalars().all():
-            sales.append(self._to_entity(model))
+        models = list(result.scalars().all())
+        names = await self._user_names(models)
+        sales = [self._to_entity(model, names) for model in models]
         return sales, int(total_result.scalar_one() or 0)
 
     async def sales_summary_for_range(self, store_id: UUID, start: datetime, end: datetime) -> dict:
@@ -222,7 +224,9 @@ class SaleRepository(ISaleRepository):
         )
         return [self._to_entity(model) for model in result.scalars().all()]
 
-    async def mark_voided(self, store_id: UUID, sale_id: UUID, reason: str) -> Sale | None:
+    async def mark_voided(
+        self, store_id: UUID, sale_id: UUID, reason: str, voided_by_user_id: UUID | None = None
+    ) -> Sale | None:
         result = await self._session.execute(
             select(SaleModel)
             .where(SaleModel.store_id == store_id, SaleModel.id == sale_id, SaleModel.deleted_at.is_(None))
@@ -234,6 +238,7 @@ class SaleRepository(ISaleRepository):
         model.status = "voided"
         model.voided_at = datetime.now(UTC)
         model.void_reason = reason
+        model.voided_by_user_id = voided_by_user_id
         model.version = (model.version or 0) + 1
         model.updated_at = datetime.now(UTC)
         await self._session.flush()
@@ -375,7 +380,25 @@ class SaleRepository(ISaleRepository):
             SaleModel.business_date <= to_date,
         ]
 
-    def _to_entity(self, model: SaleModel) -> Sale:
+    async def _user_names(self, models: list[SaleModel]) -> dict[UUID, str]:
+        """Nombre de quien vendio o anulo, en una sola consulta para toda la pagina."""
+        user_ids = {
+            user_id
+            for model in models
+            for user_id in (model.created_by_user_id, model.voided_by_user_id)
+            if user_id is not None
+        }
+        if not user_ids:
+            return {}
+        result = await self._session.execute(
+            select(UserModel.id, UserModel.full_name, UserModel.email).where(UserModel.id.in_(user_ids))
+        )
+        return {
+            user_id: (full_name or "").strip() or email.split("@", 1)[0]
+            for user_id, full_name, email in result.all()
+        }
+
+    def _to_entity(self, model: SaleModel, names: dict[UUID, str] | None = None) -> Sale:
         items = [
             SaleItem(
                 id=i.id,
@@ -406,4 +429,7 @@ class SaleRepository(ISaleRepository):
             created_at=model.created_at,
             voided_at=model.voided_at,
             void_reason=model.void_reason,
+            voided_by_user_id=model.voided_by_user_id,
+            created_by_name=(names or {}).get(model.created_by_user_id) if model.created_by_user_id else None,
+            voided_by_name=(names or {}).get(model.voided_by_user_id) if model.voided_by_user_id else None,
         )

@@ -1,4 +1,4 @@
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, date, datetime, timedelta
 from decimal import Decimal
 from uuid import UUID, uuid4
 
@@ -9,6 +9,7 @@ from src.application.exceptions import StockConflictError
 from src.domain.entities.product import Product
 from src.domain.entities.product_batch import NewBatch
 from src.domain.repositories.product_repository import IProductRepository
+from src.infrastructure.database.models.product_batch_model import ProductBatchModel
 from src.infrastructure.database.models.product_model import ProductModel
 from src.infrastructure.database.models.sale_model import SaleItemModel, SaleModel
 from src.infrastructure.database.models.stock_movement_model import StockMovementModel
@@ -110,6 +111,7 @@ class ProductRepository(IProductRepository):
         offset: int = 0,
         sort: str = "name",
         direction: str = "asc",
+        today: date | None = None,
     ) -> tuple[list[Product], int]:
         filters = [ProductModel.store_id == store_id, ProductModel.deleted_at.is_(None)]
         if q:
@@ -131,6 +133,17 @@ class ProductRepository(IProductRepository):
             filters.append(ProductModel.stock <= ProductModel.min_stock)
         elif stock == "out":
             filters.append(ProductModel.stock <= 0)
+        elif stock == "expiring":
+            # Vencidos o dentro del aviso, con unidades (mismo criterio que Inicio).
+            filters.append(
+                ProductModel.id.in_(
+                    select(ProductBatchModel.product_id).where(
+                        ProductBatchModel.store_id == store_id,
+                        ProductBatchModel.quantity_remaining > 0,
+                        ProductBatchModel.alert_on <= (today or date.today()),
+                    )
+                )
+            )
 
         total_result = await self._session.execute(select(func.count()).select_from(ProductModel).where(*filters))
         total = int(total_result.scalar_one())

@@ -48,6 +48,8 @@ async def sync_pull(
             store_id=user.store_id,
             device_id=dto.device_id,
             since=dto.since,
+            # El costo es solo del dueno.
+            include_cost=user.role == "owner",
         )
     )
     return SyncPullResponseDTO(changes=changes, server_time=datetime.now(timezone.utc))

@@ -97,6 +97,8 @@ class StorefrontRequestListResponseDTO(BaseModel):
     items: list[StorefrontRequestResponseDTO]
     total: int
     pending_count: int
+    # Conteo de todos los pedidos de la tienda por estado (para las pestanas).
+    status_counts: dict[str, int] = Field(default_factory=dict)
     limit: int
     offset: int
 

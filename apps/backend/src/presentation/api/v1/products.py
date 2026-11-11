@@ -69,7 +69,7 @@ from src.application.use_cases.stock_movements.list_product_stock_movements impo
 )
 from src.config.settings import settings
 from src.domain.entities.product import Product
-from src.domain.entities.product_batch import NewBatch
+from src.domain.entities.product_batch import DEFAULT_ALERT_DAYS, NewBatch
 from src.domain.entities.store_location import ProductLocation
 from src.infrastructure.database.repositories.import_job_repository import (
     ImportJobRepository,
@@ -137,6 +137,18 @@ async def _with_locations(
     ]
 
 
+def _for_viewer(items: list[ProductResponseDTO], user) -> list[ProductResponseDTO]:
+    """El costo es solo del dueno: al cajero no se le envia."""
+    if user.role == "owner":
+        return items
+    return [item.model_copy(update={"cost_price": None}) for item in items]
+
+
+async def _default_alert_days(store_repo: StoreRepository, store_id: UUID) -> int:
+    store = await store_repo.get_by_id(store_id)
+    return store.default_alert_days if store else DEFAULT_ALERT_DAYS
+
+
 async def _one_with_locations(
     product: Product, store_id: UUID, location_repo: StoreLocationRepository
 ) -> ProductResponseDTO:
@@ -156,7 +168,14 @@ async def list_products(
     user=Depends(require_active_user),
     repo: ProductRepository = Depends(get_product_repo),
     location_repo: StoreLocationRepository = Depends(get_store_location_repo),
+    batch_repo: ProductBatchRepository = Depends(get_product_batch_repo),
+    store_repo: StoreRepository = Depends(get_store_repo),
 ):
+    today = None
+    if stock == ProductStockFilter.EXPIRING:
+        # "Hoy" en la zona horaria de la tienda, igual que las alertas de Inicio.
+        store = await store_repo.get_by_id(user.store_id)
+        today = local_business_date(store.timezone if store else None)
     products, total = await SearchProductsUseCase(repo).execute(
         SearchProductsInput(
             store_id=user.store_id,
@@ -168,10 +187,13 @@ async def list_products(
             offset=offset,
             sort=sort.value,
             direction=direction.value,
+            today=today,
         )
     )
+    items = await _with_locations(products, user.store_id, location_repo)
+    next_expiry = await batch_repo.next_expiry_for_products(user.store_id, [product.id for product in products])
     return ProductListResponseDTO(
-        items=await _with_locations(products, user.store_id, location_repo),
+        items=_for_viewer([item.model_copy(update={"next_expiry": next_expiry.get(item.id)}) for item in items], user),
         total=total,
         limit=limit,
         offset=offset,
@@ -228,7 +250,7 @@ async def list_low_stock_products(
     location_repo: StoreLocationRepository = Depends(get_store_location_repo),
 ):
     products = await ListLowStockProductsUseCase(repo).execute(user.store_id, limit)
-    return await _with_locations(products, user.store_id, location_repo)
+    return _for_viewer(await _with_locations(products, user.store_id, location_repo), user)
 
 
 @router.get("/qr/{qr_code}", response_model=ProductResponseDTO)
@@ -239,7 +261,7 @@ async def get_product_by_qr(
     location_repo: StoreLocationRepository = Depends(get_store_location_repo),
 ):
     product = await GetProductByQRUseCase(repo).execute(user.store_id, qr_code)
-    return await _one_with_locations(product, user.store_id, location_repo)
+    return _for_viewer([await _one_with_locations(product, user.store_id, location_repo)], user)[0]
 
 
 @router.get("/{product_id}/stock-movements", response_model=StockMovementListResponseDTO)
@@ -325,7 +347,16 @@ async def create_product(
             discount_value=dto.discount_value,
             discount_ends_at=dto.discount_ends_at,
             initial_batch=(
-                NewBatch(expires_on=dto.expires_on, alert_days=dto.alert_days) if dto.expires_on else None
+                NewBatch(
+                    expires_on=dto.expires_on,
+                    alert_days=(
+                        dto.alert_days
+                        if dto.alert_days is not None
+                        else await _default_alert_days(store_repo, user.store_id)
+                    ),
+                )
+                if dto.expires_on
+                else None
             ),
         )
     )
@@ -340,7 +371,7 @@ async def get_product(
     location_repo: StoreLocationRepository = Depends(get_store_location_repo),
 ):
     product = await GetProductUseCase(repo).execute(user.store_id, product_id)
-    return await _one_with_locations(product, user.store_id, location_repo)
+    return _for_viewer([await _one_with_locations(product, user.store_id, location_repo)], user)[0]
 
 
 @router.patch("/{product_id}", response_model=ProductResponseDTO)
@@ -393,13 +424,20 @@ async def adjust_stock(
     user=Depends(require_owner),
     repo: ProductRepository = Depends(get_product_repo),
     location_repo: StoreLocationRepository = Depends(get_store_location_repo),
+    store_repo: StoreRepository = Depends(get_store_repo),
 ):
+    new_batch = None
+    if dto.expires_on:
+        alert_days = dto.alert_days
+        if alert_days is None:
+            alert_days = await _default_alert_days(store_repo, user.store_id)
+        new_batch = NewBatch(expires_on=dto.expires_on, alert_days=alert_days)
     product = await UpdateStockUseCase(repo).execute(
         user.store_id,
         product_id,
         dto.quantity,
         dto.reason,
-        new_batch=NewBatch(expires_on=dto.expires_on, alert_days=dto.alert_days) if dto.expires_on else None,
+        new_batch=new_batch,
         batch_id=dto.batch_id,
     )
     return await _one_with_locations(product, user.store_id, location_repo)
@@ -536,7 +574,10 @@ async def import_products_csv(
     job_repo = ImportJobRepository(session)
     batch_repo = ProductBatchRepository(session)
     use_case = ImportProductsCsvUseCase(session, product_repo, category_repo, job_repo, batch_repo)
-    job = await use_case.execute(user.store_id, user.id, file.filename or "productos.csv", content)
+    default_alert_days = await _default_alert_days(StoreRepository(session), user.store_id)
+    job = await use_case.execute(
+        user.store_id, user.id, file.filename or "productos.csv", content, default_alert_days=default_alert_days
+    )
 
     return _job_to_response(job)
 

@@ -7,7 +7,7 @@ from pydantic import BaseModel, Field, computed_field, field_validator, model_va
 
 from src.application.dto.store_location_dto import ProductLocationResponseDTO
 from src.domain.entities.product import product_discount_per_unit
-from src.domain.entities.product_batch import DEFAULT_ALERT_DAYS, MAX_ALERT_DAYS
+from src.domain.entities.product_batch import MAX_ALERT_DAYS
 
 
 def _as_aware(dt: datetime) -> datetime:
@@ -24,6 +24,7 @@ class ProductStockFilter(StrEnum):
     AVAILABLE = "available"
     LOW = "low"
     OUT = "out"
+    EXPIRING = "expiring"
 
 
 class ProductSortField(StrEnum):
@@ -56,7 +57,8 @@ class CreateProductDTO(BaseModel):
     discount_ends_at: datetime | None = None
     # Lote inicial: si el stock inicial vence, la fecha y con cuantos dias avisar.
     expires_on: date | None = None
-    alert_days: int = Field(default=DEFAULT_ALERT_DAYS, ge=0, le=MAX_ALERT_DAYS)
+    # Vacio: el aviso por defecto de la tienda.
+    alert_days: int | None = Field(default=None, ge=0, le=MAX_ALERT_DAYS)
 
     @model_validator(mode="after")
     def validate_discount(self) -> "CreateProductDTO":
@@ -124,7 +126,8 @@ class StockAdjustmentDTO(BaseModel):
     # Al agregar: el lote que entra, si vence. Al descontar: de que lote sale
     # (p. ej. retirar uno vencido); sin lote sale primero el que vence antes.
     expires_on: date | None = None
-    alert_days: int = Field(default=DEFAULT_ALERT_DAYS, ge=0, le=MAX_ALERT_DAYS)
+    # Vacio: el aviso por defecto de la tienda.
+    alert_days: int | None = Field(default=None, ge=0, le=MAX_ALERT_DAYS)
     batch_id: UUID | None = None
 
     @field_validator("quantity")
@@ -162,6 +165,8 @@ class ProductResponseDTO(BaseModel):
     discount_value: Decimal = Decimal(0)
     discount_ends_at: datetime | None = None
     locations: list[ProductLocationResponseDTO] = Field(default_factory=list)
+    # Fecha del lote con unidades que vence antes (solo en la lista).
+    next_expiry: date | None = None
 
     model_config = {"from_attributes": True}
 

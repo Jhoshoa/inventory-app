@@ -349,6 +349,68 @@ async def test_batches_are_store_scoped(client, db_session):
     assert summary["expiry_alerts"] == []
 
 
+
+async def test_products_expiring_filter_matches_dashboard_alerts(client, db_session):
+    soon = await _product(client, name="Yogur", stock=3, expires_on=_in(2))  # aviso 5 dias
+    later = await _product(client, name="Arroz", stock=3, expires_on=_in(60))
+    gone = await _product(client, name="Pan", stock=1, expires_on=_in(-1))
+    deleted = await _product(client, name="Borrado", stock=1, expires_on=_in(1))
+    await client.delete(f"/api/v1/products/{deleted['id']}")
+    plain = await _product(client, name="Sal", stock=4)
+
+    response = await client.get("/api/v1/products", params={"stock": "expiring"})
+    assert response.status_code == 200, response.text
+    body = response.json()
+    assert body["total"] == 2
+    assert {item["id"] for item in body["items"]} == {soon["id"], gone["id"]}
+    assert {item["id"]: item["next_expiry"] for item in body["items"]} == {
+        soon["id"]: _in(2),
+        gone["id"]: _in(-1),
+    }
+
+    everything = (await client.get("/api/v1/products")).json()
+    by_id = {item["id"]: item for item in everything["items"]}
+    assert by_id[later["id"]]["next_expiry"] == _in(60)
+    assert by_id[plain["id"]]["next_expiry"] is None
+
+    # El cajero ve el mismo filtro (solo lectura).
+    await _as_cashier(db_session)
+    cashier = await client.get("/api/v1/products", params={"stock": "expiring"})
+    assert cashier.status_code == 200
+    assert cashier.json()["total"] == 2
+
+
+async def test_products_next_expiry_ignores_depleted_batches(client):
+    product = await _product(client, name="Leche", stock=2, expires_on=_in(3))
+    added = await _add(client, product["id"], 4, expires_on=_in(20))
+    assert added.status_code == 200, added.text
+    first_batch = next(b for b in (await _batches(client, product["id"]))["items"] if b["expires_on"] == _in(3))
+    removed = await _add(client, product["id"], -2, batch_id=first_batch["id"], reason="Vencido")
+    assert removed.status_code == 200, removed.text
+
+    body = (await client.get("/api/v1/products", params={"stock": "expiring"})).json()
+    assert body["total"] == 0
+    item = (await client.get("/api/v1/products", params={"q": "Leche"})).json()["items"][0]
+    assert item["next_expiry"] == _in(20)
+
+
+async def test_products_expiring_filter_is_store_scoped(client, db_session):
+    await _product(client, stock=2, expires_on=_in(1))
+    other_store_id = uuid4()
+    db_session.add(StoreModel(id=other_store_id, name="Otra", address="x", phone="1"))
+    await db_session.commit()
+
+    async def other_store_user():
+        return {"id": dependencies.DEV_USER_ID, "email": "dev@local.dev", "store_id": other_store_id}
+
+    user = await db_session.get(UserModel, dependencies.DEV_USER_ID)
+    user.store_id = other_store_id
+    await db_session.commit()
+    app.dependency_overrides[dependencies.get_current_user] = other_store_user
+
+    body = (await client.get("/api/v1/products", params={"stock": "expiring"})).json()
+    assert body["total"] == 0
+
 # --- Sync ------------------------------------------------------------------
 
 
@@ -474,3 +536,57 @@ async def test_csv_import_rejects_bad_expiry_values(client):
         (3, "aviso_dias"),
         (4, "aviso_dias"),
     ]
+
+
+# --- Aviso de vencimiento por defecto (stores.default_alert_days) ------------
+
+
+async def test_store_default_alert_days_validation(client, db_session):
+    store = (await client.get("/api/v1/store")).json()
+    assert store["default_alert_days"] == 5
+
+    for bad in (-1, 366, "x"):
+        response = await client.patch("/api/v1/store", json={"default_alert_days": bad})
+        assert response.status_code == 422, bad
+    for good in (0, 365, 10):
+        response = await client.patch("/api/v1/store", json={"default_alert_days": good})
+        assert response.status_code == 200, response.text
+        assert response.json()["default_alert_days"] == good
+
+    # Otros cambios de la tienda no lo pisan.
+    renamed = await client.patch("/api/v1/store", json={"name": "Tienda Rosa"})
+    assert renamed.json()["default_alert_days"] == 10
+
+    await _as_cashier(db_session)
+    forbidden = await client.patch("/api/v1/store", json={"default_alert_days": 3})
+    assert forbidden.status_code == 403
+
+
+async def test_new_lots_use_the_store_default_unless_a_number_is_given(client):
+    assert (await client.patch("/api/v1/store", json={"default_alert_days": 9})).status_code == 200
+
+    created = await _product(client, name="Queso", stock=2, expires_on=_in(30))
+    explicit = await _product(client, name="Crema", stock=2, expires_on=_in(30), alert_days=2)
+    assert [b["alert_days"] for b in (await _batches(client, created["id"]))["items"]] == [9]
+    assert [b["alert_days"] for b in (await _batches(client, explicit["id"]))["items"]] == [2]
+
+    added = await _add(client, created["id"], 3, expires_on=_in(40))
+    assert added.status_code == 200, added.text
+    added_zero = await _add(client, created["id"], 1, expires_on=_in(50), alert_days=0)
+    assert added_zero.status_code == 200, added_zero.text
+    by_expiry = {b["expires_on"]: b["alert_days"] for b in (await _batches(client, created["id"]))["items"]}
+    assert by_expiry == {_in(30): 9, _in(40): 9, _in(50): 0}
+
+    content = (
+        "name,price,stock,vence,aviso_dias\n"
+        f"Mantequilla,9.00,4,{_in(20)},\n"
+        f"Ricota,9.00,4,{_in(20)},1\n"
+    )
+    response = await client.post(
+        "/api/v1/products/import", files={"file": ("productos.csv", content, "text/csv")}
+    )
+    assert response.status_code == 201, response.text
+    assert response.json()["imported_count"] == 2, response.json()
+    products = {p["name"].lower(): p for p in (await client.get("/api/v1/products")).json()["items"]}
+    assert [b["alert_days"] for b in (await _batches(client, products["mantequilla"]["id"]))["items"]] == [9]
+    assert [b["alert_days"] for b in (await _batches(client, products["ricota"]["id"]))["items"]] == [1]

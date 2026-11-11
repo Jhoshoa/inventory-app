@@ -116,6 +116,7 @@ class ImportProductsCsvUseCase:
         user_id: UUID,
         filename: str,
         content: str,
+        default_alert_days: int = DEFAULT_ALERT_DAYS,
     ) -> ImportJob:
         job = ImportJob.create(store_id=store_id, user_id=user_id, filename=filename)
         await self._job_repo.save(job)
@@ -146,7 +147,7 @@ class ImportProductsCsvUseCase:
             await self._job_repo.save(job)
             return job
 
-        parsed = self._parse_rows(raw_rows)
+        parsed = self._parse_rows(raw_rows, default_alert_days)
 
         business_errors = await self._validate_business(store_id, parsed)
         if business_errors:
@@ -329,7 +330,9 @@ class ImportProductsCsvUseCase:
                 )
         return errors
 
-    def _parse_rows(self, raw_rows: list[RawProductRow]) -> list[ParsedProductRow]:
+    def _parse_rows(
+        self, raw_rows: list[RawProductRow], default_alert_days: int = DEFAULT_ALERT_DAYS
+    ) -> list[ParsedProductRow]:
         parsed: list[ParsedProductRow] = []
         for row in raw_rows:
             category_id: UUID | None = None
@@ -347,7 +350,7 @@ class ImportProductsCsvUseCase:
             initial_batch: NewBatch | None = None
             expires_on = parse_expiry_date(row.expires_on) if row.expires_on else None
             if expires_on is not None:
-                alert_days = int(row.alert_days) if row.alert_days is not None else DEFAULT_ALERT_DAYS
+                alert_days = int(row.alert_days) if row.alert_days is not None else default_alert_days
                 initial_batch = NewBatch(expires_on=expires_on, alert_days=alert_days)
 
             parsed.append(

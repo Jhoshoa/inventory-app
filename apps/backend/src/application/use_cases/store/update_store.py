@@ -19,6 +19,7 @@ class UpdateStoreInput:
     allow_manual_discount: bool | None = None
     max_manual_discount_amount: Decimal | None = None
     allow_cashier_discount_override: bool | None = None
+    default_alert_days: int | None = None
     storefront_enabled: bool | None = None
     storefront_slug: str | None = None
     storefront_color_primary: str | None = None
@@ -67,6 +68,8 @@ class UpdateStoreUseCase:
             store.allow_manual_discount = input.allow_manual_discount
         if input.max_manual_discount_amount is not None:
             store.max_manual_discount_amount = input.max_manual_discount_amount
+        if input.default_alert_days is not None:
+            store.default_alert_days = input.default_alert_days
         if input.allow_cashier_discount_override is not None:
             store.allow_cashier_discount_override = input.allow_cashier_discount_override
         if input.storefront_slug is not None:

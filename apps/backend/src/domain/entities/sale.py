@@ -51,6 +51,10 @@ class Sale:
     created_at: datetime = field(default_factory=lambda: datetime.now(UTC))
     voided_at: datetime | None = None
     void_reason: str | None = None
+    voided_by_user_id: UUID | None = None
+    # Nombres para mostrar; se llenan al leer la venta.
+    created_by_name: str | None = None
+    voided_by_name: str | None = None
 
     @staticmethod
     def create(

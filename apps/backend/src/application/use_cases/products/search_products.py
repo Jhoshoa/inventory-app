@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from datetime import date
 from uuid import UUID
 
 from src.domain.entities.product import Product
@@ -16,6 +17,7 @@ class SearchProductsInput:
     offset: int = 0
     sort: str = "name"
     direction: str = "asc"
+    today: date | None = None
 
 
 class SearchProductsUseCase:
@@ -33,4 +35,5 @@ class SearchProductsUseCase:
             offset=input.offset,
             sort=input.sort,
             direction=input.direction,
+            today=input.today,
         )

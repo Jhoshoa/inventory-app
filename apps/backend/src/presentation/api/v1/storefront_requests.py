@@ -1,3 +1,4 @@
+from typing import Literal
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -32,16 +33,18 @@ router = APIRouter(prefix="/storefront-requests", tags=["storefront-requests"])
 async def list_storefront_requests(
     limit: int = Query(default=50, ge=1, le=100),
     offset: int = Query(default=0, ge=0),
+    status: Literal["pending", "contacted", "closed"] | None = Query(default=None),
     user=Depends(require_active_user),
     repo: StorefrontRequestRepository = Depends(get_storefront_request_repo),
 ):
     result = await ListStorefrontRequestsUseCase(repo).execute(
-        user.store_id, limit=limit, offset=offset
+        user.store_id, limit=limit, offset=offset, status=status
     )
     return StorefrontRequestListResponseDTO(
         items=result.items,
         total=result.total,
         pending_count=result.pending_count,
+        status_counts=result.status_counts,
         limit=limit,
         offset=offset,
     )
