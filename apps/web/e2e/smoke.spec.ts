@@ -14,6 +14,8 @@ const routes = [
 ] as const;
 
 test("authenticated primary routes render without app crash", async ({ context, page }) => {
+  // Nueve rutas en un solo test: con `next dev` cada una compila la primera vez y 30 s no alcanzan.
+  test.setTimeout(120_000);
   await addSession(context);
 
   for (const [route, heading] of routes) {

@@ -33,7 +33,8 @@ export function ProductStockDialog({
   productId: string;
   productName: string;
   currentStock: number;
-  trigger?: "icon" | "text";
+  /** "compact": botón chico con borde, como en las filas de la lista. */
+  trigger?: "icon" | "text" | "compact";
   triggerLabel?: string;
   /** Lotes con unidades: para elegir de cual sale al descontar. */
   batches?: ProductBatch[];
@@ -95,6 +96,10 @@ export function ProductStockDialog({
       {trigger === "icon" ? (
         <Button variant="icon" onClick={() => setOpen(true)} aria-label={triggerLabel}>
           <PackagePlus className="h-4 w-4" aria-hidden="true" />
+        </Button>
+      ) : trigger === "compact" ? (
+        <Button variant="secondary" className="!h-[34px] rounded-[10px] !px-2.5 text-[13px]" onClick={() => setOpen(true)}>
+          {triggerLabel}
         </Button>
       ) : (
         <Button variant="ghost" onClick={() => setOpen(true)}>

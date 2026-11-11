@@ -21,12 +21,25 @@ export function ProductDeleteDialog({
   productId,
   productName,
   trigger = "text",
+  open: controlledOpen,
+  onOpenChange,
+  onDeleted,
 }: {
   productId: string;
   productName: string;
-  trigger?: "icon" | "text";
+  /** "none": la abre otro control (p. ej. el menú ⋯ de la lista) con `open`. */
+  trigger?: "icon" | "text" | "none";
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  /** Por defecto vuelve a la lista; la lista solo se actualiza. */
+  onDeleted?: () => void;
 }) {
-  const [open, setOpen] = useState(false);
+  const [localOpen, setLocalOpen] = useState(false);
+  const open = controlledOpen ?? localOpen;
+  const setOpen = (next: boolean) => {
+    setLocalOpen(next);
+    onOpenChange?.(next);
+  };
   const [state, setState] = useState<ProductActionState>(initialProductActionState);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
@@ -43,7 +56,8 @@ export function ProductDeleteDialog({
       if (nextState.ok) {
         toast.success("Producto eliminado");
         setOpen(false);
-        router.replace("/dashboard/products");
+        if (onDeleted) onDeleted();
+        else router.replace("/dashboard/products");
         router.refresh();
       } else {
         toast.error(nextState.message || "No se pudo eliminar el producto");
@@ -59,7 +73,7 @@ export function ProductDeleteDialog({
 
   return (
     <>
-      {trigger === "icon" ? (
+      {trigger === "none" ? null : trigger === "icon" ? (
         <Button variant="icon" onClick={() => setOpen(true)} aria-label="Eliminar">
           <Trash2 className="h-4 w-4" aria-hidden="true" />
         </Button>

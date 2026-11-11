@@ -262,6 +262,17 @@ Aceptación: todas las páginas actuales se ven dentro del marco nuevo y se pued
 6. Ventanas (P04): Ajustar stock (Agregar con lote / Descontar de un lote, razones rápidas, "Stock después"), Dónde está (hasta 6), Eliminar (escribir ELIMINAR), QR, cámara.
 7. Etiquetas e Importar CSV (P05): 3 pasos en celular, todo o nada en el CSV, errores por fila descargables.
 
+**Lista (P01) hecha (2026-11-11).** Notas:
+
+- Celular: tarjetas; chips Todos, Stock bajo, Por vencer y **Filtros** (hoja con stock, categoría y orden, el botón dice "Ver N productos" con el total ya filtrado); ⋯ abre "Más acciones" (Importar, Etiquetas, Descargar lista); botón flotante "+ Nuevo producto" sobre la barra de abajo; botón de cámara que usa `PosCameraScanner`.
+- Desde 768 px: tabla (Producto, Dónde está, Stock, Vence, Precio, Ajustar stock y ⋯). Entre 768 y 1024 px "Dónde está" y "Vence" pasan debajo del nombre, y "Imprimir etiquetas" e "Importar CSV" entran al ⋯ del encabezado (si no, no entraban).
+- Conteos de los chips y del subtítulo: `GET /products?stock=…&limit=1` en paralelo (usa el `total`), **no** `GET /dashboard/summary`: el resumen cuenta lotes por vencer y el chip filtra productos, así "Por vencer · 2" coincide con lo que se ve.
+- Filtros y orden en la URL con `history.replaceState(null, …)`. Pasando el estado de Next la URL se perdía al refrescar después de ajustar stock y la lista quedaba cargando; además, la lista solo toma lo que trae `router.refresh()` si es la vista que se está mirando y, si no, la vuelve a pedir.
+- Enter con un código exacto (sin espacios) abre el producto con `GET /products/qr/{code}`; si no hay, busca como texto. Enter cancela la búsqueda que estaba por salir (a los 400 ms), porque su cambio de URL pisaba la navegación al producto.
+- "Vence · N días" se calcula con la fecha del navegador después de cargar; antes solo se muestra la fecha (evita diferencias entre servidor y navegador).
+- Menú ⋯ de la fila: componente nuevo `components/ui/Menu` (teclado, Escape, clic afuera, se abre hacia arriba si no entra). "Dónde está" lleva al detalle (`#donde-esta`) y "Eliminar…" usa la ventana actual (escribir ELIMINAR); las dos ventanas nuevas son de P04.
+- Pendiente para P01B: pestañas Categorías · Lugares en la tienda, y esas entradas más "Aviso de vencimiento" en los dos ⋯.
+
 ### Fase 4 · Vender (2,5–3 días)
 
 Es la fase más delicada: es lo que más se usa y funciona sin conexión.
@@ -378,6 +389,7 @@ Manual en cada fase: celular (375), tablet (768) y escritorio (1280); dueño y c
 | Fecha | Cambio |
 |---|---|
 | 2026-11-11 | Primera versión. E3 encontrado al revisar el código (apertura y contado en 0). Nota de P08 corregida (razón obligatoria al anular un movimiento de caja). |
+| 2026-11-11 | Fase 3, lista de productos (P01): tarjetas y tabla, chips con conteos, filtros en la URL, Enter con código, menús ⋯ y estados. |
 | 2026-11-11 | Fase 2 hecha: Caja (P09) e Inicio. E9 (coma en montos de caja) y E10 (diálogos fuera del tema) arreglados. D8 abierta (unidades vendidas). |
 | 2026-11-11 | Fase 1 hecha: marco, navegación, Más, Caja provisoria, franjas y estados. E8 encontrado y arreglado (Button en páginas del servidor). Los e2e que fallaban en `main` (E7) pasan con los nombres nuevos. |
 | 2026-11-11 | Fase 0 hecha en la rama `feat/ui-redesign-option-a`. D2, D3 y D4 se hicieron como se recomendaba (B4, B5 y B6 sí). B6 necesitó la migración 041. B2 solo en `GET /products`. `openapi.json` estaba desactualizado y se regeneró. La web no usa tipos generados. |

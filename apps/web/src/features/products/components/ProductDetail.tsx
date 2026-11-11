@@ -130,7 +130,7 @@ export function ProductDetail({
           </div>
         </div>
         <div className="space-y-4">
-          <div className="rounded-lg border border-app-border bg-app-surface p-4 shadow-panel">
+          <div id="donde-esta" className="scroll-mt-20 rounded-lg border border-app-border bg-app-surface p-4 shadow-panel">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <h2 className="text-base font-semibold text-text-strong">Ubicacion</h2>
               {canManageProducts(role) && storeLocations ? (

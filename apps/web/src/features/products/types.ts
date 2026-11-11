@@ -28,6 +28,8 @@ export interface Product {
   effective_price: string;
   /** Donde esta en la tienda (puede faltar en respuestas viejas). */
   locations?: ProductLocation[];
+  /** Lote con unidades que vence antes (YYYY-MM-DD). Solo viene en la lista. */
+  next_expiry?: string | null;
 }
 
 export type ProductBatchStatus = "ok" | "expiring" | "expired" | "depleted";
