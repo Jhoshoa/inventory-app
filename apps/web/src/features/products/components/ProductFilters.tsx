@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import type { FormEvent } from "react";
-import { ScanLine, Search } from "lucide-react";
+import { ScanLine, Search, SlidersHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Dialog, DialogBody, DialogTitle } from "@/components/ui/Dialog";
 import { Label } from "@/components/ui/Label";
@@ -62,7 +62,8 @@ export function ProductFilters({
   }
 
   return (
-    // Celular: buscador, chips y "Filtros". Desde 768 px: buscador, categoría y orden; los chips debajo.
+    // Celular: buscador con escanear y "Filtros", y debajo tres chips que siempre entran.
+    // Desde 768 px: buscador, categoría y orden; los cinco chips debajo.
     <div className="flex flex-wrap items-start gap-2">
       <form role="search" onSubmit={onSubmit} className="flex w-full flex-col gap-1 md:w-auto md:min-w-[240px] md:flex-1">
         <div className="flex gap-2">
@@ -73,7 +74,7 @@ export function ProductFilters({
               type="search"
               value={query}
               onChange={(event) => onQueryChange(event.target.value)}
-              placeholder="Buscar nombre, SKU o código"
+              placeholder="Buscar o escanear"
               enterKeyHint="search"
               aria-describedby={hint ? "product-search-hint" : undefined}
               className="min-w-0 flex-1 bg-transparent text-[15px] text-text-strong outline-none placeholder:text-text-muted md:text-sm"
@@ -84,6 +85,27 @@ export function ProductFilters({
               <ScanLine className="h-5 w-5" aria-hidden="true" />
             </Button>
           ) : null}
+          <button
+            type="button"
+            aria-haspopup="dialog"
+            aria-label={extraFilters > 0 ? `Filtros · ${extraFilters} ${extraFilters === 1 ? "activo" : "activos"}` : "Filtros"}
+            onClick={() => setSheetOpen(true)}
+            className={`relative inline-flex h-control w-[var(--height-control)] shrink-0 items-center justify-center rounded-control border shadow-sm focus:outline-none focus:ring-2 focus:ring-focus md:hidden ${
+              extraFilters > 0
+                ? "border-text-strong bg-text-strong text-text-inverse"
+                : "border-app-border bg-app-surface text-text-body hover:bg-app-surface-muted"
+            }`}
+          >
+            <SlidersHorizontal className="h-5 w-5" aria-hidden="true" />
+            {extraFilters > 0 ? (
+              <span
+                aria-hidden="true"
+                className="absolute -right-1.5 -top-1.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-brand-700 px-1 text-[11px] font-bold text-text-inverse"
+              >
+                {extraFilters}
+              </span>
+            ) : null}
+          </button>
         </div>
         {hint ? (
           <span id="product-search-hint" role="status" className="text-xs text-text-muted">
@@ -92,7 +114,7 @@ export function ProductFilters({
         ) : null}
       </form>
 
-      <div role="group" aria-label="Stock" className="-mx-4 flex min-w-0 gap-2 overflow-x-auto px-4 [scrollbar-width:none] max-md:w-[calc(100%+2rem)] md:order-last md:mx-0 md:w-full md:flex-wrap md:px-0 [&::-webkit-scrollbar]:hidden">
+      <div role="group" aria-label="Stock" className="flex w-full min-w-0 flex-wrap gap-2 max-[359px]:gap-1.5 md:order-last">
         {STOCK_CHIPS.map((chip) => (
           <Chip
             key={chip.value}
@@ -103,9 +125,6 @@ export function ProductFilters({
             {chipLabel(chip.label, chip.count ? counts?.[chip.count] : undefined)}
           </Chip>
         ))}
-        <Chip pressed={extraFilters > 0} className="md:hidden" onClick={() => setSheetOpen(true)} haspopup>
-          {extraFilters > 0 ? `Filtros · ${extraFilters}` : "Filtros"}
-        </Chip>
       </div>
 
       <Select
@@ -259,23 +278,20 @@ function CategoryOptions({ categories }: { categories: ProductCategory[] }) {
 function Chip({
   pressed,
   className = "",
-  haspopup = false,
   onClick,
   children,
 }: {
   pressed: boolean;
   className?: string;
-  haspopup?: boolean;
   onClick: () => void;
   children: React.ReactNode;
 }) {
   return (
     <button
       type="button"
-      aria-pressed={haspopup ? undefined : pressed}
-      aria-haspopup={haspopup ? "dialog" : undefined}
+      aria-pressed={pressed}
       onClick={onClick}
-      className={`inline-flex h-[34px] shrink-0 items-center whitespace-nowrap rounded-full border px-3 text-[13px] font-semibold focus:outline-none focus:ring-2 focus:ring-focus ${
+      className={`inline-flex h-[34px] shrink-0 items-center whitespace-nowrap rounded-full border px-3 text-[13px] font-semibold max-[359px]:px-2.5 max-[359px]:text-xs focus:outline-none focus:ring-2 focus:ring-focus ${
         pressed ? "border-text-strong bg-text-strong text-text-inverse" : "border-app-borderStrong bg-app-surface text-text-body hover:bg-app-surface-muted"
       } ${className}`}
     >

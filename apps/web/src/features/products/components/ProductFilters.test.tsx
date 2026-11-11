@@ -61,6 +61,12 @@ describe("ProductFilters", () => {
     expect(screen.getByRole("status")).toHaveTextContent("Ese código no es de ningún producto.");
   });
 
+  it("the phone filter button has no count without extra filters", () => {
+    setup();
+    expect(screen.getByRole("button", { name: "Filtros" })).toHaveAttribute("aria-haspopup", "dialog");
+    expect(within(screen.getByRole("group", { name: "Stock" })).queryByRole("button", { name: /Filtros/ })).not.toBeInTheDocument();
+  });
+
   it("the phone scan button calls the camera", () => {
     const props = setup();
     fireEvent.click(screen.getByRole("button", { name: "Escanear código" }));
@@ -69,7 +75,8 @@ describe("ProductFilters", () => {
 
   it("the phone filter sheet has stock, category and sort, and clears them", () => {
     const props = setup({ params: { ...params, stock: "out", category_id: "category-1" }, total: 1 });
-    fireEvent.click(screen.getByRole("button", { name: "Filtros · 2" }));
+    expect(screen.getByRole("button", { name: "Filtros · 2 activos" })).toHaveTextContent("2");
+    fireEvent.click(screen.getByRole("button", { name: "Filtros · 2 activos" }));
     const sheet = screen.getByRole("dialog", { name: "Filtrar productos" });
 
     expect(within(sheet).getByRole("button", { name: "Sin stock · 1" })).toHaveAttribute("aria-pressed", "true");

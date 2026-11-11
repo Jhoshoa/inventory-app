@@ -264,7 +264,7 @@ Aceptación: todas las páginas actuales se ven dentro del marco nuevo y se pued
 
 **Lista (P01) hecha (2026-11-11).** Notas:
 
-- Celular: tarjetas; chips Todos, Stock bajo, Por vencer y **Filtros** (hoja con stock, categoría y orden, el botón dice "Ver N productos" con el total ya filtrado); ⋯ abre "Más acciones" (Importar, Etiquetas, Descargar lista); botón flotante "+ Nuevo producto" sobre la barra de abajo; botón de cámara que usa `PosCameraScanner`.
+- Celular: tarjetas; chips Todos, Stock bajo y Por vencer (siempre en una fila, sin scroll, desde 320 px); **Filtros** es un botón con ícono junto a escanear, con el número de filtros activos (en el mockup era un cuarto chip, pero no entraba y quedaba cortado); su hoja tiene stock, categoría y orden y el botón dice "Ver N productos" con el total ya filtrado; ⋯ abre "Más acciones" (Importar, Etiquetas, Descargar lista); botón flotante "+ Nuevo producto" sobre la barra de abajo; botón de cámara que usa `PosCameraScanner`.
 - Desde 768 px: tabla (Producto, Dónde está, Stock, Vence, Precio, Ajustar stock y ⋯). Entre 768 y 1024 px "Dónde está" y "Vence" pasan debajo del nombre, y "Imprimir etiquetas" e "Importar CSV" entran al ⋯ del encabezado (si no, no entraban).
 - Conteos de los chips y del subtítulo: `GET /products?stock=…&limit=1` en paralelo (usa el `total`), **no** `GET /dashboard/summary`: el resumen cuenta lotes por vencer y el chip filtra productos, así "Por vencer · 2" coincide con lo que se ve.
 - Filtros y orden en la URL con `history.replaceState(null, …)`. Pasando el estado de Next la URL se perdía al refrescar después de ajustar stock y la lista quedaba cargando; además, la lista solo toma lo que trae `router.refresh()` si es la vista que se está mirando y, si no, la vuelve a pedir.
