@@ -12,7 +12,7 @@ export const metadata: Metadata = {
   },
   description: BRAND.description,
   icons: {
-    icon: "/favicon.svg",
+    icon: "/favicon.svg?v=2",
   },
   openGraph: {
     type: "website",
