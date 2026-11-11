@@ -39,7 +39,7 @@ Cada fase va en su propia rama y PR, con capturas de celular y escritorio, y se 
 
 - **Las rutas no cambian.** Solo cambian los textos y el orden del menú. Rutas nuevas: `/dashboard/caja`, `/dashboard/products/categorias` y `/dashboard/products/lugares`. Los links guardados, la PWA instalada (`start_url: /dashboard`) y los tests de rutas siguen sirviendo.
 - **Primero el backend, después la web que lo usa.** Los cambios B1–B7 solo agregan campos o parámetros opcionales: no rompen la web actual ni la app móvil. Se publican antes de la fase que los necesita.
-- **Después de cada cambio de API**, exportar el OpenAPI (`python -m scripts.export_openapi`, ya corre en CI) y regenerar los tipos de la web (`pnpm openapi:types`). Nunca escribir los tipos de la API a mano.
+- **Después de cada cambio de API**, exportar el OpenAPI (`python -m scripts.export_openapi`) y commitear `apps/backend/openapi.json`. La web hoy define sus tipos a mano en `features/*/types.ts` (no hay tipos generados en el repo): al usar un campo nuevo, agregarlo ahí con el mismo nombre y tipo que en el OpenAPI.
 - **La web funciona sin los cambios opcionales.** Si B4, B5 o B6 no se hacen, la pantalla se muestra sin ese dato. Nada se rompe.
 - **Un componente para cada cosa** y reusar los que ya existen (`components/ui`: Dialog, ConfirmDialog, EmptyState, ErrorState, ForbiddenState, Field, FieldError, PhoneCountryInput, QuantityStepper, Toaster; `components/layout`). Primero se adaptan al estilo A y después se usan en las páginas.
 - **No mezclar fases.** Si en una fase se ve un problema de otra área, se anota aquí y se arregla en su fase (salvo que bloquee).
@@ -133,11 +133,12 @@ Se arreglan en la **Fase 0** porque son chicos, no dependen del rediseño y ya m
 | Id | Error | Dónde | Arreglo | Test |
 |---|---|---|---|---|
 | **E1** | Los montos solo aceptan punto; en Bolivia se escribe con coma ("30,50"). | `features/store-day/schemas.ts` (`validateMoneyAmount`, `moneyValue`) | Aceptar coma o punto y enviar con punto. Luego el mismo `parseMoney` para todos los montos (producto, descuentos, cobro). | unit: "30,50", "30.50", "1.234,50" rechazado o aceptado según la regla, "0", vacío. |
-| **E2** | Anular un movimiento de caja dice "Razón (opcional)", pero la API la exige. | `features/store-day/components/CashMovementRow.tsx` | Campo requerido, con error en el campo. | unit + e2e de anular sin razón. |
+| **E2** | Anular un movimiento de caja dice "Razón (opcional)", pero la API la exige; cuando se dejaba vacía, la web mandaba "Anulado desde Ajustes" en su lugar. | `features/store-day/components/CashMovementRow.tsx` | Campo requerido, con error en el campo. | unit + e2e de anular sin razón. |
 | **E3** | `validateMoneyAmount` rechaza 0 siempre ("debe ser mayor a 0"), pero la apertura de caja y el efectivo contado **pueden ser 0** (la API acepta `ge=0`). Hoy no se puede abrir la caja con Bs 0. | `features/store-day/schemas.ts` y `actions.ts` (apertura y cierre) | Separar "mayor a 0" (movimientos) de "0 o más" (apertura y contado). | unit: apertura 0 válida; movimiento 0 inválido. |
 | **E4** | El precio con descuento no llega sin conexión: `POST /sync/pull` no manda `discount_type`, `discount_value` ni `discount_ends_at`, aunque `syncEngine` los lee. | backend sync | **B1** | integración: pull trae los tres campos. |
 | **E5** | El cajero recibe `cost_price` en la API aunque la web no lo muestre. | backend products | **B5** (si se decide) | integración: cajero no recibe `cost_price`. |
 | **E6** | Pedidos se filtran en la web sobre los últimos 50; con más pedidos, los contadores y las pestañas mienten. | `GET /storefront-requests` | **B7** | integración: filtro y conteo por estado. |
+| **E7** | Tests e2e que ya fallan en `main` (9 al probar el 2026-11-11 sin `.env.local`): `a11y` (rutas principales), `auth` (sesión simulada llega a Productos), `pos` (render), `products` (vacío y validación al crear), `reports` (los 3) y `smoke` (rutas principales). Fallan por textos y enlaces que cambiaron y por tiempos de `next dev`. | `apps/web/e2e/` | Rehacerlos en la Fase 1 junto con los nombres nuevos del menú, y desde ahí cada fase deja sus e2e en verde. | La rama no agrega fallas: 7 de esos 9 siguen fallando, ninguna nueva. |
 
 También se corrigió en los mockups: la nota de Reportes (P08) decía "anular movimiento con razón opcional". Ahora dice obligatoria, igual que Caja (P09) y la API.
 
@@ -188,17 +189,17 @@ Resolverlas antes de la fase indicada. Mientras no se decidan, se hace lo recome
 Backend (cada uno con test en `apps/backend/tests/integration/`, Ruff y su entrada en el OpenAPI):
 
 1. **B1**: `discount_type`, `discount_value` y `discount_ends_at` en el payload de productos de `POST /sync/pull`.
-2. **B2**: `GET /products` y `/products/pos` con filtro `stock=expiring` (lotes con unidades y `alert_on ≤ hoy` en la zona de la tienda) y campo `next_expiry`. Revisar que el índice de lotes alcance.
+2. **B2**: `GET /products` con filtro `stock=expiring` (lotes con unidades y `alert_on ≤ hoy` en la zona de la tienda) y campo `next_expiry` en cada producto de la lista. Vender no lo muestra, así que `/products/pos` no cambia.
 3. **B3**: `last_login_at` en `UserResponseDTO` (el dato ya existe en la entidad).
 4. **B4** (si D2 = sí): migración **040** `stores.default_alert_days` (0–365, default 5), en `GET/PATCH /store`, usado como aviso inicial al crear producto, ajustar stock e importar CSV cuando no se manda `alert_days`. Probar `alembic upgrade head` y `downgrade`.
 5. **B5** (si D3 = sí): no enviar `cost_price` a cajeros en productos (lista, detalle, POS, sync pull). Revisar que la app móvil no lo necesite para el cajero.
-6. **B6** (si D4 = sí): `created_by_name` y `voided_by_name` en `SaleResponseDTO`, sin N+1.
+6. **B6** (si D4 = sí): `created_by_name` y `voided_by_name` en `SaleResponseDTO`, con una sola consulta por página. La venta no guardaba quién la anuló: necesita la migración **041** `sales.voided_by_user_id` (las anuladas antes quedan sin nombre).
 7. **B7**: `GET /storefront-requests?status=` y conteo por estado en la respuesta.
-8. Exportar OpenAPI y `pnpm openapi:types` en la web.
+8. Exportar OpenAPI y commitear `openapi.json`.
 
 Web (en la UI actual, se publica ya):
 
-9. **E1**, **E2**, **E3** con sus tests.
+9. **E1**, **E2**, **E3** con sus tests. Además, la parte web de **B1**: guardar `discount_ends_at` en Dexie y no aplicar un descuento vencido aunque el último sync sea anterior a su fecha.
 10. Crear `parseMoney` en `lib/format/currency.ts`, junto al `formatCurrency` que ya existe, y usarlo en E1.
 
 Publicar el backend antes que la web. Confirmar en staging que la web actual y la app móvil siguen funcionando.
@@ -352,3 +353,4 @@ Manual en cada fase: celular (375), tablet (768) y escritorio (1280); dueño y c
 | Fecha | Cambio |
 |---|---|
 | 2026-11-11 | Primera versión. E3 encontrado al revisar el código (apertura y contado en 0). Nota de P08 corregida (razón obligatoria al anular un movimiento de caja). |
+| 2026-11-11 | Fase 0 hecha en la rama `feat/ui-redesign-option-a`. D2, D3 y D4 se hicieron como se recomendaba (B4, B5 y B6 sí). B6 necesitó la migración 041. B2 solo en `GET /products`. `openapi.json` estaba desactualizado y se regeneró. La web no usa tipos generados. |
