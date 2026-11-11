@@ -5,7 +5,7 @@ Versión elegida para implementar. Los mockups están en el lienzo "Tu Tiendamig
 - Fila **A · Mostrador**: Inicio y Productos (celular), Inicio (escritorio).
 - Fila **A · Mostrador — Configuración reorganizada**: índice, Datos de la tienda, Usuarios y permisos, menú Más, Caja (celular).
 - Fila **A · Mostrador — POS (vender)**: buscar, venta actual, cobro, venta lista (celular) y Vender (escritorio).
-- Sección **A · Todas las páginas (para implementar)**: tableros P01–P14 (más P01B, Categorías y Lugares en la tienda), uno por página, cada uno con celular, escritorio, ventanas y una nota con caminos, validaciones, permisos y API.
+- Sección **A · Todas las páginas (para implementar)**: tableros P00–P14 (P00 = navegación en el celular; P01B = Categorías, Lugares en la tienda y aviso de vencimiento), uno por página, cada uno con celular, escritorio, ventanas y una nota con caminos, validaciones, permisos y API.
 
 Las filas B y C del lienzo son las opciones que no se eligieron; no se implementan.
 
@@ -43,7 +43,12 @@ Estructura:
 
 - **Escritorio** (≥ 1024 px): barra lateral fija con la tienda, "Nueva venta" (F2), el menú y la tarjeta de caja. En Vender la barra se angosta a íconos con nombre.
 - **Tablet** (640–1023 px): barra angosta siempre; listas en tarjetas cuando las tablas no entran; detalle al costado en Ventas, Pedidos y Cierres.
-- **Celular** (< 640 px): pestañas abajo `Inicio · Productos · Vender (central) · Ventas · Más`. "Más" tiene Caja, Pedidos, Reportes, Configuración, Ayuda y Cerrar sesión. Las ventanas son hojas que suben desde abajo.
+- **Celular** (< 640 px): una sola barra abajo en todas las pantallas que la llevan: `Inicio · Productos · Vender (central) · Ventas · Más`. La página actual se marca con un fondo en forma de píldora detrás del ícono (#DCE6FF) y texto azul en negrita; las páginas que se abren desde Más dejan marcado **Más** y su título muestra la ruta ("Más › Pedidos"). No se muestra en Vender (la reemplaza "Ver venta · Cobrar", con × para salir), en formularios con botón fijo abajo, en Entrar/crear tienda ni en la cámara. Reglas completas en el tablero **P00**. "Más" tiene Caja, Pedidos, Reportes, Configuración, Ayuda, Mi perfil y Cerrar sesión. Las ventanas son hojas que suben desde abajo.
+- **Variante pendiente de decidir**: que el último botón muestre la página abierta desde Más ("Pedidos") y vuelva a "Más" al cambiar de pestaña. Se recomienda no hacerlo (los botones cambian de nombre y no queda claro si tocarlo abre la página o el menú); está dibujada en P00 por si se prefiere.
+- **Cómo se llega en el celular** (dueño):
+  - Productos: pestaña **Productos** abajo. Arriba a la derecha, **⋯** abre "Más acciones": Importar, Imprimir etiquetas, Descargar lista, **Categorías**, **Lugares en la tienda** y **Aviso de vencimiento** (P01, P01B). En escritorio: pestañas Categorías y Lugares, y botón ⋯ con Descargar lista y Aviso de vencimiento.
+  - Configuración: pestaña **Más → Configuración**. Grupos Tu negocio, Ventas en línea y Equipo y cuenta; cada fila abre su pantalla con "Volver a Configuración": Datos de la tienda (A · Datos de la tienda), Precios y descuentos y Usuarios y permisos (P10), Catálogo público (P11), Plan y pagos y Mi perfil (P12).
+  - Caja, Pedidos, Reportes y Ayuda también están en **Más**.
 - **Cajero**: Inicio, Vender, Productos (solo ver), Ventas (sin anular ni exportar), Pedidos, Reportes básicos (ventas y movimientos de stock), estado de la caja (sin abrir/cerrar), Mi perfil. Sin Configuración ni movimientos de efectivo. Coincide con `lib/auth/permissions.ts`.
 
 Backend: ninguno.
@@ -63,7 +68,8 @@ Backend: ninguno.
 | Ventas · detalle · recibo | `/dashboard/sales`, `/[id]`, `/[id]/print` | P06 |
 | Pedidos | `/dashboard/solicitudes` | P07 |
 | Reportes (ventas, cierres, caja, stock, descargas) | `/dashboard/reports`, `/store-days`, `/store-days/[id]`, `/cash-movements`, `/stock-movements` | P08 |
-| Configuración (índice, secciones; grupo Productos = Vencimientos + atajos) | `/dashboard/settings` | A · Configuración, P10, P12 |
+| Navegación en el celular (barra de abajo) | todas | P00 |
+| Configuración (índice y secciones) | `/dashboard/settings` | A · Configuración, P10, P12 |
 | Catálogo público | `/dashboard/settings/catalogo` | P11 |
 | Plan y pagos · Mi perfil | `/dashboard/settings/billing` · nueva sección | P12 |
 | Entrar, crear tienda, recuperar, nueva contraseña, invitación | `/login`, `/register`, `/forgot-password`, `/reset-password`, `/invite/[token]` | P13 |
@@ -121,6 +127,7 @@ Se mantiene todo lo que hace hoy el POS:
 | Pestañas **Productos · Categorías · Lugares en la tienda** (escritorio y tablet arriba; en el celular, dentro del menú ⋯) | rutas nuevas de la web | Solo web |
 | Categorías: lista, nueva, editar, desactivar, próximo SKU | `GET/POST /product-categories`, `PATCH /{id}`, `POST /{id}/deactivate`, `next_sku_number` | Existe |
 | Lugares en la tienda: lista con cantidad de productos, nuevo, editar, eliminar | `GET/POST /store-locations`, `PATCH`/`DELETE /{id}`, `product_count` | Existe |
+| Aviso de vencimiento por defecto (celular: ⋯; escritorio: botón ⋯) | — | **Backend B4 (opcional)** |
 | "+ Nueva categoría" y "+ Nuevo lugar" dentro del formulario y de la ventana "Dónde está", sin salir | `POST /product-categories`, `POST /store-locations` | Solo web |
 | Ajustar stock (agregar con lote / descontar de un lote) | `PATCH /products/{id}/stock` | Existe |
 | Eliminar, QR | `DELETE /products/{id}`, SVG en la web | Existe |
@@ -128,7 +135,7 @@ Se mantiene todo lo que hace hoy el POS:
 | Ocultar costo al cajero | la API lo envía; se oculta en la web | Solo web (**B5 opcional** para ocultarlo en la API) |
 | Etiquetas, importar CSV, descargar lista | página actual, `/products/import`, `/exports/products.csv` | Existe |
 
-Notas de Categorías y Lugares en la tienda:
+Notas de Categorías, Lugares en la tienda y aviso de vencimiento:
 
 - Se usan al cargar productos, por eso viven en Productos y no en Configuración.
 - Solo dueño: el cajero no ve las pestañas ni las entradas del menú ⋯, y si entra por la URL ve "No tienes permiso". `GET /product-categories` es solo dueño en la API.
@@ -166,14 +173,12 @@ Junta lo que hoy está en Ajustes › Operación diaria. Usa `GET /store-day/cur
 
 ## 10. Configuración
 
-El grupo "Inventario" pasa a llamarse **Productos** y solo guarda Vencimientos. Categorías y Lugares en la tienda se mueven a Productos (ver sección 5); aquí quedan como atajos con "En Productos". Si no se hace B4, el grupo muestra solo los dos atajos.
+Configuración queda con tres grupos: **Tu negocio**, **Ventas en línea** y **Equipo y cuenta**. El antiguo grupo "Inventario" desaparece: Categorías, Lugares en la tienda y el aviso de vencimiento por defecto pasan a Productos (sección 5). Un solo lugar para cada cosa, sin atajos repetidos.
 
 | Sección | Fuente | Estado |
 |---|---|---|
 | Datos de la tienda (nombre, dirección, teléfono +591, logo = logo del catálogo, zona horaria solo lectura) | `GET/PATCH /store`, `/store/storefront-logo`, `/store-day/current` | Existe |
 | Precios y descuentos | `PATCH /store` | Existe |
-| Grupo **Productos**: Vencimientos (aviso por defecto) | — | **Backend B4 (opcional)** |
-| Grupo Productos: atajos "Categorías →" y "Lugares en la tienda →" (llevan a Productos) | enlaces | Solo web |
 | Catálogo público | `PATCH /store`, imágenes del catálogo | Existe |
 | Usuarios, invitaciones | `/users`, `/user-invitations` | Existe |
 | "Último ingreso" | `last_login_at` no sale en la API | **Backend B3** |
@@ -218,12 +223,12 @@ Todos agregan campos o parámetros opcionales: no rompen la web actual ni la app
 | **B1** | Agregar `discount_type`, `discount_value` y `discount_ends_at` al payload de productos de `POST /sync/pull`. `syncEngine` ya los lee, pero llegan vacíos. | Precio correcto sin conexión | No | ½ h |
 | **B2** | `GET /products` y `/products/pos`: filtro `stock=expiring` (lotes con unidades y `alert_on ≤ hoy`) y campo `next_expiry`. | Chip "Por vencer", columna "Vence" | No | ½ día |
 | **B3** | `last_login_at` en `UserResponseDTO`. | "Último ingreso" | No | 15 min |
-| **B4** *(opcional)* | `stores.default_alert_days` (0–365, 5 por defecto) en `PATCH /store`, usado como aviso inicial en producto, ajuste y CSV. | Configuración › Productos › Vencimientos | **Sí (040)** | ½ día |
+| **B4** *(opcional)* | `stores.default_alert_days` (0–365, 5 por defecto) en `PATCH /store`, usado como aviso inicial en producto, ajuste y CSV. | Productos › ⋯ › Aviso de vencimiento | **Sí (040)** | ½ día |
 | **B5** *(opcional)* | No enviar `cost_price` a cajeros en las respuestas de productos. | Ocultar el costo de verdad | No | 1 h |
 | **B6** *(opcional)* | `created_by_name` y `voided_by_name` en `SaleResponseDTO`. | Quién vendió / anuló | No | 1 h |
 | **B7** *(recomendado)* | `GET /storefront-requests?status=` y conteo por estado. | Pestañas de Pedidos con muchos pedidos | No | 1 h |
 
-Si no se hacen los opcionales, la pantalla se muestra sin ese dato (sin "Vencimientos" en Configuración, sin nombre de cajero). Nada se rompe.
+Si no se hacen los opcionales, la pantalla se muestra sin ese dato (sin "Aviso de vencimiento" en Productos, sin nombre de cajero). Nada se rompe.
 
 ## Correcciones de la web que salieron al revisar
 

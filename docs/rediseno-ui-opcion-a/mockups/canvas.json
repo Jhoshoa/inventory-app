@@ -143,107 +143,114 @@
     "P01-Productos-Lista.dc.html": {
       "h": 960,
       "title": "Productos · lista, filtros y acciones",
-      "w": 2880,
+      "w": 3310,
       "x": 0,
-      "y": 10300
+      "y": 11460
     },
     "P01B-Categorias-Lugares.dc.html": {
       "h": 1040,
-      "title": "Productos · categorías y lugares en la tienda",
-      "w": 4610,
-      "x": 3000,
-      "y": 10300
+      "title": "Productos · categorías, lugares y aviso de vencimiento",
+      "w": 5040,
+      "x": 3430,
+      "y": 11460
     },
     "P02-Producto-Form.dc.html": {
       "h": 1040,
       "title": "Producto · nuevo y editar (validaciones, crear categoría y lugar)",
       "w": 3780,
       "x": 0,
-      "y": 11460
+      "y": 12620
     },
     "P03-Producto-Detalle.dc.html": {
       "h": 960,
       "title": "Producto · detalle",
       "w": 2280,
       "x": 0,
-      "y": 12620
+      "y": 13780
     },
     "P04-Producto-Ventanas.dc.html": {
       "h": 1120,
       "title": "Producto · ventanas (stock, dónde está, eliminar, QR, cámara)",
       "w": 2370,
       "x": 0,
-      "y": 13780
+      "y": 14940
     },
     "P05-Etiquetas-CSV.dc.html": {
       "h": 960,
       "title": "Productos · etiquetas e importar CSV",
       "w": 3140,
       "x": 0,
-      "y": 15100
+      "y": 16260
     },
     "P06-Ventas.dc.html": {
       "h": 960,
       "title": "Ventas · lista, detalle, anular y recibo",
       "w": 3940,
       "x": 0,
-      "y": 16260
+      "y": 17420
     },
     "P07-Pedidos.dc.html": {
       "h": 960,
       "title": "Pedidos del catálogo",
       "w": 2820,
       "x": 0,
-      "y": 17420
+      "y": 18580
     },
     "P08-Reportes.dc.html": {
       "h": 960,
       "title": "Reportes · ventas, cierres, movimientos y descargas",
       "w": 4450,
       "x": 0,
-      "y": 18580
+      "y": 19740
     },
     "P09-Caja.dc.html": {
       "h": 1060,
       "title": "Caja y jornada · abrir, movimientos, cerrar, reabrir",
       "w": 3530,
       "x": 0,
-      "y": 19740
+      "y": 20900
     },
     "P10-Config-Secciones.dc.html": {
       "h": 960,
-      "title": "Configuración · secciones (celular): precios, usuarios, vencimientos",
-      "w": 2170,
+      "title": "Configuración · celular: índice, usuarios, precios",
+      "w": 2360,
       "x": 0,
-      "y": 21000
+      "y": 22160
     },
     "P11-Catalogo.dc.html": {
       "h": 960,
       "title": "Configuración · catálogo público",
       "w": 2700,
       "x": 0,
-      "y": 22160
+      "y": 23320
     },
     "P12-Config-Cuenta.dc.html": {
       "h": 960,
       "title": "Configuración · plan y pagos, mi perfil, datos de la tienda",
       "w": 2580,
       "x": 0,
-      "y": 23320
+      "y": 24480
     },
     "P13-Acceso.dc.html": {
       "h": 960,
       "title": "Acceso · entrar, crear tienda, contraseña, invitación",
       "w": 3860,
       "x": 0,
-      "y": 24480
+      "y": 25640
     },
     "P14-Estados.dc.html": {
       "h": 960,
       "title": "Estados · caja cerrada, sin conexión, vacío, error, sin permiso, 404",
       "w": 4590,
       "x": 0,
-      "y": 25640
+      "y": 26800
+    },
+    "P00-Navegacion-Celular.dc.html": {
+      "h": 1000,
+      "title": "Navegación en el celular · barra de abajo",
+      "w": 1830,
+      "x": 0,
+      "y": 10300
     }
   },
   "createdOnFiles": {
@@ -268,7 +275,7 @@
     "ajustesEstructura": {
       "fill": "orange",
       "size": 24,
-      "text": "Configuración agrupada por tema (antes: una sola página larga)\n\nTU NEGOCIO\n· Datos de la tienda (nombre, dirección, teléfono, zona horaria)\n· Precios y descuentos\n\nPRODUCTOS\n· Vencimientos (aviso por defecto) · nuevo\n· Atajos: Categorías → y Lugares en la tienda → (viven en Productos)\n\nVENTAS EN LÍNEA\n· Catálogo público: estado y link, plantilla, identidad, secciones, destacados, orden de productos, WhatsApp, instrucciones de pago, contacto y horario\n\nEQUIPO Y CUENTA\n· Usuarios, invitaciones y permisos por rol\n· Plan y pagos (historial, pedir renovación)\n· Mi perfil y cerrar sesión\n\nFUERA DE CONFIGURACIÓN (es del día a día)\n· Caja y jornada: barra lateral en escritorio y menú Más en el celular. Abrir, cerrar, movimientos e historial.\n· Etiquetas siguen en Productos.\n· Categorías y Lugares en la tienda (antes \"Categorías y SKU\" y \"Ubicaciones\") son pestañas de Productos; en cada producto se llama \"Dónde está\".\n\nCelular: índice → sección, con volver. Escritorio: menú de configuración + sección.\nSe quitan los IDs técnicos de la vista.",
+      "text": "Configuración agrupada por tema (antes: una sola página larga)\n\nTU NEGOCIO\n· Datos de la tienda (nombre, dirección, teléfono, zona horaria)\n· Precios y descuentos\n\nVENTAS EN LÍNEA\n· Catálogo público: estado y link, plantilla, identidad, secciones, destacados, orden de productos, WhatsApp, instrucciones de pago, contacto y horario\n\nEQUIPO Y CUENTA\n· Usuarios, invitaciones y permisos por rol\n· Plan y pagos (historial, pedir renovación)\n· Mi perfil y cerrar sesión\n\nFUERA DE CONFIGURACIÓN (es del día a día)\n· Caja y jornada: barra lateral en escritorio y menú Más en el celular. Abrir, cerrar, movimientos e historial.\n· Etiquetas siguen en Productos.\n· Productos: Categorías, Lugares en la tienda (antes \"Categorías y SKU\" y \"Ubicaciones\") y Aviso de vencimiento. Escritorio: pestañas y botón ⋯; celular: ⋯. En cada producto se llama \"Dónde está\".\n\nCelular: índice → sección, con volver. Escritorio: menú de configuración + sección.\nSe quitan los IDs técnicos de la vista.",
       "w": 440,
       "x": 2300,
       "y": 6592
@@ -322,7 +329,7 @@
     },
     "rowPaginas": {
       "kind": "title1",
-      "maxW": 7610,
+      "maxW": 8470,
       "text": "A · Todas las páginas (para implementar)",
       "w": 240,
       "x": 0,
@@ -349,6 +356,7 @@
     "A-Movil-POS-Cobro.dc.html",
     "A-Movil-POS-Listo.dc.html",
     "A-Escritorio-POS.dc.html",
+    "P00-Navegacion-Celular.dc.html",
     "P01-Productos-Lista.dc.html",
     "P01B-Categorias-Lugares.dc.html",
     "P02-Producto-Form.dc.html",

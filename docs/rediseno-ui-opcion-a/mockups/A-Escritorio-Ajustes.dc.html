@@ -135,7 +135,6 @@ class Component extends DCLogic {
       nav: ['Inicio', 'Vender', 'Caja', 'Productos', 'Ventas', 'Pedidos', 'Reportes'].map((l) => navItem(l, false)).concat([navItem('Configuración', true)]),
       groups: [
         { title: 'Tu negocio', items: [sub('Datos de la tienda'), sub('Precios y descuentos')] },
-        { title: 'Productos', items: [sub('Vencimientos'), sub('Categorías', false, '→'), sub('Lugares en la tienda', false, '→')] },
         { title: 'Ventas en línea', items: [sub('Catálogo público', false, 'Activo', '#067647')] },
         { title: 'Equipo y cuenta', items: [sub('Usuarios y permisos', true, '1', '#B54708'), sub('Plan y pagos', false, '9 días', '#B54708'), sub('Mi perfil')] }
       ],
