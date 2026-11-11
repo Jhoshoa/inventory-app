@@ -88,7 +88,7 @@ export function InviteCashierForm() {
                 <Label htmlFor="invite-role">Rol</Label>
                 <Select id="invite-role" name="role" defaultValue="cashier">
                   <option value="cashier">Cajero</option>
-                  <option value="owner">Propietario</option>
+                  <option value="owner">Dueño</option>
                 </Select>
                 <FieldError message={fieldErrors.role} />
               </div>

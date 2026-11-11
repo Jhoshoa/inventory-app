@@ -67,7 +67,7 @@ export function DiscountPolicyDialog({ storeData }: { storeData: StoreResponse }
             <div className="space-y-6">
               <p className="text-sm text-text-muted">
                 Define que descuentos pueden aplicar tus cajeros al momento de cobrar. Solo tu, como
-                propietario, puedes cambiar estos limites.
+                dueño, puedes cambiar estos limites.
               </p>
 
               <div className="space-y-3 rounded-md border border-app-border p-3">

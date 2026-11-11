@@ -85,7 +85,7 @@ export function StoreDayStatusPanel({
         ) : null}
         {canManage && actions === "link" ? (
           <Button asChild variant="secondary">
-            <Link href="/dashboard/settings">Gestionar jornada</Link>
+            <Link href="/dashboard/caja">Ir a Caja</Link>
           </Button>
         ) : null}
       </div>

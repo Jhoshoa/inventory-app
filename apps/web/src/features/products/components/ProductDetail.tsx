@@ -54,7 +54,7 @@ export function ProductDetail({
         breadcrumbs={
           <Breadcrumbs
             items={[
-              { label: "Dashboard", href: "/dashboard" },
+              { label: "Inicio", href: "/dashboard" },
               { label: "Productos", href: "/dashboard/products" },
               { label: product.name },
             ]}

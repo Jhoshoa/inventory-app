@@ -73,7 +73,7 @@ export function UsersTable({
                 </TableCell>
                 <TableCell mobileLabel="Rol">
                   <Badge variant={user.role === "owner" ? "success" : "default"}>
-                    {user.role === "owner" ? "Propietario" : "Cajero"}
+                    {user.role === "owner" ? "Dueño" : "Cajero"}
                   </Badge>
                 </TableCell>
                 <TableCell mobileLabel="Estado">
@@ -88,13 +88,13 @@ export function UsersTable({
                     ) : (
                       <>
                         <ConfirmDialog
-                          title={user.role === "owner" ? "Quitar rol de propietario" : "Hacer propietario"}
+                          title={user.role === "owner" ? "Quitar dueño" : "Hacer dueño"}
                           description={
                             user.role === "owner"
                               ? `${user.full_name || user.email} pasara a tener el rol de cajero.`
-                              : `${user.full_name || user.email} tendra acceso total como propietario.`
+                              : `${user.full_name || user.email} tendra acceso total como dueño.`
                           }
-                          triggerLabel={user.role === "owner" ? "Quitar propietario" : "Hacer propietario"}
+                          triggerLabel={user.role === "owner" ? "Quitar dueño" : "Hacer dueño"}
                           confirmLabel="Confirmar"
                           variant="primary"
                           onConfirm={() => toggleRole(user)}

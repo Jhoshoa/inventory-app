@@ -6,7 +6,7 @@ export function DashboardSkeleton() {
     <PageSection className="space-y-6" aria-label="Cargando dashboard">
       <PageHeader
         eyebrow="Operación"
-        title="Dashboard"
+        title="Inicio"
         description="Resumen operativo de ventas, productos y alertas de inventario."
         actions={
           <div className="flex gap-2">

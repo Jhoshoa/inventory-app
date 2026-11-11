@@ -5,12 +5,12 @@ import { AlertTriangle } from "lucide-react";
 import { Button } from "./Button";
 
 export function ErrorState({
-  title = "Algo salio mal",
-  description = "No se pudo completar la operacion. Intenta nuevamente.",
+  title = "Algo salió mal",
+  description = "No se pudo completar la operación. Intenta de nuevo.",
   retryLabel,
   onRetry,
   actionHref = "/dashboard",
-  actionLabel = "Volver al dashboard",
+  actionLabel = "Volver a Inicio",
 }: {
   title?: string;
   description?: string;
@@ -20,7 +20,7 @@ export function ErrorState({
   actionLabel?: string;
 }) {
   return (
-    <section className="rounded-lg border border-status-dangerBorder bg-status-dangerBg p-6" role="alert">
+    <section className="rounded-card border border-status-dangerBorder bg-status-dangerBg p-6" role="alert">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
         <AlertTriangle className="h-6 w-6 text-status-danger" aria-hidden />
         <div className="min-w-0 flex-1">

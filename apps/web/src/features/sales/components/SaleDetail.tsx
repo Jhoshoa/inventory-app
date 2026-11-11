@@ -36,7 +36,7 @@ export function SaleDetail({
         breadcrumbs={
           <Breadcrumbs
             items={[
-              { label: "Dashboard", href: "/dashboard" },
+              { label: "Inicio", href: "/dashboard" },
               { label: "Ventas", href: "/dashboard/sales" },
               { label: `Venta ${sale.id.slice(0, 8)}` },
             ]}

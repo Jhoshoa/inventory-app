@@ -32,6 +32,6 @@ test("pos page renders without app crash", async ({ context, page }) => {
   await addSession(context);
 
   await page.goto("/dashboard/pos");
-  await expect(page.getByRole("heading", { name: "POS" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Vender", exact: true })).toBeVisible();
   await expect(page.getByText("Application error")).toHaveCount(0);
 });

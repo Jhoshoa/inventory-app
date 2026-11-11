@@ -15,7 +15,7 @@ export function Alert({
   return (
     <div
       role={variant === "error" ? "alert" : "status"}
-      className={`rounded-md border px-4 py-3 text-sm font-medium shadow-sm ${variants[variant]} ${className}`}
+      className={`rounded-control border px-4 py-3 text-sm font-medium ${variants[variant]} ${className}`}
       {...props}
     />
   );

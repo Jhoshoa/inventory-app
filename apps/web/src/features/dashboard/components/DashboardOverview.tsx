@@ -101,7 +101,7 @@ function DashboardHeader({
   return (
     <PageHeader
       eyebrow="Operación"
-      title="Dashboard"
+      title="Inicio"
       description="Resumen operativo de ventas, productos y alertas de inventario."
       actions={<DashboardScopeTabs scope={scope} />}
     />

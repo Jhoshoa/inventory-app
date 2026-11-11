@@ -2,12 +2,15 @@ import { expect, test } from "@playwright/test";
 import { addSession } from "./helpers";
 
 const routes = [
-  ["/dashboard", "Dashboard"],
+  ["/dashboard", "Inicio"],
   ["/dashboard/products", "Productos"],
-  ["/dashboard/pos", "POS"],
+  ["/dashboard/pos", "Vender"],
+  ["/dashboard/caja", "Caja"],
   ["/dashboard/sales", "Ventas"],
+  ["/dashboard/solicitudes", "Pedidos"],
   ["/dashboard/reports", "Reportes"],
-  ["/dashboard/settings", "Ajustes"],
+  ["/dashboard/settings", "Configuración"],
+  ["/dashboard/mas", "Más"],
 ] as const;
 
 test("authenticated primary routes render without app crash", async ({ context, page }) => {
@@ -23,5 +26,6 @@ test("authenticated primary routes render without app crash", async ({ context, 
 test("unknown dashboard route renders not found UI", async ({ context, page }) => {
   await addSession(context);
   await page.goto("/dashboard/does-not-exist");
-  await expect(page.getByRole("heading", { name: "Seccion no encontrada" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "No encontramos esta página" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Ir a Inicio" })).toHaveAttribute("href", "/dashboard");
 });

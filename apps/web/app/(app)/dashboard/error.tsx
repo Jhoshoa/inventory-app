@@ -14,8 +14,8 @@ export default function DashboardError({
 
   return (
     <ErrorState
-      title="No se pudo cargar esta seccion"
-      description="La operacion fallo dentro del panel. Intenta nuevamente."
+      title="No se pudo cargar esta sección"
+      description="Algo falló al cargar. Intenta de nuevo; el resto del panel sigue funcionando."
       retryLabel="Reintentar"
       onRetry={reset}
     />

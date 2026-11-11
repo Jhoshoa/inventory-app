@@ -23,8 +23,8 @@ export default async function StorefrontSettingsPage() {
         breadcrumbs={
           <Breadcrumbs
             items={[
-              { label: "Dashboard", href: "/dashboard" },
-              { label: "Ajustes", href: "/dashboard/settings" },
+              { label: "Inicio", href: "/dashboard" },
+              { label: "Configuración", href: "/dashboard/settings" },
               { label: "Catalogo publico" },
             ]}
           />

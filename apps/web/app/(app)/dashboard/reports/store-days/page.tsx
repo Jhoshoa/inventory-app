@@ -19,7 +19,7 @@ export default async function StoreDayReportsPage({
 }) {
   const session = await requireSession();
   if (!canViewStoreDayReports(session.role)) {
-    return <ForbiddenState description="Cierres diarios requiere permisos de owner." />;
+    return <ForbiddenState description="Solo el dueño de la tienda puede ver los cierres de caja." />;
   }
 
   const rawParams = await searchParams;
@@ -32,7 +32,7 @@ export default async function StoreDayReportsPage({
         breadcrumbs={
           <Breadcrumbs
             items={[
-              { label: "Dashboard", href: "/dashboard" },
+              { label: "Inicio", href: "/dashboard" },
               { label: "Reportes", href: "/dashboard/reports" },
               { label: "Cierres diarios" },
             ]}

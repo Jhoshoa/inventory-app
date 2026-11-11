@@ -86,7 +86,7 @@ export function InvitationsTable({ invitations }: { invitations: UserInvitationR
                 </TableCell>
                 <TableCell mobileLabel="Rol">
                   <Badge variant={invitation.role === "owner" ? "success" : "default"}>
-                    {invitation.role === "owner" ? "Propietario" : "Cajero"}
+                    {invitation.role === "owner" ? "Dueño" : "Cajero"}
                   </Badge>
                 </TableCell>
                 <TableCell mobileLabel="Estado">

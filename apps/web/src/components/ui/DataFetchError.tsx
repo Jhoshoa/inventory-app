@@ -13,7 +13,7 @@ export function DataFetchError({
   return (
     <div
       role="alert"
-      className="flex items-start gap-3 rounded-lg border border-status-warningBorder bg-status-warningBg p-4"
+      className="flex items-start gap-3 rounded-card border border-status-warningBorder bg-status-warningBg p-4"
     >
       <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-status-warning" aria-hidden />
       <div className="min-w-0 flex-1">

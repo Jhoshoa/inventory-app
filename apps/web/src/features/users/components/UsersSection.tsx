@@ -17,7 +17,7 @@ export function UsersSection({
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm text-text-muted">
-          Invita cajeros o propietarios adicionales y administra su acceso a esta tienda.
+          Invita cajeros o otros dueños y administra su acceso a esta tienda.
         </p>
         <InviteCashierForm />
       </div>

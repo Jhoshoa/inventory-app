@@ -27,7 +27,7 @@ describe("PageHeader", () => {
         breadcrumbs={
           <Breadcrumbs
             items={[
-              { label: "Dashboard", href: "/dashboard" },
+              { label: "Inicio", href: "/dashboard" },
               { label: "Productos" },
             ]}
           />
@@ -38,7 +38,7 @@ describe("PageHeader", () => {
 
     const breadcrumbs = screen.getByRole("navigation", { name: "Ruta de navegación" });
     expect(breadcrumbs).toBeInTheDocument();
-    expect(within(breadcrumbs).getByRole("link", { name: "Dashboard" })).toHaveAttribute(
+    expect(within(breadcrumbs).getByRole("link", { name: "Inicio" })).toHaveAttribute(
       "href",
       "/dashboard",
     );

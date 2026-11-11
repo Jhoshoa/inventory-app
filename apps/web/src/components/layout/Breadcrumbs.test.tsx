@@ -7,7 +7,7 @@ describe("Breadcrumbs", () => {
     render(
       <Breadcrumbs
         items={[
-          { label: "Dashboard", href: "/dashboard" },
+          { label: "Inicio", href: "/dashboard" },
           { label: "Productos", href: "/dashboard/products" },
           { label: "Detalle" },
         ]}
@@ -15,7 +15,7 @@ describe("Breadcrumbs", () => {
     );
 
     expect(screen.getByRole("navigation", { name: "Ruta de navegación" })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Dashboard" })).toHaveAttribute("href", "/dashboard");
+    expect(screen.getByRole("link", { name: "Inicio" })).toHaveAttribute("href", "/dashboard");
     expect(screen.getByRole("link", { name: "Productos" })).toHaveAttribute("href", "/dashboard/products");
     expect(screen.getByText("Detalle")).toHaveAttribute("aria-current", "page");
   });
@@ -24,7 +24,7 @@ describe("Breadcrumbs", () => {
     render(
       <Breadcrumbs
         items={[
-          { label: "Dashboard", href: "/dashboard" },
+          { label: "Inicio", href: "/dashboard" },
           { label: "Reportes", href: "/dashboard/reports" },
         ]}
       />,

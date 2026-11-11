@@ -117,7 +117,7 @@ export function ProductForm({
           </Select>
           <input type="hidden" name="category" value={categoryName} />
           {categories.length === 0 ? (
-            <p className="text-xs text-text-muted">Configura categorias en Ajustes para generar SKUs por prefijo.</p>
+            <p className="text-xs text-text-muted">Crea categorías en Configuración para generar SKUs por prefijo.</p>
           ) : null}
         </Field>
         {shouldUseAutomaticSku && selectedCategory ? (

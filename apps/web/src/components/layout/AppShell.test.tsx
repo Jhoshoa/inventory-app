@@ -1,134 +1,140 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Session } from "@/lib/auth/session";
-import { BRAND } from "@/lib/brand";
 import { AppShell } from "./AppShell";
+import type { ShellStatus } from "./shellStatus";
 
 let pathname = "/dashboard/products/labels";
+const push = vi.fn();
 
 vi.mock("next/navigation", () => ({
   usePathname: () => pathname,
-  useRouter: () => ({ replace: vi.fn(), refresh: vi.fn() }),
+  useRouter: () => ({ replace: vi.fn(), refresh: vi.fn(), push }),
 }));
 
-vi.mock("./ConnectionBadge", () => ({
-  ConnectionBadge: () => null,
+vi.mock("./ConnectionStrip", () => ({
+  ConnectionStrip: () => null,
 }));
+
+const ownerSession: Session = {
+  userId: "user-1",
+  email: "owner@example.com",
+  storeId: "store-1",
+  storeName: "Mi tienda",
+  fullName: "Rosa Quispe",
+  role: "owner",
+  trialExpiresAt: null,
+  daysUntilTrialEnds: 9,
+  subscriptionStatus: "trial",
+  accessStatus: null,
+};
+const cashierSession: Session = { ...ownerSession, role: "cashier", email: "cashier@example.com", fullName: null };
+const status: ShellStatus = {
+  pendingOrders: 2,
+  cash: { isOpen: true, openedAt: "2026-11-11T12:02:00Z", expectedCash: "862.00" },
+};
+
+function nav(name: "sidebar" | "rail" | "tabs") {
+  const element = document.querySelector<HTMLElement>(`[data-nav="${name}"]`);
+  if (!element) throw new Error(`nav ${name} not rendered`);
+  return within(element);
+}
+
+function renderShell(session: Session = ownerSession, shellStatus: ShellStatus = status) {
+  return render(
+    <AppShell session={session} status={shellStatus}>
+      <p>Content</p>
+    </AppShell>,
+  );
+}
 
 describe("AppShell", () => {
-  const ownerSession: Session = {
-    userId: "user-1",
-    email: "owner@example.com",
-    storeId: "store-1",
-    storeName: "Mi tienda",
-    fullName: null,
-    role: "owner",
-    trialExpiresAt: null,
-    daysUntilTrialEnds: null,
-    subscriptionStatus: null,
-    accessStatus: null,
-  };
-
   beforeEach(() => {
     pathname = "/dashboard/products/labels";
+    push.mockReset();
   });
 
-  it("renders primary navigation links", () => {
-    render(
-      <AppShell session={ownerSession}>
-        <p>Content</p>
-      </AppShell>,
-    );
+  it("uses the new names in order in the sidebar", () => {
+    renderShell();
 
-    expect(screen.getByRole("link", { name: /dashboard/i })).toHaveAttribute(
-      "href",
-      "/dashboard",
-    );
-    expect(screen.getByRole("link", { name: /productos/i })).toHaveAttribute(
-      "href",
-      "/dashboard/products",
-    );
-    expect(screen.getByRole("link", { name: /ajustes/i })).toHaveAttribute(
-      "href",
-      "/dashboard/settings",
-    );
+    const links = nav("sidebar").getAllByRole("link");
+    expect(links.map((link) => link.textContent?.replace(/\d+ sin responder$/, ""))).toEqual([
+      "Inicio",
+      "Vender",
+      "Caja",
+      "Productos",
+      "Ventas",
+      "Pedidos",
+      "Reportes",
+      "Configuración",
+    ]);
+    expect(nav("sidebar").getByRole("link", { name: "Caja" })).toHaveAttribute("href", "/dashboard/caja");
+    expect(nav("sidebar").getByRole("link", { name: "Configuración" })).toHaveAttribute("href", "/dashboard/settings");
   });
 
-  it("hides owner navigation links for cashier", () => {
-    render(
-      <AppShell session={{ ...ownerSession, role: "cashier", email: "cashier@example.com" }}>
-        <p>Content</p>
-      </AppShell>,
-    );
+  it("hides Configuración for the cashier everywhere", () => {
+    renderShell(cashierSession);
 
-    expect(screen.getByRole("link", { name: /productos/i })).toHaveAttribute(
-      "href",
-      "/dashboard/products",
-    );
-    expect(screen.queryByRole("link", { name: /ajustes/i })).not.toBeInTheDocument();
+    expect(nav("sidebar").queryByRole("link", { name: "Configuración" })).not.toBeInTheDocument();
+    expect(nav("rail").queryByRole("link", { name: "Configuración" })).not.toBeInTheDocument();
+    expect(nav("sidebar").getByRole("link", { name: "Productos" })).toHaveAttribute("href", "/dashboard/products");
   });
 
-  it("marks parent sidebar item active for child routes", () => {
-    render(
-      <AppShell session={ownerSession}>
-        <p>Content</p>
-      </AppShell>,
-    );
+  it("marks the parent item active for child routes", () => {
+    renderShell();
 
-    expect(screen.getByRole("link", { name: /productos/i })).toHaveAttribute("aria-current", "page");
-    expect(screen.getByRole("link", { name: /dashboard/i })).not.toHaveAttribute("aria-current");
+    expect(nav("sidebar").getByRole("link", { name: "Productos" })).toHaveAttribute("aria-current", "page");
+    expect(nav("sidebar").getByRole("link", { name: "Inicio" })).not.toHaveAttribute("aria-current");
+    expect(nav("tabs").getByRole("link", { name: "Productos" })).toHaveAttribute("aria-current", "page");
   });
 
-  it("opens and closes the mobile navigation drawer", () => {
-    render(
-      <AppShell session={ownerSession}>
-        <p>Content</p>
-      </AppShell>,
-    );
+  it("shows pending orders on Pedidos and on Más", () => {
+    renderShell();
 
-    fireEvent.click(screen.getByRole("button", { name: /abrir menú/i }));
-
-    expect(screen.getByRole("dialog", { name: /menú de navegación/i })).toBeInTheDocument();
-    expect(screen.getAllByRole("link", { name: /productos/i })[1]).toHaveAttribute("aria-current", "page");
-    expect(screen.getByRole("button", { name: /^cerrar menú$/i })).toHaveFocus();
-
-    fireEvent.click(screen.getByRole("button", { name: /^cerrar menú$/i }));
-
-    expect(screen.queryByRole("dialog", { name: /menú de navegación/i })).not.toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /abrir menú/i })).toHaveFocus();
+    expect(nav("sidebar").getByRole("link", { name: /Pedidos/ })).toHaveTextContent("2");
+    expect(nav("tabs").getByRole("link", { name: /Más/ })).toHaveTextContent("2");
   });
 
-  it("closes the mobile navigation drawer with Escape", () => {
-    render(
-      <AppShell session={ownerSession}>
-        <p>Content</p>
-      </AppShell>,
-    );
+  it("shows the cash card with the expected cash only to the owner", () => {
+    const { unmount } = renderShell();
+    expect(screen.getByText("Caja abierta")).toBeInTheDocument();
+    expect(screen.getByText(/Efectivo esperado/)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Cerrar caja" })).toHaveAttribute("href", "/dashboard/caja");
+    unmount();
 
-    fireEvent.click(screen.getByRole("button", { name: /abrir menú/i }));
-    fireEvent.keyDown(window, { key: "Escape" });
-
-    expect(screen.queryByRole("dialog", { name: /menú de navegación/i })).not.toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /abrir menú/i })).toHaveFocus();
+    renderShell(cashierSession);
+    expect(screen.getByText("Caja abierta")).toBeInTheDocument();
+    expect(screen.queryByText(/Efectivo esperado/)).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "Cerrar caja" })).not.toBeInTheDocument();
   });
 
-  it("keeps keyboard focus inside the mobile navigation drawer", () => {
-    render(
-      <AppShell session={ownerSession}>
-        <p>Content</p>
-      </AppShell>,
-    );
+  it("shows the store and plan in the sidebar", () => {
+    renderShell();
 
-    fireEvent.click(screen.getByRole("button", { name: /abrir menú/i }));
+    expect(screen.getByText("Mi tienda")).toBeInTheDocument();
+    expect(screen.getByText("Plan Prueba · 9 días")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Nueva venta/ })).toHaveAttribute("href", "/dashboard/pos");
+  });
 
-    const mobileHomeLink = screen.getAllByRole("link", { name: new RegExp(BRAND.name, "i") })[1];
-    const mobileSettingsLink = screen.getAllByRole("link", { name: /ajustes/i })[1];
+  it("works without shell data when the API does not answer", () => {
+    renderShell(ownerSession, { pendingOrders: null, cash: null });
 
-    mobileHomeLink.focus();
-    fireEvent.keyDown(window, { key: "Tab", shiftKey: true });
-    expect(mobileSettingsLink).toHaveFocus();
+    expect(screen.queryByText("Caja abierta")).not.toBeInTheDocument();
+    expect(nav("tabs").getByRole("link", { name: "Más" })).toBeInTheDocument();
+  });
 
-    fireEvent.keyDown(window, { key: "Tab" });
-    expect(mobileHomeLink).toHaveFocus();
+  it("goes to Vender with F2", () => {
+    pathname = "/dashboard";
+    renderShell();
+
+    fireEvent.keyDown(window, { key: "F2" });
+    expect(push).toHaveBeenCalledWith("/dashboard/pos");
+  });
+
+  it("does not render the tab bar on the receipt print page", () => {
+    pathname = "/dashboard/sales/sale-1/print";
+    renderShell();
+
+    expect(document.querySelector('[data-nav="tabs"]')).toBeNull();
   });
 });

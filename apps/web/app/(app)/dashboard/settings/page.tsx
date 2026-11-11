@@ -11,7 +11,7 @@ import { requireSession } from "@/lib/auth/session";
 export default async function SettingsPage() {
   const session = await requireSession();
   if (!canViewSettings(session.role)) {
-    return <ForbiddenState description="Ajustes requiere permisos de owner." />;
+    return <ForbiddenState description="Solo el dueño de la tienda puede entrar a Configuración." />;
   }
   const [storeData, storeDay, storeDayEvents, productCategories, storeLocations, users, userInvitations] = await Promise.all([
     getStore().catch(() => null),

@@ -143,6 +143,8 @@ export async function voidCashMovementAction(
 function revalidateOperationalPaths() {
   revalidatePath("/dashboard");
   revalidatePath("/dashboard/settings");
+  revalidatePath("/dashboard/caja");
+  revalidatePath("/dashboard/mas");
   revalidatePath("/dashboard/pos");
   revalidatePath("/dashboard/sales");
   revalidatePath("/dashboard/reports");

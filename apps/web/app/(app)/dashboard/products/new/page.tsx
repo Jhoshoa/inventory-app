@@ -10,7 +10,7 @@ import { requireSession } from "@/lib/auth/session";
 export default async function NewProductPage() {
   const session = await requireSession();
   if (!canManageProducts(session.role)) {
-    return <ForbiddenState description="Crear productos requiere permisos de owner." />;
+    return <ForbiddenState description="Solo el dueño de la tienda puede crear productos." />;
   }
   const categories = await listProductCategories();
 
@@ -20,7 +20,7 @@ export default async function NewProductPage() {
         breadcrumbs={
           <Breadcrumbs
             items={[
-              { label: "Dashboard", href: "/dashboard" },
+              { label: "Inicio", href: "/dashboard" },
               { label: "Productos", href: "/dashboard/products" },
               { label: "Nuevo producto" },
             ]}

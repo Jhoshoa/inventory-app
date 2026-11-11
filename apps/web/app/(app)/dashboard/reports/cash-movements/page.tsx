@@ -20,7 +20,7 @@ export default async function CashMovementsPage({
 }) {
   const session = await requireSession();
   if (!canViewCashMovements(session.role)) {
-    return <ForbiddenState description="Movimientos de caja requiere permisos de owner." />;
+    return <ForbiddenState description="Solo el dueño de la tienda puede ver los movimientos de caja." />;
   }
 
   const rawParams = await searchParams;
@@ -33,7 +33,7 @@ export default async function CashMovementsPage({
         breadcrumbs={
           <Breadcrumbs
             items={[
-              { label: "Dashboard", href: "/dashboard" },
+              { label: "Inicio", href: "/dashboard" },
               { label: "Reportes", href: "/dashboard/reports" },
               { label: "Movimientos de caja" },
             ]}
@@ -50,7 +50,7 @@ export default async function CashMovementsPage({
       ) : movements.data.total === 0 ? (
         <EmptyState
           title="Sin movimientos de caja"
-          description="Registra movimientos desde Ajustes cuando la tienda este abierta."
+          description="Registra movimientos desde Caja cuando la caja esté abierta."
         />
       ) : (
         <div className="overflow-hidden rounded-lg border border-app-border bg-app-surface shadow-panel">

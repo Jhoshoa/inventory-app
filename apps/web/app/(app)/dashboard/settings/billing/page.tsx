@@ -9,7 +9,7 @@ import { requireSession } from "@/lib/auth/session";
 export default async function BillingPage() {
   const session = await requireSession();
   if (session.role !== "owner") {
-    return <ForbiddenState description="Facturacion requiere permisos de owner." />;
+    return <ForbiddenState description="Solo el dueño de la tienda puede ver el plan y los pagos." />;
   }
 
   const [billing, history] = await Promise.all([getBillingStatus(), getBillingHistory()]);
@@ -20,8 +20,8 @@ export default async function BillingPage() {
         breadcrumbs={
           <Breadcrumbs
             items={[
-              { label: "Dashboard", href: "/dashboard" },
-              { label: "Ajustes", href: "/dashboard/settings" },
+              { label: "Inicio", href: "/dashboard" },
+              { label: "Configuración", href: "/dashboard/settings" },
               { label: "Suscripcion" },
             ]}
           />

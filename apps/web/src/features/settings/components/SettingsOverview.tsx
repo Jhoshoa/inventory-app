@@ -53,12 +53,12 @@ export function SettingsOverview({
         breadcrumbs={
           <Breadcrumbs
             items={[
-              { label: "Dashboard", href: "/dashboard" },
-              { label: "Ajustes" },
+              { label: "Inicio", href: "/dashboard" },
+              { label: "Configuración" },
             ]}
           />
         }
-        title="Ajustes"
+        title="Configuración"
         description="Centro administrativo para tienda, permisos y operacion diaria."
       />
 
@@ -125,7 +125,7 @@ export function SettingsOverview({
         <div className="min-w-0 space-y-6">
           <AdminSection
             title="Permisos"
-            description="Capacidades disponibles para propietario y cajero en el MVP."
+            description="Capacidades disponibles para dueño y cajero en el MVP."
           >
             <PermissionMatrix />
           </AdminSection>
@@ -286,7 +286,7 @@ function InfoItem({ label, value }: { label: string; value: string }) {
 function RoleBadge({ role }: { role: Session["role"] }) {
   return (
     <Badge variant={role === "owner" ? "success" : "default"}>
-      {role === "owner" ? "Propietario" : "Cajero"}
+      {role === "owner" ? "Dueño" : "Cajero"}
     </Badge>
   );
 }

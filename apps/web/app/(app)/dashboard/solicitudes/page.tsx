@@ -12,9 +12,9 @@ export default async function StorefrontRequestsPage() {
     <PageSection className="space-y-6">
       <PageHeader
         breadcrumbs={
-          <Breadcrumbs items={[{ label: "Dashboard", href: "/dashboard" }, { label: "Solicitudes" }]} />
+          <Breadcrumbs items={[{ label: "Inicio", href: "/dashboard" }, { label: "Pedidos" }]} />
         }
-        title="Solicitudes"
+        title="Pedidos"
         description="Clientes que pidieron que los contactes desde tu catalogo publico."
       />
 

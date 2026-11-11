@@ -54,7 +54,7 @@ export function QuantityStepper({
   }
 
   return (
-    <div className="inline-flex items-center rounded-md border border-app-borderStrong bg-app-surface">
+    <div className="inline-flex items-center rounded-control border border-app-borderStrong bg-app-surface">
       <Button
         className="h-8 w-8 rounded-r-none border-r border-app-borderStrong bg-app-surface-muted px-0 text-lg font-semibold leading-none text-text-strong hover:bg-app-surface-muted disabled:text-text-disabled"
         variant="ghost"

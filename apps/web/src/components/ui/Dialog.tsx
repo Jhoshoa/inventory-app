@@ -68,7 +68,7 @@ const OVERLAY_POSITION: Record<DialogPosition, string> = {
 };
 
 const SURFACE_POSITION: Record<DialogPosition, string> = {
-  center: "rounded-lg",
+  center: "rounded-card",
   left: "h-full w-full max-w-sm rounded-r-lg",
   right: "h-full w-full max-w-sm rounded-l-lg",
   top: "w-full rounded-b-lg",

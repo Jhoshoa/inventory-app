@@ -21,7 +21,7 @@ export default async function ProductLabelsPage({
   const [session, rawParams] = await Promise.all([requireSession(), searchParams]);
 
   if (!canManageProducts(session.role)) {
-    return <ForbiddenState description="Imprimir etiquetas requiere permisos de owner." />;
+    return <ForbiddenState description="Solo el dueño de la tienda puede imprimir etiquetas." />;
   }
 
   const params = {
@@ -45,7 +45,7 @@ export default async function ProductLabelsPage({
         breadcrumbs={
           <Breadcrumbs
             items={[
-              { label: "Dashboard", href: "/dashboard" },
+              { label: "Inicio", href: "/dashboard" },
               { label: "Productos", href: "/dashboard/products" },
               { label: "Imprimir etiquetas" },
             ]}

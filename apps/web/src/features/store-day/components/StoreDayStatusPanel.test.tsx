@@ -185,7 +185,7 @@ describe("StoreDayStatusPanel", () => {
   it("renders management link without inline actions", () => {
     render(<StoreDayStatusPanel storeDay={openStoreDay()} role="owner" actions="link" />);
 
-    expect(screen.getByRole("link", { name: "Gestionar jornada" })).toHaveAttribute("href", "/dashboard/settings");
+    expect(screen.getByRole("link", { name: "Ir a Caja" })).toHaveAttribute("href", "/dashboard/caja");
     expect(screen.queryByRole("button", { name: "Cerrar tienda" })).not.toBeInTheDocument();
   });
 

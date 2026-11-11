@@ -12,7 +12,7 @@ describe("ExportPanel", () => {
   it("disables export actions for cashier", () => {
     render(<ExportPanel role="cashier" reportParams={params} />);
 
-    expect(screen.getByText(/requieren rol de propietario/i)).toBeInTheDocument();
+    expect(screen.getByText(/solo del dueño de la tienda/i)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /productos/i })).toBeDisabled();
   });
 

@@ -18,7 +18,7 @@ export default async function EditProductPage({
   const { productId } = await params;
   const session = await requireSession();
   if (!canManageProducts(session.role)) {
-    return <ForbiddenState description="Editar productos requiere permisos de owner." />;
+    return <ForbiddenState description="Solo el dueño de la tienda puede editar productos." />;
   }
   const [product, categories] = await Promise.all([
     getProduct(productId),
@@ -33,7 +33,7 @@ export default async function EditProductPage({
         breadcrumbs={
           <Breadcrumbs
             items={[
-              { label: "Dashboard", href: "/dashboard" },
+              { label: "Inicio", href: "/dashboard" },
               { label: "Productos", href: "/dashboard/products" },
               { label: "Detalle", href: `/dashboard/products/${productId}` },
               { label: "Editar" },

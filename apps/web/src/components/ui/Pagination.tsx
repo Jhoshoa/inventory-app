@@ -100,7 +100,7 @@ function PageLink({
 
   if (disabled) {
     return (
-      <span className="inline-flex h-9 items-center gap-1 rounded-md border border-app-border px-3 text-text-disabled">
+      <span className="inline-flex h-9 items-center gap-1 rounded-control border border-app-border px-3 text-text-disabled">
         {content}
       </span>
     );
@@ -109,7 +109,7 @@ function PageLink({
   return (
     <Link
       href={href}
-      className="inline-flex h-9 items-center gap-1 rounded-md border border-app-borderStrong px-3 text-text-body hover:bg-app-surface-muted hover:text-text-strong"
+      className="inline-flex h-9 items-center gap-1 rounded-control border border-app-borderStrong px-3 text-text-body hover:bg-app-surface-muted hover:text-text-strong"
     >
       {content}
     </Link>

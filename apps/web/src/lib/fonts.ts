@@ -3,7 +3,7 @@ import localFont from "next/font/local";
 // Fuentes guardadas en el repo (src/fonts): el build no depende de Google Fonts,
 // que desde el servidor de deploy respondia URLs que next/font/google no sabia
 // leer. Se sirven desde el propio sitio, como exige el CSP (font-src 'self').
-// Las usan la landing y los catalogos publicos.
+// Archivo y JetBrains Mono: la landing y los catalogos publicos. Inter: el panel.
 export const archivo = localFont({
   src: "../fonts/archivo-latin-wght.woff2",
   weight: "100 900",
@@ -20,6 +20,14 @@ export const jetbrainsMono = localFont({
   src: "../fonts/jetbrains-mono-latin-wght.woff2",
   weight: "100 800",
   variable: "--font-receipt",
+  display: "swap",
+});
+
+// Panel y acceso (estilo A "Mostrador").
+export const inter = localFont({
+  src: "../fonts/inter-latin-wght.woff2",
+  weight: "100 900",
+  variable: "--font-inter",
   display: "swap",
 });
 

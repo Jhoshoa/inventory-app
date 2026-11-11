@@ -26,8 +26,8 @@ export function ExportPanel({
       </div>
       {!allowed ? (
         <Alert>
-          Los exportes requieren rol de propietario. Puedes ver reportes, pero no extraer
-          datos masivos.
+          Las descargas son solo del dueño de la tienda. Puedes ver los reportes, pero no
+          descargar los datos.
         </Alert>
       ) : null}
       <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">

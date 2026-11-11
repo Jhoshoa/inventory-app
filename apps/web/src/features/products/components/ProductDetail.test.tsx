@@ -9,6 +9,7 @@ vi.mock("react", async () => {
 });
 
 vi.mock("next/navigation", () => ({
+  usePathname: () => "/dashboard/products/product-1",
   useRouter: () => ({ refresh: vi.fn(), replace: vi.fn() }),
   useSearchParams: () => new URLSearchParams(),
 }));

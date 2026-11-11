@@ -13,7 +13,7 @@ export default async function PosPage() {
     <PageSection className="space-y-6">
       <PageHeader
         eyebrow="Ventas"
-        title="POS"
+        title="Vender"
         description="Busca productos, arma el carrito y confirma ventas."
       />
       {!storeDay.ok ? (

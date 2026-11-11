@@ -10,11 +10,9 @@ test("mocked session reaches dashboard and products", async ({ context, page }) 
   await addSession(context);
 
   await page.goto("/dashboard");
-  await expect(page.getByRole("heading", { name: "Dashboard" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Inicio", exact: true })).toBeVisible();
 
-  const productsLink = page
-    .getByLabel("Principal")
-    .getByRole("link", { name: "Productos", exact: true });
+  const productsLink = page.locator('[data-nav="sidebar"]').getByRole("link", { name: "Productos", exact: true });
 
   await expect(productsLink).toHaveAttribute("href", "/dashboard/products");
   await productsLink.click();

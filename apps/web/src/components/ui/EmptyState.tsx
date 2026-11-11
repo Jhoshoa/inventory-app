@@ -31,7 +31,7 @@ export function EmptyState({
   }[tone];
 
   return (
-    <div className={`rounded-lg border border-dashed px-6 py-10 text-center shadow-panel ${toneClasses} ${className ?? ""}`}>
+    <div className={`rounded-card border border-dashed px-6 py-10 text-center shadow-panel ${toneClasses} ${className ?? ""}`}>
       <Icon className="mx-auto h-8 w-8 text-text-disabled" aria-hidden="true" />
       <h2 className="mt-4 text-base font-semibold text-text-strong">{title}</h2>
       <p className="mx-auto mt-2 max-w-xl text-sm text-text-muted">

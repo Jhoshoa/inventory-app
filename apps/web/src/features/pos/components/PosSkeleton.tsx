@@ -6,7 +6,7 @@ export function PosSkeleton() {
     <PageSection className="space-y-6" aria-label="Cargando POS">
       <PageHeader
         eyebrow="Ventas"
-        title="POS"
+        title="Vender"
         description="Busca productos, arma el carrito y confirma ventas."
       />
 

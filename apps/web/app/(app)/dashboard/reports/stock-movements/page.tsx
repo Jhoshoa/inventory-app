@@ -33,7 +33,7 @@ export default async function StockMovementsPage({
         breadcrumbs={
           <Breadcrumbs
             items={[
-              { label: "Dashboard", href: "/dashboard" },
+              { label: "Inicio", href: "/dashboard" },
               { label: "Reportes", href: "/dashboard/reports" },
               { label: "Movimientos de stock" },
             ]}

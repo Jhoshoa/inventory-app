@@ -57,7 +57,7 @@ export function VoidSaleDialog({ saleId }: { saleId: string }) {
         <form onSubmit={onSubmit} className="contents">
           <DialogBody>
             <p className="text-sm text-text-muted">
-              Esta accion devuelve inventario y requiere permisos de propietario.
+              Esta accion devuelve inventario y requiere permiso del dueño.
             </p>
             <input type="hidden" name="sale_id" value={saleId} />
             <div className="mt-4 space-y-1">

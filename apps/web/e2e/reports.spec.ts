@@ -6,7 +6,7 @@ test("cashier sees report page but cannot export", async ({ context, page }) => 
   await page.goto("/dashboard/reports");
 
   await expect(page.getByRole("heading", { name: "Reportes" })).toBeVisible();
-  await expect(page.getByText(/requieren rol owner/i)).toBeVisible();
+  await expect(page.getByText(/solo del dueño de la tienda/i)).toBeVisible();
   await expect(page.getByRole("button", { name: "Productos" })).toBeDisabled();
 });
 

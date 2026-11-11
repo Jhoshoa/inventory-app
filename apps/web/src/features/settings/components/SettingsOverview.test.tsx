@@ -6,6 +6,7 @@ import type { StoreDay } from "@/features/store-day/types";
 import { DEFAULT_STOREFRONT_SETTINGS } from "@/features/storefront/settings";
 
 vi.mock("next/navigation", () => ({
+  usePathname: () => "/dashboard/settings",
   useRouter: () => ({ refresh: vi.fn() }),
 }));
 
@@ -62,7 +63,7 @@ describe("SettingsOverview", () => {
     expect(screen.getByText("Mi tienda")).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Usuario actual" })).toBeInTheDocument();
     expect(screen.getByText("owner@example.com")).toBeInTheDocument();
-    expect(screen.getAllByText("Propietario").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Dueño").length).toBeGreaterThan(0);
     expect(screen.getByText("Permisos")).toBeInTheDocument();
     expect(screen.getByText("Exportar CSV")).toBeInTheDocument();
     expect(screen.getByText("Operacion diaria")).toBeInTheDocument();

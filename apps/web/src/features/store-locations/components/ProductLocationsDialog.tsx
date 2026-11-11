@@ -97,7 +97,7 @@ export function ProductLocationsDialog({
             <p className="text-sm text-text-muted">
               Todavia no hay ubicaciones. Crealas en{" "}
               <Link href="/dashboard/settings#ubicaciones" className="font-medium text-accent-primary underline">
-                Ajustes
+                Configuración
               </Link>{" "}
               (por ejemplo: Pasillo 2 · Estante B · Nivel 3).
             </p>
