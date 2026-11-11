@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Ventas · lista, detalle, anular y recibo</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;family=JetBrains+Mono:wght@500;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#EEF0F4}
+*{box-sizing:border-box}
+a{color:#1F4FD8}a:hover{color:#163BA6}
+.fr{display:flex;flex-direction:column;gap:10px;flex-shrink:0}
+.cap{font:700 13px Inter,sans-serif;color:#475467;text-transform:uppercase;letter-spacing:.05em}
+.ph{width:390px;height:844px;background:#F7F8FA;border-radius:28px;overflow:hidden;position:relative;display:flex;flex-direction:column;box-shadow:0 0 0 1px #D0D5DD}
+.dk{width:1280px;height:800px;background:#F7F8FA;border-radius:14px;overflow:hidden;position:relative;display:flex;box-shadow:0 0 0 1px #D0D5DD}
+.top{background:#fff;border-bottom:1px solid #E8EAEF;padding:10px 12px;display:flex;align-items:center;gap:6px}
+.back{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.h1{margin:0;font-size:20px;font-weight:800;letter-spacing:-.02em}
+.h2{margin:0;font-size:15px;font-weight:700}
+.mu{color:#475467;font-size:13px}
+.card{background:#fff;border:1px solid #E8EAEF;border-radius:16px}
+.sec{padding:14px;display:flex;flex-direction:column;gap:8px}
+.in{height:42px;border:1px solid #D0D5DD;border-radius:12px;padding:0 12px;font:14px Inter,sans-serif;color:#101828;background:#fff;width:100%}
+.in.err{border-color:#D92D20;box-shadow:0 0 0 3px #FEE4E2}
+.lb{font-size:14px;font-weight:600;display:block;margin-bottom:6px}
+.er{font-size:12px;color:#B42318;margin-top:6px;display:block}
+.btn{height:44px;border-radius:12px;border:1px solid #D0D5DD;background:#fff;font:700 14px Inter,sans-serif;color:#344054;padding:0 14px;display:inline-flex;align-items:center;justify-content:center;gap:8px;text-decoration:none;white-space:nowrap}
+.btn.p{background:#1F4FD8;border-color:#1F4FD8;color:#fff}
+.btn.d{background:#D92D20;border-color:#D92D20;color:#fff}
+.btn.dl{color:#B42318}
+.btn.sm{height:34px;font-size:13px;padding:0 10px;border-radius:10px}
+.chip{height:34px;padding:0 12px;border-radius:999px;border:1px solid #D0D5DD;background:#fff;font:600 13px Inter,sans-serif;color:#344054;white-space:nowrap}
+.chip.on{background:#101828;border-color:#101828;color:#fff}
+.tag{display:inline-flex;font-size:12px;font-weight:700;padding:3px 9px;border-radius:999px;white-space:nowrap}
+.t-ok{background:#ECFDF3;color:#067647}.t-bad{background:#FEF3F2;color:#B42318}.t-mu{background:#F2F4F7;color:#344054}.t-warn{background:#FFFAEB;color:#B54708}
+.sale{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 14px;border-top:1px solid #F2F4F7;text-decoration:none;color:#101828}
+.day{display:flex;justify-content:space-between;font-size:12px;font-weight:700;color:#475467;text-transform:uppercase;letter-spacing:.04em;padding:0 4px}
+.ln{display:flex;justify-content:space-between;font-size:14px;padding:8px 0;border-top:1px solid #F2F4F7}
+.tot{display:flex;justify-content:space-between;font-size:14px;padding:4px 0}
+.side{width:236px;flex-shrink:0;background:#fff;border-right:1px solid #E8EAEF;padding:18px 12px;display:flex;flex-direction:column;gap:14px}
+.n{display:flex;align-items:center;gap:10px;height:38px;padding:0 10px;border-radius:10px;font-size:14px;color:#344054;text-decoration:none;font-weight:500}
+.n.on{background:#EEF0F4;color:#101828;font-weight:700}
+.dot{width:8px;height:8px;border-radius:3px;background:#D0D5DD}
+.n.on .dot{background:#1F4FD8}
+.tbl{width:100%;border-collapse:collapse;font-size:14px}
+.tbl th{background:#F9FAFB;color:#475467;font-size:12px;font-weight:600;text-align:left;padding:10px 12px}
+.tbl td{padding:10px 12px;border-top:1px solid #F2F4F7}
+.ov{position:absolute;inset:0;background:rgba(16,24,40,.45);display:flex;flex-direction:column;justify-content:flex-end}
+.sheet{background:#fff;border-radius:24px 24px 0 0;padding:8px 16px 26px;display:flex;flex-direction:column;gap:12px}
+.grab{width:40px;height:5px;border-radius:999px;background:#D0D5DD;margin:0 auto}
+.rcpt{width:320px;background:#fff;padding:18px 16px;font:12px/1.5 'JetBrains Mono',ui-monospace,monospace;color:#101828;box-shadow:0 0 0 1px #D0D5DD}
+.notes{width:440px;flex-shrink:0;background:#fff;border:1px solid #E8EAEF;border-radius:16px;padding:20px 22px;font:13px/1.55 Inter,sans-serif;color:#344054}
+.notes h3{margin:16px 0 6px;font-size:12px;font-weight:800;color:#101828;text-transform:uppercase;letter-spacing:.05em}
+.notes h3:first-child{margin-top:0}
+.notes ul{margin:0;padding-left:18px}
+.notes code{font:12px ui-monospace,monospace;background:#F2F4F7;padding:1px 4px;border-radius:4px}
+</style>
+</helmet>
+<div style="width: 3940px; height: 960px; padding: 40px; display: flex; gap: 40px; align-items: flex-start; font-family: Inter, system-ui, sans-serif; color: #101828; font-feature-settings: 'tnum' 1">
+
+  <div class="fr">
+    <span class="cap">Celular · Ventas</span>
+    <div class="ph">
+      <div class="top" style="flex-direction: column; align-items: stretch; gap: 10px; padding: 14px 16px 12px">
+        <div style="display: flex; justify-content: space-between; align-items: center"><h1 class="h1">Ventas</h1><button type="button" class="btn sm">Exportar</button></div>
+        <div style="display: flex; gap: 6px; overflow: hidden"><button type="button" class="chip on">Hoy</button><button type="button" class="chip">Ayer</button><button type="button" class="chip">7 días</button><button type="button" class="chip">Elegir fechas</button></div>
+        <div style="display: flex; gap: 6px"><button type="button" class="chip on" style="height: 30px">Todas</button><button type="button" class="chip" style="height: 30px">Completadas</button><button type="button" class="chip" style="height: 30px">Anuladas · 1</button></div>
+      </div>
+      <div style="flex: 1; overflow: hidden; padding: 12px 14px 110px; display: flex; flex-direction: column; gap: 8px">
+        <div class="card" style="padding: 12px 14px; display: flex; justify-content: space-between"><span><span class="mu">Hoy · 37 ventas</span><strong style="display: block; font-size: 20px">Bs 1.248,50</strong></span><span class="mu" style="text-align: right">Efectivo 742<br>QR 318,50</span></div>
+        <div class="day"><span>Martes 10/11</span><span>Bs 1.248,50</span></div>
+        <div class="card">
+          <sc-for list="{{sales}}" as="s" hint-placeholder-count="6">
+            <a href="#" class="sale" style="border-top: {{s.bt}}"><span style="min-width: 0"><strong style="display: block; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 210px; text-decoration: {{s.strike}}">{{s.items}}</strong><span class="mu" style="font-size: 12px">{{s.time}} · {{s.pay}}</span></span><span style="text-align: right"><strong style="display: block; text-decoration: {{s.strike}}">{{s.total}}</strong><span class="tag {{s.cls}}" style="margin-top: 2px">{{s.st}}</span></span></a>
+          </sc-for>
+        </div>
+      </div>
+      <nav aria-label="Principal" style="position: absolute; left: 0; right: 0; bottom: 0; background: #fff; border-top: 1px solid #E8EAEF; padding: 8px 8px 22px; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); font-size: 11px; font-weight: 600; text-align: center; color: #475467">
+        <a href="#" style="color: inherit; text-decoration: none; min-height: 48px; display: flex; align-items: center; justify-content: center">Inicio</a><a href="#" style="color: inherit; text-decoration: none; min-height: 48px; display: flex; align-items: center; justify-content: center">Productos</a><a href="#" style="color: #101828; font-weight: 700; text-decoration: none; min-height: 48px; display: flex; align-items: center; justify-content: center">Vender</a><a href="#" aria-current="page" style="color: #1F4FD8; font-weight: 700; text-decoration: none; min-height: 48px; display: flex; align-items: center; justify-content: center">Ventas</a><a href="#" style="color: inherit; text-decoration: none; min-height: 48px; display: flex; align-items: center; justify-content: center">Más</a>
+      </nav>
+    </div>
+  </div>
+
+  <div class="fr">
+    <span class="cap">Celular · Detalle de venta</span>
+    <div class="ph">
+      <div class="top">
+        <a href="#" class="back" aria-label="Volver a ventas"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#101828" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"></path></svg></a>
+        <div style="flex: 1"><h1 class="h1" style="font-size: 18px">Venta b07038f2</h1><span class="mu" style="font-size: 12px">Hoy 11:47 · Luis</span></div>
+        <span class="tag t-ok">Completada</span>
+      </div>
+      <div style="flex: 1; overflow: hidden; padding: 14px 14px 160px; display: flex; flex-direction: column; gap: 12px">
+        <div class="card sec">
+          <div class="ln" style="border: 0; padding-top: 0"><span>Coca Cola 2l <span class="mu">× 2 · 14,00</span></span><strong>28,00</strong></div>
+          <div class="ln"><span>Papas Fritas 120g <span class="mu">× 1 · 6,50</span></span><strong>6,50</strong></div>
+          <div class="ln"><span>Yogur Frutilla <span class="mu">× 2 · 6,50</span></span><strong>13,00</strong></div>
+          <div style="border-top: 1px dashed #D0D5DD; padding-top: 8px; display: flex; flex-direction: column">
+            <div class="tot mu"><span>Subtotal</span><span>Bs 47,50</span></div>
+            <div class="tot" style="color: #067647"><span>Descuento de producto</span><span>− Bs 1,30</span></div>
+            <div class="tot" style="font-size: 18px; font-weight: 800"><span>Total</span><span>Bs 46,20</span></div>
+          </div>
+        </div>
+        <div class="card sec">
+          <div class="tot"><span class="mu">Pago</span><strong>Efectivo</strong></div>
+          <div class="tot"><span class="mu">Cliente</span><strong>—</strong></div>
+          <div class="tot"><span class="mu">Registrada</span><strong>En línea</strong></div>
+        </div>
+      </div>
+      <div style="position: absolute; left: 0; right: 0; bottom: 0; background: #fff; border-top: 1px solid #E8EAEF; padding: 12px 16px 26px; display: flex; flex-direction: column; gap: 8px">
+        <div style="display: flex; gap: 8px"><button type="button" class="btn" style="flex: 1">Recibo</button><button type="button" class="btn" style="flex: 1">WhatsApp</button><button type="button" class="btn" style="flex: 1">Imprimir</button></div>
+        <button type="button" class="btn dl">Anular venta</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="fr">
+    <span class="cap">Celular · Anular (dueño)</span>
+    <div class="ph">
+      <div class="ov">
+        <form class="sheet" role="dialog" aria-labelledby="void-t">
+          <span class="grab"></span>
+          <h2 id="void-t" class="h1" style="font-size: 19px">¿Anular la venta de Bs 46,20?</h2>
+          <p class="mu" style="margin: 0">Las 5 unidades vuelven al stock (a sus mismos lotes) y la venta queda como anulada en reportes. No se puede deshacer.</p>
+          <div><span class="lb">Razón</span>
+            <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px"><button type="button" class="chip">Error al cobrar</button><button type="button" class="chip">Cliente devolvió</button><button type="button" class="chip">Venta duplicada</button></div>
+            <textarea class="in err" aria-label="Razón" aria-describedby="void-er" style="height: 76px; padding-top: 10px"></textarea>
+            <span class="er" id="void-er">La razón es requerida.</span></div>
+          <button type="submit" class="btn d" style="height: 52px">Anular venta</button>
+          <button type="button" class="btn">Cancelar</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="fr">
+    <span class="cap">Escritorio · Ventas con detalle al costado</span>
+    <div class="dk">
+      <aside class="side">
+        <div style="display: flex; align-items: center; gap: 10px; padding: 0 6px">
+          <svg aria-hidden="true" viewBox="3 3 42 42" width="30" height="30"><path d="M11 5H37Q40 5 40 8V39L36 43L32 39L28 43L24 39L20 43L16 39L12 43L8 39V8Q8 5 11 5Z" fill="#FFE14D" stroke="#111111" stroke-width="3" stroke-linejoin="round"></path><circle cx="19" cy="18" r="2.8" fill="#111111"></circle><circle cx="29" cy="18" r="2.8" fill="#111111"></circle><path d="M17 25Q24 31 31 25" fill="none" stroke="#111111" stroke-width="3" stroke-linecap="round"></path></svg>
+          <div><div style="font-weight: 800; font-size: 14px">Tienda Local</div><div class="mu" style="font-size: 12px">Plan Prueba · 9 días</div></div>
+        </div>
+        <a href="#" class="btn p" style="height: 42px">Nueva venta</a>
+        <nav aria-label="Principal" style="display: flex; flex-direction: column; gap: 2px">
+          <a href="#" class="n"><span class="dot"></span>Inicio</a><a href="#" class="n"><span class="dot"></span>Vender</a><a href="#" class="n"><span class="dot"></span>Caja</a><a href="#" class="n"><span class="dot"></span>Productos</a><a href="#" class="n on" aria-current="page"><span class="dot"></span>Ventas</a><a href="#" class="n"><span class="dot"></span>Pedidos</a><a href="#" class="n"><span class="dot"></span>Reportes</a><a href="#" class="n"><span class="dot"></span>Configuración</a>
+        </nav>
+      </aside>
+      <main style="flex: 1; min-width: 0; padding: 20px 24px; display: flex; flex-direction: column; gap: 12px; overflow: hidden">
+        <div style="display: flex; justify-content: space-between; align-items: center"><div><h1 class="h1" style="font-size: 26px">Ventas</h1><span class="mu">37 ventas · Bs 1.248,50 · 1 anulada</span></div><button type="button" class="btn">Exportar CSV</button></div>
+        <div style="display: flex; gap: 8px; align-items: end">
+          <div><label class="lb" for="v-from" style="font-size: 12px">Desde</label><input id="v-from" type="date" class="in" value="2026-11-10" style="width: 150px; height: 38px"></div>
+          <div><label class="lb" for="v-to" style="font-size: 12px">Hasta</label><input id="v-to" type="date" class="in" value="2026-11-10" style="width: 150px; height: 38px"></div>
+          <button type="button" class="chip on">Todas</button><button type="button" class="chip">Completadas</button><button type="button" class="chip">Anuladas</button>
+        </div>
+        <div class="card" style="overflow: hidden">
+          <table class="tbl">
+            <thead><tr><th scope="col">Hora</th><th scope="col">Productos</th><th scope="col">Pago</th><th scope="col">Estado</th><th scope="col" style="text-align: right">Total</th></tr></thead>
+            <tbody>
+              <sc-for list="{{sales}}" as="s" hint-placeholder-count="6">
+                <tr style="background: {{s.sel}}"><td class="mu">{{s.time}}</td><td style="font-weight: 600; text-decoration: {{s.strike}}">{{s.items}}</td><td><span class="tag t-mu">{{s.pay}}</span></td><td><span class="tag {{s.cls}}">{{s.st}}</span></td><td style="text-align: right; font-weight: 700">{{s.total}}</td></tr>
+              </sc-for>
+            </tbody>
+          </table>
+        </div>
+      </main>
+      <aside aria-label="Detalle de la venta" style="width: 340px; flex-shrink: 0; background: #fff; border-left: 1px solid #E8EAEF; padding: 18px; display: flex; flex-direction: column; gap: 12px">
+        <div style="display: flex; justify-content: space-between; align-items: start"><div><h2 class="h2" style="font-size: 17px">Venta b07038f2</h2><span class="mu">Hoy 11:47 · Luis · En línea</span></div><button type="button" aria-label="Cerrar detalle" style="border: 0; background: transparent; font-size: 20px">×</button></div>
+        <span class="tag t-ok" style="align-self: flex-start">Completada</span>
+        <div>
+          <div class="ln" style="border: 0"><span>Coca Cola 2l × 2</span><strong>28,00</strong></div>
+          <div class="ln"><span>Papas Fritas 120g × 1</span><strong>6,50</strong></div>
+          <div class="ln"><span>Yogur Frutilla × 2</span><strong>13,00</strong></div>
+        </div>
+        <div style="border-top: 1px dashed #D0D5DD; padding-top: 8px">
+          <div class="tot mu"><span>Subtotal</span><span>Bs 47,50</span></div>
+          <div class="tot" style="color: #067647"><span>Descuento de producto</span><span>− Bs 1,30</span></div>
+          <div class="tot" style="font-size: 18px; font-weight: 800"><span>Total · Efectivo</span><span>Bs 46,20</span></div>
+        </div>
+        <div style="margin-top: auto; display: flex; flex-direction: column; gap: 8px">
+          <div style="display: flex; gap: 8px"><button type="button" class="btn" style="flex: 1">Recibo</button><button type="button" class="btn" style="flex: 1">Imprimir</button></div>
+          <a href="#" class="btn">Abrir página de la venta</a>
+          <button type="button" class="btn dl">Anular venta</button>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <div class="fr">
+    <span class="cap">Recibo (ventana e impresión 80 mm)</span>
+    <div class="rcpt" role="img" aria-label="Vista del recibo">
+      <div style="text-align: center; font-weight: 700; font-size: 14px">TIENDA LOCAL</div>
+      <div style="text-align: center">Av. Busch 1240 · Tel +591 71234567</div>
+      <div style="border-top: 1px dashed #101828; margin: 8px 0"></div>
+      <div>Venta b07038f2</div><div>10/11/2026 11:47 · Efectivo</div>
+      <div style="border-top: 1px dashed #101828; margin: 8px 0"></div>
+      <div style="display: flex; justify-content: space-between"><span>2 × Coca Cola 2l</span><span>28,00</span></div>
+      <div style="display: flex; justify-content: space-between"><span>1 × Papas Fritas 120g</span><span>6,50</span></div>
+      <div style="display: flex; justify-content: space-between"><span>2 × Yogur Frutilla</span><span>13,00</span></div>
+      <div style="border-top: 1px dashed #101828; margin: 8px 0"></div>
+      <div style="display: flex; justify-content: space-between"><span>Subtotal</span><span>47,50</span></div>
+      <div style="display: flex; justify-content: space-between"><span>Desc. producto</span><span>-1,30</span></div>
+      <div style="display: flex; justify-content: space-between; font-weight: 700; font-size: 14px"><span>TOTAL Bs</span><span>46,20</span></div>
+      <div style="border-top: 1px dashed #101828; margin: 8px 0"></div>
+      <div style="text-align: center">Comprobante de venta · no es factura</div>
+      <div style="text-align: center">¡Gracias por tu compra!</div>
+    </div>
+    <div style="display: flex; gap: 8px; width: 320px"><button type="button" class="btn" style="flex: 1">WhatsApp</button><button type="button" class="btn p" style="flex: 1">Imprimir</button></div>
+    <div class="card sec" style="width: 320px"><strong style="font-size: 13px">Venta anulada</strong><span class="mu">La lista la muestra tachada con la etiqueta "Anulada"; el detalle muestra la razón y quién la anuló, sin botón Anular.</span></div>
+  </div>
+
+  <aside class="notes" aria-label="Notas de implementación">
+    <h3>Caminos</h3>
+    <ul>
+      <li>Celular: lista agrupada por día con el total del día → tocar abre la página de la venta.</li>
+      <li>Escritorio y tablet: la fila abre el detalle al costado sin salir de la lista; "Abrir página de la venta" va a <code>/dashboard/sales/{id}</code>.</li>
+      <li>Recibo: ventana con la vista del ticket; "Imprimir" usa la página de impresión actual (80 mm); "WhatsApp" arma el texto del recibo (nuevo, solo web).</li>
+      <li>Anular: hoja (celular) o ventana (escritorio) con razón obligatoria; al anular, aviso "Venta anulada" y la venta se marca en la lista.</li>
+    </ul>
+    <h3>Validaciones</h3>
+    <ul>
+      <li>Fechas: "desde" no puede ser posterior a "hasta"; no antes del primer día de la tienda.</li>
+      <li>Razón de anulación: requerida, máx. 200. Chips rápidos llenan el texto.</li>
+      <li>Solo se anulan ventas completadas y una sola vez (la API responde 409 si ya está anulada).</li>
+    </ul>
+    <h3>Permisos</h3>
+    <ul>
+      <li>Cajero: ve la lista, el detalle y el recibo; no ve "Anular" ni "Exportar".</li>
+    </ul>
+    <h3>API</h3>
+    <ul>
+      <li><code>GET /sales?from_date&amp;to_date&amp;status&amp;limit&amp;offset</code>, <code>GET /sales/{id}</code>, <code>POST /sales/{id}/void</code>, <code>GET /exports/sales.csv</code> — existen.</li>
+      <li>Totales del día y por método: <code>GET /reports/sales</code> con el mismo rango.</li>
+      <li>"Luis" (quién vendió) y "quién la anuló": hoy la venta trae solo el id del usuario. <strong>Backend B6 (opcional)</strong>: agregar <code>created_by_name</code> y <code>voided_by_name</code>. Sin esto se muestra solo la hora.</li>
+    </ul>
+  </aside>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":3940,"height":960}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const s = (time, items, pay, total, voided, sel) => ({
+      time, items, pay, total,
+      st: voided ? 'Anulada' : 'Completada', cls: voided ? 't-bad' : 't-ok',
+      strike: voided ? 'line-through' : 'none', sel: sel ? '#EEF4FF' : 'transparent', bt: '1px solid #F2F4F7'
+    });
+    const sales = [
+      s('11:47', 'Coca Cola 2l × 2, Papas Fritas, Yogur…', 'Efectivo', 'Bs 46,20', false, true),
+      s('11:42', 'Coca Cola 2l × 2, Papas Fritas 120g', 'Efectivo', 'Bs 41,00'),
+      s('11:30', 'Arroz Grano de Oro 1kg', 'QR', 'Bs 12,50'),
+      s('11:15', 'Yogur Frutilla', 'Efectivo', 'Bs 6,50', true),
+      s('11:12', 'Leche Pil 1l × 3, Pan × 10', 'Efectivo', 'Bs 32,50'),
+      s('10:58', 'Detergente en Polvo 1kg', 'Tarjeta', 'Bs 22,00')
+    ];
+    sales[0] = { ...sales[0], bt: '0' };
+    return { sales };
+  }
+}
+</script>
+</body>
+</html>

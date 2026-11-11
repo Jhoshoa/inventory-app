@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Propuestas de UI: resumen</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;800&amp;family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@500;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#F6F5F1;font-family:Inter,system-ui,sans-serif;color:#17181C}
+a{color:#1F4FD8}a:hover{color:#163BA6}
+</style>
+</helmet>
+<main style="box-sizing: border-box; width: 100%; max-width: 1180px; margin: 0 auto; padding: 56px 24px 72px; display: flex; flex-direction: column; gap: 48px">
+
+  <header style="display: flex; flex-direction: column; gap: 14px">
+    <div style="display: flex; align-items: center; gap: 12px">
+      <svg aria-hidden="true" viewBox="3 3 42 42" width="40" height="40"><path d="M11 5H37Q40 5 40 8V39L36 43L32 39L28 43L24 39L20 43L16 39L12 43L8 39V8Q8 5 11 5Z" fill="#FFE14D" stroke="#111111" stroke-width="3" stroke-linejoin="round"></path><circle cx="19" cy="18" r="2.8" fill="#111111"></circle><circle cx="29" cy="18" r="2.8" fill="#111111"></circle><path d="M17 25Q24 31 31 25" fill="none" stroke="#111111" stroke-width="3" stroke-linecap="round"></path></svg>
+      <span style="font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #5B5E66">Tu Tiendamiga · panel de dueño y cajero</span>
+    </div>
+    <h1 style="margin: 0; font-family: Archivo, sans-serif; font-weight: 800; font-size: clamp(32px, 5vw, 52px); line-height: 1.05; letter-spacing: -0.02em">Tres propuestas para que el panel se use bien en el celular y se vea listo para vender</h1>
+    <p style="margin: 0; max-width: 760px; font-size: 18px; line-height: 1.55; color: #3F424A">Las tres comparten la misma base responsive (navegación, listas, filtros y POS pensados para el pulgar). Cambia el estilo visual y cuánto se trabaja cada pantalla. Abajo, los mockups de cada una en celular, tablet y escritorio.</p>
+  </header>
+
+  <section aria-labelledby="diag" style="display: flex; flex-direction: column; gap: 16px">
+    <h2 id="diag" style="margin: 0; font-family: Archivo, sans-serif; font-size: 26px; font-weight: 800">Lo que hoy se siente confuso en el celular</h2>
+    <p style="margin: 0; color: #3F424A; font-size: 15px">Revisado en la app actual a 375 px de ancho (iPhone SE / Android chico).</p>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px">
+      <div style="background: #FFFFFF; border: 1px solid #E3E1DA; border-radius: 14px; padding: 18px; display: flex; flex-direction: column; gap: 6px">
+        <strong style="font-size: 15px">Navegación escondida</strong>
+        <span style="font-size: 14px; line-height: 1.5; color: #3F424A">Todo vive detrás del menú ☰: ir al POS son 2 toques y no se ve en qué sección estás.</span>
+      </div>
+      <div style="background: #FFFFFF; border: 1px solid #E3E1DA; border-radius: 14px; padding: 18px; display: flex; flex-direction: column; gap: 6px">
+        <strong style="font-size: 15px">Inicio muy largo</strong>
+        <span style="font-size: 14px; line-height: 1.5; color: #3F424A">Las 4 métricas van una por fila: hay que bajar casi 2 pantallas para ver las ventas. El encabezado se aprieta y aparece scroll horizontal.</span>
+      </div>
+      <div style="background: #FFFFFF; border: 1px solid #E3E1DA; border-radius: 14px; padding: 18px; display: flex; flex-direction: column; gap: 6px">
+        <strong style="font-size: 15px">Productos tarda en aparecer</strong>
+        <span style="font-size: 14px; line-height: 1.5; color: #3F424A">3 botones grandes y 4 filtros apilados antes del primer producto. Cada fila tiene 4 íconos sin texto y ninguna foto.</span>
+      </div>
+      <div style="background: #FFFFFF; border: 1px solid #E3E1DA; border-radius: 14px; padding: 18px; display: flex; flex-direction: column; gap: 6px">
+        <strong style="font-size: 15px">Cobrar queda lejos</strong>
+        <span style="font-size: 14px; line-height: 1.5; color: #3F424A">En el POS el carrito y el cobro van debajo de la búsqueda: el cajero baja y sube en cada venta.</span>
+      </div>
+      <div style="background: #FFFFFF; border: 1px solid #E3E1DA; border-radius: 14px; padding: 18px; display: flex; flex-direction: column; gap: 6px">
+        <strong style="font-size: 15px">Estilo genérico</strong>
+        <span style="font-size: 14px; line-height: 1.5; color: #3F424A">Azul de plantilla, tarjetas iguales y sin la identidad del logo y del catálogo: se ve como cualquier admin, no como un producto propio.</span>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="base" style="display: flex; flex-direction: column; gap: 16px">
+    <h2 id="base" style="margin: 0; font-family: Archivo, sans-serif; font-size: 26px; font-weight: 800">La base que llevan las tres</h2>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 12px">
+      <div style="background: #FFFFFF; border: 1px solid #E3E1DA; border-radius: 14px; padding: 20px; display: flex; flex-direction: column; gap: 10px">
+        <span style="font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 700; color: #5B5E66">CELULAR · menos de 640 px</span>
+        <ul style="margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 6px; font-size: 14px; line-height: 1.5; color: #2A2C33">
+          <li>Barra de pestañas abajo: Inicio, Vender, Productos, Ventas, Más.</li>
+          <li>Métricas en 2×2, en una sola pantalla.</li>
+          <li>Filtros en una hoja que sube desde abajo, con chips.</li>
+          <li>Listas en tarjetas con foto, una acción principal y "⋯" para el resto.</li>
+          <li>En el POS, el carrito como barra fija: "Cobrar Bs 45,50".</li>
+        </ul>
+      </div>
+      <div style="background: #FFFFFF; border: 1px solid #E3E1DA; border-radius: 14px; padding: 20px; display: flex; flex-direction: column; gap: 10px">
+        <span style="font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 700; color: #5B5E66">TABLET · 640 a 1024 px</span>
+        <ul style="margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 6px; font-size: 14px; line-height: 1.5; color: #2A2C33">
+          <li>Barra lateral angosta, solo íconos con nombre corto.</li>
+          <li>POS en dos columnas: productos y carrito siempre a la vista.</li>
+          <li>Tablas que pasan a tarjetas cuando no entran.</li>
+        </ul>
+      </div>
+      <div style="background: #FFFFFF; border: 1px solid #E3E1DA; border-radius: 14px; padding: 20px; display: flex; flex-direction: column; gap: 10px">
+        <span style="font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 700; color: #5B5E66">ESCRITORIO · más de 1024 px</span>
+        <ul style="margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 6px; font-size: 14px; line-height: 1.5; color: #2A2C33">
+          <li>Barra lateral fija con la tienda, la jornada y el usuario.</li>
+          <li>Buscador global (productos y ventas) con atajo de teclado.</li>
+          <li>Montos con números tabulares; botones de 44 px como mínimo.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="dirs" style="display: flex; flex-direction: column; gap: 16px">
+    <h2 id="dirs" style="margin: 0; font-family: Archivo, sans-serif; font-size: 26px; font-weight: 800">Las tres direcciones</h2>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px">
+
+      <article style="background: #FFFFFF; border: 1px solid #E3E1DA; border-radius: 18px; padding: 22px; display: flex; flex-direction: column; gap: 14px">
+        <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 8px">
+          <h3 style="margin: 0; font-family: Archivo, sans-serif; font-size: 22px; font-weight: 800">A · Mostrador</h3>
+          <span style="font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 700; color: #1F4FD8">5–6 días</span>
+        </div>
+        <p style="margin: 0; font-size: 14px; line-height: 1.55; color: #3F424A">Sobrio y confiable, como un banco o una app de pagos: fondo claro, mucho aire, un azul profundo para las acciones y el amarillo del logo solo como sello. La opción más segura para vender a cualquier negocio.</p>
+        <div style="display: flex; gap: 6px" aria-label="Paleta A">
+          <span title="Fondo #F7F8FA" style="width: 36px; height: 36px; border-radius: 10px; background: #F7F8FA; border: 1px solid #E3E5EA"></span>
+          <span title="Tinta #101828" style="width: 36px; height: 36px; border-radius: 10px; background: #101828"></span>
+          <span title="Acción #1F4FD8" style="width: 36px; height: 36px; border-radius: 10px; background: #1F4FD8"></span>
+          <span title="Marca #FFE14D" style="width: 36px; height: 36px; border-radius: 10px; background: #FFE14D"></span>
+          <span title="Éxito #127A4B" style="width: 36px; height: 36px; border-radius: 10px; background: #127A4B"></span>
+        </div>
+        <span style="font-size: 13px; color: #5B5E66">Inter para todo · radios de 12 px · sombras muy suaves</span>
+      </article>
+
+      <article style="background: #FFFFFF; border: 1px solid #E3E1DA; border-radius: 18px; padding: 22px; display: flex; flex-direction: column; gap: 14px">
+        <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 8px">
+          <h3 style="margin: 0; font-family: Archivo, sans-serif; font-size: 22px; font-weight: 800">B · Boleta</h3>
+          <span style="font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 700; color: #1F4FD8">7–9 días</span>
+        </div>
+        <p style="margin: 0; font-size: 14px; line-height: 1.55; color: #3F424A">La personalidad del logo y del catálogo llevada al panel: tinta negra, bordes marcados, amarillo de boleta y montos en tipografía de ticket. Inconfundible en una demo; el dueño siente que su tienda y su panel son de la misma marca.</p>
+        <div style="display: flex; gap: 6px" aria-label="Paleta B">
+          <span title="Papel #FBF8EF" style="width: 36px; height: 36px; border-radius: 10px; background: #FBF8EF; border: 1px solid #E3E1DA"></span>
+          <span title="Tinta #111111" style="width: 36px; height: 36px; border-radius: 10px; background: #111111"></span>
+          <span title="Boleta #FFE14D" style="width: 36px; height: 36px; border-radius: 10px; background: #FFE14D"></span>
+          <span title="Naranja #FF4A1C" style="width: 36px; height: 36px; border-radius: 10px; background: #FF4A1C"></span>
+          <span title="Verde #1C7C54" style="width: 36px; height: 36px; border-radius: 10px; background: #1C7C54"></span>
+        </div>
+        <span style="font-size: 13px; color: #5B5E66">Archivo + JetBrains Mono para montos · bordes de 2 px · sombra dura</span>
+      </article>
+
+      <article style="background: #FFFFFF; border: 1px solid #E3E1DA; border-radius: 18px; padding: 22px; display: flex; flex-direction: column; gap: 14px">
+        <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 8px">
+          <h3 style="margin: 0; font-family: Archivo, sans-serif; font-size: 22px; font-weight: 800">C · Caja rápida</h3>
+          <span style="font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 700; color: #1F4FD8">+3–4 días</span>
+        </div>
+        <p style="margin: 0; font-size: 14px; line-height: 1.55; color: #3F424A">Un modo oscuro y de alto contraste solo para vender, pensado para el cajero en tablet o celular apoyado en el mostrador: botones grandes, el total siempre visible y cobro en 2 toques. Se suma a A o B; no las reemplaza.</p>
+        <div style="display: flex; gap: 6px" aria-label="Paleta C">
+          <span title="Noche #0E1116" style="width: 36px; height: 36px; border-radius: 10px; background: #0E1116"></span>
+          <span title="Superficie #1A1F27" style="width: 36px; height: 36px; border-radius: 10px; background: #1A1F27"></span>
+          <span title="Texto #F2F4F7" style="width: 36px; height: 36px; border-radius: 10px; background: #F2F4F7; border: 1px solid #E3E5EA"></span>
+          <span title="Cobrar #FFE14D" style="width: 36px; height: 36px; border-radius: 10px; background: #FFE14D"></span>
+          <span title="Alerta #FF8A4C" style="width: 36px; height: 36px; border-radius: 10px; background: #FF8A4C"></span>
+        </div>
+        <span style="font-size: 13px; color: #5B5E66">Inter con números tabulares · objetivos táctiles de 56 px</span>
+      </article>
+    </div>
+  </section>
+
+  <section aria-labelledby="time" style="display: flex; flex-direction: column; gap: 16px">
+    <h2 id="time" style="margin: 0; font-family: Archivo, sans-serif; font-size: 26px; font-weight: 800">Cuánto lleva cada una</h2>
+    <p style="margin: 0; color: #3F424A; font-size: 15px; max-width: 760px">Días de trabajo aproximados, con pruebas (las de hoy más las nuevas), revisión en celular, tablet y escritorio, y sin tocar el backend. Se puede entregar por partes: primero la base y la navegación, después las pantallas.</p>
+    <div style="overflow-x: auto; background: #FFFFFF; border: 1px solid #E3E1DA; border-radius: 14px">
+      <table style="width: 100%; min-width: 640px; border-collapse: collapse; font-size: 14px">
+        <thead>
+          <tr style="background: #F1EFE8; text-align: left">
+            <th scope="col" style="padding: 12px 16px">Parte</th>
+            <th scope="col" style="padding: 12px 16px">A · Mostrador</th>
+            <th scope="col" style="padding: 12px 16px">B · Boleta</th>
+            <th scope="col" style="padding: 12px 16px">C · Caja rápida</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="border-top: 1px solid #E3E1DA">
+            <td style="padding: 12px 16px">Base responsive (navegación, layouts, hojas de filtros)</td>
+            <td style="padding: 12px 16px">2 días</td>
+            <td style="padding: 12px 16px">2 días</td>
+            <td style="padding: 12px 16px">usa la de A o B</td>
+          </tr>
+          <tr style="border-top: 1px solid #E3E1DA">
+            <td style="padding: 12px 16px">Tokens y componentes (botones, tarjetas, tablas, badges)</td>
+            <td style="padding: 12px 16px">1 día</td>
+            <td style="padding: 12px 16px">2 días</td>
+            <td style="padding: 12px 16px">1 día (tema oscuro)</td>
+          </tr>
+          <tr style="border-top: 1px solid #E3E1DA">
+            <td style="padding: 12px 16px">Pantallas: Inicio, Productos, Producto, Ventas, Ajustes</td>
+            <td style="padding: 12px 16px">1,5 días</td>
+            <td style="padding: 12px 16px">2,5 días</td>
+            <td style="padding: 12px 16px">—</td>
+          </tr>
+          <tr style="border-top: 1px solid #E3E1DA">
+            <td style="padding: 12px 16px">POS y cobro</td>
+            <td style="padding: 12px 16px">1 día</td>
+            <td style="padding: 12px 16px">1,5 días</td>
+            <td style="padding: 12px 16px">2–3 días</td>
+          </tr>
+          <tr style="border-top: 2px solid #17181C; font-weight: 700">
+            <td style="padding: 12px 16px">Total</td>
+            <td style="padding: 12px 16px">5–6 días</td>
+            <td style="padding: 12px 16px">7–9 días</td>
+            <td style="padding: 12px 16px">+3–4 días sobre A o B</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section aria-labelledby="app" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px">
+    <div style="background: #17181C; color: #F4F2EC; border-radius: 18px; padding: 26px; display: flex; flex-direction: column; gap: 12px">
+      <h2 id="app" style="margin: 0; font-family: Archivo, sans-serif; font-size: 24px; font-weight: 800">¿Y una app móvil nativa?</h2>
+      <p style="margin: 0; font-size: 15px; line-height: 1.6; color: #D5D3CC">Todavía no conviene. La app de Expo del repo es solo el esqueleto inicial (5 pantallas vacías). Llegar a lo que hoy hace la web serían unas <strong style="color: #FFE14D">5–7 semanas</strong>: POS sin conexión, escáner, sync, lotes, ubicaciones y catálogo. Habría que mantener dos apps y pagar las tiendas (Apple 99 USD al año, Google 25 USD una vez).</p>
+      <p style="margin: 0; font-size: 15px; line-height: 1.6; color: #D5D3CC">La web ya es una PWA: se instala en la pantalla de inicio, vende sin conexión y escanea con la cámara. Con la base responsive, en el celular se siente como una app.</p>
+    </div>
+    <div style="background: #FFFFFF; border: 1px solid #E3E1DA; border-radius: 18px; padding: 26px; display: flex; flex-direction: column; gap: 12px">
+      <h3 style="margin: 0; font-family: Archivo, sans-serif; font-size: 20px; font-weight: 800">Cuándo sí valdría la pena</h3>
+      <ul style="margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 8px; font-size: 14px; line-height: 1.5; color: #2A2C33">
+        <li>Imprimir en impresoras térmicas Bluetooth sin diálogo de impresión.</li>
+        <li>Notificaciones push confiables en iPhone (pedidos del catálogo).</li>
+        <li>Lectores de código de barras físicos o integraciones del sistema.</li>
+        <li>Que te pidan estar en Play Store / App Store para vender.</li>
+      </ul>
+      <p style="margin: 0; font-size: 14px; color: #3F424A">Si llega ese momento, conviene empezar con Android (más barato y más usado en Bolivia).</p>
+    </div>
+  </section>
+
+  <section aria-labelledby="rec" style="background: #FFE14D; border: 2px solid #111111; border-radius: 18px; padding: 26px; display: flex; flex-direction: column; gap: 10px">
+    <h2 id="rec" style="margin: 0; font-family: Archivo, sans-serif; font-size: 24px; font-weight: 800; color: #111111">Mi recomendación</h2>
+    <p style="margin: 0; font-size: 16px; line-height: 1.6; color: #111111"><strong>A · Mostrador</strong> para el dueño, con el logo y el amarillo como sello, más el <strong>POS de C</strong> para el cajero: unos <strong>8–10 días</strong>. Se ve profesional para cualquier rubro, el cajero vende más rápido, y B queda como opción si quieres que el panel tenga la misma personalidad fuerte del catálogo.</p>
+    <p style="margin: 0; font-size: 14px; color: #111111">Los mockups de abajo muestran las pantallas que más se usan; el resto sigue el mismo sistema.</p>
+  </section>
+
+<p style="margin: 0">ñ</p><p style="margin: 0">ñ</p><p style="margin: 0">ñ</p><p style="margin: 0">ñ</p><p style="margin: 0">ñ</p><p style="margin: 0">ñ</p><p style="margin: 0">ñ</p><p style="margin: 0">ñ</p><p style="margin: 0">ñ</p><p style="margin: 0">ñ</p><p style="margin: 0">14.00</p><p style="margin: 0">14.00</p><p style="margin: 0">14.00</p><p style="margin: 0">14.00</p><p style="margin: 0">14.00</p><p style="margin: 0">14.00</p></main>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":2600}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

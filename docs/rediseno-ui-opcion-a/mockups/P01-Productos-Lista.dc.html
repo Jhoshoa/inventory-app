@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Productos · lista, filtros y acciones</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#EEF0F4}
+*{box-sizing:border-box}
+a{color:#1F4FD8}a:hover{color:#163BA6}
+.fr{display:flex;flex-direction:column;gap:10px;flex-shrink:0}
+.cap{font:700 13px Inter,sans-serif;color:#475467;text-transform:uppercase;letter-spacing:.05em}
+.ph{width:390px;height:844px;background:#F7F8FA;border-radius:28px;overflow:hidden;position:relative;display:flex;flex-direction:column;box-shadow:0 0 0 1px #D0D5DD}
+.dk{width:1280px;height:800px;background:#F7F8FA;border-radius:14px;overflow:hidden;position:relative;display:flex;box-shadow:0 0 0 1px #D0D5DD}
+.top{background:#fff;border-bottom:1px solid #E8EAEF;padding:12px 16px;display:flex;align-items:center;gap:8px}
+.h1{margin:0;font-size:22px;font-weight:800;letter-spacing:-.02em}
+.h2{margin:0;font-size:15px;font-weight:700}
+.mu{color:#475467;font-size:13px}
+.card{background:#fff;border:1px solid #E8EAEF;border-radius:16px}
+.in{height:44px;border:1px solid #D0D5DD;border-radius:12px;padding:0 12px;font:15px Inter,sans-serif;color:#101828;background:#fff;width:100%}
+.lb{font-size:14px;font-weight:600;display:block;margin-bottom:6px}
+.btn{height:44px;border-radius:12px;border:1px solid #D0D5DD;background:#fff;font:700 14px Inter,sans-serif;color:#344054;padding:0 14px;display:inline-flex;align-items:center;justify-content:center;gap:8px;text-decoration:none;white-space:nowrap}
+.btn.p{background:#1F4FD8;border-color:#1F4FD8;color:#fff}
+.btn.sm{height:34px;font-size:13px;padding:0 10px;border-radius:10px}
+.chip{height:34px;padding:0 12px;border-radius:999px;border:1px solid #D0D5DD;background:#fff;font:600 13px Inter,sans-serif;color:#344054;white-space:nowrap}
+.chip.on{background:#101828;border-color:#101828;color:#fff}
+.tag{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:700;padding:3px 9px;border-radius:999px;white-space:nowrap}
+.t-ok{background:#ECFDF3;color:#067647}.t-warn{background:#FFFAEB;color:#B54708}.t-bad{background:#FEF3F2;color:#B42318}.t-mu{background:#F2F4F7;color:#344054}
+.side{width:236px;flex-shrink:0;background:#fff;border-right:1px solid #E8EAEF;padding:18px 12px;display:flex;flex-direction:column;gap:14px}
+.n{display:flex;align-items:center;gap:10px;height:38px;padding:0 10px;border-radius:10px;font-size:14px;color:#344054;text-decoration:none;font-weight:500}
+.n.on{background:#EEF0F4;color:#101828;font-weight:700}
+.dot{width:8px;height:8px;border-radius:3px;background:#D0D5DD}
+.n.on .dot{background:#1F4FD8}
+.main{flex:1;min-width:0;padding:22px 28px;display:flex;flex-direction:column;gap:14px;overflow:hidden}
+.tbl{width:100%;border-collapse:collapse;font-size:14px}
+.tbl th{background:#F9FAFB;color:#475467;font-size:12px;font-weight:600;text-align:left;padding:10px 12px}
+.tbl td{padding:10px 12px;border-top:1px solid #F2F4F7;vertical-align:middle}
+.ov{position:absolute;inset:0;background:rgba(16,24,40,.45);display:flex;flex-direction:column;justify-content:flex-end}
+.sheet{background:#fff;border-radius:24px 24px 0 0;padding:8px 16px 26px;display:flex;flex-direction:column;gap:14px}
+.grab{width:40px;height:5px;border-radius:999px;background:#D0D5DD;margin:0 auto}
+.th{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;flex-shrink:0}
+.notes{width:440px;flex-shrink:0;background:#fff;border:1px solid #E8EAEF;border-radius:16px;padding:20px 22px;font:13px/1.55 Inter,sans-serif;color:#344054}
+.notes h3{margin:16px 0 6px;font-size:12px;font-weight:800;color:#101828;text-transform:uppercase;letter-spacing:.05em}
+.notes h3:first-child{margin-top:0}
+.notes ul{margin:0;padding-left:18px}
+.notes code{font:12px ui-monospace,monospace;background:#F2F4F7;padding:1px 4px;border-radius:4px}
+.tabs{display:flex;gap:4px;border-bottom:1px solid #E8EAEF}
+.tb{height:40px;padding:0 14px;display:inline-flex;align-items:center;font-size:14px;font-weight:600;color:#475467;text-decoration:none;border-bottom:2px solid transparent;margin-bottom:-1px}
+.tb.on{color:#101828;font-weight:700;border-bottom-color:#1F4FD8}
+.row{display:flex;justify-content:space-between;align-items:center;gap:10px;min-height:52px;padding:0 4px;border-top:1px solid #F2F4F7;font-size:15px;font-weight:600;text-decoration:none;color:#101828}
+</style>
+</helmet>
+<div style="width: 2880px; height: 960px; padding: 40px; display: flex; gap: 40px; align-items: flex-start; font-family: Inter, system-ui, sans-serif; color: #101828; font-feature-settings: 'tnum' 1">
+
+  <div class="fr">
+    <span class="cap">Celular · Filtros (hoja inferior)</span>
+    <div class="ph">
+      <div class="top"><h1 class="h1" style="flex: 1">Productos</h1></div>
+      <div style="padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; opacity: .5">
+        <div class="card" style="height: 70px"></div><div class="card" style="height: 70px"></div><div class="card" style="height: 70px"></div>
+      </div>
+      <div class="ov">
+        <form class="sheet" role="dialog" aria-labelledby="f-title">
+          <span class="grab"></span>
+          <div style="display: flex; justify-content: space-between; align-items: center">
+            <h2 id="f-title" class="h2" style="font-size: 18px">Filtrar productos</h2>
+            <button type="button" class="btn sm" style="border: 0; color: #1F4FD8">Limpiar</button>
+          </div>
+          <fieldset style="border: 0; margin: 0; padding: 0">
+            <legend class="lb">Stock</legend>
+            <div style="display: flex; flex-wrap: wrap; gap: 8px">
+              <button type="button" class="chip on">Todos</button><button type="button" class="chip">Disponible</button><button type="button" class="chip">Stock bajo · 5</button><button type="button" class="chip">Sin stock · 1</button><button type="button" class="chip">Por vencer · 3</button>
+            </div>
+          </fieldset>
+          <div><label class="lb" for="f-cat">Categoría</label><select id="f-cat" class="in"><option>Todas las categorías</option><option>Abarrotes</option><option>Lácteos</option></select></div>
+          <div style="display: flex; gap: 8px">
+            <div style="flex: 1.4"><label class="lb" for="f-sort">Ordenar por</label><select id="f-sort" class="in"><option>Nombre</option><option>Stock</option><option>Precio</option><option>Actualizado</option></select></div>
+            <div style="flex: 1"><label class="lb" for="f-dir">Orden</label><select id="f-dir" class="in"><option>A → Z</option><option>Z → A</option></select></div>
+          </div>
+          <button type="submit" class="btn p" style="height: 52px">Ver 19 productos</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="fr">
+    <span class="cap">Celular · Menú ⋯ (dueño)</span>
+    <div class="ph">
+      <div class="top"><h1 class="h1" style="flex: 1">Productos</h1></div>
+      <div style="padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; opacity: .5">
+        <div class="card" style="height: 70px"></div><div class="card" style="height: 70px"></div><div class="card" style="height: 70px"></div>
+      </div>
+      <div class="ov">
+        <div class="sheet" role="dialog" aria-label="Más acciones de productos">
+          <span class="grab"></span>
+          <h2 class="h2" style="font-size: 18px">Más acciones</h2>
+          <div>
+            <a href="#" class="row">Importar desde CSV<span class="mu">Muchos productos de una vez</span></a>
+            <a href="#" class="row">Imprimir etiquetas<span class="mu">QR y precio</span></a>
+            <a href="#" class="row">Descargar lista (CSV)<span class="mu">Para Excel</span></a>
+            <a href="P01B-Categorias-Lugares.dc.html" class="row">Categorías<span class="mu">Prefijo del SKU</span></a>
+            <a href="P01B-Categorias-Lugares.dc.html" class="row">Lugares en la tienda<span class="mu">Pasillo, estante, heladera…</span></a>
+          </div>
+          <button type="button" class="btn">Cerrar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="fr">
+    <span class="cap">Escritorio · Lista de productos</span>
+    <div class="dk">
+      <aside class="side">
+        <div style="display: flex; align-items: center; gap: 10px; padding: 0 6px">
+          <svg aria-hidden="true" viewBox="3 3 42 42" width="30" height="30"><path d="M11 5H37Q40 5 40 8V39L36 43L32 39L28 43L24 39L20 43L16 39L12 43L8 39V8Q8 5 11 5Z" fill="#FFE14D" stroke="#111111" stroke-width="3" stroke-linejoin="round"></path><circle cx="19" cy="18" r="2.8" fill="#111111"></circle><circle cx="29" cy="18" r="2.8" fill="#111111"></circle><path d="M17 25Q24 31 31 25" fill="none" stroke="#111111" stroke-width="3" stroke-linecap="round"></path></svg>
+          <div><div style="font-weight: 800; font-size: 14px">Tienda Local</div><div class="mu" style="font-size: 12px">Plan Prueba · 9 días</div></div>
+        </div>
+        <a href="#" class="btn p" style="height: 42px">Nueva venta</a>
+        <nav aria-label="Principal" style="display: flex; flex-direction: column; gap: 2px">
+          <a href="#" class="n"><span class="dot"></span>Inicio</a><a href="#" class="n"><span class="dot"></span>Vender</a><a href="#" class="n"><span class="dot"></span>Caja</a><a href="#" class="n on" aria-current="page"><span class="dot"></span>Productos</a><a href="#" class="n"><span class="dot"></span>Ventas</a><a href="#" class="n"><span class="dot"></span>Pedidos</a><a href="#" class="n"><span class="dot"></span>Reportes</a><a href="#" class="n"><span class="dot"></span>Configuración</a>
+        </nav>
+      </aside>
+      <main class="main">
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px">
+          <div><h1 class="h1" style="font-size: 26px">Productos</h1><div class="mu">19 productos · 5 con stock bajo · 3 por vencer</div></div>
+          <div style="display: flex; gap: 8px">
+            <a href="#" class="btn">Imprimir etiquetas</a><a href="#" class="btn">Importar CSV</a><a href="#" class="btn p">+ Nuevo producto</a>
+          </div>
+        </div>
+        <nav aria-label="Secciones de productos" class="tabs"><a href="#" class="tb on" aria-current="page">Productos</a><a href="#" class="tb">Categorías</a><a href="#" class="tb">Lugares en la tienda</a></nav>
+        <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap">
+          <label for="d-q" style="flex: 1; min-width: 260px; display: flex; align-items: center; gap: 8px; height: 42px; padding: 0 12px; border: 1px solid #D0D5DD; border-radius: 12px; background: #fff">
+            <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#667085" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg>
+            <input id="d-q" type="search" placeholder="Buscar por nombre, SKU o código (3+ letras)" style="border: 0; outline: 0; flex: 1; font: 14px Inter, sans-serif">
+          </label>
+          <button type="button" class="chip on">Todos</button><button type="button" class="chip">Disponible</button><button type="button" class="chip">Stock bajo · 5</button><button type="button" class="chip">Sin stock · 1</button><button type="button" class="chip">Por vencer · 3</button>
+          <select aria-label="Categoría" class="in" style="width: 170px; height: 38px; font-size: 13px"><option>Todas las categorías</option></select>
+          <select aria-label="Ordenar por" class="in" style="width: 150px; height: 38px; font-size: 13px"><option>Nombre A → Z</option></select>
+        </div>
+        <div class="card" style="overflow: hidden">
+          <table class="tbl">
+            <thead><tr><th scope="col">Producto</th><th scope="col">Dónde está</th><th scope="col">Stock</th><th scope="col">Vence</th><th scope="col" style="text-align: right">Precio</th><th scope="col" style="text-align: right"><span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Acciones</span></th></tr></thead>
+            <tbody>
+              <sc-for list="{{rows}}" as="r" hint-placeholder-count="7">
+                <tr>
+                  <td><div style="display: flex; align-items: center; gap: 10px"><span class="th" style="background: {{r.bg}}; color: {{r.fg}}">{{r.ini}}</span><span><a href="#" style="display: block; font-weight: 700; color: #101828; text-decoration: none">{{r.name}}</a><span class="mu" style="font-size: 12px">{{r.meta}}</span></span></div></td>
+                  <td class="mu">{{r.place}}</td>
+                  <td><span class="tag {{r.stockCls}}">{{r.stock}}</span></td>
+                  <td class="mu">{{r.exp}}</td>
+                  <td style="text-align: right"><span style="display: block; font-weight: 700">{{r.price}}</span><span class="mu" style="font-size: 12px; text-decoration: line-through">{{r.old}}</span></td>
+                  <td style="text-align: right; white-space: nowrap"><button type="button" class="btn sm">Ajustar stock</button> <button type="button" class="btn sm" aria-label="Más acciones de {{r.name}}">⋯</button></td>
+                </tr>
+              </sc-for>
+            </tbody>
+          </table>
+          <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; border-top: 1px solid #F2F4F7" class="mu"><span>1–7 de 19</span><span style="display: flex; gap: 6px"><button type="button" class="btn sm" disabled>Anterior</button><button type="button" class="btn sm">Siguiente</button></span></div>
+        </div>
+      </main>
+      <div style="position: absolute; right: 40px; top: 300px; width: 220px" class="card">
+        <div style="padding: 6px">
+          <a href="#" class="row" style="font-size: 14px; min-height: 40px; border: 0">Ver detalle</a>
+          <a href="#" class="row" style="font-size: 14px; min-height: 40px">Editar</a>
+          <a href="#" class="row" style="font-size: 14px; min-height: 40px">Dónde está</a>
+          <a href="#" class="row" style="font-size: 14px; min-height: 40px">Ver código QR</a>
+          <a href="#" class="row" style="font-size: 14px; min-height: 40px; color: #B42318">Eliminar…</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <aside style="width: 600px" class="notes" aria-label="Notas de implementación">
+    <h3>Qué muestra</h3>
+    <ul>
+      <li>Celular: la lista en tarjetas ya está en <strong>A · Productos (celular)</strong>; aquí van la hoja de filtros y el menú ⋯.</li>
+      <li>Tablet (640–1024 px): igual que escritorio con barra angosta; las pestañas siguen arriba; la columna "Dónde está" se oculta y pasa debajo del nombre.</li>
+      <li>Precio tachado = tiene descuento vigente (<code>effective_price</code> &lt; <code>price</code>).</li>
+    </ul>
+    <h3>Caminos</h3>
+    <ul>
+      <li>Fila o nombre → Detalle del producto.</li>
+      <li>"Ajustar stock" → ventana de ajuste (ver tablero de ventanas de producto).</li>
+      <li>⋯ → Ver, Editar, Dónde está, Ver QR, Eliminar (pide escribir ELIMINAR).</li>
+      <li>Pestañas (escritorio y tablet): <strong>Productos · Categorías · Lugares en la tienda</strong>. Rutas <code>/dashboard/products</code>, <code>/dashboard/products/categorias</code> y <code>/dashboard/products/lugares</code>. En el celular no hay pestañas: se entra desde el menú ⋯.</li>
+      <li>"Por vencer" en Inicio y en el dashboard abre esta lista con ese filtro.</li>
+    </ul>
+    <h3>Validaciones y límites</h3>
+    <ul>
+      <li>Búsqueda: 3+ letras (la API rechaza menos). Con 1–2 letras: "Escribe al menos 3 letras".</li>
+      <li>Se busca al dejar de escribir (400 ms) y con Enter; un código exacto con Enter abre el producto (nuevo, usa <code>GET /products/qr/{code}</code>).</li>
+      <li>Paginación de 50 por página (máximo de la API: 100).</li>
+      <li>Filtros y orden van en la URL: compartir el link mantiene la vista.</li>
+    </ul>
+    <h3>Permisos</h3>
+    <ul>
+      <li>Cajero: ve la lista y el detalle; sin "Nuevo producto", "Importar", "Etiquetas", "Ajustar stock" ni ⋯ (solo "Ver").</li>
+      <li>Cajero: no ve las pestañas Categorías ni Lugares en la tienda (ni esas entradas del menú ⋯); sí ve "Dónde está" de cada producto.</li>
+    </ul>
+    <h3>API</h3>
+    <ul>
+      <li><code>GET /products?q&amp;stock&amp;category_id&amp;sort&amp;direction&amp;limit&amp;offset</code> — existe.</li>
+      <li>Chip "Por vencer" y columna "Vence": <strong>backend B2</strong> (<code>stock=expiring</code> y <code>next_expiry</code>).</li>
+      <li>Conteos de los chips: <code>GET /dashboard/summary</code> (stock bajo, sin stock, lotes por vencer).</li>
+      <li>Descargar lista: <code>GET /exports/products.csv</code> — existe.</li>
+    </ul>
+    <h3>Estados</h3>
+    <ul>
+      <li>Cargando: filas esqueleto. Error: aviso con "Reintentar". Sin productos: "Agrega tu primer producto" + "Importar CSV".</li>
+      <li>Sin resultados con filtros: "Ningún producto con estos filtros" + "Limpiar filtros".</li>
+    </ul>
+  </aside>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":2880,"height":960}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const r = (ini, bg, fg, name, meta, place, stock, stockCls, exp, price, old) => ({ ini, bg, fg, name, meta, place, stock, stockCls, exp, price, old: old || '' });
+    return {
+      rows: [
+        r('AF', '#FEF7C3', '#854A0E', 'Aceite Fino 1l', 'ABA000003 · Abarrotes', 'Pasillo 1 · B', '40 u.', 't-ok', '—', 'Bs 18,00'),
+        r('AG', '#ECFDF3', '#085D3A', 'Arroz Grano de Oro 1kg', 'ABA000001 · Abarrotes', 'Pasillo 1 · A', '59 u.', 't-ok', '—', 'Bs 12,50'),
+        r('CC', '#FEE4E2', '#912018', 'Coca Cola 2l', 'BEB000001 · Bebidas', 'Heladera', 'Sin stock', 't-bad', '—', 'Bs 14,00'),
+        r('DP', '#F4EBFF', '#53389E', 'Detergente en Polvo 1kg', 'LIM000002 · Limpieza', 'Pasillo 3', '24 u.', 't-ok', '—', 'Bs 22,00'),
+        r('GC', '#FEF7C3', '#854A0E', 'Galleta Cracker 100g', 'SNA000002 · Snacks', 'Pasillo 1 · C', '33 u.', 't-ok', '—', 'Bs 3,20', 'Bs 4,00'),
+        r('LP', '#E0F2FE', '#065986', 'Leche Pil 1l', 'LAC000001 · Lácteos', 'Heladera', 'Quedan 2', 't-warn', '18/11', 'Bs 7,50'),
+        r('YF', '#FCE7F6', '#9E165F', 'Yogur Frutilla', 'LAC000004 · Lácteos', 'Pasillo 2 · B · 3', '11 u.', 't-ok', '13/11 · 3 días', 'Bs 6,50')
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

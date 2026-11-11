@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Estados · vacío, error, carga, sin conexión, permisos</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#EEF0F4}
+*{box-sizing:border-box}
+a{color:#1F4FD8}a:hover{color:#163BA6}
+.fr{display:flex;flex-direction:column;gap:10px;flex-shrink:0}
+.cap{font:700 13px Inter,sans-serif;color:#475467;text-transform:uppercase;letter-spacing:.05em}
+.ph{width:390px;height:844px;background:#F7F8FA;border-radius:28px;overflow:hidden;position:relative;display:flex;flex-direction:column;box-shadow:0 0 0 1px #D0D5DD}
+.dk{width:1280px;height:800px;background:#F7F8FA;border-radius:14px;overflow:hidden;position:relative;display:flex;box-shadow:0 0 0 1px #D0D5DD}
+.top{background:#fff;border-bottom:1px solid #E8EAEF;padding:14px 16px;display:flex;align-items:center;gap:8px}
+.h1{margin:0;font-size:20px;font-weight:800;letter-spacing:-.02em}
+.mu{color:#475467;font-size:14px}
+.card{background:#fff;border:1px solid #E8EAEF;border-radius:16px}
+.btn{height:48px;border-radius:12px;border:1px solid #D0D5DD;background:#fff;font:700 15px Inter,sans-serif;color:#344054;padding:0 16px;display:inline-flex;align-items:center;justify-content:center;gap:8px;text-decoration:none;white-space:nowrap}
+.btn.p{background:#1F4FD8;border-color:#1F4FD8;color:#fff}
+.btn.dl{color:#B42318}
+.btn.sm{height:36px;font-size:13px;padding:0 12px;border-radius:10px}
+.empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:12px;padding:28px}
+.ic{width:64px;height:64px;border-radius:18px;display:flex;align-items:center;justify-content:center}
+.sk{background:linear-gradient(90deg,#EEF0F4,#F7F8FA,#EEF0F4);border-radius:10px}
+.tag{display:inline-flex;font-size:12px;font-weight:700;padding:3px 9px;border-radius:999px;white-space:nowrap}
+.t-bad{background:#FEF3F2;color:#B42318}.t-warn{background:#FFFAEB;color:#B54708}
+.banner{padding:12px 16px;font-size:14px;display:flex;gap:10px;align-items:center}
+.ov{position:absolute;inset:0;background:rgba(16,24,40,.45);display:flex;flex-direction:column;justify-content:flex-end}
+.sheet{background:#fff;border-radius:24px 24px 0 0;padding:8px 16px 26px;display:flex;flex-direction:column;gap:12px}
+.grab{width:40px;height:5px;border-radius:999px;background:#D0D5DD;margin:0 auto}
+.notes{width:440px;flex-shrink:0;background:#fff;border:1px solid #E8EAEF;border-radius:16px;padding:20px 22px;font:13px/1.55 Inter,sans-serif;color:#344054}
+.notes h3{margin:16px 0 6px;font-size:12px;font-weight:800;color:#101828;text-transform:uppercase;letter-spacing:.05em}
+.notes h3:first-child{margin-top:0}
+.notes ul{margin:0;padding-left:18px}
+.notes code{font:12px ui-monospace,monospace;background:#F2F4F7;padding:1px 4px;border-radius:4px}
+</style>
+</helmet>
+<div style="width: 4590px; height: 960px; padding: 40px; display: flex; gap: 40px; align-items: flex-start; font-family: Inter, system-ui, sans-serif; color: #101828">
+
+  <div class="fr">
+    <span class="cap">Vender con la caja cerrada (cajero)</span>
+    <div class="ph">
+      <div class="top"><h1 class="h1">Vender</h1></div>
+      <div class="empty">
+        <span class="ic" style="background: #F2F4F7" aria-hidden="true"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#344054" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg></span>
+        <h2 class="h1" style="font-size: 19px">La caja está cerrada</h2>
+        <span class="mu">Para vender, el dueño tiene que abrir la caja.</span>
+        <a href="#" class="btn sm">Volver a Inicio</a>
+        <span class="mu" style="font-size: 12px; margin-top: 8px">Dueño: el mismo aviso con el botón "Abrir caja" (lleva a la ventana de abrir caja).</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="fr">
+    <span class="cap">Sin conexión + ventas por revisar</span>
+    <div class="ph">
+      <div class="banner" style="background: #FFFAEB; color: #93370D; border-bottom: 1px solid #FEDF89"><span style="width: 8px; height: 8px; border-radius: 50%; background: #F79009"></span><span style="flex: 1">Sin conexión · 3 ventas guardadas en este equipo</span></div>
+      <div class="top" style="border-top: 0"><h1 class="h1">Inicio</h1></div>
+      <div style="padding: 14px; opacity: .45"><div class="card" style="height: 120px"></div></div>
+      <div class="ov">
+        <section class="sheet" role="dialog" aria-labelledby="sc-t">
+          <span class="grab"></span>
+          <h2 id="sc-t" class="h1" style="font-size: 18px">Ventas por revisar · 1</h2>
+          <span class="mu">No se pudieron enviar al volver internet.</span>
+          <div class="card" style="padding: 12px 14px; display: flex; flex-direction: column; gap: 8px">
+            <div style="display: flex; justify-content: space-between"><strong>Hoy 10:12 · Bs 28,00</strong><span class="tag t-bad">Rechazada</span></div>
+            <span class="mu" style="font-size: 13px">Stock insuficiente: Coca Cola 2l (hay 0, se vendieron 2).</span>
+            <div style="display: flex; gap: 8px"><button type="button" class="btn sm" style="flex: 1">Reintentar</button><button type="button" class="btn sm dl" style="flex: 1">Descartar</button></div>
+          </div>
+          <span class="mu" style="font-size: 12px">Descartar borra la venta de este equipo y devuelve su stock local. No se puede deshacer.</span>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <div class="fr">
+    <span class="cap">Página sin internet (sin datos guardados)</span>
+    <div class="ph">
+      <div class="empty">
+        <span class="ic" style="background: #FFFAEB" aria-hidden="true"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#B54708" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 2l20 20M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 5.17-2.8M19 13a10 10 0 0 0-2.3-1.6M12 20h.01"></path></svg></span>
+        <h2 class="h1" style="font-size: 19px">Sin conexión</h2>
+        <span class="mu">Esta pantalla necesita internet. <strong>Vender</strong> sigue funcionando con los productos guardados en este equipo.</span>
+        <a href="#" class="btn p">Ir a Vender</a>
+        <button type="button" class="btn sm">Reintentar</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="fr">
+    <span class="cap">Primer uso: sin productos</span>
+    <div class="ph">
+      <div class="top"><h1 class="h1">Productos</h1></div>
+      <div class="empty">
+        <span class="ic" style="background: #EEF4FF" aria-hidden="true"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#1F4FD8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8 12 3 3 8v8l9 5 9-5z"></path><path d="M3 8l9 5 9-5M12 13v8"></path></svg></span>
+        <h2 class="h1" style="font-size: 19px">Agrega tu primer producto</h2>
+        <span class="mu">Con nombre, precio y stock ya puedes vender. Si tienes muchos, súbelos desde un Excel (CSV).</span>
+        <a href="#" class="btn p" style="width: 100%">+ Nuevo producto</a>
+        <a href="#" class="btn" style="width: 100%">Importar desde CSV</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="fr">
+    <span class="cap">Error al cargar · cargando</span>
+    <div class="ph">
+      <div class="top"><h1 class="h1">Ventas</h1></div>
+      <div style="padding: 14px; display: flex; flex-direction: column; gap: 12px">
+        <div class="card" style="padding: 14px; display: flex; flex-direction: column; gap: 10px; border-color: #FECDCA; background: #FEF3F2">
+          <strong style="color: #912018">No pudimos cargar las ventas</strong>
+          <span class="mu" style="color: #912018">Revisa tu conexión e inténtalo otra vez.</span>
+          <button type="button" class="btn sm" style="align-self: flex-start">Reintentar</button>
+        </div>
+        <span class="mu" style="font-weight: 700; font-size: 12px; text-transform: uppercase">Mientras carga</span>
+        <div class="card" style="padding: 12px; display: flex; flex-direction: column; gap: 10px">
+          <div class="sk" style="height: 16px; width: 70%"></div><div class="sk" style="height: 12px; width: 40%"></div>
+          <div class="sk" style="height: 16px; width: 60%; margin-top: 8px"></div><div class="sk" style="height: 12px; width: 35%"></div>
+          <div class="sk" style="height: 16px; width: 75%; margin-top: 8px"></div><div class="sk" style="height: 12px; width: 45%"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="fr">
+    <span class="cap">Escritorio · Sin permiso (cajero) y no encontrada</span>
+    <div class="dk" style="flex-direction: column">
+      <div class="banner" style="background: #FEF3F2; color: #912018; border-bottom: 1px solid #FECDCA"><span class="tag t-bad">Cuenta suspendida</span><span style="flex: 1">Solo puedes ver tu información. Para volver a vender, regulariza tu plan.</span><a href="#" class="btn sm">Ir a Plan y pagos</a></div>
+      <div style="flex: 1; display: grid; grid-template-columns: 1fr 1fr">
+        <div class="empty" style="border-right: 1px solid #E8EAEF">
+          <span class="ic" style="background: #F2F4F7" aria-hidden="true"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#344054" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg></span>
+          <h2 class="h1">No tienes permiso para esta página</h2>
+          <span class="mu" style="max-width: 360px">Configuración y Reportes de caja son del dueño. Si lo necesitas, pídeselo a Rosa Quispe.</span>
+          <a href="#" class="btn p">Volver a Inicio</a>
+        </div>
+        <div class="empty">
+          <span style="font-size: 64px; font-weight: 800; color: #D0D5DD">404</span>
+          <h2 class="h1">No encontramos esta página</h2>
+          <span class="mu" style="max-width: 360px">Puede que el producto o la venta se haya eliminado, o que el enlace esté mal escrito.</span>
+          <div style="display: flex; gap: 8px"><a href="#" class="btn">Ir a Productos</a><a href="#" class="btn p">Volver a Inicio</a></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <aside class="notes" aria-label="Notas de implementación">
+    <h3>Reglas para todas las páginas</h3>
+    <ul>
+      <li>Cargando: esqueletos con la forma del contenido (no un círculo girando), nunca una pantalla en blanco.</li>
+      <li>Error: tarjeta roja en el lugar del contenido con "Reintentar"; el resto de la página sigue usable.</li>
+      <li>Vacío: explica qué hacer y ofrece la acción principal (crear, importar, compartir el catálogo).</li>
+      <li>Avisos cortos (guardado, creado, anulado): arriba en escritorio, abajo sobre la barra en celular; 4 segundos.</li>
+      <li>Acciones que no se deshacen (anular, eliminar, descartar, cerrar caja): siempre con confirmación.</li>
+      <li>Salir de un formulario con cambios: "¿Salir sin guardar?".</li>
+    </ul>
+    <h3>Sin conexión</h3>
+    <ul>
+      <li>Franja arriba en todas las páginas: "Sin conexión · N ventas guardadas en este equipo". Al volver: "Sincronizando…" y luego desaparece.</li>
+      <li>Ventas rechazadas al sincronizar: contador en la franja → hoja "Ventas por revisar" con Reintentar y Descartar (como hoy).</li>
+      <li>Páginas que necesitan internet muestran la página "Sin conexión" con acceso a Vender.</li>
+    </ul>
+    <h3>Cuenta y permisos</h3>
+    <ul>
+      <li>Prueba por vencer: franja amarilla con los días (hoy existe <code>TrialBanner</code>). Suspendida: franja roja y solo lectura (la API ya bloquea escrituras).</li>
+      <li>Sin permiso: página con explicación y nombre del dueño (de <code>GET /users</code>, o solo "el dueño" si el cajero no puede listarlos).</li>
+      <li>404: dentro del panel, con accesos a Productos e Inicio.</li>
+    </ul>
+    <h3>API</h3>
+    <ul><li>Sin cambios: los estados salen de las respuestas existentes (errores 401/403/404/409/429, <code>/billing/status</code>, sync).</li></ul>
+  </aside>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":4590,"height":960}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

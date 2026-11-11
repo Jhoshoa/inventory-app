@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Acceso · entrar, crear tienda, contraseña, invitación</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#EEF0F4}
+*{box-sizing:border-box}
+a{color:#1F4FD8}a:hover{color:#163BA6}
+.fr{display:flex;flex-direction:column;gap:10px;flex-shrink:0}
+.cap{font:700 13px Inter,sans-serif;color:#475467;text-transform:uppercase;letter-spacing:.05em}
+.ph{width:390px;height:844px;background:#fff;border-radius:28px;overflow:hidden;position:relative;display:flex;flex-direction:column;box-shadow:0 0 0 1px #D0D5DD;padding:28px 22px;gap:14px}
+.dk{width:1280px;height:800px;background:#fff;border-radius:14px;overflow:hidden;position:relative;display:flex;box-shadow:0 0 0 1px #D0D5DD}
+.h1{margin:0;font-size:26px;font-weight:800;letter-spacing:-.02em}
+.mu{color:#475467;font-size:14px}
+.in{height:50px;border:1px solid #D0D5DD;border-radius:12px;padding:0 14px;font:16px Inter,sans-serif;color:#101828;background:#fff;width:100%}
+.in.err{border-color:#D92D20;box-shadow:0 0 0 3px #FEE4E2}
+.in[readonly]{background:#F2F4F7;color:#475467}
+.lb{font-size:14px;font-weight:600;display:block;margin-bottom:6px}
+.er{font-size:12px;color:#B42318;margin-top:6px;display:block}
+.btn{height:52px;border-radius:12px;border:1px solid #D0D5DD;background:#fff;font:700 15px Inter,sans-serif;color:#344054;padding:0 16px;display:inline-flex;align-items:center;justify-content:center;gap:10px;text-decoration:none;width:100%}
+.btn.p{background:#1F4FD8;border-color:#1F4FD8;color:#fff}
+.or{display:flex;align-items:center;gap:10px;color:#667085;font-size:12px;font-weight:600}
+.or::before,.or::after{content:'';flex:1;height:1px;background:#E8EAEF}
+.rule{display:flex;align-items:center;gap:8px;font-size:13px}
+.alert{border-radius:12px;padding:12px 14px;font-size:14px}
+.a-bad{background:#FEF3F2;border:1px solid #FECDCA;color:#912018}
+.a-ok{background:#ECFDF3;border:1px solid #ABEFC6;color:#085D3A}
+.brand{display:flex;align-items:center;gap:10px}
+.notes{width:440px;flex-shrink:0;background:#fff;border:1px solid #E8EAEF;border-radius:16px;padding:20px 22px;font:13px/1.55 Inter,sans-serif;color:#344054}
+.notes h3{margin:16px 0 6px;font-size:12px;font-weight:800;color:#101828;text-transform:uppercase;letter-spacing:.05em}
+.notes h3:first-child{margin-top:0}
+.notes ul{margin:0;padding-left:18px}
+.notes code{font:12px ui-monospace,monospace;background:#F2F4F7;padding:1px 4px;border-radius:4px}
+</style>
+</helmet>
+<div style="width: 3860px; height: 960px; padding: 40px; display: flex; gap: 40px; align-items: flex-start; font-family: Inter, system-ui, sans-serif; color: #101828">
+
+  <div class="fr">
+    <span class="cap">Entrar (con error)</span>
+    <form class="ph">
+      <div class="brand"><svg aria-hidden="true" viewBox="3 3 42 42" width="40" height="40"><path d="M11 5H37Q40 5 40 8V39L36 43L32 39L28 43L24 39L20 43L16 39L12 43L8 39V8Q8 5 11 5Z" fill="#FFE14D" stroke="#111111" stroke-width="3" stroke-linejoin="round"></path><circle cx="19" cy="18" r="2.8" fill="#111111"></circle><circle cx="29" cy="18" r="2.8" fill="#111111"></circle><path d="M17 25Q24 31 31 25" fill="none" stroke="#111111" stroke-width="3" stroke-linecap="round"></path></svg><strong style="font-size: 17px">Tu Tiendamiga</strong></div>
+      <h1 class="h1" style="margin-top: 18px">Entra a tu tienda</h1>
+      <div class="alert a-bad" role="alert">Correo o contraseña incorrectos.</div>
+      <div><label class="lb" for="li-e">Correo electrónico</label><input id="li-e" class="in" type="email" value="dueno@local.test" autocomplete="email"></div>
+      <div><label class="lb" for="li-p">Contraseña</label><div style="position: relative"><input id="li-p" class="in" type="password" value="xxxxxxxx" autocomplete="current-password"><button type="button" style="position: absolute; right: 6px; top: 6px; height: 38px; padding: 0 10px; border: 0; background: transparent; font: 600 13px Inter, sans-serif; color: #1F4FD8">Mostrar</button></div><a href="#" style="display: block; text-align: right; font-size: 13px; margin-top: 8px">¿Olvidaste tu contraseña?</a></div>
+      <button type="submit" class="btn p">Entrar</button>
+      <div class="or">O</div>
+      <button type="button" class="btn">Continuar con Google</button>
+      <span class="mu" style="text-align: center; margin-top: auto">¿No tienes cuenta? <a href="#">Crea tu tienda gratis</a></span>
+    </form>
+  </div>
+
+  <div class="fr">
+    <span class="cap">Crear tienda</span>
+    <form class="ph">
+      <div class="brand"><svg aria-hidden="true" viewBox="3 3 42 42" width="36" height="36"><path d="M11 5H37Q40 5 40 8V39L36 43L32 39L28 43L24 39L20 43L16 39L12 43L8 39V8Q8 5 11 5Z" fill="#FFE14D" stroke="#111111" stroke-width="3" stroke-linejoin="round"></path><circle cx="19" cy="18" r="2.8" fill="#111111"></circle><circle cx="29" cy="18" r="2.8" fill="#111111"></circle><path d="M17 25Q24 31 31 25" fill="none" stroke="#111111" stroke-width="3" stroke-linecap="round"></path></svg><strong>Tu Tiendamiga</strong></div>
+      <div><h1 class="h1" style="font-size: 24px">Crea tu tienda</h1><span class="mu">Prueba gratis, sin tarjeta.</span></div>
+      <div><label class="lb" for="r-s">Nombre de la tienda</label><input id="r-s" class="in" value="Tienda Doña Rosa"></div>
+      <div><label class="lb" for="r-n">Tu nombre</label><input id="r-n" class="in" value="Rosa Quispe" autocomplete="name"></div>
+      <div><label class="lb" for="r-e">Correo electrónico</label><input id="r-e" class="in" type="email" value="rosa@correo.com" autocomplete="email"></div>
+      <div><label class="lb" for="r-p">Contraseña</label><input id="r-p" class="in" type="password" value="Rosa2026" autocomplete="new-password" aria-describedby="r-rules"></div>
+      <div id="r-rules" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px">
+        <span class="rule" style="color: #067647">✓ 8 caracteres o más</span><span class="rule" style="color: #067647">✓ Una mayúscula</span><span class="rule" style="color: #067647">✓ Una minúscula</span><span class="rule" style="color: #067647">✓ Un número</span><span class="rule" style="color: #B42318">✕ Un símbolo (!@#…)</span>
+      </div>
+      <button type="submit" class="btn p" disabled style="opacity: .5">Crear mi tienda</button>
+      <div class="or">O</div>
+      <button type="button" class="btn">Crear con Google</button>
+    </form>
+  </div>
+
+  <div class="fr">
+    <span class="cap">Olvidé mi contraseña · enviado</span>
+    <div class="ph">
+      <a href="#" style="font-size: 14px; font-weight: 600; text-decoration: none">‹ Volver a entrar</a>
+      <h1 class="h1" style="margin-top: 10px">Recupera tu contraseña</h1>
+      <span class="mu">Te enviamos un enlace para crear una nueva.</span>
+      <div><label class="lb" for="f-e">Correo electrónico</label><input id="f-e" class="in" type="email" value="rosa@correo.com"></div>
+      <button type="button" class="btn p">Enviar enlace</button>
+      <div class="alert a-ok" role="status">Si ese correo tiene una cuenta, te llegó un enlace. Revisa también "Spam". El enlace vence en 1 hora.</div>
+      <span class="mu">¿No llegó? Puedes pedir otro en 60 segundos.</span>
+    </div>
+  </div>
+
+  <div class="fr">
+    <span class="cap">Nueva contraseña</span>
+    <form class="ph">
+      <h1 class="h1" style="margin-top: 10px">Nueva contraseña</h1>
+      <span class="mu">Para rosa@correo.com</span>
+      <div><label class="lb" for="n-p">Nueva contraseña</label><input id="n-p" class="in" type="password" value="Tienda#2026"></div>
+      <div><label class="lb" for="n-c">Repite la contraseña</label><input id="n-c" class="in err" type="password" value="Tienda#2025" aria-describedby="n-c-er"><span class="er" id="n-c-er">Las contraseñas no coinciden.</span></div>
+      <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px; color: #067647"><span class="rule">✓ 8 caracteres o más</span><span class="rule">✓ Mayúscula y minúscula</span><span class="rule">✓ Un número</span><span class="rule">✓ Un símbolo</span></div>
+      <button type="submit" class="btn p">Guardar y entrar</button>
+      <div class="alert a-bad">Si el enlace venció: "Este enlace ya no sirve." + botón "Pedir un enlace nuevo".</div>
+    </form>
+  </div>
+
+  <div class="fr">
+    <span class="cap">Aceptar invitación</span>
+    <form class="ph">
+      <div class="brand"><svg aria-hidden="true" viewBox="3 3 42 42" width="36" height="36"><path d="M11 5H37Q40 5 40 8V39L36 43L32 39L28 43L24 39L20 43L16 39L12 43L8 39V8Q8 5 11 5Z" fill="#FFE14D" stroke="#111111" stroke-width="3" stroke-linejoin="round"></path><circle cx="19" cy="18" r="2.8" fill="#111111"></circle><circle cx="29" cy="18" r="2.8" fill="#111111"></circle><path d="M17 25Q24 31 31 25" fill="none" stroke="#111111" stroke-width="3" stroke-linecap="round"></path></svg><strong>Tu Tiendamiga</strong></div>
+      <div style="background: #EEF4FF; border-radius: 14px; padding: 14px"><span class="mu">Rosa Quispe te invitó a</span><strong style="display: block; font-size: 18px">Tienda Local</strong><span class="mu">como <strong style="color: #1F4FD8">Cajero</strong></span></div>
+      <div><label class="lb" for="i-e">Correo</label><input id="i-e" class="in" value="luis@correo.com" readonly></div>
+      <div><label class="lb" for="i-n">Tu nombre</label><input id="i-n" class="in" value="Luis Mamani"></div>
+      <div><label class="lb" for="i-p">Crea una contraseña</label><input id="i-p" class="in" type="password" value="Caja#2026"></div>
+      <button type="submit" class="btn p">Unirme a la tienda</button>
+      <div class="alert a-bad" style="font-size: 13px">Invitación vencida o revocada: "Esta invitación ya no es válida. Pídele a la tienda que te envíe otra."</div>
+    </form>
+  </div>
+
+  <div class="fr">
+    <span class="cap">Escritorio · Entrar</span>
+    <div class="dk">
+      <div style="width: 50%; background: #101828; color: #fff; padding: 56px; display: flex; flex-direction: column; gap: 22px">
+        <div class="brand"><svg aria-hidden="true" viewBox="3 3 42 42" width="44" height="44"><path d="M11 5H37Q40 5 40 8V39L36 43L32 39L28 43L24 39L20 43L16 39L12 43L8 39V8Q8 5 11 5Z" fill="#FFE14D" stroke="#FFFFFF" stroke-width="3" stroke-linejoin="round"></path><circle cx="19" cy="18" r="2.8" fill="#111111"></circle><circle cx="29" cy="18" r="2.8" fill="#111111"></circle><path d="M17 25Q24 31 31 25" fill="none" stroke="#111111" stroke-width="3" stroke-linecap="round"></path></svg><strong style="font-size: 20px">Tu Tiendamiga</strong></div>
+        <h2 style="margin: auto 0 0; font-size: 40px; font-weight: 800; letter-spacing: -.02em; line-height: 1.1">Vende, controla tu stock y cierra caja desde el celular.</h2>
+        <span style="color: #D0D5DD; font-size: 16px">Funciona sin internet y se sincroniza solo.</span>
+      </div>
+      <form style="width: 50%; padding: 56px 96px; display: flex; flex-direction: column; justify-content: center; gap: 16px">
+        <h1 class="h1">Entra a tu tienda</h1>
+        <div><label class="lb" for="dl-e">Correo electrónico</label><input id="dl-e" class="in" type="email"></div>
+        <div><label class="lb" for="dl-p">Contraseña</label><input id="dl-p" class="in" type="password"><a href="#" style="display: block; text-align: right; font-size: 13px; margin-top: 8px">¿Olvidaste tu contraseña?</a></div>
+        <button type="submit" class="btn p">Entrar</button>
+        <div class="or">O</div>
+        <button type="button" class="btn">Continuar con Google</button>
+        <span class="mu" style="text-align: center">¿No tienes cuenta? <a href="#">Crea tu tienda gratis</a></span>
+      </form>
+    </div>
+  </div>
+
+  <aside class="notes" aria-label="Notas de implementación">
+    <h3>Caminos</h3>
+    <ul>
+      <li>Entrar → Inicio (dueño) o Vender (cajero, si la caja está abierta; si no, Inicio).</li>
+      <li>Google: siempre pide elegir la cuenta (arreglo ya publicado).</li>
+      <li>Crear tienda → aviso "Revisa tu correo para confirmar la cuenta" si la confirmación está activa; si no, entra directo con la prueba gratis.</li>
+      <li>Invitación → al aceptar, entra a la tienda con el rol de la invitación.</li>
+    </ul>
+    <h3>Validaciones</h3>
+    <ul>
+      <li>Correo: formato válido, máx. 255 (en web y API).</li>
+      <li>Contraseña (crear tienda, nueva contraseña, invitación): mínimo 8, con mayúscula, minúscula, número y símbolo. La lista se marca mientras se escribe y el botón se habilita al cumplir todo.</li>
+      <li>Nombre de tienda y tu nombre: requeridos, máx. 100.</li>
+      <li>"Repite la contraseña": debe ser igual.</li>
+      <li>Demasiados intentos: "Demasiados intentos. Espera unos minutos" (límite de la API, 429).</li>
+      <li>Recuperar: el mensaje es el mismo exista o no la cuenta (no revela correos).</li>
+    </ul>
+    <h3>API</h3>
+    <ul>
+      <li><code>POST /auth/login</code>, <code>/auth/register</code>, <code>/auth/oauth/google</code>, <code>/auth/forgot-password</code>, <code>/auth/reset-password</code>, <code>GET /user-invitations/preview/{token}</code>, <code>POST /user-invitations/accept</code> — existen.</li>
+      <li>Correos (confirmar, recuperar, invitación): dependen del SMTP con Brevo, pendiente.</li>
+      <li>"Pedir otro en 60 s" y "vence en 1 hora": son los valores por defecto de Supabase Auth; revisar que coincidan con la configuración real antes de mostrarlos.</li>
+    </ul>
+  </aside>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":3860,"height":960}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

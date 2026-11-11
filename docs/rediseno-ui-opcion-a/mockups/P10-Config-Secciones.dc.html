@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Configuración · secciones</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#EEF0F4}
+*{box-sizing:border-box}
+a{color:#1F4FD8}a:hover{color:#163BA6}
+.fr{display:flex;flex-direction:column;gap:10px;flex-shrink:0}
+.cap{font:700 13px Inter,sans-serif;color:#475467;text-transform:uppercase;letter-spacing:.05em}
+.ph{width:390px;height:844px;background:#F7F8FA;border-radius:28px;overflow:hidden;position:relative;display:flex;flex-direction:column;box-shadow:0 0 0 1px #D0D5DD}
+.top{background:#fff;border-bottom:1px solid #E8EAEF;padding:10px 12px;display:flex;align-items:center;gap:6px}
+.back{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.h1{margin:0;font-size:19px;font-weight:800;letter-spacing:-.02em}
+.h2{margin:0;font-size:15px;font-weight:700}
+.mu{color:#475467;font-size:13px}
+.card{background:#fff;border:1px solid #E8EAEF;border-radius:16px}
+.sec{padding:14px;display:flex;flex-direction:column;gap:10px}
+.in{height:46px;border:1px solid #D0D5DD;border-radius:12px;padding:0 12px;font:15px Inter,sans-serif;color:#101828;background:#fff;width:100%}
+.in.err{border-color:#D92D20;box-shadow:0 0 0 3px #FEE4E2}
+.lb{font-size:14px;font-weight:600;display:block;margin-bottom:6px}
+.op{font-weight:400;color:#475467}
+.er{font-size:12px;color:#B42318;margin-top:6px;display:block}
+.hint{font-size:12px;color:#475467;margin-top:6px;display:block}
+.btn{height:46px;border-radius:12px;border:1px solid #D0D5DD;background:#fff;font:700 14px Inter,sans-serif;color:#344054;padding:0 14px;display:inline-flex;align-items:center;justify-content:center;gap:8px;text-decoration:none;white-space:nowrap}
+.btn.p{background:#1F4FD8;border-color:#1F4FD8;color:#fff}
+.btn.sm{height:34px;font-size:13px;padding:0 10px;border-radius:10px}
+.it{display:flex;align-items:center;gap:10px;padding:12px 14px;border-top:1px solid #F2F4F7;font-size:15px}
+.tag{display:inline-flex;font-size:12px;font-weight:700;padding:3px 9px;border-radius:999px;white-space:nowrap}
+.t-ok{background:#ECFDF3;color:#067647}.t-mu{background:#F2F4F7;color:#344054}.t-warn{background:#FFFAEB;color:#B54708}.t-info{background:#EEF4FF;color:#1F4FD8}
+.sw{width:46px;height:28px;border-radius:999px;background:#1F4FD8;position:relative;flex-shrink:0}
+.sw::after{content:'';position:absolute;right:3px;top:3px;width:22px;height:22px;border-radius:50%;background:#fff}
+.sw.off{background:#D0D5DD}
+.sw.off::after{right:auto;left:3px}
+.tg{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.ov{position:absolute;inset:0;background:rgba(16,24,40,.45);display:flex;flex-direction:column;justify-content:flex-end}
+.sheet{background:#fff;border-radius:24px 24px 0 0;padding:8px 16px 26px;display:flex;flex-direction:column;gap:12px}
+.grab{width:40px;height:5px;border-radius:999px;background:#D0D5DD;margin:0 auto}
+.fab{position:absolute;right:16px;bottom:26px;height:52px;padding:0 20px;border-radius:16px;background:#1F4FD8;color:#fff;display:flex;align-items:center;font-weight:700;font-size:15px;text-decoration:none;box-shadow:0 10px 22px rgba(31,79,216,.35)}
+.notes{width:440px;flex-shrink:0;background:#fff;border:1px solid #E8EAEF;border-radius:16px;padding:20px 22px;font:13px/1.55 Inter,sans-serif;color:#344054}
+.notes h3{margin:16px 0 6px;font-size:12px;font-weight:800;color:#101828;text-transform:uppercase;letter-spacing:.05em}
+.notes h3:first-child{margin-top:0}
+.notes ul{margin:0;padding-left:18px}
+.notes code{font:12px ui-monospace,monospace;background:#F2F4F7;padding:1px 4px;border-radius:4px}
+</style>
+</helmet>
+<div style="width: 2170px; height: 960px; padding: 40px; display: flex; gap: 40px; align-items: flex-start; font-family: Inter, system-ui, sans-serif; color: #101828; font-feature-settings: 'tnum' 1">
+
+  <div class="fr">
+    <span class="cap">Precios y descuentos</span>
+    <div class="ph">
+      <div class="top"><a href="#" class="back" aria-label="Volver a Configuración"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#101828" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"></path></svg></a><h1 class="h1">Precios y descuentos</h1></div>
+      <form style="flex: 1; padding: 14px 14px 110px; display: flex; flex-direction: column; gap: 12px">
+        <span class="mu">Límites para los descuentos al cobrar y en los productos.</span>
+        <div class="card sec">
+          <label class="tg"><span><strong style="display: block; font-size: 15px">Descuento en porcentaje</strong><span class="mu">Ej. 10% de la venta</span></span><span class="sw" role="switch" aria-checked="true" tabindex="0"></span></label>
+          <div><label class="lb" for="d-pct">Hasta (%)</label><input id="d-pct" class="in" inputmode="decimal" value="15"></div>
+        </div>
+        <div class="card sec">
+          <label class="tg"><span><strong style="display: block; font-size: 15px">Rebaja en bolivianos</strong><span class="mu">Ej. Bs 5 menos</span></span><span class="sw" role="switch" aria-checked="true" tabindex="0"></span></label>
+          <div><label class="lb" for="d-bs">Hasta (Bs)</label><input id="d-bs" class="in err" inputmode="decimal" value="0" aria-describedby="d-bs-er"><span class="er" id="d-bs-er">Define un monto máximo mayor a 0 para habilitar esta opción.</span></div>
+        </div>
+        <div class="card sec">
+          <label class="tg"><span><strong style="display: block; font-size: 15px">El cajero elige qué descuento aplicar</strong><span class="mu">Si no, se aplica el que más conviene al cliente</span></span><span class="sw off" role="switch" aria-checked="false" tabindex="0"></span></label>
+        </div>
+      </form>
+      <div style="position: absolute; left: 0; right: 0; bottom: 0; background: #fff; border-top: 1px solid #E8EAEF; padding: 12px 16px 26px"><button type="submit" class="btn p" style="width: 100%">Guardar</button></div>
+    </div>
+  </div>
+
+  <div class="fr">
+    <span class="cap">Usuarios y permisos · invitar</span>
+    <div class="ph">
+      <div class="top"><a href="#" class="back" aria-label="Volver a Configuración"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#101828" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"></path></svg></a><h1 class="h1">Usuarios y permisos</h1></div>
+      <div style="padding: 14px; opacity: .45">
+        <div class="card"><div class="it" style="border: 0">Rosa Quispe <span class="tag t-mu" style="margin-left: auto">Dueño</span></div><div class="it">Luis Mamani <span class="tag t-info" style="margin-left: auto">Cajero</span></div><div class="it">ana@correo.com <span class="tag t-warn" style="margin-left: auto">Pendiente</span></div></div>
+      </div>
+      <div class="ov">
+        <form class="sheet" role="dialog" aria-labelledby="inv-t">
+          <span class="grab"></span>
+          <h2 id="inv-t" class="h1">Invitar a alguien</h2>
+          <div><label class="lb" for="inv-e">Correo electrónico</label><input id="inv-e" class="in err" type="email" value="pedro@correo" aria-describedby="inv-e-er"><span class="er" id="inv-e-er">Email inválido.</span></div>
+          <fieldset style="border: 0; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px">
+            <legend class="lb">Rol</legend>
+            <label class="card" style="display: flex; gap: 10px; padding: 12px; border: 2px solid #1F4FD8; background: #EEF4FF"><input type="radio" name="rol" checked><span><strong style="display: block">Cajero</strong><span class="mu">Vende, ve productos y pedidos. No toca caja, precios ni stock.</span></span></label>
+            <label class="card" style="display: flex; gap: 10px; padding: 12px"><input type="radio" name="rol"><span><strong style="display: block">Dueño</strong><span class="mu">Puede hacer todo, incluida la configuración.</span></span></label>
+          </fieldset>
+          <span class="mu">Le llega un correo con un enlace que vence en 7 días.</span>
+          <button type="submit" class="btn p" style="height: 52px">Enviar invitación</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="fr">
+    <span class="cap">Productos › Vencimientos (nuevo)</span>
+    <div class="ph">
+      <div class="top"><a href="#" class="back" aria-label="Volver a Configuración"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#101828" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"></path></svg></a><h1 class="h1">Vencimientos</h1></div>
+      <form style="padding: 14px; display: flex; flex-direction: column; gap: 12px">
+        <div class="card sec">
+          <div><label class="lb" for="v-d">Avisar por defecto (días antes)</label><input id="v-d" class="in" inputmode="numeric" value="5"><span class="hint">Se usa al cargar un lote si no escribes otro número. Entero de 0 a 365.</span></div>
+        </div>
+        <div class="card sec">
+          <h2 class="h2">Así funciona</h2>
+          <span class="mu">Al vender sale primero el lote que vence antes. Los vencidos no se venden solos: se retiran desde el producto. En Inicio ves los que están por vencer.</span>
+        </div>
+        <button type="submit" class="btn p">Guardar</button>
+      </form>
+    </div>
+  </div>
+
+  <aside class="notes" aria-label="Notas de implementación">
+    <h3>Patrón</h3>
+    <ul>
+      <li>Celular: cada sección es una pantalla con "Volver a Configuración"; crear o editar abre una hoja desde abajo.</li>
+      <li>Escritorio y tablet: menú de Configuración a la izquierda y la sección a la derecha (ver Usuarios y permisos en la fila de Configuración).</li>
+      <li>Categorías y Lugares en la tienda ya no están aquí: pasaron a <strong>Productos</strong> (ver tablero "Productos · categorías y lugares en la tienda"). En Configuración › Productos quedan como atajos con "En Productos".</li>
+      <li>Guardar muestra "Guardado" y vuelve al estado normal; si algo falla, el error queda en su campo.</li>
+    </ul>
+    <h3>Validaciones</h3>
+    <ul>
+      <li>Descuentos: % entre 0 y 100; para activar cada opción el máximo debe ser mayor a 0.</li>
+      <li>Invitar: correo válido y rol Cajero o Dueño. Siempre debe quedar al menos un dueño activo: la API rechaza quitar el rol o desactivar al último ("No se puede remover el último owner activo").</li>
+      <li>Vencimientos: entero 0–365.</li>
+    </ul>
+    <h3>Usuarios: acciones por fila</h3>
+    <ul><li>Hacer dueño / Quitar dueño, Desactivar / Activar (con confirmación). Invitaciones: Pendiente, Aceptada, Expirada, Revocada; Reenviar y Revocar.</li></ul>
+    <h3>API</h3>
+    <ul>
+      <li><code>PATCH /store</code> (política de descuentos), <code>/users</code> (<code>/role</code>, <code>/status</code>), <code>/user-invitations</code> (<code>/resend</code>, <code>/revoke</code>) — existen.</li>
+      <li>Vencimientos: <strong>backend B4</strong> (<code>stores.default_alert_days</code>, migración 040). Si no se hace, esta pantalla no se muestra y el aviso sigue fijo en 5.</li>
+      <li>Correo de invitación: depende del SMTP (Brevo) pendiente; mientras tanto, en desarrollo se muestra el enlace.</li>
+    </ul>
+  </aside>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":2170,"height":960}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Configuración · catálogo público</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#EEF0F4}
+*{box-sizing:border-box}
+a{color:#1F4FD8}a:hover{color:#163BA6}
+.fr{display:flex;flex-direction:column;gap:10px;flex-shrink:0}
+.cap{font:700 13px Inter,sans-serif;color:#475467;text-transform:uppercase;letter-spacing:.05em}
+.ph{width:390px;height:844px;background:#F7F8FA;border-radius:28px;overflow:hidden;position:relative;display:flex;flex-direction:column;box-shadow:0 0 0 1px #D0D5DD}
+.dk{width:1280px;height:800px;background:#F7F8FA;border-radius:14px;overflow:hidden;position:relative;display:flex;box-shadow:0 0 0 1px #D0D5DD}
+.top{background:#fff;border-bottom:1px solid #E8EAEF;padding:10px 12px;display:flex;align-items:center;gap:6px}
+.back{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.h1{margin:0;font-size:19px;font-weight:800;letter-spacing:-.02em}
+.h2{margin:0;font-size:15px;font-weight:700}
+.mu{color:#475467;font-size:13px}
+.card{background:#fff;border:1px solid #E8EAEF;border-radius:16px}
+.sec{padding:14px;display:flex;flex-direction:column;gap:10px}
+.in{height:44px;border:1px solid #D0D5DD;border-radius:12px;padding:0 12px;font:15px Inter,sans-serif;color:#101828;background:#fff;width:100%}
+.in.err{border-color:#D92D20;box-shadow:0 0 0 3px #FEE4E2}
+.lb{font-size:14px;font-weight:600;display:block;margin-bottom:6px}
+.op{font-weight:400;color:#475467}
+.er{font-size:12px;color:#B42318;margin-top:6px;display:block}
+.hint{font-size:12px;color:#475467;margin-top:6px;display:block}
+.btn{height:44px;border-radius:12px;border:1px solid #D0D5DD;background:#fff;font:700 14px Inter,sans-serif;color:#344054;padding:0 14px;display:inline-flex;align-items:center;justify-content:center;gap:8px;text-decoration:none;white-space:nowrap}
+.btn.p{background:#1F4FD8;border-color:#1F4FD8;color:#fff}
+.btn.sm{height:34px;font-size:13px;padding:0 10px;border-radius:10px}
+.row{display:flex;align-items:center;gap:10px;min-height:56px;padding:0 14px;border-top:1px solid #F2F4F7;text-decoration:none;color:#101828}
+.row span.t{flex:1;min-width:0}
+.row strong{display:block;font-size:15px}
+.sw{width:46px;height:28px;border-radius:999px;background:#1F4FD8;position:relative;flex-shrink:0}
+.sw::after{content:'';position:absolute;right:3px;top:3px;width:22px;height:22px;border-radius:50%;background:#fff}
+.sw.off{background:#D0D5DD}
+.sw.off::after{right:auto;left:3px}
+.tg{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:14px;font-weight:600}
+.tag{display:inline-flex;font-size:12px;font-weight:700;padding:3px 9px;border-radius:999px;white-space:nowrap}
+.t-ok{background:#ECFDF3;color:#067647}.t-mu{background:#F2F4F7;color:#344054}
+.side{width:236px;flex-shrink:0;background:#fff;border-right:1px solid #E8EAEF;padding:18px 12px;display:flex;flex-direction:column;gap:14px}
+.n{display:flex;align-items:center;gap:10px;height:38px;padding:0 10px;border-radius:10px;font-size:14px;color:#344054;text-decoration:none;font-weight:500}
+.n.on{background:#EEF0F4;color:#101828;font-weight:700}
+.dot{width:8px;height:8px;border-radius:3px;background:#D0D5DD}
+.n.on .dot{background:#1F4FD8}
+.sub{display:flex;align-items:center;justify-content:space-between;height:36px;padding:0 10px;border-radius:10px;font-size:14px;color:#344054;text-decoration:none}
+.sub.on{background:#EEF4FF;color:#1F4FD8;font-weight:700}
+.notes{width:440px;flex-shrink:0;background:#fff;border:1px solid #E8EAEF;border-radius:16px;padding:20px 22px;font:13px/1.55 Inter,sans-serif;color:#344054}
+.notes h3{margin:16px 0 6px;font-size:12px;font-weight:800;color:#101828;text-transform:uppercase;letter-spacing:.05em}
+.notes h3:first-child{margin-top:0}
+.notes ul{margin:0;padding-left:18px}
+.notes code{font:12px ui-monospace,monospace;background:#F2F4F7;padding:1px 4px;border-radius:4px}
+</style>
+</helmet>
+<div style="width: 2700px; height: 960px; padding: 40px; display: flex; gap: 40px; align-items: flex-start; font-family: Inter, system-ui, sans-serif; color: #101828; font-feature-settings: 'tnum' 1">
+
+  <div class="fr">
+    <span class="cap">Celular · Catálogo público</span>
+    <div class="ph">
+      <div class="top"><a href="#" class="back" aria-label="Volver a Configuración"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#101828" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"></path></svg></a><h1 class="h1" style="flex: 1">Catálogo público</h1><a href="#" class="btn sm">Ver</a></div>
+      <div style="flex: 1; overflow: hidden; padding: 14px; display: flex; flex-direction: column; gap: 12px">
+        <div class="card sec">
+          <label class="tg"><span><strong style="display: block; font-size: 16px">Catálogo encendido</strong><span class="mu" style="font-weight: 400">Cualquiera con el link lo puede ver</span></span><span class="sw" role="switch" aria-checked="true" tabindex="0"></span></label>
+          <div style="display: flex; gap: 8px; align-items: center; background: #F2F4F7; border-radius: 12px; padding: 8px 10px"><span style="flex: 1; font-size: 13px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">/t/tienda-local</span><button type="button" class="btn sm">Copiar</button><button type="button" class="btn sm">Compartir</button></div>
+        </div>
+        <div class="card">
+          <a href="#" class="row" style="border: 0"><span class="t"><strong>Plantilla</strong><span class="mu">Vitrina</span></span><span class="mu">›</span></a>
+          <a href="#" class="row"><span class="t"><strong>Identidad</strong><span class="mu">Logo, portada, colores, descripción</span></span><span class="mu">›</span></a>
+          <a href="#" class="row"><span class="t"><strong>Secciones</strong><span class="mu">Anuncio, destacados (4), contacto, pago</span></span><span class="mu">›</span></a>
+          <a href="#" class="row"><span class="t"><strong>Productos</strong><span class="mu">Más pedidos primero · ocultar agotados</span></span><span class="mu">›</span></a>
+          <a href="#" class="row"><span class="t"><strong>Pedidos por WhatsApp</strong><span class="mu">+591 71234567 · recojo y envío</span></span><span class="mu">›</span></a>
+          <a href="#" class="row"><span class="t"><strong>Contacto y horario</strong><span class="mu">Dirección, mapa, redes, horario</span></span><span class="mu">›</span></a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="fr">
+    <span class="cap">Celular · Pedidos por WhatsApp</span>
+    <div class="ph">
+      <div class="top"><a href="#" class="back" aria-label="Volver al catálogo"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#101828" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"></path></svg></a><h1 class="h1">Pedidos por WhatsApp</h1></div>
+      <form style="flex: 1; overflow: hidden; padding: 14px 14px 110px; display: flex; flex-direction: column; gap: 12px">
+        <div class="card sec">
+          <div><label class="lb" for="w-n">WhatsApp que recibe los pedidos</label>
+            <div style="display: flex; gap: 8px"><select class="in" aria-label="Código de país" style="width: 112px"><option>+591 Bolivia</option></select><input id="w-n" class="in" inputmode="numeric" value="71234567"></div></div>
+        </div>
+        <div class="card sec">
+          <h2 class="h2">Cómo reciben su compra</h2>
+          <label class="tg">Recojo en la tienda <span class="sw" role="switch" aria-checked="true" tabindex="0"></span></label>
+          <label class="tg">Envío a domicilio <span class="sw" role="switch" aria-checked="true" tabindex="0"></span></label>
+        </div>
+        <div class="card sec">
+          <div><label class="lb" for="w-pay">Instrucciones de pago <span class="op">(opcional)</span></label><textarea id="w-pay" class="in" style="height: 84px; padding-top: 10px">Paga con QR al confirmar tu pedido. Envía el comprobante por WhatsApp.</textarea><span class="hint">71 de 280</span></div>
+          <div style="display: flex; align-items: center; gap: 10px"><span style="width: 56px; height: 56px; border-radius: 10px; background: repeating-conic-gradient(#101828 0% 25%, #fff 0% 50%) 0 0 / 10px 10px; border: 4px solid #fff; box-shadow: 0 0 0 1px #E8EAEF" role="img" aria-label="QR de pago cargado"></span><span style="flex: 1"><strong style="display: block; font-size: 14px">QR de pago</strong><span class="mu">Se muestra al cliente al pedir</span></span><button type="button" class="btn sm">Cambiar</button></div>
+        </div>
+      </form>
+      <div style="position: absolute; left: 0; right: 0; bottom: 0; background: #fff; border-top: 1px solid #E8EAEF; padding: 12px 16px 26px"><button type="submit" class="btn p" style="width: 100%">Guardar</button></div>
+    </div>
+  </div>
+
+  <div class="fr">
+    <span class="cap">Escritorio · Catálogo con vista previa</span>
+    <div class="dk">
+      <aside class="side">
+        <div style="display: flex; align-items: center; gap: 10px; padding: 0 6px">
+          <svg aria-hidden="true" viewBox="3 3 42 42" width="30" height="30"><path d="M11 5H37Q40 5 40 8V39L36 43L32 39L28 43L24 39L20 43L16 39L12 43L8 39V8Q8 5 11 5Z" fill="#FFE14D" stroke="#111111" stroke-width="3" stroke-linejoin="round"></path><circle cx="19" cy="18" r="2.8" fill="#111111"></circle><circle cx="29" cy="18" r="2.8" fill="#111111"></circle><path d="M17 25Q24 31 31 25" fill="none" stroke="#111111" stroke-width="3" stroke-linecap="round"></path></svg>
+          <div><div style="font-weight: 800; font-size: 14px">Tienda Local</div><div class="mu" style="font-size: 12px">Plan Prueba · 9 días</div></div>
+        </div>
+        <a href="#" class="btn p" style="height: 42px">Nueva venta</a>
+        <nav aria-label="Principal" style="display: flex; flex-direction: column; gap: 2px">
+          <a href="#" class="n"><span class="dot"></span>Inicio</a><a href="#" class="n"><span class="dot"></span>Vender</a><a href="#" class="n"><span class="dot"></span>Caja</a><a href="#" class="n"><span class="dot"></span>Productos</a><a href="#" class="n"><span class="dot"></span>Ventas</a><a href="#" class="n"><span class="dot"></span>Pedidos</a><a href="#" class="n"><span class="dot"></span>Reportes</a><a href="#" class="n on" aria-current="page"><span class="dot"></span>Configuración</a>
+        </nav>
+      </aside>
+      <main style="flex: 1; min-width: 0; padding: 20px 24px; display: flex; flex-direction: column; gap: 12px; overflow: hidden">
+        <div style="display: flex; justify-content: space-between; align-items: center">
+          <div><nav aria-label="Ruta" class="mu"><a href="#">Configuración</a> / Ventas en línea</nav><h1 class="h1" style="font-size: 24px">Catálogo público</h1></div>
+          <div style="display: flex; gap: 8px; align-items: center"><span class="tag t-ok">Encendido</span><button type="button" class="btn">Copiar link</button><a href="#" class="btn">Abrir catálogo</a><button type="submit" class="btn p">Guardar cambios</button></div>
+        </div>
+        <div style="display: flex; gap: 14px; min-height: 0">
+          <nav aria-label="Partes del catálogo" style="width: 190px; flex-shrink: 0; display: flex; flex-direction: column; gap: 2px">
+            <a href="#" class="sub">Estado y link</a><a href="#" class="sub">Plantilla</a><a href="#" class="sub on" aria-current="page">Identidad</a><a href="#" class="sub">Secciones</a><a href="#" class="sub">Productos</a><a href="#" class="sub">Pedidos por WhatsApp</a><a href="#" class="sub">Contacto y horario</a>
+          </nav>
+          <form class="card sec" style="flex: 1; align-self: flex-start">
+            <h2 class="h2">Identidad</h2>
+            <div style="display: flex; gap: 12px">
+              <div style="flex: 1"><span class="lb">Logo</span><div style="height: 84px; border: 1px dashed #98A2B3; border-radius: 12px; display: flex; align-items: center; justify-content: center; gap: 8px"><svg aria-hidden="true" viewBox="3 3 42 42" width="40" height="40"><path d="M11 5H37Q40 5 40 8V39L36 43L32 39L28 43L24 39L20 43L16 39L12 43L8 39V8Q8 5 11 5Z" fill="#FFE14D" stroke="#111111" stroke-width="3" stroke-linejoin="round"></path></svg><button type="button" class="btn sm">Cambiar</button></div></div>
+              <div style="flex: 1.6"><span class="lb">Portada</span><div style="height: 84px; border: 1px dashed #98A2B3; border-radius: 12px; display: flex; align-items: center; justify-content: center"><button type="button" class="btn sm">Subir imagen</button></div></div>
+            </div>
+            <div style="display: flex; gap: 12px">
+              <div style="flex: 1"><label class="lb" for="c1">Color principal</label><div style="display: flex; gap: 8px"><span style="width: 44px; height: 44px; border-radius: 10px; background: #111111; flex-shrink: 0"></span><input id="c1" class="in" value="#111111"></div></div>
+              <div style="flex: 1"><label class="lb" for="c2">Color de acento</label><div style="display: flex; gap: 8px"><span style="width: 44px; height: 44px; border-radius: 10px; background: #FFE14D; flex-shrink: 0"></span><input id="c2" class="in err" value="#FFE14" aria-describedby="c2-er"></div><span class="er" id="c2-er">Ingresa un color hex válido, ej. #2563EB.</span></div>
+            </div>
+            <div><label class="lb" for="cd">Descripción <span class="op">(opcional)</span></label><textarea id="cd" class="in" style="height: 72px; padding-top: 10px">Abarrotes, lácteos y bebidas en Miraflores. Pide por WhatsApp y recoge en 15 minutos.</textarea><span class="hint">90 de 280</span></div>
+            <span class="mu">Los cambios se ven en la vista previa al momento y se publican al guardar.</span>
+          </form>
+          <div style="width: 250px; flex-shrink: 0; display: flex; flex-direction: column; gap: 8px; align-items: center">
+            <span class="mu" style="font-weight: 700">Vista previa</span>
+            <div style="width: 230px; height: 470px; border-radius: 26px; border: 6px solid #101828; background: #FBF8EF; overflow: hidden; display: flex; flex-direction: column">
+              <div style="background: #111111; color: #fff; padding: 12px; font-weight: 800; font-size: 14px">TIENDA LOCAL</div>
+              <div style="padding: 10px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+                <div style="background: #fff; border: 2px solid #111; border-radius: 10px; height: 92px"></div><div style="background: #fff; border: 2px solid #111; border-radius: 10px; height: 92px"></div><div style="background: #fff; border: 2px solid #111; border-radius: 10px; height: 92px"></div><div style="background: #fff; border: 2px solid #111; border-radius: 10px; height: 92px"></div>
+              </div>
+              <div style="margin-top: auto; background: #FFE14D; border-top: 2px solid #111; padding: 10px; font-size: 12px; font-weight: 700">Tu pedido · Bs 0,00</div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <aside class="notes" aria-label="Notas de implementación">
+    <h3>Qué cambia respecto de hoy</h3>
+    <ul>
+      <li>Hoy el catálogo es una página larga con 7 tarjetas. Ahora: lista de partes con un resumen (celular) o menú de partes + vista previa al lado (escritorio).</li>
+      <li>La vista previa en vivo ya existe; en celular se abre con "Ver" arriba.</li>
+      <li>En el catálogo público, el panel del pedido del cliente se llama <strong>"Tu pedido"</strong> (antes "Tu boleta"): cambio de texto en las plantillas.</li>
+    </ul>
+    <h3>Validaciones</h3>
+    <ul>
+      <li>Link (slug): requerido para encender; minúsculas, números y guiones, sin empezar ni terminar en guion, mín. 3; único (409).</li>
+      <li>Colores: hex de 6 dígitos (#RRGGBB).</li>
+      <li>Descripción e instrucciones de pago: máx. 280. Anuncio: máx. 140 y requerido si el anuncio está encendido.</li>
+      <li>Destacados: hasta 10 productos. Dirección: máx. 200. Mapa: link de Google Maps ("Pega el link que te da Google Maps al tocar Compartir").</li>
+      <li>WhatsApp: mismas reglas de teléfono (+591 por defecto, solo números).</li>
+      <li>Imágenes (logo, portada, QR de pago): JPG/PNG/WebP hasta 5 MB.</li>
+      <li>Horario: por día; si está abierto, hora de apertura y de cierre requeridas y distintas (se permite cerrar después de medianoche).</li>
+    </ul>
+    <h3>Permisos</h3>
+    <ul><li>Solo dueño.</li></ul>
+    <h3>API</h3>
+    <ul><li><code>GET/PATCH /store</code> (<code>storefront_*</code> y <code>storefront_settings</code>), imágenes en <code>POST/DELETE /store/storefront-logo</code>, <code>/store/storefront-banner</code>, <code>/store/payment-qr</code> — existen. Sin cambios.</li></ul>
+  </aside>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":2700,"height":960}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

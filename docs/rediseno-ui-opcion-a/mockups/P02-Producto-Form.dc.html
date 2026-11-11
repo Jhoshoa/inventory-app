@@ -1,0 +1,295 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Producto · nuevo y editar</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#EEF0F4}
+*{box-sizing:border-box}
+a{color:#1F4FD8}a:hover{color:#163BA6}
+.fr{display:flex;flex-direction:column;gap:10px;flex-shrink:0}
+.cap{font:700 13px Inter,sans-serif;color:#475467;text-transform:uppercase;letter-spacing:.05em}
+.ph{width:390px;height:844px;background:#F7F8FA;border-radius:28px;overflow:hidden;position:relative;display:flex;flex-direction:column;box-shadow:0 0 0 1px #D0D5DD}
+.dk{width:1280px;height:800px;background:#F7F8FA;border-radius:14px;overflow:hidden;position:relative;display:flex;box-shadow:0 0 0 1px #D0D5DD}
+.top{background:#fff;border-bottom:1px solid #E8EAEF;padding:10px 12px;display:flex;align-items:center;gap:6px}
+.back{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center}
+.h1{margin:0;font-size:19px;font-weight:800;letter-spacing:-.02em}
+.h2{margin:0;font-size:15px;font-weight:700}
+.mu{color:#475467;font-size:13px}
+.card{background:#fff;border:1px solid #E8EAEF;border-radius:16px}
+.sec{padding:14px;display:flex;flex-direction:column;gap:12px}
+.in{height:46px;border:1px solid #D0D5DD;border-radius:12px;padding:0 12px;font:15px Inter,sans-serif;color:#101828;background:#fff;width:100%}
+.in.err{border-color:#D92D20;box-shadow:0 0 0 3px #FEE4E2}
+.in[disabled]{background:#F2F4F7;color:#667085}
+.lb{font-size:14px;font-weight:600;display:block;margin-bottom:6px}
+.op{font-weight:400;color:#475467}
+.er{font-size:12px;color:#B42318;margin-top:6px;display:block}
+.hint{font-size:12px;color:#475467;margin-top:6px;display:block}
+.two{display:flex;gap:10px}.two>div{flex:1;min-width:0}
+.btn{height:46px;border-radius:12px;border:1px solid #D0D5DD;background:#fff;font:700 14px Inter,sans-serif;color:#344054;padding:0 14px;display:inline-flex;align-items:center;justify-content:center;gap:8px;text-decoration:none;white-space:nowrap}
+.btn.p{background:#1F4FD8;border-color:#1F4FD8;color:#fff}
+.btn.sm{height:36px;font-size:13px;padding:0 10px;border-radius:10px}
+.seg{display:flex;background:#EEF0F4;border-radius:12px;padding:3px}
+.seg button{flex:1;border:0;background:transparent;border-radius:9px;height:38px;font:600 13px Inter,sans-serif;color:#475467}
+.seg button.on{background:#fff;color:#101828;box-shadow:0 1px 2px rgba(16,24,40,.1)}
+.alert{border-radius:12px;padding:10px 12px;font-size:13px}
+.a-bad{background:#FEF3F2;border:1px solid #FECDCA;color:#912018}
+.a-info{background:#EEF4FF;border:1px solid #C7D7FE;color:#1F3B99}
+.lrow{display:flex;justify-content:space-between;align-items:baseline;gap:6px}
+.lrow .lb{margin-bottom:6px}
+.lnk{border:0;background:transparent;color:#1F4FD8;font:700 13px Inter,sans-serif;padding:0 2px;min-height:28px;white-space:nowrap}
+.ov{position:absolute;inset:0;background:rgba(16,24,40,.45);display:flex;flex-direction:column;justify-content:flex-end}
+.sheet{background:#fff;border-radius:24px 24px 0 0;padding:8px 16px 26px;display:flex;flex-direction:column;gap:12px}
+.grab{width:40px;height:5px;border-radius:999px;background:#D0D5DD;margin:0 auto}
+.foot{position:absolute;left:0;right:0;bottom:0;background:#fff;border-top:1px solid #E8EAEF;padding:12px 16px 26px;display:flex;gap:10px}
+.side{width:236px;flex-shrink:0;background:#fff;border-right:1px solid #E8EAEF;padding:18px 12px;display:flex;flex-direction:column;gap:14px}
+.n{display:flex;align-items:center;gap:10px;height:38px;padding:0 10px;border-radius:10px;font-size:14px;color:#344054;text-decoration:none;font-weight:500}
+.n.on{background:#EEF0F4;color:#101828;font-weight:700}
+.dot{width:8px;height:8px;border-radius:3px;background:#D0D5DD}
+.n.on .dot{background:#1F4FD8}
+.notes{width:440px;flex-shrink:0;background:#fff;border:1px solid #E8EAEF;border-radius:16px;padding:20px 22px;font:13px/1.55 Inter,sans-serif;color:#344054}
+.notes h3{margin:16px 0 6px;font-size:12px;font-weight:800;color:#101828;text-transform:uppercase;letter-spacing:.05em}
+.notes h3:first-child{margin-top:0}
+.notes ul{margin:0;padding-left:18px}
+.notes code{font:12px ui-monospace,monospace;background:#F2F4F7;padding:1px 4px;border-radius:4px}
+</style>
+</helmet>
+<div style="width: 3780px; height: 1040px; padding: 40px; display: flex; gap: 40px; align-items: flex-start; font-family: Inter, system-ui, sans-serif; color: #101828; font-feature-settings: 'tnum' 1">
+
+  <div class="fr">
+    <span class="cap">Celular · Nuevo producto (arriba)</span>
+    <div class="ph">
+      <div class="top">
+        <a href="#" class="back" aria-label="Volver a productos"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#101828" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"></path></svg></a>
+        <h1 class="h1">Nuevo producto</h1>
+      </div>
+      <form style="flex: 1; overflow: hidden; padding: 14px 14px 110px; display: flex; flex-direction: column; gap: 12px">
+        <div class="card sec" style="flex-direction: row; align-items: center">
+          <span style="width: 72px; height: 72px; border-radius: 14px; border: 1px dashed #98A2B3; background: #F9FAFB; display: flex; align-items: center; justify-content: center" aria-hidden="true"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#667085" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h3l2-3h8l2 3h3v13H3z"></path><circle cx="12" cy="13" r="4"></circle></svg></span>
+          <span style="flex: 1"><strong style="display: block">Foto <span class="op">(opcional)</span></strong><span class="mu" style="font-size: 12px">JPG, PNG o WebP · hasta 5 MB</span></span>
+          <span style="display: flex; flex-direction: column; gap: 6px"><button type="button" class="btn sm">Tomar foto</button><button type="button" class="btn sm">Elegir</button></span>
+        </div>
+        <div class="card sec">
+          <div><label class="lb" for="m-name">Nombre</label><input id="m-name" class="in" value="Yogur Frutilla 1l"></div>
+          <div class="two">
+            <div><div class="lrow"><label class="lb" for="m-cat">Categoría</label><button type="button" class="lnk" aria-label="Crear una categoría nueva">+ Nueva</button></div><select id="m-cat" class="in"><option>Lácteos</option></select></div>
+            <div><label class="lb" for="m-unit">Unidad</label><input id="m-unit" class="in" value="unidad"></div>
+          </div>
+          <div class="alert a-info">SKU automático: se generará <strong>LAC000005</strong> al guardar.</div>
+        </div>
+        <div class="card sec">
+          <div class="two">
+            <div><label class="lb" for="m-price">Precio de venta</label><input id="m-price" class="in" inputmode="decimal" value="18,50"></div>
+            <div><label class="lb" for="m-cost">Costo <span class="op">(opc.)</span></label><input id="m-cost" class="in" inputmode="decimal" value="12,00"></div>
+          </div>
+          <span class="hint" style="margin-top: -4px">Ganas Bs 6,50 por unidad (35%).</span>
+          <div class="two">
+            <div><label class="lb" for="m-stock">Stock inicial</label><input id="m-stock" class="in" inputmode="numeric" value="24"></div>
+            <div><label class="lb" for="m-min">Avisar si baja de</label><input id="m-min" class="in" inputmode="numeric" value="4"></div>
+          </div>
+        </div>
+      </form>
+      <div class="foot"><a href="#" class="btn" style="flex: 1">Cancelar</a><button type="submit" class="btn p" style="flex: 1.6">Crear producto</button></div>
+    </div>
+  </div>
+
+  <div class="fr">
+    <span class="cap">Celular · Más abajo, con errores</span>
+    <div class="ph">
+      <div class="top">
+        <a href="#" class="back" aria-label="Volver a productos"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#101828" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"></path></svg></a>
+        <h1 class="h1">Nuevo producto</h1>
+      </div>
+      <form style="flex: 1; overflow: hidden; padding: 14px 14px 110px; display: flex; flex-direction: column; gap: 12px">
+        <div class="alert a-bad" role="alert">Revisa 2 campos antes de guardar.</div>
+        <div class="card sec">
+          <div><label class="lb" for="e-qr">Código para escanear</label>
+            <div style="display: flex; gap: 8px"><input id="e-qr" class="in err" value="7771234500018" aria-describedby="e-qr-er"><button type="button" class="btn" aria-label="Escanear código">Escanear</button></div>
+            <span class="er" id="e-qr-er">El código escaneable ya está en uso por otro producto.</span>
+            <span class="hint">Vacío: se crea uno a partir del SKU (QR-LAC000005).</span></div>
+        </div>
+        <div class="card sec">
+          <div><span class="lb">Descuento <span class="op">(opcional)</span></span>
+            <div class="seg" role="group" aria-label="Tipo de descuento"><button type="button">Sin descuento</button><button type="button" class="on">%</button><button type="button">Bs</button></div></div>
+          <div class="two">
+            <div><label class="lb" for="e-dv">Porcentaje</label><input id="e-dv" class="in err" value="120" aria-describedby="e-dv-er"><span class="er" id="e-dv-er">El porcentaje no puede superar 100.</span></div>
+            <div><label class="lb" for="e-de">Hasta <span class="op">(opc.)</span></label><input id="e-de" class="in" type="date" value="2026-11-30"></div>
+          </div>
+        </div>
+        <div class="card sec">
+          <div class="two">
+            <div><label class="lb" for="e-exp">Vence el <span class="op">(opc.)</span></label><input id="e-exp" class="in" type="date" value="2026-12-02"></div>
+            <div><label class="lb" for="e-al">Avisar días antes</label><input id="e-al" class="in" value="5"></div>
+          </div>
+          <span class="hint" style="margin-top: -4px">Las 24 unidades entran como un lote que vence el 02/12.</span>
+          <div><div class="lrow"><label class="lb" for="e-loc">Dónde está <span class="op">(opcional)</span></label><button type="button" class="lnk" aria-label="Crear un lugar nuevo en la tienda">+ Nuevo lugar</button></div><select id="e-loc" class="in"><option>Heladera · Exhibición</option></select></div>
+        </div>
+      </form>
+      <div class="foot"><a href="#" class="btn" style="flex: 1">Cancelar</a><button type="submit" class="btn p" style="flex: 1.6">Crear producto</button></div>
+    </div>
+  </div>
+
+
+  <div class="fr">
+    <span class="cap">Celular · + Nueva categoría sin salir</span>
+    <div class="ph">
+      <div class="top"><a href="#" class="back" aria-label="Volver a productos"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#101828" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"></path></svg></a><h1 class="h1">Nuevo producto</h1></div>
+      <div style="padding: 14px; display: flex; flex-direction: column; gap: 12px; opacity: .45">
+        <div class="card sec"><div><span class="lb">Nombre</span><div class="in" style="display: flex; align-items: center">Pan integral</div></div><div><span class="lb">Categoría</span><div class="in" style="display: flex; align-items: center; color: #667085">Elige una categoría</div></div></div>
+      </div>
+      <div class="ov">
+        <form class="sheet" role="dialog" aria-labelledby="nc-t">
+          <span class="grab"></span>
+          <div><h2 id="nc-t" class="h1">Nueva categoría</h2><span class="mu">Lo que escribiste en el producto no se pierde.</span></div>
+          <div><label class="lb" for="nc-n">Nombre</label><input id="nc-n" class="in" value="Panadería"></div>
+          <div><label class="lb" for="nc-p">Prefijo del SKU</label><input id="nc-p" class="in err" value="PA N" style="text-transform: uppercase" aria-describedby="nc-p-er nc-p-h"><span class="er" id="nc-p-er">Solo letras y números, sin espacios.</span><span class="hint" id="nc-p-h">Hasta 8. Se sugiere a partir del nombre (PAN).</span></div>
+          <div class="alert a-info">El producto quedará como <strong>PAN000001</strong>.</div>
+          <div style="display: flex; gap: 10px"><button type="button" class="btn" style="flex: 1">Cancelar</button><button type="submit" class="btn p" style="flex: 1.6; height: 52px">Crear y usar</button></div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="fr">
+    <span class="cap">Celular · + Nuevo lugar sin salir</span>
+    <div class="ph">
+      <div class="top"><a href="#" class="back" aria-label="Volver a productos"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#101828" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"></path></svg></a><h1 class="h1">Nuevo producto</h1></div>
+      <div style="padding: 14px; display: flex; flex-direction: column; gap: 12px; opacity: .45">
+        <div class="card sec"><div><span class="lb">Vence el</span><div class="in" style="display: flex; align-items: center">02/12/2026</div></div><div><span class="lb">Dónde está</span><div class="in" style="display: flex; align-items: center; color: #667085">Elige uno o más lugares</div></div></div>
+      </div>
+      <div class="ov">
+        <form class="sheet" role="dialog" aria-labelledby="nl-t">
+          <span class="grab"></span>
+          <div><h2 id="nl-t" class="h1">Nuevo lugar en la tienda</h2><span class="mu">Pasillo, estante, heladera, depósito…</span></div>
+          <div><label class="lb" for="nl-z">Zona</label><input id="nl-z" class="in" value="Pasillo 4" placeholder="Pasillo 3, Heladera, Depósito…"></div>
+          <div class="two">
+            <div style="flex: 1.4"><label class="lb" for="nl-s">Estante <span class="op">(opc.)</span></label><input id="nl-s" class="in" placeholder="Estante A"></div>
+            <div><label class="lb" for="nl-l">Nivel <span class="op">(opc.)</span></label><input id="nl-l" class="in err" value="2" aria-describedby="nl-l-er"></div>
+          </div>
+          <span class="er" id="nl-l-er" style="margin-top: -6px">El nivel va con un estante: escribe el estante o borra el nivel.</span>
+          <span class="mu">Se verá así al vender: <strong style="color: #101828">Pasillo 4 · Estante A · 2</strong></span>
+          <div style="display: flex; gap: 10px"><button type="button" class="btn" style="flex: 1">Cancelar</button><button type="submit" class="btn p" style="flex: 1.6; height: 52px">Crear y marcar</button></div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="fr">
+    <span class="cap">Escritorio · Editar producto</span>
+    <div class="dk">
+      <aside class="side">
+        <div style="display: flex; align-items: center; gap: 10px; padding: 0 6px">
+          <svg aria-hidden="true" viewBox="3 3 42 42" width="30" height="30"><path d="M11 5H37Q40 5 40 8V39L36 43L32 39L28 43L24 39L20 43L16 39L12 43L8 39V8Q8 5 11 5Z" fill="#FFE14D" stroke="#111111" stroke-width="3" stroke-linejoin="round"></path><circle cx="19" cy="18" r="2.8" fill="#111111"></circle><circle cx="29" cy="18" r="2.8" fill="#111111"></circle><path d="M17 25Q24 31 31 25" fill="none" stroke="#111111" stroke-width="3" stroke-linecap="round"></path></svg>
+          <div><div style="font-weight: 800; font-size: 14px">Tienda Local</div><div class="mu" style="font-size: 12px">Plan Prueba · 9 días</div></div>
+        </div>
+        <a href="#" class="btn p" style="height: 42px">Nueva venta</a>
+        <nav aria-label="Principal" style="display: flex; flex-direction: column; gap: 2px">
+          <a href="#" class="n"><span class="dot"></span>Inicio</a><a href="#" class="n"><span class="dot"></span>Vender</a><a href="#" class="n"><span class="dot"></span>Caja</a><a href="#" class="n on" aria-current="page"><span class="dot"></span>Productos</a><a href="#" class="n"><span class="dot"></span>Ventas</a><a href="#" class="n"><span class="dot"></span>Pedidos</a><a href="#" class="n"><span class="dot"></span>Reportes</a><a href="#" class="n"><span class="dot"></span>Configuración</a>
+        </nav>
+      </aside>
+      <main style="flex: 1; min-width: 0; padding: 20px 28px; display: flex; flex-direction: column; gap: 14px; overflow: hidden">
+        <nav aria-label="Ruta" class="mu"><a href="#">Productos</a> / <a href="#">Yogur Frutilla</a> / Editar</nav>
+        <div style="display: flex; justify-content: space-between; align-items: center">
+          <h1 class="h1" style="font-size: 26px">Editar producto</h1>
+          <div style="display: flex; gap: 8px"><a href="#" class="btn">Cancelar</a><button type="submit" class="btn p">Guardar cambios</button></div>
+        </div>
+        <div style="display: flex; gap: 16px; align-items: flex-start">
+          <form style="flex: 1; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px">
+            <div class="card sec" style="grid-column: span 2">
+              <h2 class="h2">Datos</h2>
+              <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 12px">
+                <div><label class="lb" for="d-name">Nombre</label><input id="d-name" class="in" value="Yogur Frutilla"></div>
+                <div><div class="lrow"><label class="lb" for="d-cat">Categoría</label><button type="button" class="lnk" aria-label="Crear una categoría nueva">+ Nueva</button></div><select id="d-cat" class="in"><option>Lácteos</option></select></div>
+                <div><label class="lb" for="d-unit">Unidad</label><input id="d-unit" class="in" value="unidad"></div>
+              </div>
+              <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 12px">
+                <div><label class="lb" for="d-sku">SKU</label><input id="d-sku" class="in" value="LAC000004"></div>
+                <div><label class="lb" for="d-qr">Código para escanear</label><div style="display: flex; gap: 8px"><input id="d-qr" class="in" value="QR-LAC000004"><button type="button" class="btn">Ver QR</button></div></div>
+              </div>
+            </div>
+            <div class="card sec">
+              <h2 class="h2">Precio</h2>
+              <div class="two"><div><label class="lb" for="d-price">Precio de venta</label><input id="d-price" class="in" value="6,50"></div><div><label class="lb" for="d-cost">Costo</label><input id="d-cost" class="in" value="4,20"></div></div>
+              <span class="hint" style="margin-top: -4px">Ganas Bs 2,30 por unidad (35%).</span>
+              <span class="lb" style="margin: 4px 0 0">Descuento</span>
+              <div class="seg" role="group" aria-label="Tipo de descuento"><button type="button">Sin descuento</button><button type="button" class="on">%</button><button type="button">Bs</button></div>
+              <div class="two"><div><label class="lb" for="d-dv">Porcentaje</label><input id="d-dv" class="in" value="10"></div><div><label class="lb" for="d-de">Hasta</label><input id="d-de" type="date" class="in" value="2026-11-14"></div></div>
+              <span class="hint" style="margin-top: -4px">Precio con descuento: Bs 5,85 · límite de la tienda: 15%.</span>
+            </div>
+            <div class="card sec">
+              <h2 class="h2">Stock</h2>
+              <div class="two"><div><label class="lb" for="d-stock">Stock actual</label><input id="d-stock" class="in" value="11" disabled aria-describedby="d-stock-h"></div><div><label class="lb" for="d-min">Avisar si baja de</label><input id="d-min" class="in" value="4"></div></div>
+              <span class="hint" id="d-stock-h" style="margin-top: -4px">El stock se cambia con "Ajustar stock" para que quede en el historial.</span>
+              <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #F2F4F7; padding-top: 10px"><span><strong style="display: block; font-size: 14px">Dónde está</strong><span class="mu">Pasillo 2 · B · 3, Depósito</span></span><button type="button" class="btn sm">Cambiar</button></div>
+              <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #F2F4F7; padding-top: 10px"><span><strong style="display: block; font-size: 14px">Lotes</strong><span class="mu">2 lotes · próximo vence 13/11</span></span><a href="#" class="btn sm">Ver en el detalle</a></div>
+            </div>
+          </form>
+          <aside style="width: 270px; flex-shrink: 0; display: flex; flex-direction: column; gap: 12px">
+            <div class="card sec" style="align-items: center; text-align: center">
+              <span style="width: 160px; height: 160px; border-radius: 18px; background: #FCE7F6; color: #9E165F; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 40px">YF</span>
+              <span style="display: flex; gap: 8px"><button type="button" class="btn sm">Cambiar foto</button><button type="button" class="btn sm" style="color: #B42318">Quitar</button></span>
+            </div>
+            <div class="card sec">
+              <span class="mu" style="font-weight: 700; font-size: 12px; text-transform: uppercase">Así se ve al vender</span>
+              <div style="border: 1px solid #E8EAEF; border-radius: 12px; padding: 10px"><strong style="display: block">Yogur Frutilla</strong><span class="mu" style="font-size: 12px">Pasillo 2 · B · 3 · 11 u.</span><div style="display: flex; gap: 8px; align-items: baseline; margin-top: 6px"><strong>Bs 5,85</strong><span class="mu" style="text-decoration: line-through; font-size: 12px">Bs 6,50</span></div></div>
+            </div>
+          </aside>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <aside style="width: 640px" class="notes" aria-label="Notas de implementación">
+    <h3>Caminos</h3>
+    <ul>
+      <li>Nuevo: Productos → "+ Nuevo producto". Al crear → detalle del producto con aviso "Producto creado".</li>
+      <li>Editar: Detalle → "Editar". "Guardar cambios" vuelve al detalle. "Cancelar" con cambios pide "¿Salir sin guardar?".</li>
+      <li>Foto: en celular "Tomar foto" abre la cámara; se optimiza antes de subir. Si la foto falla, el producto se guarda igual y se avisa.</li>
+      <li>Dónde está al crear (nuevo): se guarda justo después de crear con <code>PUT /products/{id}/locations</code>.</li>
+    </ul>
+    <h3>Crear sin salir del formulario (nuevo)</h3>
+    <ul>
+      <li><strong>"+ Nueva"</strong> junto a Categoría abre una hoja (celular) o una ventana chica (escritorio) con Nombre y Prefijo del SKU. Al crear, la categoría queda elegida y el aviso del SKU se actualiza (PAN000001).</li>
+      <li><strong>"+ Nuevo lugar"</strong> junto a Dónde está abre la hoja con Zona, Estante y Nivel. Al crear, el lugar queda marcado para este producto.</li>
+      <li>Lo escrito en el producto no se pierde: la hoja se cierra y se vuelve al mismo punto. Si la API falla, el error queda en la hoja.</li>
+      <li>Validaciones iguales a Productos › Categorías / Lugares: nombre requerido máx. 80, prefijo requerido máx. 8 letras y números (se pasa a mayúsculas), nombre y prefijo únicos (409, se muestra en su campo). Lugar: zona requerida máx. 50, estante máx. 50, nivel máx. 30 y solo con estante; no se repite sin importar mayúsculas (409).</li>
+      <li>API existente: <code>POST /product-categories</code> y <code>POST /store-locations</code>; sin cambios en el backend.</li>
+    </ul>
+    <h3>Validaciones (web y API)</h3>
+    <ul>
+      <li>Nombre: requerido, máx. 100. Nombre + unidad no se repiten (409).</li>
+      <li>Precio de venta: requerido, &gt; 0. Costo: ≥ 0 (opcional).</li>
+      <li>Stock inicial: requerido al crear, entero ≥ 0. Al editar no se escribe.</li>
+      <li>Avisar si baja de: entero ≥ 0 (1 si se deja vacío). Unidad: máx. 20 ("unidad" si vacío).</li>
+      <li>SKU: máx. 50, único en la tienda (409). Con categoría y vacío: automático.</li>
+      <li>Código: máx. 100, único (409). Vacío: QR-{SKU} o uno al azar.</li>
+      <li>Descuento %: 0–100; Bs: no mayor al precio; ambos dentro de la política de la tienda. "Hasta": fecha futura y solo con descuento.</li>
+      <li>Vence el (solo al crear): fecha válida (años 2000–2100) y stock inicial &gt; 0. Aviso: entero 0–365 (5 si vacío).</li>
+      <li>Foto: JPG/PNG/WebP, máx. 5 MB, se revisa que sea imagen de verdad.</li>
+      <li>Errores de la API (409) se muestran en su campo, no solo arriba.</li>
+    </ul>
+    <h3>Permisos</h3>
+    <ul><li>Solo dueño. El cajero que entra a la URL ve "No tienes permiso" (tablero de estados).</li></ul>
+    <h3>API</h3>
+    <ul>
+      <li><code>POST /products</code>, <code>PATCH /products/{id}</code>, <code>POST/DELETE /products/{id}/photo</code>, <code>GET/POST /product-categories</code>, <code>GET/POST /store-locations</code> — existen.</li>
+      <li>"Así se ve al vender" y el margen se calculan en la web.</li>
+    </ul>
+  </aside>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":3780,"height":1040}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

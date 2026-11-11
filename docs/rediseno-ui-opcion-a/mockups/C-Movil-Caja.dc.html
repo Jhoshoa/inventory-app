@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>C · Cobro en celular</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#FFE14D}a:hover{color:#FFF0A3}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #0E1116; font-family: Inter, system-ui, sans-serif; color: #F2F4F7; display: flex; flex-direction: column; overflow: hidden; font-feature-settings: 'tnum' 1">
+
+  <header style="padding: 16px 16px 8px; display: flex; align-items: center; gap: 12px">
+    <a href="#" aria-label="Volver a la boleta" style="width: 48px; height: 48px; border-radius: 14px; background: #1A1F27; display: flex; align-items: center; justify-content: center">
+      <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#F2F4F7" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"></path></svg>
+    </a>
+    <div style="flex: 1">
+      <h1 style="margin: 0; font-size: 20px; font-weight: 800">Cobrar</h1>
+      <div style="font-size: 13px; color: #98A2B3">3 productos · 5 unidades · Luis</div>
+    </div>
+  </header>
+
+  <div style="flex: 1; padding: 8px 16px 0; display: flex; flex-direction: column; gap: 14px; overflow: hidden">
+    <div style="background: #1A1F27; border-radius: 20px; padding: 18px; text-align: center">
+      <div style="font-size: 13px; color: #98A2B3; font-weight: 600">TOTAL A COBRAR</div>
+      <div style="font-size: 48px; font-weight: 900; letter-spacing: -0.03em; margin-top: 2px">Bs 47,50</div>
+    </div>
+
+    <div role="radiogroup" aria-label="Método de pago" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">
+      <button type="button" role="radio" aria-checked="true" style="height: 58px; border-radius: 16px; border: 2px solid #FFE14D; background: #2A2614; color: #FFE14D; font: 800 15px Inter, sans-serif">Efectivo</button>
+      <button type="button" role="radio" aria-checked="false" style="height: 58px; border-radius: 16px; border: 2px solid #2B323D; background: #1A1F27; color: #F2F4F7; font: 700 15px Inter, sans-serif">QR</button>
+      <button type="button" role="radio" aria-checked="false" style="height: 58px; border-radius: 16px; border: 2px solid #2B323D; background: #1A1F27; color: #F2F4F7; font: 700 15px Inter, sans-serif">Tarjeta</button>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 8px">
+      <label for="c-recibido" style="font-size: 13px; color: #98A2B3; font-weight: 600">Recibido</label>
+      <input id="c-recibido" inputmode="decimal" value="Bs 100,00" style="height: 56px; border-radius: 16px; border: 2px solid #2B323D; background: #1A1F27; color: #F2F4F7; font: 800 24px Inter, sans-serif; padding: 0 16px; box-sizing: border-box; width: 100%">
+      <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px">
+        <button type="button" style="height: 48px; border-radius: 14px; border: 0; background: #232934; color: #F2F4F7; font: 700 15px Inter, sans-serif">Justo</button>
+        <button type="button" style="height: 48px; border-radius: 14px; border: 0; background: #232934; color: #F2F4F7; font: 700 15px Inter, sans-serif">50</button>
+        <button type="button" style="height: 48px; border-radius: 14px; border: 2px solid #F2F4F7; background: #232934; color: #F2F4F7; font: 800 15px Inter, sans-serif">100</button>
+        <button type="button" style="height: 48px; border-radius: 14px; border: 0; background: #232934; color: #F2F4F7; font: 700 15px Inter, sans-serif">200</button>
+      </div>
+    </div>
+
+    <div style="display: flex; justify-content: space-between; align-items: center; background: #0F2A1E; border: 1px solid #1F5C3F; border-radius: 16px; padding: 14px 16px">
+      <span style="font-size: 15px; font-weight: 700; color: #A6F4C5">Cambio</span>
+      <span style="font-size: 28px; font-weight: 900; color: #A6F4C5">Bs 52,50</span>
+    </div>
+
+    <details style="background: #1A1F27; border-radius: 16px; padding: 12px 16px; font-size: 14px; color: #D0D5DD">
+      <summary style="cursor: pointer; font-weight: 700; color: #F2F4F7">Descuento, cliente o nota</summary>
+      <p style="margin: 8px 0 0">Opciones menos usadas, guardadas aquí para no estorbar al cobrar.</p>
+    </details>
+  </div>
+
+  <div style="padding: 12px 16px 26px; display: flex; flex-direction: column; gap: 8px">
+    <button type="button" style="height: 64px; border-radius: 18px; border: 0; background: #FFE14D; color: #0E1116; font: 900 19px Inter, sans-serif; display: flex; align-items: center; justify-content: center; gap: 10px">
+      <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0E1116" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg>Confirmar venta</button>
+    <div style="text-align: center; font-size: 12px; color: #98A2B3">Sin conexión también: se sincroniza al volver internet</div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Etiquetas e importar CSV</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#EEF0F4}
+*{box-sizing:border-box}
+a{color:#1F4FD8}a:hover{color:#163BA6}
+.fr{display:flex;flex-direction:column;gap:10px;flex-shrink:0}
+.cap{font:700 13px Inter,sans-serif;color:#475467;text-transform:uppercase;letter-spacing:.05em}
+.ph{width:390px;height:844px;background:#F7F8FA;border-radius:28px;overflow:hidden;position:relative;display:flex;flex-direction:column;box-shadow:0 0 0 1px #D0D5DD}
+.dk{width:1280px;height:800px;background:#F7F8FA;border-radius:14px;overflow:hidden;position:relative;display:flex;box-shadow:0 0 0 1px #D0D5DD}
+.top{background:#fff;border-bottom:1px solid #E8EAEF;padding:10px 12px;display:flex;align-items:center;gap:6px}
+.back{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.h1{margin:0;font-size:19px;font-weight:800;letter-spacing:-.02em}
+.h2{margin:0;font-size:15px;font-weight:700}
+.mu{color:#475467;font-size:13px}
+.card{background:#fff;border:1px solid #E8EAEF;border-radius:16px}
+.sec{padding:14px;display:flex;flex-direction:column;gap:10px}
+.in{height:42px;border:1px solid #D0D5DD;border-radius:12px;padding:0 12px;font:14px Inter,sans-serif;color:#101828;background:#fff;width:100%}
+.lb{font-size:13px;font-weight:600;display:block;margin-bottom:5px}
+.btn{height:42px;border-radius:12px;border:1px solid #D0D5DD;background:#fff;font:700 14px Inter,sans-serif;color:#344054;padding:0 14px;display:inline-flex;align-items:center;justify-content:center;gap:8px;text-decoration:none;white-space:nowrap}
+.btn.p{background:#1F4FD8;border-color:#1F4FD8;color:#fff}
+.btn.sm{height:32px;font-size:13px;padding:0 10px;border-radius:9px}
+.stp{display:flex;align-items:center;border:1px solid #D0D5DD;border-radius:10px;overflow:hidden}
+.stp button{width:34px;height:34px;border:0;background:#fff;font:700 16px Inter,sans-serif}
+.stp span{width:34px;text-align:center;font-weight:700;font-size:14px}
+.it{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid #F2F4F7}
+.ck{display:flex;align-items:center;gap:8px;font-size:14px}
+.lab{border:1px dashed #98A2B3;border-radius:4px;padding:4px;font-size:8px;line-height:1.2;display:flex;gap:4px;align-items:center;background:#fff}
+.qr{width:22px;height:22px;flex-shrink:0;background:repeating-conic-gradient(#101828 0% 25%, #fff 0% 50%) 0 0 / 6px 6px}
+.side{width:236px;flex-shrink:0;background:#fff;border-right:1px solid #E8EAEF;padding:18px 12px;display:flex;flex-direction:column;gap:14px}
+.n{display:flex;align-items:center;gap:10px;height:38px;padding:0 10px;border-radius:10px;font-size:14px;color:#344054;text-decoration:none;font-weight:500}
+.n.on{background:#EEF0F4;color:#101828;font-weight:700}
+.dot{width:8px;height:8px;border-radius:3px;background:#D0D5DD}
+.n.on .dot{background:#1F4FD8}
+.dlg{background:#fff;border-radius:18px;width:440px;padding:18px;display:flex;flex-direction:column;gap:12px;box-shadow:0 0 0 1px #D0D5DD}
+.drop{border:2px dashed #B2CCFF;background:#F5F8FF;border-radius:14px;padding:18px;text-align:center;font-size:14px}
+.bar{height:8px;border-radius:999px;background:#EEF0F4;overflow:hidden}
+.alert{border-radius:12px;padding:10px 12px;font-size:13px}
+.a-bad{background:#FEF3F2;border:1px solid #FECDCA;color:#912018}
+.a-ok{background:#ECFDF3;border:1px solid #ABEFC6;color:#085D3A}
+.notes{width:440px;flex-shrink:0;background:#fff;border:1px solid #E8EAEF;border-radius:16px;padding:20px 22px;font:13px/1.55 Inter,sans-serif;color:#344054}
+.notes h3{margin:16px 0 6px;font-size:12px;font-weight:800;color:#101828;text-transform:uppercase;letter-spacing:.05em}
+.notes h3:first-child{margin-top:0}
+.notes ul{margin:0;padding-left:18px}
+.notes code{font:12px ui-monospace,monospace;background:#F2F4F7;padding:1px 4px;border-radius:4px}
+</style>
+</helmet>
+<div style="width: 3140px; height: 960px; padding: 40px; display: flex; gap: 40px; align-items: flex-start; font-family: Inter, system-ui, sans-serif; color: #101828; font-feature-settings: 'tnum' 1">
+
+  <div class="fr">
+    <span class="cap">Celular · Etiquetas</span>
+    <div class="ph">
+      <div class="top">
+        <a href="#" class="back" aria-label="Volver a productos"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#101828" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"></path></svg></a>
+        <h1 class="h1">Imprimir etiquetas</h1>
+      </div>
+      <div style="padding: 12px 14px 0; display: flex; gap: 6px">
+        <span style="flex: 1; text-align: center; font-size: 12px; font-weight: 700; padding: 8px; border-radius: 10px; background: #101828; color: #fff">1 · Productos</span>
+        <span style="flex: 1; text-align: center; font-size: 12px; font-weight: 700; padding: 8px; border-radius: 10px; background: #EEF0F4; color: #475467">2 · Diseño</span>
+        <span style="flex: 1; text-align: center; font-size: 12px; font-weight: 700; padding: 8px; border-radius: 10px; background: #EEF0F4; color: #475467">3 · Imprimir</span>
+      </div>
+      <div style="flex: 1; overflow: hidden; padding: 12px 14px 120px; display: flex; flex-direction: column; gap: 10px">
+        <input class="in" type="search" aria-label="Buscar productos" placeholder="Buscar por nombre, SKU o código">
+        <div class="card sec">
+          <div style="display: flex; justify-content: space-between"><h2 class="h2">Elegidos · 3</h2><button type="button" class="btn sm" style="border: 0; color: #B42318">Quitar todos</button></div>
+          <div class="it" style="border: 0; padding-top: 0"><span style="flex: 1"><strong style="display: block; font-size: 14px">Yogur Frutilla</strong><span class="mu" style="font-size: 12px">QR-LAC000004</span></span><div class="stp"><button type="button" aria-label="Menos">−</button><span>10</span><button type="button" aria-label="Más">+</button></div></div>
+          <div class="it"><span style="flex: 1"><strong style="display: block; font-size: 14px">Leche Pil 1l</strong><span class="mu" style="font-size: 12px">QR-LAC000001</span></span><div class="stp"><button type="button" aria-label="Menos">−</button><span>8</span><button type="button" aria-label="Más">+</button></div></div>
+          <div class="it"><span style="flex: 1"><strong style="display: block; font-size: 14px">Pan de batalla</strong><span class="mu" style="font-size: 12px">QR-ABA000009</span></span><div class="stp"><button type="button" aria-label="Menos">−</button><span>6</span><button type="button" aria-label="Más">+</button></div></div>
+        </div>
+        <div class="card sec">
+          <h2 class="h2">Resultados</h2>
+          <div class="it" style="border: 0; padding-top: 0"><span style="flex: 1; font-size: 14px">Aceite Fino 1l</span><button type="button" class="btn sm">Agregar</button></div>
+          <div class="it"><span style="flex: 1; font-size: 14px">Arroz Grano de Oro 1kg</span><button type="button" class="btn sm">Agregar</button></div>
+        </div>
+      </div>
+      <div style="position: absolute; left: 0; right: 0; bottom: 0; background: #fff; border-top: 1px solid #E8EAEF; padding: 12px 16px 26px; display: flex; gap: 10px; align-items: center">
+        <span style="flex: 1" class="mu"><strong style="color: #101828">24 etiquetas</strong> · 1 hoja Carta</span>
+        <a href="#" class="btn p" style="height: 50px">Siguiente: diseño</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="fr">
+    <span class="cap">Escritorio · Etiquetas</span>
+    <div class="dk">
+      <aside class="side">
+        <div style="display: flex; align-items: center; gap: 10px; padding: 0 6px">
+          <svg aria-hidden="true" viewBox="3 3 42 42" width="30" height="30"><path d="M11 5H37Q40 5 40 8V39L36 43L32 39L28 43L24 39L20 43L16 39L12 43L8 39V8Q8 5 11 5Z" fill="#FFE14D" stroke="#111111" stroke-width="3" stroke-linejoin="round"></path><circle cx="19" cy="18" r="2.8" fill="#111111"></circle><circle cx="29" cy="18" r="2.8" fill="#111111"></circle><path d="M17 25Q24 31 31 25" fill="none" stroke="#111111" stroke-width="3" stroke-linecap="round"></path></svg>
+          <div><div style="font-weight: 800; font-size: 14px">Tienda Local</div><div class="mu" style="font-size: 12px">Plan Prueba · 9 días</div></div>
+        </div>
+        <a href="#" class="btn p" style="height: 42px">Nueva venta</a>
+        <nav aria-label="Principal" style="display: flex; flex-direction: column; gap: 2px">
+          <a href="#" class="n"><span class="dot"></span>Inicio</a><a href="#" class="n"><span class="dot"></span>Vender</a><a href="#" class="n"><span class="dot"></span>Caja</a><a href="#" class="n on" aria-current="page"><span class="dot"></span>Productos</a><a href="#" class="n"><span class="dot"></span>Ventas</a><a href="#" class="n"><span class="dot"></span>Pedidos</a><a href="#" class="n"><span class="dot"></span>Reportes</a><a href="#" class="n"><span class="dot"></span>Configuración</a>
+        </nav>
+      </aside>
+      <main style="flex: 1; min-width: 0; padding: 20px 26px; display: flex; flex-direction: column; gap: 12px; overflow: hidden">
+        <div style="display: flex; justify-content: space-between; align-items: center">
+          <div><nav aria-label="Ruta" class="mu"><a href="#">Productos</a> / Etiquetas</nav><h1 class="h1" style="font-size: 24px">Imprimir etiquetas</h1></div>
+          <div style="display: flex; gap: 8px"><button type="button" class="btn">Descargar SVG</button><button type="button" class="btn p">Imprimir 24 etiquetas</button></div>
+        </div>
+        <div style="display: grid; grid-template-columns: 340px 1fr 300px; gap: 14px; flex: 1; min-height: 0">
+          <div class="card sec" style="overflow: hidden">
+            <input class="in" type="search" aria-label="Buscar productos" placeholder="Buscar por nombre, SKU o código">
+            <div style="display: flex; gap: 6px"><select class="in" aria-label="Categoría" style="height: 34px; font-size: 12px"><option>Todas</option></select><select class="in" aria-label="Stock" style="height: 34px; font-size: 12px"><option>Todo stock</option></select></div>
+            <h2 class="h2" style="margin-top: 4px">Elegidos · 3 productos</h2>
+            <div class="it" style="border: 0"><span style="flex: 1; font-size: 13px; font-weight: 600">Yogur Frutilla</span><div class="stp"><button type="button" aria-label="Menos">−</button><span>10</span><button type="button" aria-label="Más">+</button></div></div>
+            <div class="it"><span style="flex: 1; font-size: 13px; font-weight: 600">Leche Pil 1l</span><div class="stp"><button type="button" aria-label="Menos">−</button><span>8</span><button type="button" aria-label="Más">+</button></div></div>
+            <div class="it"><span style="flex: 1; font-size: 13px; font-weight: 600">Pan de batalla</span><div class="stp"><button type="button" aria-label="Menos">−</button><span>6</span><button type="button" aria-label="Más">+</button></div></div>
+            <h2 class="h2" style="margin-top: 4px">Resultados</h2>
+            <div class="it" style="border: 0"><span style="flex: 1; font-size: 13px">Aceite Fino 1l</span><button type="button" class="btn sm">Agregar</button></div>
+            <div class="it"><span style="flex: 1; font-size: 13px">Arroz Grano de Oro 1kg</span><button type="button" class="btn sm">Agregar</button></div>
+          </div>
+          <div class="card" style="padding: 14px; display: flex; flex-direction: column; gap: 8px; align-items: center; background: #E4E7EC">
+            <span class="mu" style="align-self: flex-start">Vista previa · hoja 1 de 1</span>
+            <div style="width: 360px; height: 466px; background: #fff; box-shadow: 0 4px 14px rgba(16,24,40,.15); padding: 14px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; align-content: start">
+              <sc-for list="{{labels}}" as="l" hint-placeholder-count="24">
+                <div class="lab"><span class="qr"></span><span><strong style="display: block">{{l.n}}</strong>{{l.p}}</span></div>
+              </sc-for>
+            </div>
+          </div>
+          <div class="card sec">
+            <h2 class="h2">Diseño</h2>
+            <div><label class="lb" for="ls-p">Hoja</label><select id="ls-p" class="in"><option>Carta (21,59 × 27,94 cm)</option><option>A4 (21 × 29,7 cm)</option></select></div>
+            <div><label class="lb" for="ls-s">Tamaño de etiqueta</label><select id="ls-s" class="in"><option>50 × 30 mm</option></select></div>
+            <div><label class="lb" for="ls-m">Margen (mm)</label><input id="ls-m" class="in" value="8"></div>
+            <span class="lb" style="margin: 4px 0 0">Qué se ve</span>
+            <label class="ck"><input type="checkbox" checked>Nombre</label><label class="ck"><input type="checkbox" checked>Precio</label><label class="ck"><input type="checkbox" checked>Código (QR)</label><label class="ck"><input type="checkbox" checked>SKU</label><label class="ck"><input type="checkbox">Categoría</label>
+            <div style="background: #F2F4F7; border-radius: 10px; padding: 8px 10px; font-size: 12px">4 columnas × 8 filas = 32 por hoja</div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <div class="fr">
+    <span class="cap">Importar CSV · 3 estados</span>
+    <section class="dlg" role="dialog" aria-labelledby="csv1">
+      <h2 id="csv1" class="h2" style="font-size: 17px">Importar productos desde CSV</h2>
+      <div class="drop"><strong style="display: block">Arrastra tu archivo aquí</strong><span class="mu">o</span> <button type="button" class="btn sm">Elegir archivo</button><span class="mu" style="display: block; margin-top: 6px">.csv · hasta 5 MB · hasta 5.000 filas</span></div>
+      <span class="mu">Columnas: <code style="font-size: 11px">name, price, stock</code> (obligatorias) y opcionales category o category_id, sku, unit, min_stock, cost_price, qr_code, photo_url, vence, aviso_dias.</span>
+      <div style="display: flex; justify-content: space-between"><a href="#" class="btn sm" style="border: 0">Descargar plantilla</a><span style="display: flex; gap: 8px"><button type="button" class="btn">Cancelar</button><button type="button" class="btn p" disabled>Importar</button></span></div>
+    </section>
+    <section class="dlg" role="dialog" aria-labelledby="csv2">
+      <h2 id="csv2" class="h2" style="font-size: 17px">Validando filas…</h2>
+      <span class="mu">productos-noviembre.csv · 248 filas</span>
+      <div class="bar"><div style="width: 60%; height: 8px; background: #1F4FD8"></div></div>
+      <span class="mu">No cierres esta ventana. Si nada cambia en 1 minuto, aparece "Reintentar".</span>
+    </section>
+    <section class="dlg" role="dialog" aria-labelledby="csv3">
+      <h2 id="csv3" class="h2" style="font-size: 17px">No se importó ningún producto</h2>
+      <div class="alert a-bad">Hay 3 errores. Corrígelos y vuelve a subir el archivo: se importa todo o nada.</div>
+      <table style="width: 100%; border-collapse: collapse; font-size: 12px">
+        <thead><tr style="color: #475467; text-align: left"><th scope="col">Fila</th><th scope="col">Campo</th><th scope="col">Qué pasa</th></tr></thead>
+        <tbody>
+          <tr style="border-top: 1px solid #F2F4F7"><td style="padding: 6px 0">12</td><td>price</td><td>El precio debe ser mayor a 0</td></tr>
+          <tr style="border-top: 1px solid #F2F4F7"><td style="padding: 6px 0">40</td><td>vence</td><td>vence debe ser una fecha válida (AAAA-MM-DD o DD/MM/AAAA)</td></tr>
+          <tr style="border-top: 1px solid #F2F4F7"><td style="padding: 6px 0">77</td><td>sku</td><td>El SKU ya existe</td></tr>
+        </tbody>
+      </table>
+      <div style="display: flex; justify-content: flex-end; gap: 8px"><button type="button" class="btn">Descargar errores</button><button type="button" class="btn p">Subir otro archivo</button></div>
+      <div class="alert a-ok">Si todo sale bien: "Se importaron 248 productos" y la lista se actualiza.</div>
+    </section>
+  </div>
+
+  <aside class="notes" aria-label="Notas de implementación">
+    <h3>Etiquetas</h3>
+    <ul>
+      <li>Celular: 3 pasos (Productos → Diseño → Imprimir) en lugar de una página larga. Escritorio: todo a la vista, en 3 columnas.</li>
+      <li>Cantidad por producto: 1–100 etiquetas. La hoja se recalcula al cambiar tamaño, margen o columnas.</li>
+      <li>"Imprimir" abre el diálogo de impresión del navegador; "Descargar SVG" baja la hoja (como hoy).</li>
+      <li>Llegar desde un producto (QR → "Imprimir etiqueta") lo trae ya elegido (nuevo, solo web).</li>
+      <li>Margen: número en mm (vacío = 8). Tamaños: 20×10, 30×20, 40×25, 50×30, 60×40 y 70×35 mm. Hoja Carta o A4.</li>
+      <li>La configuración se recuerda en este equipo (como hoy).</li>
+    </ul>
+    <h3>Importar CSV</h3>
+    <ul>
+      <li>Solo archivos .csv ("Selecciona un archivo con extensión .csv"), hasta 5 MB y 5.000 filas.</li>
+      <li>Todo o nada: si una fila falla no se crea ninguno; se listan fila, campo y motivo, y se pueden descargar los errores.</li>
+      <li>Reglas por fila: nombre (máx. 100), precio &gt; 0, stock entero ≥ 0, SKU y código únicos, categoría existente, vence/aviso_dias como en el formulario.</li>
+      <li>"Descargar plantilla" usa la exportación de productos actual.</li>
+    </ul>
+    <h3>Permisos</h3>
+    <ul><li>Etiquetas e importar: solo dueño.</li></ul>
+    <h3>API</h3>
+    <ul><li><code>GET /products</code>, <code>POST /products/import</code>, <code>GET /products/import/{job_id}</code>, <code>GET /exports/products.csv</code> — existen. Sin cambios.</li></ul>
+  </aside>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":3140,"height":960}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const make = (n, p, k) => Array.from({ length: k }, () => ({ n, p }));
+    return { labels: [...make('Yogur Frutilla', 'Bs 5,85', 10), ...make('Leche Pil 1l', 'Bs 7,50', 8), ...make('Pan de batalla', 'Bs 0,50', 6)] };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Pedidos del catálogo</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#EEF0F4}
+*{box-sizing:border-box}
+a{color:#1F4FD8}a:hover{color:#163BA6}
+.fr{display:flex;flex-direction:column;gap:10px;flex-shrink:0}
+.cap{font:700 13px Inter,sans-serif;color:#475467;text-transform:uppercase;letter-spacing:.05em}
+.ph{width:390px;height:844px;background:#F7F8FA;border-radius:28px;overflow:hidden;position:relative;display:flex;flex-direction:column;box-shadow:0 0 0 1px #D0D5DD}
+.dk{width:1280px;height:800px;background:#F7F8FA;border-radius:14px;overflow:hidden;position:relative;display:flex;box-shadow:0 0 0 1px #D0D5DD}
+.top{background:#fff;border-bottom:1px solid #E8EAEF;padding:14px 16px 12px;display:flex;flex-direction:column;gap:10px}
+.h1{margin:0;font-size:22px;font-weight:800;letter-spacing:-.02em}
+.h2{margin:0;font-size:15px;font-weight:700}
+.mu{color:#475467;font-size:13px}
+.card{background:#fff;border:1px solid #E8EAEF;border-radius:16px}
+.btn{height:44px;border-radius:12px;border:1px solid #D0D5DD;background:#fff;font:700 14px Inter,sans-serif;color:#344054;padding:0 14px;display:inline-flex;align-items:center;justify-content:center;gap:8px;text-decoration:none;white-space:nowrap}
+.btn.p{background:#1F4FD8;border-color:#1F4FD8;color:#fff}
+.btn.wa{background:#067647;border-color:#067647;color:#fff}
+.btn.sm{height:34px;font-size:13px;padding:0 10px;border-radius:10px}
+.tabs{display:flex;gap:4px;background:#EEF0F4;border-radius:12px;padding:3px}
+.tabs button{flex:1;border:0;background:transparent;border-radius:9px;height:36px;font:600 13px Inter,sans-serif;color:#475467;white-space:nowrap}
+.tabs button.on{background:#fff;color:#101828;font-weight:700;box-shadow:0 1px 2px rgba(16,24,40,.1)}
+.tag{display:inline-flex;font-size:12px;font-weight:700;padding:3px 9px;border-radius:999px;white-space:nowrap}
+.t-ok{background:#ECFDF3;color:#067647}.t-warn{background:#FFFAEB;color:#B54708}.t-mu{background:#F2F4F7;color:#344054}.t-info{background:#EEF4FF;color:#1F4FD8}
+.req{display:flex;flex-direction:column;gap:6px;padding:12px 14px;text-decoration:none;color:#101828}
+.ln{display:flex;justify-content:space-between;font-size:14px;padding:7px 0;border-top:1px solid #F2F4F7}
+.seg{display:flex;background:#EEF0F4;border-radius:12px;padding:3px}
+.seg button{flex:1;border:0;background:transparent;border-radius:9px;height:38px;font:600 13px Inter,sans-serif;color:#475467}
+.seg button.on{background:#fff;color:#101828;font-weight:700;box-shadow:0 1px 2px rgba(16,24,40,.1)}
+.ov{position:absolute;inset:0;background:rgba(16,24,40,.45);display:flex;flex-direction:column;justify-content:flex-end}
+.sheet{background:#fff;border-radius:24px 24px 0 0;padding:8px 16px 24px;display:flex;flex-direction:column;gap:12px}
+.grab{width:40px;height:5px;border-radius:999px;background:#D0D5DD;margin:0 auto}
+.side{width:236px;flex-shrink:0;background:#fff;border-right:1px solid #E8EAEF;padding:18px 12px;display:flex;flex-direction:column;gap:14px}
+.n{display:flex;align-items:center;gap:10px;height:38px;padding:0 10px;border-radius:10px;font-size:14px;color:#344054;text-decoration:none;font-weight:500}
+.n.on{background:#EEF0F4;color:#101828;font-weight:700}
+.dot{width:8px;height:8px;border-radius:3px;background:#D0D5DD}
+.n.on .dot{background:#1F4FD8}
+.tbl{width:100%;border-collapse:collapse;font-size:14px}
+.tbl th{background:#F9FAFB;color:#475467;font-size:12px;font-weight:600;text-align:left;padding:10px 12px}
+.tbl td{padding:10px 12px;border-top:1px solid #F2F4F7}
+.sw{width:44px;height:26px;border-radius:999px;background:#067647;position:relative;flex-shrink:0}
+.sw::after{content:'';position:absolute;right:3px;top:3px;width:20px;height:20px;border-radius:50%;background:#fff}
+.notes{width:440px;flex-shrink:0;background:#fff;border:1px solid #E8EAEF;border-radius:16px;padding:20px 22px;font:13px/1.55 Inter,sans-serif;color:#344054}
+.notes h3{margin:16px 0 6px;font-size:12px;font-weight:800;color:#101828;text-transform:uppercase;letter-spacing:.05em}
+.notes h3:first-child{margin-top:0}
+.notes ul{margin:0;padding-left:18px}
+.notes code{font:12px ui-monospace,monospace;background:#F2F4F7;padding:1px 4px;border-radius:4px}
+</style>
+</helmet>
+<div style="width: 2820px; height: 960px; padding: 40px; display: flex; gap: 40px; align-items: flex-start; font-family: Inter, system-ui, sans-serif; color: #101828; font-feature-settings: 'tnum' 1">
+
+  <div class="fr">
+    <span class="cap">Celular · Pedidos</span>
+    <div class="ph">
+      <div class="top">
+        <div><h1 class="h1">Pedidos</h1><span class="mu">Lo que te piden desde tu catálogo</span></div>
+        <div class="tabs" role="tablist" aria-label="Estado"><button type="button" role="tab" class="on" aria-selected="true">Pendientes · 2</button><button type="button" role="tab">Contactados</button><button type="button" role="tab">Cerrados</button></div>
+      </div>
+      <div style="flex: 1; overflow: hidden; padding: 12px 14px 110px; display: flex; flex-direction: column; gap: 10px">
+        <a href="#" class="card req">
+          <div style="display: flex; justify-content: space-between"><strong style="font-size: 15px">María Choque</strong><span class="mu">hace 25 min</span></div>
+          <span class="mu">3 productos · Envío a domicilio</span>
+          <div style="display: flex; justify-content: space-between; align-items: center"><strong style="font-size: 18px">Bs 56,00</strong><span style="display: flex; gap: 6px"><span class="tag t-warn">Pendiente</span><span class="tag t-mu">Sin pago</span></span></div>
+        </a>
+        <a href="#" class="card req">
+          <div style="display: flex; justify-content: space-between"><strong style="font-size: 15px">Jorge Mamani</strong><span class="mu">hace 1 h</span></div>
+          <span class="mu">1 producto · Recojo en tienda</span>
+          <div style="display: flex; justify-content: space-between; align-items: center"><strong style="font-size: 18px">Bs 14,00</strong><span style="display: flex; gap: 6px"><span class="tag t-warn">Pendiente</span><span class="tag t-ok">Pagado</span></span></div>
+        </a>
+        <div class="card" style="padding: 16px; text-align: center" ><span class="mu">Cuando no hay pendientes: "No tienes pedidos por responder. Comparte tu catálogo" + botón "Copiar link".</span></div>
+      </div>
+      <nav aria-label="Principal" style="position: absolute; left: 0; right: 0; bottom: 0; background: #fff; border-top: 1px solid #E8EAEF; padding: 8px 8px 22px; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); font-size: 11px; font-weight: 600; text-align: center; color: #475467">
+        <a href="#" style="color: inherit; text-decoration: none; min-height: 48px; display: flex; align-items: center; justify-content: center">Inicio</a><a href="#" style="color: inherit; text-decoration: none; min-height: 48px; display: flex; align-items: center; justify-content: center">Productos</a><a href="#" style="color: #101828; font-weight: 700; text-decoration: none; min-height: 48px; display: flex; align-items: center; justify-content: center">Vender</a><a href="#" style="color: inherit; text-decoration: none; min-height: 48px; display: flex; align-items: center; justify-content: center">Ventas</a><a href="#" aria-current="page" style="color: #1F4FD8; font-weight: 700; text-decoration: none; min-height: 48px; display: flex; align-items: center; justify-content: center">Más</a>
+      </nav>
+    </div>
+  </div>
+
+  <div class="fr">
+    <span class="cap">Celular · Detalle del pedido</span>
+    <div class="ph">
+      <div class="ov">
+        <section class="sheet" role="dialog" aria-labelledby="ped-t">
+          <span class="grab"></span>
+          <div style="display: flex; justify-content: space-between; align-items: start"><div><h2 id="ped-t" class="h1" style="font-size: 19px">María Choque</h2><span class="mu">+591 70011122 · hoy 11:22</span></div><span class="tag t-warn">Pendiente</span></div>
+          <div>
+            <div class="ln" style="border: 0"><span>Coca Cola 2l <span class="mu">× 2</span></span><strong>28,00</strong></div>
+            <div class="ln"><span>Pan de batalla <span class="mu">× 20</span></span><strong>10,00</strong></div>
+            <div class="ln"><span>Aceite Fino 1l <span class="mu">× 1</span></span><strong>18,00</strong></div>
+            <div class="ln" style="font-size: 17px; font-weight: 800"><span>Total</span><span>Bs 56,00</span></div>
+          </div>
+          <div class="card" style="padding: 10px 12px; font-size: 14px"><strong>Envío a domicilio</strong><span class="mu" style="display: block">Nota: "Calle 21 de Calacoto, casa verde. Después de las 18:00"</span></div>
+          <a href="#" class="btn wa" style="height: 50px">Escribir por WhatsApp</a>
+          <div><span style="font-size: 13px; font-weight: 600; display: block; margin-bottom: 6px">Estado</span><div class="seg" role="group" aria-label="Estado del pedido"><button type="button" class="on">Pendiente</button><button type="button">Contactado</button><button type="button">Cerrado</button></div></div>
+          <label style="display: flex; align-items: center; justify-content: space-between; font-size: 15px; font-weight: 600">Pago recibido <span class="sw" role="switch" aria-checked="true" tabindex="0"></span></label>
+          <a href="#" class="btn p">Cobrar en Vender</a>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <div class="fr">
+    <span class="cap">Escritorio · Pedidos con detalle</span>
+    <div class="dk">
+      <aside class="side">
+        <div style="display: flex; align-items: center; gap: 10px; padding: 0 6px">
+          <svg aria-hidden="true" viewBox="3 3 42 42" width="30" height="30"><path d="M11 5H37Q40 5 40 8V39L36 43L32 39L28 43L24 39L20 43L16 39L12 43L8 39V8Q8 5 11 5Z" fill="#FFE14D" stroke="#111111" stroke-width="3" stroke-linejoin="round"></path><circle cx="19" cy="18" r="2.8" fill="#111111"></circle><circle cx="29" cy="18" r="2.8" fill="#111111"></circle><path d="M17 25Q24 31 31 25" fill="none" stroke="#111111" stroke-width="3" stroke-linecap="round"></path></svg>
+          <div><div style="font-weight: 800; font-size: 14px">Tienda Local</div><div class="mu" style="font-size: 12px">Plan Prueba · 9 días</div></div>
+        </div>
+        <a href="#" class="btn p" style="height: 42px">Nueva venta</a>
+        <nav aria-label="Principal" style="display: flex; flex-direction: column; gap: 2px">
+          <a href="#" class="n"><span class="dot"></span>Inicio</a><a href="#" class="n"><span class="dot"></span>Vender</a><a href="#" class="n"><span class="dot"></span>Caja</a><a href="#" class="n"><span class="dot"></span>Productos</a><a href="#" class="n"><span class="dot"></span>Ventas</a><a href="#" class="n on" aria-current="page"><span class="dot"></span>Pedidos</a><a href="#" class="n"><span class="dot"></span>Reportes</a><a href="#" class="n"><span class="dot"></span>Configuración</a>
+        </nav>
+      </aside>
+      <main style="flex: 1; min-width: 0; padding: 20px 24px; display: flex; flex-direction: column; gap: 12px; overflow: hidden">
+        <div style="display: flex; justify-content: space-between; align-items: center"><div><h1 class="h1" style="font-size: 26px">Pedidos</h1><span class="mu">2 pendientes de responder</span></div><button type="button" class="btn">Copiar link del catálogo</button></div>
+        <div class="tabs" role="tablist" aria-label="Estado" style="width: 460px"><button type="button" role="tab" class="on" aria-selected="true">Pendientes · 2</button><button type="button" role="tab">Contactados · 3</button><button type="button" role="tab">Cerrados</button><button type="button" role="tab">Todos</button></div>
+        <div class="card" style="overflow: hidden">
+          <table class="tbl">
+            <thead><tr><th scope="col">Cliente</th><th scope="col">Pedido</th><th scope="col">Entrega</th><th scope="col">Pago</th><th scope="col" style="text-align: right">Total</th><th scope="col">Recibido</th></tr></thead>
+            <tbody>
+              <tr style="background: #EEF4FF"><td><strong>María Choque</strong><span class="mu" style="display: block; font-size: 12px">+591 70011122</span></td><td>3 productos</td><td class="mu">Envío</td><td><span class="tag t-mu">Sin pago</span></td><td style="text-align: right; font-weight: 700">Bs 56,00</td><td class="mu">hace 25 min</td></tr>
+              <tr><td><strong>Jorge Mamani</strong><span class="mu" style="display: block; font-size: 12px">+591 76543210</span></td><td>Coca Cola 2l</td><td class="mu">Recojo</td><td><span class="tag t-ok">Pagado</span></td><td style="text-align: right; font-weight: 700">Bs 14,00</td><td class="mu">hace 1 h</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </main>
+      <aside aria-label="Detalle del pedido" style="width: 360px; flex-shrink: 0; background: #fff; border-left: 1px solid #E8EAEF; padding: 18px; display: flex; flex-direction: column; gap: 12px">
+        <div style="display: flex; justify-content: space-between"><div><h2 class="h2" style="font-size: 17px">María Choque</h2><span class="mu">+591 70011122 · hoy 11:22</span></div><button type="button" aria-label="Cerrar" style="border: 0; background: transparent; font-size: 20px">×</button></div>
+        <div>
+          <div class="ln" style="border: 0"><span>Coca Cola 2l × 2</span><strong>28,00</strong></div>
+          <div class="ln"><span>Pan de batalla × 20</span><strong>10,00</strong></div>
+          <div class="ln"><span>Aceite Fino 1l × 1</span><strong>18,00</strong></div>
+          <div class="ln" style="font-weight: 800; font-size: 16px"><span>Total</span><span>Bs 56,00</span></div>
+        </div>
+        <div class="card" style="padding: 10px 12px; font-size: 13px"><strong>Envío a domicilio</strong><span class="mu" style="display: block">"Calle 21 de Calacoto, casa verde. Después de las 18:00"</span></div>
+        <a href="#" class="btn wa">Escribir por WhatsApp</a>
+        <div class="seg" role="group" aria-label="Estado del pedido"><button type="button" class="on">Pendiente</button><button type="button">Contactado</button><button type="button">Cerrado</button></div>
+        <label style="display: flex; justify-content: space-between; align-items: center; font-size: 14px; font-weight: 600">Pago recibido <span class="sw" role="switch" aria-checked="true" tabindex="0"></span></label>
+        <a href="#" class="btn p" style="margin-top: auto">Cobrar en Vender</a>
+      </aside>
+    </div>
+  </div>
+
+  <aside class="notes" aria-label="Notas de implementación">
+    <h3>Caminos</h3>
+    <ul>
+      <li>Celular: Más → Pedidos (con contador). Inicio también muestra "2 pedidos" arriba.</li>
+      <li>Tocar un pedido abre el detalle (hoja en celular, panel al costado en escritorio).</li>
+      <li>"Escribir por WhatsApp" abre el chat con el cliente y un mensaje armado con el pedido (como hoy); al volver se sugiere pasar el estado a "Contactado".</li>
+      <li>"Cobrar en Vender" (nuevo): abre Vender con estos productos y cantidades en la venta actual, el cliente ya escrito; al confirmar la venta se ofrece "Cerrar pedido". Productos borrados o sin stock se avisan y no se agregan.</li>
+      <li>Pedidos antiguos de un solo producto (sin lista) muestran el nombre del producto, sin total.</li>
+    </ul>
+    <h3>Estados</h3>
+    <ul>
+      <li>Pendiente → Contactado → Cerrado; se puede volver atrás. "Pago recibido" es aparte y se puede marcar o desmarcar.</li>
+    </ul>
+    <h3>Permisos</h3>
+    <ul><li>Dueño y cajero ven y responden pedidos (igual que hoy).</li></ul>
+    <h3>API</h3>
+    <ul>
+      <li><code>GET /storefront-requests</code> (con <code>pending_count</code>), <code>PATCH /storefront-requests/{id}/status</code>, <code>PATCH /storefront-requests/{id}/payment</code> — existen.</li>
+      <li>Pestañas por estado: hoy la lista no filtra por estado (trae 50 y se filtra en la web). Con muchos pedidos, <strong>backend B7 (recomendado)</strong>: parámetro <code>status</code> en <code>GET /storefront-requests</code> y conteo por estado.</li>
+      <li>"Cobrar en Vender" no necesita backend: la venta se crea con <code>POST /sales</code> como cualquier otra.</li>
+    </ul>
+  </aside>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":2820,"height":960}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

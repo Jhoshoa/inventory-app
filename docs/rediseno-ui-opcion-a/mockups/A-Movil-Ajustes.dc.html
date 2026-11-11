@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>A · Configuración en celular</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#1F4FD8}a:hover{color:#163BA6}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #F7F8FA; font-family: Inter, system-ui, sans-serif; color: #101828; display: flex; flex-direction: column; overflow: hidden; position: relative">
+
+  <header style="background: #FFFFFF; padding: 16px 20px 14px; border-bottom: 1px solid #E8EAEF; display: flex; flex-direction: column; gap: 12px">
+    <h1 style="margin: 0; font-size: 24px; font-weight: 800; letter-spacing: -0.02em">Configuración</h1>
+    <label for="aj-search" style="display: flex; align-items: center; gap: 8px; height: 44px; padding: 0 12px; border: 1px solid #D0D5DD; border-radius: 12px; background: #FFFFFF">
+      <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#667085" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg>
+      <input id="aj-search" type="search" placeholder="Buscar en configuración (ej. WhatsApp)" style="border: 0; outline: 0; flex: 1; min-width: 0; font: 15px Inter, sans-serif">
+    </label>
+  </header>
+
+  <div style="flex: 1; overflow: hidden; padding: 14px 16px 110px; display: flex; flex-direction: column; gap: 16px">
+
+    <a href="#" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 12px; background: #FFFFFF; border: 1px solid #E8EAEF; border-radius: 16px; padding: 14px">
+      <svg aria-hidden="true" viewBox="3 3 42 42" width="44" height="44"><path d="M11 5H37Q40 5 40 8V39L36 43L32 39L28 43L24 39L20 43L16 39L12 43L8 39V8Q8 5 11 5Z" fill="#FFE14D" stroke="#111111" stroke-width="3" stroke-linejoin="round"></path><circle cx="19" cy="18" r="2.8" fill="#111111"></circle><circle cx="29" cy="18" r="2.8" fill="#111111"></circle><path d="M17 25Q24 31 31 25" fill="none" stroke="#111111" stroke-width="3" stroke-linecap="round"></path></svg>
+      <span style="flex: 1; min-width: 0"><strong style="display: block; font-size: 16px">Tienda Local</strong><span style="font-size: 13px; color: #B54708; font-weight: 600">Plan Prueba · quedan 9 días</span></span>
+      <span style="font-size: 13px; font-weight: 700; color: #1F4FD8">Ver planes</span>
+    </a>
+
+    <sc-for list="{{groups}}" as="g" hint-placeholder-count="4">
+      <section style="display: flex; flex-direction: column; gap: 6px">
+        <h2 style="margin: 0 4px; font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: #475467">{{g.title}}</h2>
+        <ul style="list-style: none; margin: 0; padding: 0; background: #FFFFFF; border: 1px solid #E8EAEF; border-radius: 16px; overflow: hidden">
+          <sc-for list="{{g.items}}" as="it" hint-placeholder-count="2">
+            <li style="border-top: {{it.divider}}">
+              <a href="{{it.href}}" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 12px; padding: 0 14px; min-height: 56px">
+                <span style="width: 34px; height: 34px; border-radius: 10px; background: {{it.bg}}; color: {{it.fg}}; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 800; flex-shrink: 0">{{it.icon}}</span>
+                <span style="flex: 1; min-width: 0"><span style="display: block; font-size: 15px; font-weight: 600">{{it.label}}</span><span style="display: block; font-size: 12px; color: #475467; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{it.hint}}</span></span>
+                <span style="font-size: 12px; font-weight: 700; color: {{it.statusColor}}">{{it.status}}</span>
+                <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#98A2B3" stroke-width="2" stroke-linecap="round"><path d="m9 18 6-6-6-6"></path></svg>
+              </a>
+            </li>
+          </sc-for>
+        </ul>
+      </section>
+    </sc-for>
+  </div>
+
+  <nav aria-label="Principal" style="position: absolute; left: 0; right: 0; bottom: 0; background: #FFFFFF; border-top: 1px solid #E8EAEF; padding: 8px 8px 22px; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); align-items: end">
+    <a href="A-Movil-Inicio.dc.html" style="text-decoration: none; display: flex; flex-direction: column; align-items: center; gap: 4px; min-height: 48px; justify-content: center; color: #475467; font-size: 11px; font-weight: 600">
+      <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5V21a1 1 0 0 1-1 1h-5v-7h-6v7H4a1 1 0 0 1-1-1z"></path></svg>Inicio</a>
+    <a href="A-Movil-Productos.dc.html" style="text-decoration: none; display: flex; flex-direction: column; align-items: center; gap: 4px; min-height: 48px; justify-content: center; color: #475467; font-size: 11px; font-weight: 600">
+      <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8 12 3 3 8v8l9 5 9-5z"></path><path d="M3 8l9 5 9-5M12 13v8"></path></svg>Productos</a>
+    <a href="#" style="text-decoration: none; display: flex; flex-direction: column; align-items: center; gap: 4px; color: #101828; font-size: 11px; font-weight: 700">
+      <span style="width: 56px; height: 56px; margin-top: -26px; border-radius: 18px; background: #1F4FD8; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 18px rgba(31,79,216,.35)"><svg aria-hidden="true" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="20" r="1.5"></circle><circle cx="18" cy="20" r="1.5"></circle><path d="M2 3h3l2.6 11.2a2 2 0 0 0 2 1.6h8.2a2 2 0 0 0 2-1.5L22 7H6"></path></svg></span>Vender</a>
+    <a href="#" style="text-decoration: none; display: flex; flex-direction: column; align-items: center; gap: 4px; min-height: 48px; justify-content: center; color: #475467; font-size: 11px; font-weight: 600">
+      <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 2v20l3-2 3 2 3-2 3 2 3-2 1 .7V2l-1 .7L16 2l-3 2-3-2-3 2z"></path><path d="M8 8h8M8 12h8M8 16h5"></path></svg>Ventas</a>
+    <a href="A-Movil-Mas.dc.html" aria-current="page" style="text-decoration: none; display: flex; flex-direction: column; align-items: center; gap: 4px; min-height: 48px; justify-content: center; color: #1F4FD8; font-size: 11px; font-weight: 700">
+      <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="5" cy="12" r="1.6"></circle><circle cx="12" cy="12" r="1.6"></circle><circle cx="19" cy="12" r="1.6"></circle></svg>Más</a>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const tone = {
+      blue: ['#EEF4FF', '#1F4FD8'], green: ['#ECFDF3', '#067647'], amber: ['#FFFAEB', '#B54708'],
+      pink: ['#FDF2FA', '#C11574'], violet: ['#F4F3FF', '#5925DC'], gray: ['#F2F4F7', '#344054']
+    };
+    const item = (icon, color, label, hint, href, status, statusColor) => ({
+      icon, bg: tone[color][0], fg: tone[color][1], label, hint, href: href || '#',
+      status: status || '', statusColor: statusColor || '#475467', divider: '1px solid #F2F4F7'
+    });
+    const group = (title, items) => ({ title, items: items.map((it, i) => (i === 0 ? { ...it, divider: '0' } : it)) });
+    return {
+      groups: [
+        group('Tu negocio', [
+          item('Ti', 'gray', 'Datos de la tienda', 'Nombre, dirección, teléfono, zona horaria', 'A-Movil-Ajustes-Tienda.dc.html'),
+          item('%', 'amber', 'Precios y descuentos', 'Hasta 15% · cajeros con permiso')
+        ]),
+        group('Productos', [
+          item('Ve', 'pink', 'Vencimientos', 'Aviso 5 días antes por defecto'),
+          item('Ca', 'blue', 'Categorías', 'El prefijo arma el SKU automático', 'P01B-Categorias-Lugares.dc.html', 'En Productos'),
+          item('Lu', 'violet', 'Lugares en la tienda', 'Pasillo, estante, heladera, depósito…', 'P01B-Categorias-Lugares.dc.html', 'En Productos')
+        ]),
+        group('Ventas en línea', [
+          item('Wa', 'green', 'Catálogo público', 'Plantilla, destacados, WhatsApp, horario', '#', 'Activo', '#067647')
+        ]),
+        group('Equipo y cuenta', [
+          item('Eq', 'blue', 'Usuarios y permisos', '2 personas · 1 invitación pendiente'),
+          item('Pl', 'gray', 'Plan y pagos', 'Historial de pagos y renovación'),
+          item('Yo', 'violet', 'Mi perfil', 'Correo, contraseña, cerrar sesión')
+        ])
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

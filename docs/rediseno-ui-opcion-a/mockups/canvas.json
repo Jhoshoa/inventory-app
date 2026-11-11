@@ -1,0 +1,370 @@
+{
+  "v": 3,
+  "attachments": {},
+  "boards": {
+    "A-Escritorio-Ajustes.dc.html": {
+      "expand": "fill",
+      "h": 844,
+      "title": "A · Configuración — Equipo (escritorio)",
+      "w": 1280,
+      "x": 940,
+      "y": 6592
+    },
+    "A-Escritorio-Inicio.dc.html": {
+      "expand": "fill",
+      "h": 844,
+      "title": "A · Mostrador — Inicio (escritorio)",
+      "w": 1280,
+      "x": 940,
+      "y": 2980
+    },
+    "A-Escritorio-POS.dc.html": {
+      "expand": "fill",
+      "h": 844,
+      "title": "A · POS — Vender (escritorio)",
+      "w": 1280,
+      "x": 1880,
+      "y": 8950
+    },
+    "A-Movil-Ajustes-Tienda.dc.html": {
+      "h": 844,
+      "title": "A · Configuración — Datos de la tienda (celular)",
+      "w": 390,
+      "x": 470,
+      "y": 6592
+    },
+    "A-Movil-Ajustes.dc.html": {
+      "h": 844,
+      "title": "A · Configuración — índice (celular)",
+      "w": 390,
+      "x": 0,
+      "y": 6592
+    },
+    "A-Movil-Caja.dc.html": {
+      "h": 844,
+      "title": "A · Caja y jornada (celular)",
+      "w": 390,
+      "x": 470,
+      "y": 7606
+    },
+    "A-Movil-Inicio.dc.html": {
+      "h": 844,
+      "title": "A · Mostrador — Inicio (celular)",
+      "w": 390,
+      "x": 0,
+      "y": 2980
+    },
+    "A-Movil-Mas.dc.html": {
+      "h": 844,
+      "title": "A · Menú Más (celular, dueño)",
+      "w": 390,
+      "x": 0,
+      "y": 7606
+    },
+    "A-Movil-POS-Boleta.dc.html": {
+      "h": 844,
+      "title": "A · POS — Venta actual (celular)",
+      "w": 390,
+      "x": 470,
+      "y": 8950
+    },
+    "A-Movil-POS-Buscar.dc.html": {
+      "h": 844,
+      "title": "A · POS — Buscar y agregar (celular, sin conexión)",
+      "w": 390,
+      "x": 0,
+      "y": 8950
+    },
+    "A-Movil-POS-Cobro.dc.html": {
+      "h": 844,
+      "title": "A · POS — Cobro (celular)",
+      "w": 390,
+      "x": 940,
+      "y": 8950
+    },
+    "A-Movil-POS-Listo.dc.html": {
+      "h": 844,
+      "title": "A · POS — Venta lista (celular)",
+      "w": 390,
+      "x": 1410,
+      "y": 8950
+    },
+    "A-Movil-Productos.dc.html": {
+      "h": 844,
+      "title": "A · Mostrador — Productos (celular)",
+      "w": 390,
+      "x": 470,
+      "y": 2980
+    },
+    "B-Escritorio-Producto.dc.html": {
+      "expand": "fill",
+      "h": 844,
+      "title": "B · Boleta — Producto (escritorio)",
+      "w": 1280,
+      "x": 940,
+      "y": 4184
+    },
+    "B-Movil-Inicio.dc.html": {
+      "h": 844,
+      "title": "B · Boleta — Inicio (celular)",
+      "w": 390,
+      "x": 0,
+      "y": 4184
+    },
+    "B-Movil-Vender.dc.html": {
+      "h": 844,
+      "title": "B · Boleta — Vender (celular)",
+      "w": 390,
+      "x": 470,
+      "y": 4184
+    },
+    "C-Movil-Caja.dc.html": {
+      "h": 844,
+      "title": "C · Caja rápida — Cobro (celular)",
+      "w": 390,
+      "x": 0,
+      "y": 5388
+    },
+    "C-Tablet-Caja.dc.html": {
+      "h": 768,
+      "title": "C · Caja rápida — Vender (tablet)",
+      "w": 1024,
+      "x": 470,
+      "y": 5388
+    },
+    "Main.dc.html": {
+      "expand": "fill",
+      "h": 2600,
+      "title": "Resumen: diagnóstico, direcciones y tiempos",
+      "w": 1280,
+      "x": 0,
+      "y": 0
+    },
+    "P01-Productos-Lista.dc.html": {
+      "h": 960,
+      "title": "Productos · lista, filtros y acciones",
+      "w": 2880,
+      "x": 0,
+      "y": 10300
+    },
+    "P01B-Categorias-Lugares.dc.html": {
+      "h": 1040,
+      "title": "Productos · categorías y lugares en la tienda",
+      "w": 4610,
+      "x": 3000,
+      "y": 10300
+    },
+    "P02-Producto-Form.dc.html": {
+      "h": 1040,
+      "title": "Producto · nuevo y editar (validaciones, crear categoría y lugar)",
+      "w": 3780,
+      "x": 0,
+      "y": 11460
+    },
+    "P03-Producto-Detalle.dc.html": {
+      "h": 960,
+      "title": "Producto · detalle",
+      "w": 2280,
+      "x": 0,
+      "y": 12620
+    },
+    "P04-Producto-Ventanas.dc.html": {
+      "h": 1120,
+      "title": "Producto · ventanas (stock, dónde está, eliminar, QR, cámara)",
+      "w": 2370,
+      "x": 0,
+      "y": 13780
+    },
+    "P05-Etiquetas-CSV.dc.html": {
+      "h": 960,
+      "title": "Productos · etiquetas e importar CSV",
+      "w": 3140,
+      "x": 0,
+      "y": 15100
+    },
+    "P06-Ventas.dc.html": {
+      "h": 960,
+      "title": "Ventas · lista, detalle, anular y recibo",
+      "w": 3940,
+      "x": 0,
+      "y": 16260
+    },
+    "P07-Pedidos.dc.html": {
+      "h": 960,
+      "title": "Pedidos del catálogo",
+      "w": 2820,
+      "x": 0,
+      "y": 17420
+    },
+    "P08-Reportes.dc.html": {
+      "h": 960,
+      "title": "Reportes · ventas, cierres, movimientos y descargas",
+      "w": 4450,
+      "x": 0,
+      "y": 18580
+    },
+    "P09-Caja.dc.html": {
+      "h": 1060,
+      "title": "Caja y jornada · abrir, movimientos, cerrar, reabrir",
+      "w": 3530,
+      "x": 0,
+      "y": 19740
+    },
+    "P10-Config-Secciones.dc.html": {
+      "h": 960,
+      "title": "Configuración · secciones (celular): precios, usuarios, vencimientos",
+      "w": 2170,
+      "x": 0,
+      "y": 21000
+    },
+    "P11-Catalogo.dc.html": {
+      "h": 960,
+      "title": "Configuración · catálogo público",
+      "w": 2700,
+      "x": 0,
+      "y": 22160
+    },
+    "P12-Config-Cuenta.dc.html": {
+      "h": 960,
+      "title": "Configuración · plan y pagos, mi perfil, datos de la tienda",
+      "w": 2580,
+      "x": 0,
+      "y": 23320
+    },
+    "P13-Acceso.dc.html": {
+      "h": 960,
+      "title": "Acceso · entrar, crear tienda, contraseña, invitación",
+      "w": 3860,
+      "x": 0,
+      "y": 24480
+    },
+    "P14-Estados.dc.html": {
+      "h": 960,
+      "title": "Estados · caja cerrada, sin conexión, vacío, error, sin permiso, 404",
+      "w": 4590,
+      "x": 0,
+      "y": 25640
+    }
+  },
+  "createdOnFiles": {
+    "at": "2026-11-11T02:30:00Z",
+    "v": 1
+  },
+  "designSystems": [],
+  "launch": {
+    "view": "canvas"
+  },
+  "noteOrder": [
+    "rowA",
+    "rowB",
+    "rowC",
+    "rowAjustes",
+    "ajustesEstructura",
+    "rowPOS",
+    "posInventario",
+    "rowPaginas"
+  ],
+  "notes": {
+    "ajustesEstructura": {
+      "fill": "orange",
+      "size": 24,
+      "text": "Configuración agrupada por tema (antes: una sola página larga)\n\nTU NEGOCIO\n· Datos de la tienda (nombre, dirección, teléfono, zona horaria)\n· Precios y descuentos\n\nPRODUCTOS\n· Vencimientos (aviso por defecto) · nuevo\n· Atajos: Categorías → y Lugares en la tienda → (viven en Productos)\n\nVENTAS EN LÍNEA\n· Catálogo público: estado y link, plantilla, identidad, secciones, destacados, orden de productos, WhatsApp, instrucciones de pago, contacto y horario\n\nEQUIPO Y CUENTA\n· Usuarios, invitaciones y permisos por rol\n· Plan y pagos (historial, pedir renovación)\n· Mi perfil y cerrar sesión\n\nFUERA DE CONFIGURACIÓN (es del día a día)\n· Caja y jornada: barra lateral en escritorio y menú Más en el celular. Abrir, cerrar, movimientos e historial.\n· Etiquetas siguen en Productos.\n· Categorías y Lugares en la tienda (antes \"Categorías y SKU\" y \"Ubicaciones\") son pestañas de Productos; en cada producto se llama \"Dónde está\".\n\nCelular: índice → sección, con volver. Escritorio: menú de configuración + sección.\nSe quitan los IDs técnicos de la vista.",
+      "w": 440,
+      "x": 2300,
+      "y": 6592
+    },
+    "posInventario": {
+      "fill": "orange",
+      "text": "Todo lo que hace hoy el POS, y dónde queda\n\nBUSCAR\n· Nombre (3+ letras), también sin conexión → buscador arriba\n· Código QR/barras + Enter, lector USB → mismo campo\n· Cámara (si hay) → botón Escanear\n· Ubicación, stock, precio y código en cada resultado\n· \"Sin stock\" no se puede agregar\n· \"Agregado: X\" → aviso abajo con Deshacer\n\nVENTA ACTUAL (carrito)\n· +/− y escribir cantidad, tope = stock\n· Quitar producto\n· Stock cambió → aviso con \"Ajustar a N\"\n\nCOBRO\n· Descuento de producto (automático)\n· Descuento manual % o Bs dentro del límite de la tienda\n· \"Qué descuento aplicar\" solo con permiso\n· Efectivo, QR, Transferencia, Tarjeta\n· Cliente (opcional)\n\nSIN CONEXIÓN\n· Guarda la venta en el equipo y la envía al volver\n· Pendientes y conflictos → indicador arriba\n\nOTROS ESTADOS\n· Tienda cerrada → pantalla que lleva a abrir caja (dueño)\n· Error de carga y esqueleto de carga\n\nNUEVO (propuesto)\n· Más vendidos para tocar sin buscar\n· Recibido y cambio en efectivo\n· Pantalla \"Venta lista\" con Nueva venta, en vez de saltar al detalle de la venta\n· Atajos de teclado en escritorio (/ buscar, F9 cobrar)\n· Deshacer el último agregado\n· Enviar el recibo por WhatsApp\n· Ver la venta y cobrar desde una barra fija en el celular",
+      "w": 460,
+      "x": 3240,
+      "y": 8950
+    },
+    "rowA": {
+      "kind": "title1",
+      "maxW": 2220,
+      "text": "A · Mostrador — sobrio y profesional",
+      "w": 240,
+      "x": 0,
+      "y": 2730
+    },
+    "rowAjustes": {
+      "kind": "title1",
+      "maxW": 2220,
+      "text": "A · Mostrador — Configuración reorganizada",
+      "w": 240,
+      "x": 0,
+      "y": 6342
+    },
+    "rowB": {
+      "kind": "title1",
+      "maxW": 2220,
+      "text": "B · Boleta — la identidad de la marca",
+      "w": 240,
+      "x": 0,
+      "y": 3934
+    },
+    "rowC": {
+      "kind": "title1",
+      "maxW": 1494,
+      "text": "C · Caja rápida — el cajero primero",
+      "w": 240,
+      "x": 0,
+      "y": 5138
+    },
+    "rowPOS": {
+      "kind": "title1",
+      "maxW": 3160,
+      "text": "A · Mostrador — POS (vender)",
+      "w": 240,
+      "x": 0,
+      "y": 8700
+    },
+    "rowPaginas": {
+      "kind": "title1",
+      "maxW": 7610,
+      "text": "A · Todas las páginas (para implementar)",
+      "w": 240,
+      "x": 0,
+      "y": 10050
+    }
+  },
+  "order": [
+    "Main.dc.html",
+    "A-Movil-Inicio.dc.html",
+    "A-Movil-Productos.dc.html",
+    "A-Escritorio-Inicio.dc.html",
+    "B-Movil-Inicio.dc.html",
+    "B-Movil-Vender.dc.html",
+    "B-Escritorio-Producto.dc.html",
+    "C-Movil-Caja.dc.html",
+    "C-Tablet-Caja.dc.html",
+    "A-Movil-Ajustes.dc.html",
+    "A-Movil-Ajustes-Tienda.dc.html",
+    "A-Escritorio-Ajustes.dc.html",
+    "A-Movil-Mas.dc.html",
+    "A-Movil-Caja.dc.html",
+    "A-Movil-POS-Buscar.dc.html",
+    "A-Movil-POS-Boleta.dc.html",
+    "A-Movil-POS-Cobro.dc.html",
+    "A-Movil-POS-Listo.dc.html",
+    "A-Escritorio-POS.dc.html",
+    "P01-Productos-Lista.dc.html",
+    "P01B-Categorias-Lugares.dc.html",
+    "P02-Producto-Form.dc.html",
+    "P03-Producto-Detalle.dc.html",
+    "P04-Producto-Ventanas.dc.html",
+    "P05-Etiquetas-CSV.dc.html",
+    "P06-Ventas.dc.html",
+    "P07-Pedidos.dc.html",
+    "P08-Reportes.dc.html",
+    "P09-Caja.dc.html",
+    "P10-Config-Secciones.dc.html",
+    "P11-Catalogo.dc.html",
+    "P12-Config-Cuenta.dc.html",
+    "P13-Acceso.dc.html",
+    "P14-Estados.dc.html"
+  ],
+  "pages": [],
+  "title": "Tu Tiendamiga · Propuestas de UI admin y cajero"
+}

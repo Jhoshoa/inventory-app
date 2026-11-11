@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Caja y jornada</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#EEF0F4}
+*{box-sizing:border-box}
+a{color:#1F4FD8}a:hover{color:#163BA6}
+.fr{display:flex;flex-direction:column;gap:10px;flex-shrink:0}
+.cap{font:700 13px Inter,sans-serif;color:#475467;text-transform:uppercase;letter-spacing:.05em}
+.ph{width:390px;height:844px;background:#F7F8FA;border-radius:28px;overflow:hidden;position:relative;display:flex;flex-direction:column;box-shadow:0 0 0 1px #D0D5DD}
+.dk{width:1280px;height:800px;background:#F7F8FA;border-radius:14px;overflow:hidden;position:relative;display:flex;box-shadow:0 0 0 1px #D0D5DD}
+.top{background:#fff;border-bottom:1px solid #E8EAEF;padding:10px 12px;display:flex;align-items:center;gap:6px}
+.back{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.h1{margin:0;font-size:20px;font-weight:800;letter-spacing:-.02em}
+.h2{margin:0;font-size:15px;font-weight:700}
+.mu{color:#475467;font-size:13px}
+.card{background:#fff;border:1px solid #E8EAEF;border-radius:16px}
+.sec{padding:14px;display:flex;flex-direction:column;gap:8px}
+.in{height:48px;border:1px solid #D0D5DD;border-radius:12px;padding:0 12px;font:16px Inter,sans-serif;color:#101828;background:#fff;width:100%}
+.in.err{border-color:#D92D20;box-shadow:0 0 0 3px #FEE4E2}
+.lb{font-size:14px;font-weight:600;display:block;margin-bottom:6px}
+.op{font-weight:400;color:#475467}
+.er{font-size:12px;color:#B42318;margin-top:6px;display:block}
+.hint{font-size:12px;color:#475467;margin-top:6px;display:block}
+.btn{height:46px;border-radius:12px;border:1px solid #D0D5DD;background:#fff;font:700 14px Inter,sans-serif;color:#344054;padding:0 14px;display:inline-flex;align-items:center;justify-content:center;gap:8px;text-decoration:none;white-space:nowrap}
+.btn.p{background:#1F4FD8;border-color:#1F4FD8;color:#fff}
+.btn.k{background:#101828;border-color:#101828;color:#fff}
+.btn.d{background:#D92D20;border-color:#D92D20;color:#fff}
+.btn.sm{height:34px;font-size:13px;padding:0 10px;border-radius:10px}
+.opt{display:flex;align-items:center;gap:8px;border:1px solid #E8EAEF;border-radius:12px;padding:10px;font-size:14px;font-weight:600}
+.opt.on{border:2px solid #1F4FD8;background:#EEF4FF;color:#1F3B99}
+.seg{display:flex;background:#EEF0F4;border-radius:12px;padding:3px}
+.seg button{flex:1;border:0;background:transparent;border-radius:9px;height:40px;font:700 14px Inter,sans-serif;color:#475467}
+.seg button.on{background:#fff;color:#101828;box-shadow:0 1px 2px rgba(16,24,40,.1)}
+.ln{display:flex;justify-content:space-between;font-size:14px;padding:7px 0;border-top:1px solid #F2F4F7}
+.ov{position:absolute;inset:0;background:rgba(16,24,40,.45);display:flex;flex-direction:column;justify-content:flex-end}
+.sheet{background:#fff;border-radius:24px 24px 0 0;padding:8px 16px 26px;display:flex;flex-direction:column;gap:12px}
+.grab{width:40px;height:5px;border-radius:999px;background:#D0D5DD;margin:0 auto}
+.dlg{background:#fff;border-radius:18px;width:480px;padding:20px;display:flex;flex-direction:column;gap:12px;box-shadow:0 0 0 1px #D0D5DD}
+.side{width:236px;flex-shrink:0;background:#fff;border-right:1px solid #E8EAEF;padding:18px 12px;display:flex;flex-direction:column;gap:14px}
+.n{display:flex;align-items:center;gap:10px;height:38px;padding:0 10px;border-radius:10px;font-size:14px;color:#344054;text-decoration:none;font-weight:500}
+.n.on{background:#EEF0F4;color:#101828;font-weight:700}
+.dot{width:8px;height:8px;border-radius:3px;background:#D0D5DD}
+.n.on .dot{background:#1F4FD8}
+.tbl{width:100%;border-collapse:collapse;font-size:14px}
+.tbl th{background:#F9FAFB;color:#475467;font-size:12px;font-weight:600;text-align:left;padding:10px 12px}
+.tbl td{padding:10px 12px;border-top:1px solid #F2F4F7}
+.tag{display:inline-flex;font-size:12px;font-weight:700;padding:3px 9px;border-radius:999px;white-space:nowrap}
+.t-ok{background:#ECFDF3;color:#067647}.t-bad{background:#FEF3F2;color:#B42318}.t-mu{background:#F2F4F7;color:#344054}.t-warn{background:#FFFAEB;color:#B54708}
+.ev{display:flex;gap:10px;font-size:13px;padding:7px 0}
+.ev i{width:10px;height:10px;border-radius:50%;margin-top:4px;flex-shrink:0}
+.notes{width:440px;flex-shrink:0;background:#fff;border:1px solid #E8EAEF;border-radius:16px;padding:20px 22px;font:13px/1.55 Inter,sans-serif;color:#344054}
+.notes h3{margin:16px 0 6px;font-size:12px;font-weight:800;color:#101828;text-transform:uppercase;letter-spacing:.05em}
+.notes h3:first-child{margin-top:0}
+.notes ul{margin:0;padding-left:18px}
+.notes code{font:12px ui-monospace,monospace;background:#F2F4F7;padding:1px 4px;border-radius:4px}
+</style>
+</helmet>
+<div style="width: 3530px; height: 1060px; padding: 40px; display: flex; gap: 40px; align-items: flex-start; font-family: Inter, system-ui, sans-serif; color: #101828; font-feature-settings: 'tnum' 1">
+
+  <div class="fr">
+    <span class="cap">Celular · Caja cerrada (dueño)</span>
+    <div class="ph">
+      <div class="top"><a href="#" class="back" aria-label="Volver"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#101828" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"></path></svg></a><h1 class="h1" style="flex: 1">Caja y jornada</h1><a href="#" style="font-size: 14px; font-weight: 600; text-decoration: none; padding: 0 8px">Historial</a></div>
+      <div style="flex: 1; padding: 16px; display: flex; flex-direction: column; gap: 14px">
+        <div class="card sec" style="align-items: center; text-align: center; padding: 24px 16px">
+          <span style="width: 56px; height: 56px; border-radius: 16px; background: #F2F4F7; display: flex; align-items: center; justify-content: center" aria-hidden="true"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#344054" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg></span>
+          <h2 class="h1" style="font-size: 19px">La caja está cerrada</h2>
+          <span class="mu">Para vender, abre la caja. Cuenta el dinero con el que empiezas.</span>
+          <button type="button" class="btn p" style="width: 100%; height: 52px; margin-top: 6px">Abrir caja</button>
+        </div>
+        <div class="card sec">
+          <h2 class="h2">Último cierre · ayer</h2>
+          <div class="ln" style="border: 0"><span class="mu">Vendido</span><span>Bs 1.310,00</span></div>
+          <div class="ln"><span class="mu">Efectivo contado</span><span>Bs 900,00</span></div>
+          <div class="ln" style="color: #B54708; font-weight: 700"><span>Diferencia</span><span>− Bs 5,00</span></div>
+          <a href="#" class="btn sm">Ver cierre</a>
+        </div>
+        <div class="card" style="padding: 12px 14px; font-size: 13px; color: #344054">Si hoy ya se cerró: el botón dice <strong>"Reabrir la jornada de hoy"</strong> y pide una nota.</div>
+        <div class="card" style="padding: 12px 14px; font-size: 13px; color: #344054">Cajero: ve "La caja está cerrada. Pídele al dueño que la abra." sin botón.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="fr">
+    <span class="cap">Celular · Abrir caja</span>
+    <div class="ph">
+      <div class="ov">
+        <form class="sheet" role="dialog" aria-labelledby="open-t">
+          <span class="grab"></span>
+          <h2 id="open-t" class="h1" style="font-size: 19px">Abrir caja</h2>
+          <span class="mu">Martes 10/11 · Bolivia (La Paz)</span>
+          <div><label class="lb" for="o-cash">Dinero con el que empiezas <span class="op">(cambio)</span></label><input id="o-cash" class="in" inputmode="decimal" value="100,00"><span class="hint">Puedes dejarlo en 0. Solo números, hasta 2 decimales.</span></div>
+          <div style="display: flex; gap: 6px"><button type="button" class="btn sm">50</button><button type="button" class="btn sm">100</button><button type="button" class="btn sm">200</button><button type="button" class="btn sm">Igual que ayer (Bs 100)</button></div>
+          <div><label class="lb" for="o-note">Nota <span class="op">(opcional)</span></label><input id="o-note" class="in" placeholder="Ej. Abre Luis"></div>
+          <button type="submit" class="btn p" style="height: 52px">Abrir caja con Bs 100,00</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="fr">
+    <span class="cap">Celular · Registrar movimiento</span>
+    <div class="ph">
+      <div class="ov">
+        <form class="sheet" role="dialog" aria-labelledby="mv-t">
+          <span class="grab"></span>
+          <h2 id="mv-t" class="h1" style="font-size: 19px">Movimiento de caja</h2>
+          <div class="seg" role="group" aria-label="Dirección"><button type="button">+ Entra dinero</button><button type="button" class="on">− Sale dinero</button></div>
+          <fieldset style="border: 0; margin: 0; padding: 0">
+            <legend class="lb">Tipo</legend>
+            <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+              <label class="opt on"><input type="radio" name="t" checked>Gasto</label><label class="opt"><input type="radio" name="t">Salida</label><label class="opt"><input type="radio" name="t">Retiro</label><label class="opt"><input type="radio" name="t">Depósito al banco</label>
+            </div>
+          </fieldset>
+          <div><label class="lb" for="mv-a">Monto (Bs)</label><input id="mv-a" class="in err" inputmode="decimal" value="30,555" aria-describedby="mv-a-er"><span class="er" id="mv-a-er">El monto debe tener máximo 2 decimales.</span></div>
+          <div><label class="lb" for="mv-n">Nota <span class="op">(opcional)</span></label><input id="mv-n" class="in" value="Pago al proveedor de pan"></div>
+          <button type="submit" class="btn k" style="height: 52px" disabled>Registrar salida</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="fr">
+    <span class="cap">Escritorio · Caja abierta</span>
+    <div class="dk">
+      <aside class="side">
+        <div style="display: flex; align-items: center; gap: 10px; padding: 0 6px">
+          <svg aria-hidden="true" viewBox="3 3 42 42" width="30" height="30"><path d="M11 5H37Q40 5 40 8V39L36 43L32 39L28 43L24 39L20 43L16 39L12 43L8 39V8Q8 5 11 5Z" fill="#FFE14D" stroke="#111111" stroke-width="3" stroke-linejoin="round"></path><circle cx="19" cy="18" r="2.8" fill="#111111"></circle><circle cx="29" cy="18" r="2.8" fill="#111111"></circle><path d="M17 25Q24 31 31 25" fill="none" stroke="#111111" stroke-width="3" stroke-linecap="round"></path></svg>
+          <div><div style="font-weight: 800; font-size: 14px">Tienda Local</div><div class="mu" style="font-size: 12px">Plan Prueba · 9 días</div></div>
+        </div>
+        <a href="#" class="btn p" style="height: 42px">Nueva venta</a>
+        <nav aria-label="Principal" style="display: flex; flex-direction: column; gap: 2px">
+          <a href="#" class="n"><span class="dot"></span>Inicio</a><a href="#" class="n"><span class="dot"></span>Vender</a><a href="#" class="n on" aria-current="page"><span class="dot"></span>Caja</a><a href="#" class="n"><span class="dot"></span>Productos</a><a href="#" class="n"><span class="dot"></span>Ventas</a><a href="#" class="n"><span class="dot"></span>Pedidos</a><a href="#" class="n"><span class="dot"></span>Reportes</a><a href="#" class="n"><span class="dot"></span>Configuración</a>
+        </nav>
+      </aside>
+      <main style="flex: 1; min-width: 0; padding: 20px 26px; display: flex; flex-direction: column; gap: 14px; overflow: hidden">
+        <div style="display: flex; justify-content: space-between; align-items: center">
+          <div><h1 class="h1" style="font-size: 26px">Caja y jornada</h1><span class="mu"><span class="tag t-ok">Abierta</span> desde 08:02 por Rosa · Bolivia (La Paz)</span></div>
+          <div style="display: flex; gap: 8px"><button type="button" class="btn">+ Entrada</button><button type="button" class="btn">− Salida o gasto</button><button type="button" class="btn k">Cerrar caja</button></div>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px">
+          <div class="card sec"><span class="mu">Apertura</span><strong style="font-size: 20px">Bs 100,00</strong></div>
+          <div class="card sec"><span class="mu">+ Ventas en efectivo</span><strong style="font-size: 20px">Bs 742,00</strong></div>
+          <div class="card sec"><span class="mu">+ Entradas</span><strong style="font-size: 20px">Bs 50,00</strong></div>
+          <div class="card sec"><span class="mu">− Salidas</span><strong style="font-size: 20px">Bs 30,00</strong></div>
+          <div class="card sec" style="background: #101828; border-color: #101828; color: #fff"><span style="color: #D0D5DD; font-size: 13px">= Debería haber</span><strong style="font-size: 20px">Bs 862,00</strong></div>
+        </div>
+        <div style="display: grid; grid-template-columns: 1.6fr 1fr; gap: 14px; align-items: start">
+          <div class="card" style="overflow: hidden">
+            <div style="padding: 14px 14px 6px; display: flex; justify-content: space-between"><h2 class="h2">Movimientos de hoy</h2><span class="mu">Otros pagos: QR 318,50 · Transf. 120 · Tarjeta 68</span></div>
+            <table class="tbl"><thead><tr><th scope="col">Hora</th><th scope="col">Tipo</th><th scope="col">Nota</th><th scope="col" style="text-align: right">Monto</th><th scope="col"><span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Acción</span></th></tr></thead>
+              <tbody>
+                <tr><td class="mu">09:15</td><td><span class="tag t-mu">Gasto</span></td><td>Pago al proveedor de pan</td><td style="text-align: right; font-weight: 700; color: #B42318">− 30,00</td><td style="text-align: right"><button type="button" class="btn sm">Anular</button></td></tr>
+                <tr><td class="mu">08:40</td><td><span class="tag t-ok">Entrada</span></td><td>Sencillo del banco</td><td style="text-align: right; font-weight: 700; color: #067647">+ 50,00</td><td style="text-align: right"><button type="button" class="btn sm">Anular</button></td></tr>
+                <tr style="color: #98A2B3"><td>08:30</td><td><span class="tag t-bad">Anulado</span></td><td style="text-decoration: line-through">Retiro equivocado · "Monto mal escrito"</td><td style="text-align: right; text-decoration: line-through">− 20,00</td><td></td></tr>
+              </tbody></table>
+          </div>
+          <div class="card sec">
+            <h2 class="h2">Historial de la jornada</h2>
+            <div class="ev"><i style="background: #12B76A"></i><span><strong>Apertura</strong> · 08:02 · Rosa<span class="mu" style="display: block">Caja inicial Bs 100,00</span></span></div>
+            <div class="ev"><i style="background: #D0D5DD"></i><span class="mu">Aquí aparecen cierres y reaperturas del día.</span></div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 18px; flex-shrink: 0">
+    <span class="cap">Ventanas</span>
+    <section class="dlg" role="dialog" aria-labelledby="close-t">
+      <h2 id="close-t" class="h1" style="font-size: 19px">Cerrar caja</h2>
+      <div class="seg" role="group" aria-label="Conteo"><button type="button" class="on">Contar el efectivo</button><button type="button">Cerrar sin contar</button></div>
+      <div><label class="lb" for="c-cnt">Efectivo contado (Bs)</label><input id="c-cnt" class="in" inputmode="decimal" value="860,00"></div>
+      <div style="background: #F2F4F7; border-radius: 12px; padding: 10px 12px">
+        <div class="ln" style="border: 0; padding-top: 0"><span class="mu">Debería haber</span><span>Bs 862,00</span></div>
+        <div class="ln" style="color: #B54708; font-weight: 700"><span>Diferencia</span><span>− Bs 2,00 (falta)</span></div>
+      </div>
+      <div><label class="lb" for="c-note">Nota <span class="op">(opcional)</span></label><input id="c-note" class="in" placeholder="Ej. Faltó cambio"></div>
+      <span class="mu">Después de cerrar no se puede vender hasta abrir o reabrir la jornada.</span>
+      <div style="display: flex; justify-content: flex-end; gap: 8px"><button type="button" class="btn">Cancelar</button><button type="submit" class="btn k">Cerrar caja</button></div>
+    </section>
+    <section class="dlg" role="dialog" aria-labelledby="vm-t">
+      <h2 id="vm-t" class="h1" style="font-size: 19px">¿Anular el gasto de Bs 30,00?</h2>
+      <div><label class="lb" for="vm-r">Razón</label><input id="vm-r" class="in err" aria-describedby="vm-r-er"><span class="er" id="vm-r-er">La razón es requerida.</span></div>
+      <div style="display: flex; justify-content: flex-end; gap: 8px"><button type="button" class="btn">Cancelar</button><button type="submit" class="btn d">Anular movimiento</button></div>
+    </section>
+    <section class="dlg" role="dialog" aria-labelledby="re-t">
+      <h2 id="re-t" class="h1" style="font-size: 19px">Reabrir la jornada de hoy</h2>
+      <span class="mu">Se cerró a las 21:10. Al reabrir se puede volver a vender; el cierre anterior queda en el historial.</span>
+      <div><label class="lb" for="re-n">Nota <span class="op">(opcional)</span></label><input id="re-n" class="in" placeholder="Ej. Llegó un cliente tarde"></div>
+      <div style="display: flex; justify-content: flex-end; gap: 8px"><button type="button" class="btn">Cancelar</button><button type="submit" class="btn p">Reabrir</button></div>
+    </section>
+  </div>
+
+  <aside class="notes" aria-label="Notas de implementación">
+    <h3>Caminos</h3>
+    <ul>
+      <li>Escritorio: menú Caja. Celular: Más → Caja y jornada (y la tarjeta de Inicio). La página nueva junta lo que hoy está en Ajustes › Operación diaria.</li>
+      <li>Vender con la caja cerrada muestra el estado cerrado con "Abrir caja" (dueño).</li>
+      <li>Al cerrar: aviso "Caja cerrada" y se abre el resumen del cierre (Reportes › Cierres).</li>
+    </ul>
+    <h3>Validaciones</h3>
+    <ul>
+      <li>Montos (apertura, movimiento, contado): solo números, hasta 2 decimales, máx. 12 dígitos, no negativos. Movimiento: mayor a 0. Apertura y contado: pueden ser 0.</li>
+      <li>Aceptar coma o punto como decimal ("30,50" o "30.50") y enviar con punto. Hoy la web solo acepta punto; en Bolivia se escribe con coma.</li>
+      <li>Notas de apertura, cierre, reapertura y movimiento: máx. 255.</li>
+      <li>Cerrar: o se escribe el efectivo contado o se elige "Cerrar sin contar" (no ambos).</li>
+      <li>Anular movimiento: razón requerida (la API la exige; hoy la web dice "opcional", hay que corregirlo).</li>
+      <li>Movimientos y anulaciones solo con la caja abierta.</li>
+    </ul>
+    <h3>Reglas de la API que se muestran</h3>
+    <ul>
+      <li>"La tienda ya tiene una jornada abierta"; si hoy ya se cerró, no se abre otra: se reabre la de hoy.</li>
+      <li>Tipos: Entrada (entra) · Salida, Gasto, Retiro, Depósito al banco (salen).</li>
+      <li>Debería haber = apertura + ventas en efectivo + entradas − salidas.</li>
+    </ul>
+    <h3>Permisos</h3>
+    <ul><li>Abrir, cerrar, reabrir y movimientos: solo dueño. Cajero: ve si está abierta, sin montos ni botones.</li></ul>
+    <h3>API</h3>
+    <ul>
+      <li><code>GET /store-day/current</code>, <code>/current/closing-preview</code>, <code>/current/events</code>, <code>POST /store-day/open</code>, <code>/close</code>, <code>/reopen</code>, <code>POST /cash-movements</code>, <code>GET /cash-movements</code>, <code>POST /cash-movements/{id}/void</code> — existen.</li>
+      <li>"Igual que ayer": monto de apertura del último cierre (<code>GET /store-day/reports</code>, solo web).</li>
+    </ul>
+  </aside>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":3530,"height":1060}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

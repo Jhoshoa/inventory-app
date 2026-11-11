@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Productos · categorías y lugares</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#EEF0F4}
+*{box-sizing:border-box}
+a{color:#1F4FD8}a:hover{color:#163BA6}
+.fr{display:flex;flex-direction:column;gap:10px;flex-shrink:0}
+.cap{font:700 13px Inter,sans-serif;color:#475467;text-transform:uppercase;letter-spacing:.05em}
+.ph{width:390px;height:844px;background:#F7F8FA;border-radius:28px;overflow:hidden;position:relative;display:flex;flex-direction:column;box-shadow:0 0 0 1px #D0D5DD}
+.dk{width:1280px;height:800px;background:#F7F8FA;border-radius:14px;overflow:hidden;position:relative;display:flex;box-shadow:0 0 0 1px #D0D5DD}
+.top{background:#fff;border-bottom:1px solid #E8EAEF;padding:12px 16px;display:flex;align-items:center;gap:8px}
+.h1{margin:0;font-size:22px;font-weight:800;letter-spacing:-.02em}
+.h2{margin:0;font-size:15px;font-weight:700}
+.mu{color:#475467;font-size:13px}
+.card{background:#fff;border:1px solid #E8EAEF;border-radius:16px}
+.in{height:44px;border:1px solid #D0D5DD;border-radius:12px;padding:0 12px;font:15px Inter,sans-serif;color:#101828;background:#fff;width:100%}
+.lb{font-size:14px;font-weight:600;display:block;margin-bottom:6px}
+.btn{height:44px;border-radius:12px;border:1px solid #D0D5DD;background:#fff;font:700 14px Inter,sans-serif;color:#344054;padding:0 14px;display:inline-flex;align-items:center;justify-content:center;gap:8px;text-decoration:none;white-space:nowrap}
+.btn.p{background:#1F4FD8;border-color:#1F4FD8;color:#fff}
+.btn.sm{height:34px;font-size:13px;padding:0 10px;border-radius:10px}
+.chip{height:34px;padding:0 12px;border-radius:999px;border:1px solid #D0D5DD;background:#fff;font:600 13px Inter,sans-serif;color:#344054;white-space:nowrap}
+.chip.on{background:#101828;border-color:#101828;color:#fff}
+.tag{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:700;padding:3px 9px;border-radius:999px;white-space:nowrap}
+.t-ok{background:#ECFDF3;color:#067647}.t-warn{background:#FFFAEB;color:#B54708}.t-bad{background:#FEF3F2;color:#B42318}.t-mu{background:#F2F4F7;color:#344054}
+.side{width:236px;flex-shrink:0;background:#fff;border-right:1px solid #E8EAEF;padding:18px 12px;display:flex;flex-direction:column;gap:14px}
+.n{display:flex;align-items:center;gap:10px;height:38px;padding:0 10px;border-radius:10px;font-size:14px;color:#344054;text-decoration:none;font-weight:500}
+.n.on{background:#EEF0F4;color:#101828;font-weight:700}
+.dot{width:8px;height:8px;border-radius:3px;background:#D0D5DD}
+.n.on .dot{background:#1F4FD8}
+.main{flex:1;min-width:0;padding:22px 28px;display:flex;flex-direction:column;gap:14px;overflow:hidden}
+.tbl{width:100%;border-collapse:collapse;font-size:14px}
+.tbl th{background:#F9FAFB;color:#475467;font-size:12px;font-weight:600;text-align:left;padding:10px 12px}
+.tbl td{padding:10px 12px;border-top:1px solid #F2F4F7;vertical-align:middle}
+.ov{position:absolute;inset:0;background:rgba(16,24,40,.45);display:flex;flex-direction:column;justify-content:flex-end}
+.sheet{background:#fff;border-radius:24px 24px 0 0;padding:8px 16px 26px;display:flex;flex-direction:column;gap:14px}
+.grab{width:40px;height:5px;border-radius:999px;background:#D0D5DD;margin:0 auto}
+.th{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;flex-shrink:0}
+.notes{width:440px;flex-shrink:0;background:#fff;border:1px solid #E8EAEF;border-radius:16px;padding:20px 22px;font:13px/1.55 Inter,sans-serif;color:#344054}
+.notes h3{margin:16px 0 6px;font-size:12px;font-weight:800;color:#101828;text-transform:uppercase;letter-spacing:.05em}
+.notes h3:first-child{margin-top:0}
+.notes ul{margin:0;padding-left:18px}
+.notes code{font:12px ui-monospace,monospace;background:#F2F4F7;padding:1px 4px;border-radius:4px}
+.tabs{display:flex;gap:4px;border-bottom:1px solid #E8EAEF}
+.tb{height:40px;padding:0 14px;display:inline-flex;align-items:center;font-size:14px;font-weight:600;color:#475467;text-decoration:none;border-bottom:2px solid transparent;margin-bottom:-1px}
+.tb.on{color:#101828;font-weight:700;border-bottom-color:#1F4FD8}
+.row{display:flex;justify-content:space-between;align-items:center;gap:10px;min-height:52px;padding:0 4px;border-top:1px solid #F2F4F7;font-size:15px;font-weight:600;text-decoration:none;color:#101828}
+.back{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.it{display:flex;align-items:center;gap:10px;padding:12px 14px;border-top:1px solid #F2F4F7;font-size:15px}
+.in.err{border-color:#D92D20;box-shadow:0 0 0 3px #FEE4E2}
+.op{font-weight:400;color:#475467}
+.er{font-size:12px;color:#B42318;margin-top:6px;display:block}
+.hint{font-size:12px;color:#475467;margin-top:6px;display:block}
+.sec{padding:14px;display:flex;flex-direction:column;gap:10px}
+.fab{position:absolute;right:16px;bottom:26px;height:52px;padding:0 20px;border-radius:16px;background:#1F4FD8;color:#fff;display:flex;align-items:center;font-weight:700;font-size:15px;text-decoration:none;box-shadow:0 10px 22px rgba(31,79,216,.35)}
+.dlg{position:absolute;background:#fff;border-radius:16px;box-shadow:0 24px 48px rgba(16,24,40,.25);padding:20px;display:flex;flex-direction:column;gap:12px}
+.scrim{position:absolute;inset:0;background:rgba(16,24,40,.35)}
+.btn.d{background:#D92D20;border-color:#D92D20;color:#fff}
+</style>
+</helmet>
+<div style="width: 4610px; height: 1040px; padding: 40px; display: flex; gap: 40px; align-items: flex-start; font-family: Inter, system-ui, sans-serif; color: #101828; font-feature-settings: 'tnum' 1">
+
+  <div class="fr">
+    <span class="cap">Celular · Productos › Categorías</span>
+    <div class="ph">
+      <div class="top" style="padding: 10px 12px; gap: 6px"><a href="#" class="back" aria-label="Volver a Productos"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#101828" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"></path></svg></a><h1 class="h1" style="font-size: 19px">Categorías</h1></div>
+      <div style="padding: 14px; display: flex; flex-direction: column; gap: 12px">
+        <span class="mu">El prefijo arma el SKU automático (LAC000001).</span>
+        <div class="card"><div class="it" style="border: 0"><span style="flex: 1"><strong style="display: block; font-size: 15px">Abarrotes</strong><span class="mu">Prefijo ABA · próximo ABA000010</span></span><button type="button" class="btn sm" aria-label="Editar Abarrotes">Editar</button></div><div class="it"><span style="flex: 1"><strong style="display: block; font-size: 15px">Bebidas</strong><span class="mu">Prefijo BEB · próximo BEB000008</span></span><button type="button" class="btn sm" aria-label="Editar Bebidas">Editar</button></div><div class="it"><span style="flex: 1"><strong style="display: block; font-size: 15px">Lácteos</strong><span class="mu">Prefijo LAC · próximo LAC000005</span></span><button type="button" class="btn sm" aria-label="Editar Lácteos">Editar</button></div><div class="it"><span style="flex: 1"><strong style="display: block; font-size: 15px">Limpieza</strong><span class="mu">Prefijo LIM · próximo LIM000003</span></span><button type="button" class="btn sm" aria-label="Editar Limpieza">Editar</button></div><div class="it"><span style="flex: 1"><strong style="display: block; font-size: 15px">Snacks</strong><span class="mu">Prefijo SNA · próximo SNA000003</span></span><button type="button" class="btn sm" aria-label="Editar Snacks">Editar</button></div><div class="it"><span style="flex: 1"><strong style="display: block; font-size: 15px">Golosinas</strong><span class="mu">Prefijo GOL · próximo GOL000001</span></span><span class="tag t-mu">Desactivada</span><button type="button" class="btn sm" aria-label="Editar Golosinas">Editar</button></div></div>
+        <span class="mu" style="font-size: 12px">Las desactivadas no aparecen al crear productos; los productos que ya la tienen la conservan.</span>
+      </div>
+      <a href="#" class="fab">+ Nueva categoría</a>
+    </div>
+  </div>
+
+  <div class="fr">
+    <span class="cap">Celular · Nueva categoría (con error)</span>
+    <div class="ph">
+      <div class="top" style="padding: 10px 12px; gap: 6px"><a href="#" class="back" aria-label="Volver a Productos"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#101828" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"></path></svg></a><h1 class="h1" style="font-size: 19px">Categorías</h1></div>
+      <div style="padding: 14px; opacity: .45">
+        <div class="card"><div class="it" style="border: 0">Abarrotes <span class="mu" style="margin-left: auto">ABA</span></div><div class="it">Bebidas <span class="mu" style="margin-left: auto">BEB</span></div><div class="it">Lácteos <span class="mu" style="margin-left: auto">LAC</span></div></div>
+      </div>
+      <div class="ov">
+        <form class="sheet" role="dialog" aria-labelledby="cat-t">
+          <span class="grab"></span>
+          <h2 id="cat-t" class="h1" style="font-size: 19px">Nueva categoría</h2>
+          <div><label class="lb" for="cat-n">Nombre</label><input id="cat-n" class="in" value="Panadería"></div>
+          <div><label class="lb" for="cat-p">Prefijo del SKU</label><input id="cat-p" class="in err" value="ABA" style="text-transform: uppercase" aria-describedby="cat-p-er cat-p-h"><span class="er" id="cat-p-er">Ya existe una categoría con ese prefijo SKU.</span><span class="hint" id="cat-p-h">Letras y números, hasta 8. Los productos quedan como PAN000001, PAN000002…</span></div>
+          <button type="submit" class="btn p" style="height: 52px">Crear categoría</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="fr">
+    <span class="cap">Celular · Productos › Lugares en la tienda</span>
+    <div class="ph">
+      <div class="top" style="padding: 10px 12px; gap: 6px"><a href="#" class="back" aria-label="Volver a Productos"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#101828" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"></path></svg></a><h1 class="h1" style="font-size: 19px">Lugares en la tienda</h1></div>
+      <div style="padding: 14px; display: flex; flex-direction: column; gap: 12px">
+        <span class="mu">Pasillo, estante, heladera, depósito… Los cajeros los ven al vender como "Dónde está".</span>
+        <div class="card"><div class="it" style="border: 0"><span style="flex: 1"><strong style="display: block; font-size: 15px">Depósito</strong><span class="mu">3 productos</span></span><button type="button" class="btn sm" aria-label="Editar Depósito">Editar</button></div><div class="it"><span style="flex: 1"><strong style="display: block; font-size: 15px">Heladera</strong><span class="mu">6 productos</span></span><button type="button" class="btn sm" aria-label="Editar Heladera">Editar</button></div><div class="it"><span style="flex: 1"><strong style="display: block; font-size: 15px">Mostrador</strong><span class="mu">1 producto</span></span><button type="button" class="btn sm" aria-label="Editar Mostrador">Editar</button></div><div class="it"><span style="flex: 1"><strong style="display: block; font-size: 15px">Pasillo 1 · Estante A</strong><span class="mu">2 productos</span></span><button type="button" class="btn sm" aria-label="Editar Pasillo 1 · Estante A">Editar</button></div><div class="it"><span style="flex: 1"><strong style="display: block; font-size: 15px">Pasillo 1 · Estante B</strong><span class="mu">3 productos</span></span><button type="button" class="btn sm" aria-label="Editar Pasillo 1 · Estante B">Editar</button></div><div class="it"><span class="mu" style="flex: 1">y 2 más</span></div></div>
+        <div class="card sec">
+          <h2 class="h2">Nuevo lugar</h2>
+          <div><label class="lb" for="l-z">Zona</label><input id="l-z" class="in" placeholder="Pasillo 3, Heladera, Depósito…"></div>
+          <div style="display: flex; gap: 8px"><div style="flex: 1.4"><label class="lb" for="l-s">Estante <span class="op">(opc.)</span></label><input id="l-s" class="in" placeholder="Estante A"></div><div style="flex: 1"><label class="lb" for="l-l">Nivel <span class="op">(opc.)</span></label><input id="l-l" class="in" placeholder="2"></div></div>
+          <button type="button" class="btn p">Agregar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="fr">
+    <span class="cap">Escritorio · pestaña Categorías (editar abierto)</span>
+    <div class="dk">
+      <aside class="side">
+        <div style="display: flex; align-items: center; gap: 10px; padding: 0 6px">
+          <svg aria-hidden="true" viewBox="3 3 42 42" width="30" height="30"><path d="M11 5H37Q40 5 40 8V39L36 43L32 39L28 43L24 39L20 43L16 39L12 43L8 39V8Q8 5 11 5Z" fill="#FFE14D" stroke="#111111" stroke-width="3" stroke-linejoin="round"></path><circle cx="19" cy="18" r="2.8" fill="#111111"></circle><circle cx="29" cy="18" r="2.8" fill="#111111"></circle><path d="M17 25Q24 31 31 25" fill="none" stroke="#111111" stroke-width="3" stroke-linecap="round"></path></svg>
+          <div><div style="font-weight: 800; font-size: 14px">Tienda Local</div><div class="mu" style="font-size: 12px">Plan Prueba · 9 días</div></div>
+        </div>
+        <a href="#" class="btn p" style="height: 42px">Nueva venta</a>
+        <nav aria-label="Principal" style="display: flex; flex-direction: column; gap: 2px">
+          <a href="#" class="n"><span class="dot"></span>Inicio</a><a href="#" class="n"><span class="dot"></span>Vender</a><a href="#" class="n"><span class="dot"></span>Caja</a><a href="#" class="n on" aria-current="page"><span class="dot"></span>Productos</a><a href="#" class="n"><span class="dot"></span>Ventas</a><a href="#" class="n"><span class="dot"></span>Pedidos</a><a href="#" class="n"><span class="dot"></span>Reportes</a><a href="#" class="n"><span class="dot"></span>Configuración</a>
+        </nav>
+      </aside>
+      <main class="main">
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px">
+          <div><h1 class="h1" style="font-size: 26px">Productos</h1><div class="mu">6 categorías · 5 activas</div></div>
+          <a href="#" class="btn p">+ Nueva categoría</a>
+        </div>
+        <nav aria-label="Secciones de productos" class="tabs"><a href="P01-Productos-Lista.dc.html" class="tb">Productos</a><a href="#" class="tb on" aria-current="page">Categorías</a><a href="#" class="tb">Lugares en la tienda</a></nav>
+        <span class="mu">El prefijo arma el SKU automático (LAC000001). Si el producto se crea sin SKU, se usa el próximo número.</span>
+        <div class="card" style="overflow: hidden">
+          <table class="tbl">
+            <thead><tr><th scope="col">Categoría</th><th scope="col">Prefijo</th><th scope="col">Próximo SKU</th><th scope="col">Estado</th><th scope="col" style="text-align: right"><span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Acciones</span></th></tr></thead>
+            <tbody><tr><td style="font-weight: 700">Abarrotes</td><td><code style="font: 600 13px ui-monospace, monospace">ABA</code></td><td class="mu">ABA000010</td><td><span class="tag t-ok">Activa</span></td><td style="text-align: right; white-space: nowrap"><button type="button" class="btn sm">Editar</button> <button type="button" class="btn sm">Desactivar</button></td></tr><tr><td style="font-weight: 700">Bebidas</td><td><code style="font: 600 13px ui-monospace, monospace">BEB</code></td><td class="mu">BEB000008</td><td><span class="tag t-ok">Activa</span></td><td style="text-align: right; white-space: nowrap"><button type="button" class="btn sm">Editar</button> <button type="button" class="btn sm">Desactivar</button></td></tr><tr><td style="font-weight: 700">Lácteos</td><td><code style="font: 600 13px ui-monospace, monospace">LAC</code></td><td class="mu">LAC000005</td><td><span class="tag t-ok">Activa</span></td><td style="text-align: right; white-space: nowrap"><button type="button" class="btn sm">Editar</button> <button type="button" class="btn sm">Desactivar</button></td></tr><tr><td style="font-weight: 700">Limpieza</td><td><code style="font: 600 13px ui-monospace, monospace">LIM</code></td><td class="mu">LIM000003</td><td><span class="tag t-ok">Activa</span></td><td style="text-align: right; white-space: nowrap"><button type="button" class="btn sm">Editar</button> <button type="button" class="btn sm">Desactivar</button></td></tr><tr><td style="font-weight: 700">Snacks</td><td><code style="font: 600 13px ui-monospace, monospace">SNA</code></td><td class="mu">SNA000003</td><td><span class="tag t-ok">Activa</span></td><td style="text-align: right; white-space: nowrap"><button type="button" class="btn sm">Editar</button> <button type="button" class="btn sm">Desactivar</button></td></tr><tr><td style="font-weight: 700">Golosinas</td><td><code style="font: 600 13px ui-monospace, monospace">GOL</code></td><td class="mu">GOL000001</td><td><span class="tag t-mu">Desactivada</span></td><td style="text-align: right; white-space: nowrap"><button type="button" class="btn sm">Editar</button></td></tr></tbody>
+          </table>
+        </div>
+      </main>
+      <div class="scrim"></div>
+      <form class="dlg" role="dialog" aria-labelledby="ec-t" style="left: 450px; top: 200px; width: 420px">
+        <div style="display: flex; justify-content: space-between"><h2 id="ec-t" class="h2" style="font-size: 18px">Editar categoría</h2><button type="button" aria-label="Cerrar" style="border: 0; background: transparent; font-size: 20px">×</button></div>
+        <div><label class="lb" for="ec-n">Nombre</label><input id="ec-n" class="in" value="Lácteos"></div>
+        <div><label class="lb" for="ec-p">Prefijo del SKU</label><input id="ec-p" class="in" value="LAC" style="text-transform: uppercase"><span class="hint">Los SKU que ya existen no cambian; solo los productos nuevos usan el prefijo nuevo.</span></div>
+        <div style="display: flex; justify-content: space-between; gap: 8px"><button type="button" class="btn" style="color: #B42318">Desactivar…</button><span style="display: flex; gap: 8px"><button type="button" class="btn">Cancelar</button><button type="submit" class="btn p">Guardar</button></span></div>
+      </form>
+    </div>
+  </div>
+
+  <div class="fr">
+    <span class="cap">Escritorio · pestaña Lugares en la tienda (eliminar)</span>
+    <div class="dk">
+      <aside class="side">
+        <div style="display: flex; align-items: center; gap: 10px; padding: 0 6px">
+          <svg aria-hidden="true" viewBox="3 3 42 42" width="30" height="30"><path d="M11 5H37Q40 5 40 8V39L36 43L32 39L28 43L24 39L20 43L16 39L12 43L8 39V8Q8 5 11 5Z" fill="#FFE14D" stroke="#111111" stroke-width="3" stroke-linejoin="round"></path><circle cx="19" cy="18" r="2.8" fill="#111111"></circle><circle cx="29" cy="18" r="2.8" fill="#111111"></circle><path d="M17 25Q24 31 31 25" fill="none" stroke="#111111" stroke-width="3" stroke-linecap="round"></path></svg>
+          <div><div style="font-weight: 800; font-size: 14px">Tienda Local</div><div class="mu" style="font-size: 12px">Plan Prueba · 9 días</div></div>
+        </div>
+        <a href="#" class="btn p" style="height: 42px">Nueva venta</a>
+        <nav aria-label="Principal" style="display: flex; flex-direction: column; gap: 2px">
+          <a href="#" class="n"><span class="dot"></span>Inicio</a><a href="#" class="n"><span class="dot"></span>Vender</a><a href="#" class="n"><span class="dot"></span>Caja</a><a href="#" class="n on" aria-current="page"><span class="dot"></span>Productos</a><a href="#" class="n"><span class="dot"></span>Ventas</a><a href="#" class="n"><span class="dot"></span>Pedidos</a><a href="#" class="n"><span class="dot"></span>Reportes</a><a href="#" class="n"><span class="dot"></span>Configuración</a>
+        </nav>
+      </aside>
+      <main class="main">
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px">
+          <div><h1 class="h1" style="font-size: 26px">Productos</h1><div class="mu">7 lugares</div></div>
+          <a href="#" class="btn p">+ Nuevo lugar</a>
+        </div>
+        <nav aria-label="Secciones de productos" class="tabs"><a href="P01-Productos-Lista.dc.html" class="tb">Productos</a><a href="#" class="tb">Categorías</a><a href="#" class="tb on" aria-current="page">Lugares en la tienda</a></nav>
+        <span class="mu">Pasillo, estante, heladera, depósito… Se marcan en cada producto con "Dónde está".</span>
+        <div class="card" style="overflow: hidden">
+          <table class="tbl">
+            <thead><tr><th scope="col">Zona</th><th scope="col">Estante</th><th scope="col">Nivel</th><th scope="col">Productos</th><th scope="col" style="text-align: right"><span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Acciones</span></th></tr></thead>
+            <tbody><tr><td style="font-weight: 700">Depósito</td><td class="mu">—</td><td class="mu">—</td><td>3</td><td style="text-align: right; white-space: nowrap"><button type="button" class="btn sm">Editar</button> <button type="button" class="btn sm" style="color: #B42318">Eliminar</button></td></tr><tr><td style="font-weight: 700">Heladera</td><td class="mu">—</td><td class="mu">—</td><td>6</td><td style="text-align: right; white-space: nowrap"><button type="button" class="btn sm">Editar</button> <button type="button" class="btn sm" style="color: #B42318">Eliminar</button></td></tr><tr><td style="font-weight: 700">Mostrador</td><td class="mu">—</td><td class="mu">—</td><td>1</td><td style="text-align: right; white-space: nowrap"><button type="button" class="btn sm">Editar</button> <button type="button" class="btn sm" style="color: #B42318">Eliminar</button></td></tr><tr><td style="font-weight: 700">Pasillo 1</td><td class="mu">Estante A</td><td class="mu">—</td><td>2</td><td style="text-align: right; white-space: nowrap"><button type="button" class="btn sm">Editar</button> <button type="button" class="btn sm" style="color: #B42318">Eliminar</button></td></tr><tr><td style="font-weight: 700">Pasillo 1</td><td class="mu">Estante B</td><td class="mu">—</td><td>3</td><td style="text-align: right; white-space: nowrap"><button type="button" class="btn sm">Editar</button> <button type="button" class="btn sm" style="color: #B42318">Eliminar</button></td></tr><tr><td style="font-weight: 700">Pasillo 2</td><td class="mu">Estante B</td><td class="mu">3</td><td>4</td><td style="text-align: right; white-space: nowrap"><button type="button" class="btn sm">Editar</button> <button type="button" class="btn sm" style="color: #B42318">Eliminar</button></td></tr><tr><td style="font-weight: 700">Pasillo 3</td><td class="mu">—</td><td class="mu">—</td><td>2</td><td style="text-align: right; white-space: nowrap"><button type="button" class="btn sm">Editar</button> <button type="button" class="btn sm" style="color: #B42318">Eliminar</button></td></tr></tbody>
+          </table>
+        </div>
+      </main>
+      <div class="scrim"></div>
+      <section class="dlg" role="alertdialog" aria-labelledby="dl-t" style="left: 450px; top: 240px; width: 420px">
+        <h2 id="dl-t" class="h2" style="font-size: 18px">¿Eliminar "Heladera"?</h2>
+        <p class="mu" style="margin: 0">Se quita de <strong style="color: #101828">6 productos</strong>. Los productos y su stock no cambian; solo dejan de mostrar este lugar.</p>
+        <div style="display: flex; justify-content: flex-end; gap: 8px"><button type="button" class="btn">Cancelar</button><button type="button" class="btn d">Eliminar lugar</button></div>
+      </section>
+    </div>
+  </div>
+
+  <aside style="width: 600px" class="notes" aria-label="Notas de implementación">
+    <h3>Por qué aquí</h3>
+    <ul>
+      <li>Antes estaban en Configuración › Inventario ("Categorías y SKU", "Ubicaciones"). Se usan al cargar productos, así que pasan a <strong>Productos</strong>. Configuración › Productos guarda solo Vencimientos y atajos a estas pestañas.</li>
+      <li>"Ubicaciones" se llama ahora <strong>Lugares en la tienda</strong>; en cada producto, <strong>Dónde está</strong>. "Categorías y SKU" pasa a <strong>Categorías</strong>.</li>
+    </ul>
+    <h3>Caminos</h3>
+    <ul>
+      <li>Escritorio y tablet: pestañas <strong>Productos · Categorías · Lugares en la tienda</strong> debajo del título. Rutas <code>/dashboard/products/categorias</code> y <code>/dashboard/products/lugares</code>.</li>
+      <li>Celular: Productos › ⋯ → "Categorías" o "Lugares en la tienda"; pantalla con "Volver a Productos". Crear o editar abre una hoja desde abajo.</li>
+      <li>También desde el formulario del producto ("+ Nueva", "+ Nuevo lugar") y desde Configuración › Productos (atajos).</li>
+    </ul>
+    <h3>Validaciones</h3>
+    <ul>
+      <li>Categoría: nombre requerido (máx. 80), prefijo requerido (máx. 8, solo letras y números, se pasa a mayúsculas). Nombre y prefijo no se repiten (409, en su campo). Cambiar el prefijo no cambia los SKU existentes.</li>
+      <li>Categorías no se borran: se desactivan y dejan de aparecer al crear productos. La API no tiene "volver a activar" (solo <code>/deactivate</code>): "Desactivar…" pide confirmar.</li>
+      <li>Lugar: zona requerida (máx. 50), estante máx. 50, nivel máx. 30 y solo con estante; no se repite sin importar mayúsculas (409). Eliminar avisa a cuántos productos se les quita (<code>product_count</code>).</li>
+    </ul>
+    <h3>Permisos</h3>
+    <ul>
+      <li>Solo dueño. El cajero no ve estas pestañas ni las entradas del menú ⋯; si entra por la URL ve "No tienes permiso". La lista de categorías es solo dueño en la API.</li>
+      <li>El cajero sí ve "Dónde está" de cada producto (en Vender y en el detalle): <code>GET /store-locations</code> acepta cualquier usuario activo.</li>
+    </ul>
+    <h3>API (sin cambios)</h3>
+    <ul>
+      <li><code>GET/POST /product-categories</code>, <code>PATCH /product-categories/{id}</code>, <code>POST …/{id}/deactivate</code>.</li>
+      <li><code>GET/POST /store-locations</code>, <code>PATCH</code> y <code>DELETE /store-locations/{id}</code>.</li>
+      <li>Próximo SKU = prefijo + <code>next_sku_number</code> con 6 dígitos. La API no da cuántos productos tiene cada categoría: no se muestra.</li>
+    </ul>
+    <h3>Estados</h3>
+    <ul>
+      <li>Sin categorías: "Crea tu primera categoría para tener SKU automático". Sin lugares: "Todavía no hay lugares" + "+ Nuevo lugar". Error de carga: "Reintentar".</li>
+    </ul>
+  </aside>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":4610,"height":1040}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

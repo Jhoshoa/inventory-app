@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Producto · ventanas</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#EEF0F4}
+*{box-sizing:border-box}
+a{color:#1F4FD8}a:hover{color:#163BA6}
+.fr{display:flex;flex-direction:column;gap:10px;flex-shrink:0}
+.cap{font:700 13px Inter,sans-serif;color:#475467;text-transform:uppercase;letter-spacing:.05em}
+.ph{width:390px;height:844px;background:#F7F8FA;border-radius:28px;overflow:hidden;position:relative;display:flex;flex-direction:column;box-shadow:0 0 0 1px #D0D5DD}
+.ov{position:absolute;inset:0;background:rgba(16,24,40,.45);display:flex;flex-direction:column;justify-content:flex-end}
+.sheet{background:#fff;border-radius:24px 24px 0 0;padding:8px 16px 24px;display:flex;flex-direction:column;gap:12px}
+.grab{width:40px;height:5px;border-radius:999px;background:#D0D5DD;margin:0 auto}
+.dlg{background:#fff;border-radius:18px;width:520px;padding:22px;display:flex;flex-direction:column;gap:14px;box-shadow:0 0 0 1px #D0D5DD,0 20px 40px rgba(16,24,40,.12)}
+.h2{margin:0;font-size:18px;font-weight:800}
+.mu{color:#475467;font-size:13px}
+.in{height:46px;border:1px solid #D0D5DD;border-radius:12px;padding:0 12px;font:15px Inter,sans-serif;color:#101828;background:#fff;width:100%}
+.in.err{border-color:#D92D20;box-shadow:0 0 0 3px #FEE4E2}
+.lb{font-size:14px;font-weight:600;display:block;margin-bottom:6px}
+.op{font-weight:400;color:#475467}
+.er{font-size:12px;color:#B42318;margin-top:6px;display:block}
+.hint{font-size:12px;color:#475467;margin-top:6px;display:block}
+.btn{height:46px;border-radius:12px;border:1px solid #D0D5DD;background:#fff;font:700 14px Inter,sans-serif;color:#344054;padding:0 14px;display:inline-flex;align-items:center;justify-content:center;gap:8px;text-decoration:none;white-space:nowrap}
+.btn.p{background:#1F4FD8;border-color:#1F4FD8;color:#fff}
+.btn.d{background:#D92D20;border-color:#D92D20;color:#fff}
+.btn[disabled]{opacity:.5}
+.seg{display:flex;background:#EEF0F4;border-radius:12px;padding:3px}
+.seg button{flex:1;border:0;background:transparent;border-radius:9px;height:40px;font:700 14px Inter,sans-serif;color:#475467}
+.seg button.on{background:#fff;color:#101828;box-shadow:0 1px 2px rgba(16,24,40,.1)}
+.step{display:flex;align-items:center;border:1px solid #D0D5DD;border-radius:12px;overflow:hidden}
+.step button{width:52px;height:52px;border:0;background:#fff;font:700 22px Inter,sans-serif}
+.step input{flex:1;height:52px;border:0;border-left:1px solid #E8EAEF;border-right:1px solid #E8EAEF;text-align:center;font:800 20px Inter,sans-serif;min-width:0}
+.chip{height:34px;padding:0 12px;border-radius:999px;border:1px solid #D0D5DD;background:#fff;font:600 13px Inter,sans-serif;color:#344054}
+.chip.on{background:#101828;border-color:#101828;color:#fff}
+.opt{display:flex;align-items:center;gap:10px;border:1px solid #E8EAEF;border-radius:12px;padding:10px 12px;font-size:14px}
+.opt.on{border:2px solid #1F4FD8;background:#EEF4FF}
+.res{display:flex;justify-content:space-between;background:#F2F4F7;border-radius:12px;padding:10px 12px;font-size:14px}
+.tag{display:inline-flex;font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px}
+.t-warn{background:#FFFAEB;color:#B54708}.t-ok{background:#ECFDF3;color:#067647}
+.notes{width:440px;flex-shrink:0;background:#fff;border:1px solid #E8EAEF;border-radius:16px;padding:20px 22px;font:13px/1.55 Inter,sans-serif;color:#344054}
+.notes h3{margin:16px 0 6px;font-size:12px;font-weight:800;color:#101828;text-transform:uppercase;letter-spacing:.05em}
+.notes h3:first-child{margin-top:0}
+.notes ul{margin:0;padding-left:18px}
+.notes code{font:12px ui-monospace,monospace;background:#F2F4F7;padding:1px 4px;border-radius:4px}
+</style>
+</helmet>
+<div style="width: 2370px; height: 1120px; padding: 40px; display: flex; gap: 40px; align-items: flex-start; font-family: Inter, system-ui, sans-serif; color: #101828; font-feature-settings: 'tnum' 1">
+
+  <div class="fr">
+    <span class="cap">Ajustar stock · Agregar</span>
+    <div class="ph">
+      <div class="ov">
+        <form class="sheet" role="dialog" aria-labelledby="add-t">
+          <span class="grab"></span>
+          <div><h2 id="add-t" class="h2">Ajustar stock</h2><span class="mu">Yogur Frutilla · hay 11 u.</span></div>
+          <div class="seg" role="tablist" aria-label="Tipo de ajuste"><button type="button" role="tab" aria-selected="true" class="on">+ Agregar</button><button type="button" role="tab" aria-selected="false">− Descontar</button></div>
+          <div><label class="lb" for="a-q">Cantidad que entra</label><div class="step"><button type="button" aria-label="Menos">−</button><input id="a-q" inputmode="numeric" value="6"><button type="button" aria-label="Más">+</button></div></div>
+          <div class="res"><span>Stock después</span><strong>11 → 17 u.</strong></div>
+          <div style="display: flex; gap: 10px">
+            <div style="flex: 1.3"><label class="lb" for="a-exp">Vence el <span class="op">(opc.)</span></label><input id="a-exp" class="in" type="date" value="2026-12-02"></div>
+            <div style="flex: 1"><label class="lb" for="a-al">Avisar días antes</label><input id="a-al" class="in" value="5"></div>
+          </div>
+          <span class="hint" style="margin-top: -6px">Entra como un lote nuevo. Sin fecha: stock sin lote.</span>
+          <div><label class="lb" for="a-r">Razón <span class="op">(opcional)</span></label><input id="a-r" class="in" placeholder="Ej. Compra al proveedor"></div>
+          <button type="submit" class="btn p" style="height: 52px">Agregar 6 unidades</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="fr">
+    <span class="cap">Ajustar stock · Descontar (con error)</span>
+    <div class="ph">
+      <div class="ov">
+        <form class="sheet" role="dialog" aria-labelledby="sub-t">
+          <span class="grab"></span>
+          <div><h2 id="sub-t" class="h2">Ajustar stock</h2><span class="mu">Yogur Frutilla · hay 11 u.</span></div>
+          <div class="seg" role="tablist" aria-label="Tipo de ajuste"><button type="button" role="tab" aria-selected="false">+ Agregar</button><button type="button" role="tab" aria-selected="true" class="on">− Descontar</button></div>
+          <div><label class="lb" for="s-q">Cantidad que sale</label><div class="step" style="border-color: #D92D20"><button type="button" aria-label="Menos">−</button><input id="s-q" inputmode="numeric" value="4" aria-describedby="s-q-er"><button type="button" aria-label="Más">+</button></div><span class="er" id="s-q-er">Ese lote solo tiene 3 unidades.</span></div>
+          <fieldset style="border: 0; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px">
+            <legend class="lb">Sale de</legend>
+            <label class="opt"><input type="radio" name="lote">Automático: primero el que vence antes</label>
+            <label class="opt"><input type="radio" name="lote"><span style="flex: 1">Lote 13/11 · quedan 8</span><span class="tag t-warn">Por vencer</span></label>
+            <label class="opt on"><input type="radio" name="lote" checked><span style="flex: 1">Lote 20/12 · quedan 3</span><span class="tag t-ok">Vigente</span></label>
+          </fieldset>
+          <div><span class="lb">Razón</span>
+            <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px"><button type="button" class="chip">Vencido</button><button type="button" class="chip on">Roto o dañado</button><button type="button" class="chip">Conteo físico</button><button type="button" class="chip">Consumo propio</button></div>
+            <input class="in" aria-label="Razón" value="Roto o dañado"></div>
+          <button type="submit" class="btn p" style="height: 52px" disabled>Descontar 4 unidades</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="fr">
+    <span class="cap">Escanear con la cámara</span>
+    <div class="ph" style="background: #0B0D12">
+      <div style="display: flex; justify-content: space-between; align-items: center; padding: 16px; color: #fff">
+        <strong style="font-size: 17px">Escanear código</strong>
+        <button type="button" aria-label="Cerrar" style="width: 44px; height: 44px; border-radius: 12px; border: 0; background: rgba(255,255,255,.12); color: #fff; font-size: 20px">×</button>
+      </div>
+      <div style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; color: #fff">
+        <div role="img" aria-label="Vista de la cámara" style="width: 280px; height: 200px; border-radius: 18px; border: 3px solid #FFE14D; box-shadow: 0 0 0 999px rgba(0,0,0,.35)"></div>
+        <span style="font-size: 15px">Apunta al código QR o de barras</span>
+      </div>
+      <div style="padding: 16px 16px 28px; display: flex; flex-direction: column; gap: 10px">
+        <div style="background: rgba(255,255,255,.1); border-radius: 12px; padding: 10px 12px; font-size: 13px; color: #D0D5DD">Si no hay permiso de cámara: "Permite la cámara en tu navegador o escribe el código."</div>
+        <button type="button" class="btn" style="background: transparent; color: #fff; border-color: rgba(255,255,255,.3)">Escribir el código</button>
+      </div>
+    </div>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 18px; flex-shrink: 0">
+    <span class="cap">Escritorio · ventanas</span>
+    <section class="dlg" role="dialog" aria-labelledby="loc-t">
+      <div style="display: flex; justify-content: space-between"><h2 id="loc-t" class="h2">Dónde está</h2><button type="button" aria-label="Cerrar" style="border: 0; background: transparent; font-size: 20px">×</button></div>
+      <input class="in" type="search" aria-label="Buscar lugar" placeholder="Buscar lugar…" style="height: 40px">
+      <div style="border: 1px solid #E8EAEF; border-radius: 12px">
+        <label style="display: flex; align-items: center; gap: 10px; padding: 8px 12px"><input type="checkbox" checked><span style="flex: 1">Pasillo 2 · Estante B · 3</span><select class="in" style="width: 130px; height: 34px; font-size: 13px" aria-label="Tipo"><option>Exhibición</option></select></label>
+        <label style="display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-top: 1px solid #F2F4F7"><input type="checkbox" checked><span style="flex: 1">Depósito</span><select class="in" style="width: 130px; height: 34px; font-size: 13px" aria-label="Tipo"><option>Depósito</option></select></label>
+        <label style="display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-top: 1px solid #F2F4F7"><input type="checkbox"><span style="flex: 1">Heladera</span></label>
+      </div>
+      <span style="display: flex; justify-content: space-between; align-items: center"><span class="mu">Hasta 6 lugares.</span><button type="button" class="btn sm" style="border: 0; color: #1F4FD8">+ Nuevo lugar</button></span>
+      <div style="display: flex; justify-content: flex-end; gap: 8px"><button type="button" class="btn">Cancelar</button><button type="button" class="btn p">Guardar</button></div>
+    </section>
+    <section class="dlg" role="dialog" aria-labelledby="del-t">
+      <h2 id="del-t" class="h2">¿Eliminar Yogur Frutilla?</h2>
+      <p class="mu" style="margin: 0">Deja de aparecer en Productos, Vender y el catálogo. Las ventas pasadas y su historial se conservan.</p>
+      <div><label class="lb" for="del-c">Escribe ELIMINAR para confirmar</label><input id="del-c" class="in" value="ELIMIN"><span class="er">Escribe ELIMINAR para confirmar.</span></div>
+      <div style="display: flex; justify-content: flex-end; gap: 8px"><button type="button" class="btn">Cancelar</button><button type="button" class="btn d" disabled>Eliminar producto</button></div>
+    </section>
+    <section class="dlg" role="dialog" aria-labelledby="qr-t" style="flex-direction: row; align-items: center; gap: 18px">
+      <div role="img" aria-label="Código QR de QR-LAC000004" style="width: 128px; height: 128px; flex-shrink: 0; border-radius: 10px; background: repeating-conic-gradient(#101828 0% 25%, #fff 0% 50%) 0 0 / 16px 16px; border: 8px solid #fff; box-shadow: 0 0 0 1px #E8EAEF"></div>
+      <div style="flex: 1; display: flex; flex-direction: column; gap: 10px">
+        <h2 id="qr-t" class="h2">QR del producto</h2>
+        <span class="mu">QR-LAC000004 · Yogur Frutilla</span>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap"><button type="button" class="btn">Descargar</button><a href="#" class="btn p">Imprimir etiqueta</a></div>
+      </div>
+    </section>
+  </div>
+
+  <aside class="notes" aria-label="Notas de implementación">
+    <h3>Ajustar stock</h3>
+    <ul>
+      <li>Celular: hoja que sube desde abajo. Escritorio y tablet: ventana centrada de 520 px con el mismo contenido.</li>
+      <li>Pestañas Agregar / Descontar en lugar del número con signo: la cantidad siempre es positiva y la web manda el signo.</li>
+      <li>"Stock después" se recalcula al escribir. El botón dice la acción ("Agregar 6 unidades").</li>
+      <li>"Retirar" desde un lote abre Descontar con ese lote y su cantidad.</li>
+      <li>Razones rápidas: chips que llenan el texto (se puede editar). Solo texto; no cambia la API.</li>
+    </ul>
+    <h3>Validaciones</h3>
+    <ul>
+      <li>Cantidad: entero de 1 a 1.000.000.</li>
+      <li>Descontar: no más que el stock ("Stock insuficiente: hay 11") ni más que el lote elegido ("Ese lote solo tiene 3 unidades").</li>
+      <li>Razón: requerida al descontar, máx. 120.</li>
+      <li>Vence el: solo al agregar; fecha válida (2000–2100). Aviso: entero 0–365, 5 si vacío.</li>
+      <li>El botón queda deshabilitado mientras haya errores o se esté guardando.</li>
+    </ul>
+    <h3>Dónde está · Eliminar · QR · Cámara</h3>
+    <ul>
+      <li>Dónde está: hasta 6 lugares; el primero marcado queda como Exhibición; buscador si hay más de 8.</li>
+      <li>"+ Nuevo lugar": abre encima la ventana chica de Zona / Estante / Nivel (igual que en el formulario); al crear vuelve aquí con el lugar ya marcado. Sin lugares creados: "Todavía no hay lugares" + "+ Nuevo lugar". <code>POST /store-locations</code>, luego <code>PUT /products/{id}/locations</code>.</li>
+      <li>Eliminar: borrado lógico. El botón se habilita solo con "ELIMINAR" exacto.</li>
+      <li>QR: "Descargar" baja el SVG (como hoy); "Imprimir etiqueta" abre Etiquetas con este producto ya elegido (nuevo, solo web).</li>
+      <li>Cámara: se pide permiso al abrir; si se niega, mensaje y "Escribir el código". Al leer un código se cierra sola.</li>
+    </ul>
+    <h3>API</h3>
+    <ul>
+      <li><code>PATCH /products/{id}/stock</code> (<code>quantity</code>, <code>reason</code>, <code>expires_on</code>, <code>alert_days</code>, <code>batch_id</code>), <code>PUT /products/{id}/locations</code>, <code>DELETE /products/{id}</code>, <code>GET /products/qr/{code}</code> — existen. Sin cambios de backend.</li>
+    </ul>
+  </aside>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":2370,"height":1120}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

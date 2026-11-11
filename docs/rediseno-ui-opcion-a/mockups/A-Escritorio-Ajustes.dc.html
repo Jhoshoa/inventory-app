@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>A · Configuración en escritorio</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#F7F8FA}
+a{color:#1F4FD8}a:hover{color:#163BA6}
+</style>
+</helmet>
+<div style="width: 100%; min-height: 844px; box-sizing: border-box; background: #F7F8FA; font-family: Inter, system-ui, sans-serif; color: #101828; display: flex; flex-wrap: wrap">
+
+  <aside style="flex: 1 1 220px; max-width: 240px; min-width: 200px; background: #FFFFFF; border-right: 1px solid #E8EAEF; padding: 20px 14px; box-sizing: border-box; display: flex; flex-direction: column; gap: 20px">
+    <div style="display: flex; align-items: center; gap: 10px; padding: 0 6px">
+      <svg aria-hidden="true" viewBox="3 3 42 42" width="32" height="32"><path d="M11 5H37Q40 5 40 8V39L36 43L32 39L28 43L24 39L20 43L16 39L12 43L8 39V8Q8 5 11 5Z" fill="#FFE14D" stroke="#111111" stroke-width="3" stroke-linejoin="round"></path><circle cx="19" cy="18" r="2.8" fill="#111111"></circle><circle cx="29" cy="18" r="2.8" fill="#111111"></circle><path d="M17 25Q24 31 31 25" fill="none" stroke="#111111" stroke-width="3" stroke-linecap="round"></path></svg>
+      <div><div style="font-weight: 800; font-size: 15px">Tienda Local</div><div style="font-size: 12px; color: #475467">Plan Prueba · 9 días</div></div>
+    </div>
+    <nav aria-label="Principal" style="display: flex; flex-direction: column; gap: 2px">
+      <sc-for list="{{nav}}" as="n" hint-placeholder-count="7">
+        <a href="{{n.href}}" style="display: flex; align-items: center; gap: 10px; height: 40px; padding: 0 10px; border-radius: 10px; text-decoration: none; font-size: 14px; font-weight: {{n.weight}}; color: {{n.color}}; background: {{n.bg}}">
+          <span style="width: 8px; height: 8px; border-radius: 3px; background: {{n.dot}}"></span>{{n.label}}</a>
+      </sc-for>
+    </nav>
+  </aside>
+
+  <div style="flex: 999 1 640px; min-width: 0; display: flex; flex-wrap: wrap; align-content: flex-start">
+    <nav aria-label="Configuración" style="flex: 1 1 230px; max-width: 260px; padding: 24px 12px 24px 24px; box-sizing: border-box; display: flex; flex-direction: column; gap: 16px">
+      <h1 style="margin: 0 8px; font-size: 24px; font-weight: 800; letter-spacing: -0.02em">Configuración</h1>
+      <label for="d-aj-search" style="display: flex; align-items: center; gap: 8px; height: 40px; padding: 0 10px; border: 1px solid #D0D5DD; border-radius: 10px; background: #FFFFFF">
+        <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#667085" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg>
+        <input id="d-aj-search" type="search" placeholder="Buscar en configuración" style="border: 0; outline: 0; flex: 1; min-width: 0; font: 14px Inter, sans-serif">
+      </label>
+      <sc-for list="{{groups}}" as="g" hint-placeholder-count="4">
+        <div style="display: flex; flex-direction: column; gap: 2px">
+          <span style="margin: 0 8px 4px; font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: #475467">{{g.title}}</span>
+          <sc-for list="{{g.items}}" as="it" hint-placeholder-count="2">
+            <a href="#" aria-current="{{it.current}}" style="display: flex; align-items: center; justify-content: space-between; height: 38px; padding: 0 10px; border-radius: 10px; text-decoration: none; font-size: 14px; font-weight: {{it.weight}}; color: {{it.color}}; background: {{it.bg}}">{{it.label}}<span style="font-size: 12px; font-weight: 700; color: {{it.badgeColor}}">{{it.badge}}</span></a>
+          </sc-for>
+        </div>
+      </sc-for>
+    </nav>
+
+    <main style="flex: 999 1 520px; min-width: 0; padding: 24px clamp(16px, 3vw, 36px) 40px 12px; box-sizing: border-box; display: flex; flex-direction: column; gap: 18px">
+      <div style="display: flex; flex-wrap: wrap; gap: 12px; align-items: end; justify-content: space-between">
+        <div>
+          <div style="font-size: 13px; color: #475467">Equipo y cuenta</div>
+          <h2 style="margin: 2px 0 0; font-size: 22px; font-weight: 800">Usuarios y permisos</h2>
+          <p style="margin: 4px 0 0; font-size: 14px; color: #475467">Quién entra a la tienda y qué puede hacer cada uno.</p>
+        </div>
+        <button type="button" style="height: 42px; padding: 0 16px; border-radius: 12px; border: 0; background: #1F4FD8; color: #FFFFFF; font: 700 14px Inter, sans-serif; display: flex; align-items: center; gap: 8px">
+          <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>Invitar persona</button>
+      </div>
+
+      <section style="background: #FFFFFF; border: 1px solid #E8EAEF; border-radius: 16px; overflow: hidden">
+        <div style="overflow-x: auto">
+          <table style="width: 100%; min-width: 560px; border-collapse: collapse; font-size: 14px">
+            <thead>
+              <tr style="background: #F9FAFB; color: #475467; text-align: left; font-size: 12px">
+                <th scope="col" style="padding: 10px 16px; font-weight: 600">Persona</th>
+                <th scope="col" style="padding: 10px 16px; font-weight: 600">Rol</th>
+                <th scope="col" style="padding: 10px 16px; font-weight: 600">Último ingreso</th>
+                <th scope="col" style="padding: 10px 16px; font-weight: 600; text-align: right"><span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Acciones</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr style="border-top: 1px solid #F2F4F7">
+                <td style="padding: 12px 16px"><div style="display: flex; align-items: center; gap: 10px"><span style="width: 34px; height: 34px; border-radius: 50%; background: #EEF4FF; color: #1F4FD8; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px">RQ</span><span><strong style="display: block">Rosa Quispe <span style="font-size: 11px; font-weight: 600; color: #475467">(tú)</span></strong><span style="font-size: 12px; color: #475467">dueno@local.test</span></span></div></td>
+                <td style="padding: 12px 16px"><span style="font-size: 12px; font-weight: 700; padding: 3px 9px; border-radius: 999px; background: #101828; color: #FFFFFF">Dueño</span></td>
+                <td style="padding: 12px 16px; color: #475467">Ahora</td>
+                <td style="padding: 12px 16px"></td>
+              </tr>
+              <tr style="border-top: 1px solid #F2F4F7">
+                <td style="padding: 12px 16px"><div style="display: flex; align-items: center; gap: 10px"><span style="width: 34px; height: 34px; border-radius: 50%; background: #ECFDF3; color: #067647; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px">LM</span><span><strong style="display: block">Luis Mamani</strong><span style="font-size: 12px; color: #475467">luis@correo.com</span></span></div></td>
+                <td style="padding: 12px 16px"><select aria-label="Rol de Luis Mamani" style="height: 36px; border: 1px solid #D0D5DD; border-radius: 10px; padding: 0 8px; font: 14px Inter, sans-serif; background: #FFFFFF"><option>Cajero</option><option>Dueño</option></select></td>
+                <td style="padding: 12px 16px; color: #475467">Hoy 11:30 · caja</td>
+                <td style="padding: 12px 16px; text-align: right"><button type="button" style="height: 36px; padding: 0 12px; border-radius: 10px; border: 1px solid #D0D5DD; background: #FFFFFF; font: 600 13px Inter, sans-serif; color: #344054">Desactivar</button></td>
+              </tr>
+              <tr style="border-top: 1px solid #F2F4F7; background: #FFFCF5">
+                <td style="padding: 12px 16px"><div style="display: flex; align-items: center; gap: 10px"><span style="width: 34px; height: 34px; border-radius: 50%; border: 1px dashed #98A2B3; display: flex; align-items: center; justify-content: center; color: #667085"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="m3 7 9 6 9-6"></path></svg></span><span><strong style="display: block">ana@correo.com</strong><span style="font-size: 12px; color: #B54708; font-weight: 600">Invitación pendiente · vence en 6 días</span></span></div></td>
+                <td style="padding: 12px 16px; color: #475467">Cajero</td>
+                <td style="padding: 12px 16px; color: #475467">—</td>
+                <td style="padding: 12px 16px; text-align: right; white-space: nowrap"><button type="button" style="height: 36px; padding: 0 12px; border-radius: 10px; border: 1px solid #D0D5DD; background: #FFFFFF; font: 600 13px Inter, sans-serif; color: #344054">Reenviar</button> <button type="button" style="height: 36px; padding: 0 12px; border-radius: 10px; border: 0; background: transparent; font: 600 13px Inter, sans-serif; color: #B42318">Cancelar</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section style="background: #FFFFFF; border: 1px solid #E8EAEF; border-radius: 16px; padding: 18px; display: flex; flex-direction: column; gap: 14px">
+        <div>
+          <h3 style="margin: 0; font-size: 16px; font-weight: 700">Qué puede hacer cada rol</h3>
+          <p style="margin: 4px 0 0; font-size: 13px; color: #475467">El cajero vende y consulta; la caja, los precios, el stock y las personas quedan para el dueño.</p>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px">
+          <div style="border: 1px solid #E8EAEF; border-radius: 14px; padding: 14px; display: flex; flex-direction: column; gap: 8px">
+            <strong style="font-size: 14px">Cajero</strong>
+            <sc-for list="{{cashierCan}}" as="c" hint-placeholder-count="5">
+              <span style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: {{c.color}}"><span aria-hidden="true" style="width: 18px; text-align: center; font-weight: 800">{{c.mark}}</span>{{c.label}}</span>
+            </sc-for>
+          </div>
+          <div style="border: 1px solid #E8EAEF; border-radius: 14px; padding: 14px; display: flex; flex-direction: column; gap: 8px">
+            <strong style="font-size: 14px">Dueño</strong>
+            <span style="font-size: 13px; color: #344054">Todo lo del cajero, y además:</span>
+            <sc-for list="{{ownerExtra}}" as="o" hint-placeholder-count="5">
+              <span style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: #067647"><span aria-hidden="true" style="width: 18px; text-align: center; font-weight: 800">✓</span>{{o}}</span>
+            </sc-for>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const navItem = (label, current) => ({
+      label, href: '#', weight: current ? 700 : 500,
+      color: current ? '#101828' : '#344054', bg: current ? '#EEF0F4' : 'transparent', dot: current ? '#1F4FD8' : '#D0D5DD'
+    });
+    const sub = (label, current, badge, badgeColor) => ({
+      label, current: current ? 'page' : undefined, weight: current ? 700 : 500,
+      color: current ? '#1F4FD8' : '#344054', bg: current ? '#EEF4FF' : 'transparent',
+      badge: badge || '', badgeColor: badgeColor || '#475467'
+    });
+    const yes = (label) => ({ label, mark: '✓', color: '#067647' });
+    const no = (label) => ({ label, mark: '—', color: '#667085' });
+    return {
+      nav: ['Inicio', 'Vender', 'Caja', 'Productos', 'Ventas', 'Pedidos', 'Reportes'].map((l) => navItem(l, false)).concat([navItem('Configuración', true)]),
+      groups: [
+        { title: 'Tu negocio', items: [sub('Datos de la tienda'), sub('Precios y descuentos')] },
+        { title: 'Productos', items: [sub('Vencimientos'), sub('Categorías', false, '→'), sub('Lugares en la tienda', false, '→')] },
+        { title: 'Ventas en línea', items: [sub('Catálogo público', false, 'Activo', '#067647')] },
+        { title: 'Equipo y cuenta', items: [sub('Usuarios y permisos', true, '1', '#B54708'), sub('Plan y pagos', false, '9 días', '#B54708'), sub('Mi perfil')] }
+      ],
+      cashierCan: [yes('Vender y cobrar, también sin conexión'), yes('Ver productos, stock, lotes y dónde está cada uno'), yes('Ver reportes básicos'), no('Abrir o cerrar la caja'), no('Anular ventas o cambiar precios y stock')],
+      ownerExtra: ['Abrir y cerrar la caja, movimientos de efectivo', 'Anular ventas', 'Crear y editar productos, ajustar stock', 'Exportar CSV y ajustes de la tienda', 'Invitar y desactivar personas']
+    };
+  }
+}
+</script>
+</body>
+</html>
