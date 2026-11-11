@@ -2,7 +2,6 @@ import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { SettingsOverview } from "./SettingsOverview";
 import type { Session } from "@/lib/auth/session";
-import type { StoreDay } from "@/features/store-day/types";
 import { DEFAULT_STOREFRONT_SETTINGS } from "@/features/storefront/settings";
 
 vi.mock("next/navigation", () => ({
@@ -39,21 +38,6 @@ describe("SettingsOverview", () => {
     render(
       <SettingsOverview
         session={session}
-        storeDay={{ ok: true, data: storeDay }}
-        storeDayEvents={{
-          ok: true,
-          data: [
-            {
-              id: "event-1",
-              business_day_id: "day-1",
-              store_id: "store-1",
-              event_type: "open",
-              note: "Inicio",
-              created_by_user_id: "user-1",
-              created_at: "2026-05-21T12:00:00Z",
-            },
-          ],
-        }}
         users={emptyUsers}
         userInvitations={emptyInvitations}
       />,
@@ -66,9 +50,10 @@ describe("SettingsOverview", () => {
     expect(screen.getAllByText("Dueño").length).toBeGreaterThan(0);
     expect(screen.getByText("Permisos")).toBeInTheDocument();
     expect(screen.getByText("Exportar CSV")).toBeInTheDocument();
-    expect(screen.getByText("Operacion diaria")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Abrir tienda" })).toBeInTheDocument();
-    expect(screen.getByText("Apertura")).toBeInTheDocument();
+    // La caja tiene su propia página (Fase 2 del rediseño).
+    expect(screen.getByText("Caja y jornada")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Ir a Caja" })).toHaveAttribute("href", "/dashboard/caja");
+    expect(screen.queryByRole("button", { name: "Abrir tienda" })).not.toBeInTheDocument();
     expect(screen.getByTestId("users-section")).toBeInTheDocument();
   });
 
@@ -99,21 +84,6 @@ describe("SettingsOverview", () => {
           storefront_payment_qr_url: null,
           storefront_payment_instructions: null,
           storefront_settings: DEFAULT_STOREFRONT_SETTINGS,
-        }}
-        storeDay={{ ok: true, data: storeDay }}
-        storeDayEvents={{
-          ok: true,
-          data: [
-            {
-              id: "event-1",
-              business_day_id: "day-1",
-              store_id: "store-1",
-              event_type: "open",
-              note: "Inicio",
-              created_by_user_id: "user-1",
-              created_at: "2026-05-21T12:00:00Z",
-            },
-          ],
         }}
       />,
     );
@@ -152,7 +122,6 @@ describe("SettingsOverview", () => {
           storefront_payment_instructions: null,
           storefront_settings: DEFAULT_STOREFRONT_SETTINGS,
         }}
-        storeDay={{ ok: true, data: storeDay }}
       />,
     );
 
@@ -164,7 +133,6 @@ describe("SettingsOverview", () => {
     render(
       <SettingsOverview
         session={{ ...session, role: "cashier" }}
-        storeDay={{ ok: true, data: storeDay }}
         users={emptyUsers}
         userInvitations={emptyInvitations}
       />,
@@ -175,35 +143,3 @@ describe("SettingsOverview", () => {
   });
 });
 
-const storeDay: StoreDay = {
-  id: null,
-  status: "closed",
-  business_date: "2026-05-21",
-  opened_at: null,
-  closed_at: null,
-  opened_by_user_id: null,
-  closed_by_user_id: null,
-  opening_note: null,
-  closing_note: null,
-  opening_cash_amount: null,
-  expected_cash_amount: null,
-  counted_cash_amount: null,
-  cash_difference_amount: null,
-  closing_sales_total: null,
-  closing_sales_count: null,
-  closing_voided_sales_count: null,
-  closing_items_count: null,
-  closing_cash_sales_total: null,
-  closing_qr_sales_total: null,
-  closing_transfer_sales_total: null,
-  closing_card_sales_total: null,
-  closing_cash_movements_in_total: null,
-  closing_cash_movements_out_total: null,
-  closing_cash_movements_count: null,
-  closing_snapshot_at: null,
-  sales_total: null,
-  sales_count: null,
-  voided_sales_count: null,
-  timezone: "America/La_Paz",
-  first_business_date: null,
-};

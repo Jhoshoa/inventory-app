@@ -7,7 +7,7 @@ import type {
   SortDirection,
 } from "./types";
 
-const stockFilters = new Set<ProductStockFilter>(["all", "available", "low", "out"]);
+const stockFilters = new Set<ProductStockFilter>(["all", "available", "low", "out", "expiring"]);
 const sortFields = new Set<ProductSortField>(["name", "stock", "updated_at", "price"]);
 const sortDirections = new Set<SortDirection>(["asc", "desc"]);
 

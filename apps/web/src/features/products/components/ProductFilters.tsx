@@ -75,6 +75,7 @@ export function ProductFilters({
         <option value="available">Disponible</option>
         <option value="low">Stock bajo</option>
         <option value="out">Sin stock</option>
+        <option value="expiring">Por vencer</option>
       </Select>
       <Select
         aria-label="Ordenar por"

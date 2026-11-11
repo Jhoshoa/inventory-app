@@ -1,5 +1,3 @@
-import type { FormEvent } from "react";
-
 export const initialState: {
   ok: boolean;
   message?: string;
@@ -15,21 +13,11 @@ export function cashMovementLabel(type: string) {
     cash_in: "Entrada",
     cash_out: "Salida",
     expense: "Gasto",
-    deposit: "Deposito",
+    deposit: "Depósito al banco",
     withdrawal: "Retiro",
   };
   return labels[type] ?? type;
 }
 
-export function sanitizeMoneyInput(event: FormEvent<HTMLInputElement>) {
-  const input = event.currentTarget;
-  const sanitized = toMoneyInputValue(input.value);
-  if (input.value !== sanitized) input.value = sanitized;
-}
-
-export function toMoneyInputValue(value: string) {
-  const cleaned = value.replace(/[^\d.]/g, "");
-  const [integer = "", ...decimalParts] = cleaned.split(".");
-  if (decimalParts.length === 0) return integer;
-  return `${integer}.${decimalParts.join("").slice(0, 2)}`;
-}
+// Montos: usar MoneyInput (components/ui), que deja escribir coma o punto.
+export { sanitizeMoneyText as toMoneyInputValue } from "@/components/ui/MoneyInput";

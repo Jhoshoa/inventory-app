@@ -31,6 +31,8 @@ export interface StorefrontRequestListResponse {
   items: StorefrontRequestResponse[];
   total: number;
   pending_count: number;
+  /** Conteo por estado de todos los pedidos (B7); falta en respuestas de un backend anterior. */
+  status_counts?: Partial<Record<StorefrontRequestStatus, number>>;
   limit: number;
   offset: number;
 }

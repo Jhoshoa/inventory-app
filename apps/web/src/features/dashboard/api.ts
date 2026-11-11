@@ -1,8 +1,13 @@
 import { apiRequest } from "@/lib/api/client";
 import { getAuthToken } from "@/lib/auth/session";
+import type { SalesReport } from "@/features/reports/types";
 import type { DashboardScope, DashboardSummary, DashboardSummaryResult } from "./types";
 
-export async function getDashboardSummary(scope: DashboardScope = "today"): Promise<DashboardSummaryResult> {
+/** Resumen de Inicio. Con `range`, el periodo es ese rango de fechas (p. ej. últimos 7 días). */
+export async function getDashboardSummary(
+  scope: DashboardScope = "today",
+  range?: { from: string; to: string },
+): Promise<DashboardSummaryResult> {
   const token = await getAuthToken();
 
   if (!token) {
@@ -12,7 +17,8 @@ export async function getDashboardSummary(scope: DashboardScope = "today"): Prom
     };
   }
 
-  const result = await apiRequest<DashboardSummary>(`/dashboard/summary?scope=${scope}`, {
+  const query = range ? `from_date=${range.from}&to_date=${range.to}` : `scope=${scope}`;
+  const result = await apiRequest<DashboardSummary>(`/dashboard/summary?${query}`, {
     token,
   });
 
@@ -42,4 +48,12 @@ export function createEmptyDashboardSummary(): DashboardSummary {
     timezone: null,
     first_business_date: null,
   };
+}
+
+/** Totales de ventas de un rango (artículos, por método de pago), para Inicio. */
+export async function getSalesTotals(range: { from: string; to: string }) {
+  const token = await getAuthToken();
+  if (!token) return null;
+  const result = await apiRequest<SalesReport>(`/reports/sales?from_date=${range.from}&to_date=${range.to}`, { token });
+  return result.ok ? result.data : null;
 }

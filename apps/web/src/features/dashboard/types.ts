@@ -21,7 +21,7 @@ export interface DashboardSummary {
   expiry_alerts?: ProductBatch[];
 }
 
-export type DashboardScope = "today" | "month";
+export type DashboardScope = "today" | "month" | "custom";
 
 export interface DashboardSale {
   id: string;

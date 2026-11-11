@@ -5,7 +5,7 @@ const routes = [
   ["/dashboard", "Inicio"],
   ["/dashboard/products", "Productos"],
   ["/dashboard/pos", "Vender"],
-  ["/dashboard/caja", "Caja"],
+  ["/dashboard/caja", "Caja y jornada"],
   ["/dashboard/sales", "Ventas"],
   ["/dashboard/solicitudes", "Pedidos"],
   ["/dashboard/reports", "Reportes"],

@@ -14,9 +14,6 @@ import { ProductCategorySettings } from "@/features/product-categories/component
 import type { ProductCategoryListResult } from "@/features/product-categories/types";
 import { StoreLocationSettings } from "@/features/store-locations/components/StoreLocationSettings";
 import type { StoreLocationListResult } from "@/features/store-locations/types";
-import { StoreDayEventTimeline } from "@/features/store-day/components/StoreDayEventTimeline";
-import { StoreDayStatusPanel } from "@/features/store-day/components/StoreDayStatusPanel";
-import type { CashMovementListResult, StoreDayClosingPreviewResult, StoreDayEventListResult, StoreDayResult } from "@/features/store-day/types";
 import { UsersSection } from "@/features/users/components/UsersSection";
 import type { UserInvitationListResult, UserListResult } from "@/features/users/types";
 import { DiscountPolicyDialog } from "./DiscountPolicyDialog";
@@ -27,10 +24,6 @@ import { PermissionMatrix } from "./PermissionMatrix";
 export function SettingsOverview({
   session,
   storeData,
-  storeDay,
-  storeDayEvents,
-  closingPreview,
-  cashMovements,
   productCategories,
   storeLocations,
   users,
@@ -38,10 +31,6 @@ export function SettingsOverview({
 }: {
   session: Session;
   storeData?: StoreResponse;
-  storeDay?: StoreDayResult;
-  storeDayEvents?: StoreDayEventListResult;
-  closingPreview?: StoreDayClosingPreviewResult;
-  cashMovements?: CashMovementListResult;
   productCategories?: ProductCategoryListResult;
   storeLocations?: StoreLocationListResult;
   users?: UserListResult;
@@ -59,7 +48,7 @@ export function SettingsOverview({
           />
         }
         title="Configuración"
-        description="Centro administrativo para tienda, permisos y operacion diaria."
+        description="Datos de la tienda, permisos, categorías, ubicaciones y personas."
       />
 
       <div className="grid min-w-0 gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(360px,420px)]">
@@ -164,29 +153,14 @@ export function SettingsOverview({
         </div>
 
         <div className="min-w-0 space-y-6">
-          <AdminSection
-            title="Operacion diaria"
-            description="Apertura, cierre y trazabilidad de jornada."
-          >
-            <div className="space-y-3">
-              {storeDay ? (
-                <StoreDayManagement
-                  storeDay={storeDay}
-                  role={session.role}
-                  closingPreview={closingPreview}
-                  cashMovements={cashMovements}
-                />
-              ) : (
-                <p className="text-sm text-text-muted">
-                  El estado de jornada no esta disponible en esta vista.
-                </p>
-              )}
-              {storeDayEvents ? (
-                <StoreDayEventTimeline
-                  events={storeDayEvents}
-                  timezone={storeDay?.ok ? storeDay.data.timezone : undefined}
-                />
-              ) : null}
+          <AdminSection title="Caja y jornada" description="Ahora tiene su propia página.">
+            <div className="flex flex-col items-start gap-3">
+              <p className="text-sm text-text-muted">
+                Abrir y cerrar la caja, las entradas y salidas de efectivo y el historial del día están en Caja.
+              </p>
+              <Button asChild variant="secondary">
+                <Link href="/dashboard/caja">Ir a Caja</Link>
+              </Button>
             </div>
           </AdminSection>
         </div>
@@ -243,34 +217,6 @@ function AdminSection({
     <CollapsibleSection title={title} description={description} defaultOpen>
       {children}
     </CollapsibleSection>
-  );
-}
-
-function StoreDayManagement({
-  storeDay,
-  role,
-  closingPreview,
-  cashMovements,
-}: {
-  storeDay: StoreDayResult;
-  role: Session["role"];
-  closingPreview?: StoreDayClosingPreviewResult;
-  cashMovements?: CashMovementListResult;
-}) {
-  if (!storeDay.ok) {
-    return (
-      <DataFetchError resource="el estado de tienda" error={storeDay.error.message} />
-    );
-  }
-
-  return (
-    <StoreDayStatusPanel
-      storeDay={storeDay.data}
-      role={role}
-      actions="manage"
-      closingPreview={closingPreview}
-      cashMovements={cashMovements}
-    />
   );
 }
 

@@ -1,7 +1,7 @@
 import type { ApiResult } from "@/lib/api/client";
 import type { ProductLocation } from "@/features/store-locations/types";
 
-export type ProductStockFilter = "all" | "available" | "low" | "out";
+export type ProductStockFilter = "all" | "available" | "low" | "out" | "expiring";
 export type ProductSortField = "name" | "stock" | "updated_at" | "price";
 export type SortDirection = "asc" | "desc";
 

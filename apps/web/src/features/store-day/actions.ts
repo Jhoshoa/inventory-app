@@ -35,7 +35,7 @@ export async function openStoreDayAction(
   if (!result.ok) return { ok: false, message: result.error.message, fieldErrors: {} };
 
   revalidateOperationalPaths();
-  return { ok: true, message: "Tienda abierta", storeDay: result.data, fieldErrors: {} };
+  return { ok: true, message: "Caja abierta", storeDay: result.data, fieldErrors: {} };
 }
 
 export async function closeStoreDayAction(
@@ -65,7 +65,7 @@ export async function closeStoreDayAction(
   if (!result.ok) return { ok: false, message: result.error.message, fieldErrors: {} };
 
   revalidateOperationalPaths();
-  return { ok: true, message: "Tienda cerrada", storeDay: result.data, fieldErrors: {} };
+  return { ok: true, message: "Caja cerrada", storeDay: result.data, fieldErrors: {} };
 }
 
 export async function reopenStoreDayAction(
@@ -85,7 +85,7 @@ export async function reopenStoreDayAction(
   if (!result.ok) return { ok: false, message: result.error.message, fieldErrors: {} };
 
   revalidateOperationalPaths();
-  return { ok: true, message: "Tienda reabierta", storeDay: result.data, fieldErrors: {} };
+  return { ok: true, message: "Jornada reabierta", storeDay: result.data, fieldErrors: {} };
 }
 
 export async function createCashMovementAction(
@@ -122,7 +122,7 @@ export async function voidCashMovementAction(
 ): Promise<StoreDayActionState> {
   const movementId = formData.get("movement_id");
   if (typeof movementId !== "string" || !movementId) {
-    return { ok: false, message: "Movimiento no valido", fieldErrors: {} };
+    return { ok: false, message: "Movimiento no válido", fieldErrors: {} };
   }
   const reasonError = validateVoidReason(formData.get("void_reason"));
   if (reasonError) return { ok: false, fieldErrors: { void_reason: reasonError } };
