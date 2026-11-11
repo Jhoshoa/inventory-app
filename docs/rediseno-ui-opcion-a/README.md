@@ -19,7 +19,7 @@ En este documento cada dato lleva su origen:
 
 ## 1. Navegación y nombres
 
-Las rutas no cambian: los enlaces guardados, la PWA instalada (`start_url: /dashboard`) y los tests de rutas siguen funcionando. Solo cambian los textos y el orden. Rutas nuevas: `/dashboard/caja`, `/dashboard/products/categorias` y `/dashboard/products/lugares`.
+Las rutas no cambian: los enlaces guardados, la PWA instalada (`start_url: /dashboard`) y los tests de rutas siguen funcionando. Solo cambian los textos y el orden. Rutas nuevas: `/dashboard/caja`, `/dashboard/mas` (pantalla Más del celular), `/dashboard/products/categorias` y `/dashboard/products/lugares`.
 
 | Hoy | Nuevo | Ruta | Por qué |
 |---|---|---|---|

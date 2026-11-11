@@ -138,6 +138,7 @@ Se arreglan en la **Fase 0** porque son chicos, no dependen del rediseño y ya m
 | **E4** | El precio con descuento no llega sin conexión: `POST /sync/pull` no manda `discount_type`, `discount_value` ni `discount_ends_at`, aunque `syncEngine` los lee. | backend sync | **B1** | integración: pull trae los tres campos. |
 | **E5** | El cajero recibe `cost_price` en la API aunque la web no lo muestre. | backend products | **B5** (si se decide) | integración: cajero no recibe `cost_price`. |
 | **E6** | Pedidos se filtran en la web sobre los últimos 50; con más pedidos, los contadores y las pestañas mienten. | `GET /storefront-requests` | **B7** | integración: filtro y conteo por estado. |
+| **E8** | `Button` era componente de cliente: una página del servidor con `<Button asChild><Link/></Button>` (Reportes, 404, estados vacíos) se caía con "React.Children.only expected…", porque el hijo llegaba como referencia del servidor. Por eso fallaban Reportes y sus e2e. | `components/ui/Button.tsx` | Arreglado en la Fase 1: `Button` ya no lleva `"use client"` (no usa hooks). | e2e de Reportes y smoke en verde. |
 | **E7** | Tests e2e que ya fallan en `main` (9 al probar el 2026-11-11 sin `.env.local`): `a11y` (rutas principales), `auth` (sesión simulada llega a Productos), `pos` (render), `products` (vacío y validación al crear), `reports` (los 3) y `smoke` (rutas principales). Fallan por textos y enlaces que cambiaron y por tiempos de `next dev`. | `apps/web/e2e/` | Rehacerlos en la Fase 1 junto con los nombres nuevos del menú, y desde ahí cada fase deja sus e2e en verde. | La rama no agrega fallas: 7 de esos 9 siguen fallando, ninguna nueva. |
 
 También se corrigió en los mockups: la nota de Reportes (P08) decía "anular movimiento con razón opcional". Ahora dice obligatoria, igual que Caja (P09) y la API.
@@ -219,6 +220,17 @@ Publicar el backend antes que la web. Confirmar en staging que la web actual y l
 9. Actualizar los tests que buscan los textos viejos del menú ("Dashboard", "POS", "Solicitudes", "Ajustes") y los e2e de navegación.
 
 Aceptación: todas las páginas actuales se ven dentro del marco nuevo y se puede llegar a todas desde escritorio y celular, como dueño y como cajero.
+
+**Hecho (2026-11-11).** Notas para las fases siguientes:
+
+- Tokens del estilo A solo dentro de `.theme-app` (panel y acceso): el catálogo público y la landing no cambian. Los colores `brand-*` son variables CSS; botones y campos usan `rounded-control`, `h-control` y `rounded-card`. Fuente Inter en `src/fonts` (OFL).
+- Rutas nuevas: `/dashboard/mas` (pantalla Más) y `/dashboard/caja` (por ahora reúsa el panel de jornada actual; la Fase 2 la rehace y saca "Operación diaria" de Configuración).
+- `MobileTabBar` se oculta solo donde la página tiene su propia barra fija: hoy solo la impresión del recibo. **Cada fase agrega sus rutas** en `ROUTES_WITHOUT_TAB_BAR` (`navigation.ts`) cuando su barra exista: Vender (4), formularios de producto (3), detalle de venta (5).
+- Más todavía no tiene Ayuda ni Mi perfil (no hay páginas): se agregan en la Fase 7; mientras, Más muestra la cuenta y "Cerrar sesión".
+- El marco carga en el servidor los pedidos sin responder y el estado de la caja (`loadShellStatus`); si la API no responde, se muestra sin esos datos.
+- Barra angosta de 96 px (para que "Configuración" entre sin cortarse) en tablet y en Vender.
+- Avisos (`Toaster`): arriba a la derecha en escritorio, abajo sobre la barra en el celular.
+- Correr e2e en local con `--workers=1`: con varios Chromium y `next dev` en paralelo Docker se queda sin memoria (3,7 GB) y el servidor se cae ("connection refused").
 
 ### Fase 2 · Caja y Inicio (1,5 días)
 
@@ -353,4 +365,5 @@ Manual en cada fase: celular (375), tablet (768) y escritorio (1280); dueño y c
 | Fecha | Cambio |
 |---|---|
 | 2026-11-11 | Primera versión. E3 encontrado al revisar el código (apertura y contado en 0). Nota de P08 corregida (razón obligatoria al anular un movimiento de caja). |
+| 2026-11-11 | Fase 1 hecha: marco, navegación, Más, Caja provisoria, franjas y estados. E8 encontrado y arreglado (Button en páginas del servidor). Los e2e que fallaban en `main` (E7) pasan con los nombres nuevos. |
 | 2026-11-11 | Fase 0 hecha en la rama `feat/ui-redesign-option-a`. D2, D3 y D4 se hicieron como se recomendaba (B4, B5 y B6 sí). B6 necesitó la migración 041. B2 solo en `GET /products`. `openapi.json` estaba desactualizado y se regeneró. La web no usa tipos generados. |
