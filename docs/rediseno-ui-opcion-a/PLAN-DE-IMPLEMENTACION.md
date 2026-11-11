@@ -138,6 +138,8 @@ Se arreglan en la **Fase 0** porque son chicos, no dependen del rediseño y ya m
 | **E4** | El precio con descuento no llega sin conexión: `POST /sync/pull` no manda `discount_type`, `discount_value` ni `discount_ends_at`, aunque `syncEngine` los lee. | backend sync | **B1** | integración: pull trae los tres campos. |
 | **E5** | El cajero recibe `cost_price` en la API aunque la web no lo muestre. | backend products | **B5** (si se decide) | integración: cajero no recibe `cost_price`. |
 | **E6** | Pedidos se filtran en la web sobre los últimos 50; con más pedidos, los contadores y las pestañas mienten. | `GET /storefront-requests` | **B7** | integración: filtro y conteo por estado. |
+| **E9** | E1 quedó a medias en la Fase 0: los campos de caja usaban `sanitizeMoneyInput`, que **borraba la coma mientras se escribía** ("30,50" → "3050"), y `pattern` también la rechazaba. | `features/store-day` | Arreglado en la Fase 2 con `MoneyInput` (`components/ui`): solo quita lo que no es número ni separador y no recorta en silencio; la validación explica. Usarlo en **todos** los montos de las fases siguientes. | Probado en el navegador: "50,50" se guarda como Bs 50,50. |
+| **E10** | Los diálogos se montaban en `body`, fuera de `.theme-app`, y no tomaban los colores del estilo A. | `components/ui/Dialog.tsx` | Arreglado en la Fase 2: se montan en `.theme-app` cuando existe. Nueva posición `sheet`: hoja desde abajo en el celular, ventana centrada desde 640 px. | Revisado en el navegador. |
 | **E8** | `Button` era componente de cliente: una página del servidor con `<Button asChild><Link/></Button>` (Reportes, 404, estados vacíos) se caía con "React.Children.only expected…", porque el hijo llegaba como referencia del servidor. Por eso fallaban Reportes y sus e2e. | `components/ui/Button.tsx` | Arreglado en la Fase 1: `Button` ya no lleva `"use client"` (no usa hooks). | e2e de Reportes y smoke en verde. |
 | **E7** | Tests e2e que ya fallan en `main` (9 al probar el 2026-11-11 sin `.env.local`): `a11y` (rutas principales), `auth` (sesión simulada llega a Productos), `pos` (render), `products` (vacío y validación al crear), `reports` (los 3) y `smoke` (rutas principales). Fallan por textos y enlaces que cambiaron y por tiempos de `next dev`. | `apps/web/e2e/` | Rehacerlos en la Fase 1 junto con los nombres nuevos del menú, y desde ahí cada fase deja sus e2e en verde. | La rama no agrega fallas: 7 de esos 9 siguen fallando, ninguna nueva. |
 
@@ -157,6 +159,7 @@ Resolverlas antes de la fase indicada. Mientras no se decidan, se hace lo recome
 | D4 | Hacer **B6** (nombre de quién vendió / anuló). | Sí, útil para control con cajeros. | Fase 0 |
 | D5 | Mostrar el precio del plan en Plan y pagos (la API no lo da). | No por ahora; agregarlo después a `/billing/status`. | Fase 7 |
 | D6 | SMTP con Brevo para confirmar cuenta, recuperar contraseña e invitar. | Configurarlo antes de publicar la Fase 8; mientras, en desarrollo se muestra el link. | Fase 8 |
+| D8 | "Artículos vendidos" en Inicio: `items_count` de la API cuenta productos distintos por venta, no unidades (2 Coca Cola en una venta = 1). | Agregar `units_count` (suma de cantidades) a `/reports/sales` y al resumen como campo nuevo, sin cambiar `items_count` (lo usan cierres y CSV). Mientras, Inicio dice "Productos vendidos · Distintos, en N ventas". | Fase 6 |
 | D7 | Textos "pedir otro en 60 s" y "vence en 1 hora" de recuperar contraseña. | Revisar la configuración real de Supabase Auth y mostrar esos valores. | Fase 8 |
 
 ---
@@ -230,6 +233,7 @@ Aceptación: todas las páginas actuales se ven dentro del marco nuevo y se pued
 - El marco carga en el servidor los pedidos sin responder y el estado de la caja (`loadShellStatus`); si la API no responde, se muestra sin esos datos.
 - Barra angosta de 96 px (para que "Configuración" entre sin cortarse) en tablet y en Vender.
 - Avisos (`Toaster`): arriba a la derecha en escritorio, abajo sobre la barra en el celular.
+- Si en local el e2e `smoke` falla con "Page crashed" al final de la corrida completa, es Chromium sin memoria en Docker: corrido solo pasa. En CI no pasa.
 - Correr e2e en local con `--workers=1`: con varios Chromium y `next dev` en paralelo Docker se queda sin memoria (3,7 GB) y el servidor se cae ("connection refused").
 
 ### Fase 2 · Caja y Inicio (1,5 días)
@@ -238,6 +242,15 @@ Aceptación: todas las páginas actuales se ven dentro del marco nuevo y se pued
 2. Al cerrar: aviso "Caja cerrada" y abrir el resumen del cierre.
 3. **Inicio** (A · Inicio): ventas de hoy con comparación con el mismo día de la semana pasada, tickets y promedio, artículos, cómo te pagaron, "Necesita atención" (lotes por vencer, stock bajo, pedidos), últimas ventas, tarjeta de caja, buscador Ctrl K, periodo Hoy / 7 días / Mes.
 4. Cajero: ve si la caja está abierta, sin montos ni botones.
+
+**Hecho (2026-11-11).** Notas:
+
+- Caja (`features/store-day/cash`): ventanas de abrir (montos rápidos e "Igual que ayer"), movimiento (entra / sale, con los 4 tipos de salida), cerrar (contar o sin contar, diferencia en vivo; al cerrar abre el resumen del cierre), anular (razón obligatoria) y reabrir. Los movimientos anulados se muestran tachados con su razón (`include_voided=true`).
+- Nombres de quién abrió y quién registró: de `GET /users` (solo dueño). El cajero ve solo si la caja está abierta.
+- En el celular "Cerrar caja" es un botón del encabezado, no una barra fija abajo como en "A · Caja": así no se pierde la barra de pestañas. Si se quiere la barra fija, agregar `/dashboard/caja` a `ROUTES_WITHOUT_TAB_BAR` solo cuando la caja está abierta.
+- "Operación diaria" salió de Configuración (queda un aviso "Ir a Caja").
+- Inicio (`features/dashboard`): periodos Hoy / 7 días / Mes en la URL (`?scope=`), comparación con el mismo día de la semana pasada / los 7 días anteriores / los mismos días del mes pasado, buscador con Ctrl K (escritorio), "Necesita atención" con enlaces a Productos filtrado (`stock=expiring`, `stock=low`) y a Pedidos, últimas ventas con enlace a cada una, tipo de cambio (ya existía). El pedido más antiguo se toma de los primeros 50 pendientes.
+- Se borraron los componentes viejos de jornada (`StoreDayStatusPanel`, `StoreDayActionForm`, `CashMovementPanel`, `CashMovementRow`, `StoreDayClosingPreview`, `StoreDayEventTimeline`) y `DashboardOverview`.
 
 ### Fase 3 · Productos (3 días)
 
@@ -365,5 +378,6 @@ Manual en cada fase: celular (375), tablet (768) y escritorio (1280); dueño y c
 | Fecha | Cambio |
 |---|---|
 | 2026-11-11 | Primera versión. E3 encontrado al revisar el código (apertura y contado en 0). Nota de P08 corregida (razón obligatoria al anular un movimiento de caja). |
+| 2026-11-11 | Fase 2 hecha: Caja (P09) e Inicio. E9 (coma en montos de caja) y E10 (diálogos fuera del tema) arreglados. D8 abierta (unidades vendidas). |
 | 2026-11-11 | Fase 1 hecha: marco, navegación, Más, Caja provisoria, franjas y estados. E8 encontrado y arreglado (Button en páginas del servidor). Los e2e que fallaban en `main` (E7) pasan con los nombres nuevos. |
 | 2026-11-11 | Fase 0 hecha en la rama `feat/ui-redesign-option-a`. D2, D3 y D4 se hicieron como se recomendaba (B4, B5 y B6 sí). B6 necesitó la migración 041. B2 solo en `GET /products`. `openapi.json` estaba desactualizado y se regeneró. La web no usa tipos generados. |
