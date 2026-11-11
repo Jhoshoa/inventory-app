@@ -462,7 +462,13 @@ async def oauth_google(
     response = supabase.auth.sign_in_with_oauth(
         {
             "provider": "google",
-            "options": {"redirect_to": redirect_to},
+            "options": {
+                "redirect_to": redirect_to,
+                # Sin esto Google entra directo con la cuenta que ya tiene
+                # abierta en el navegador: despues de "Salir" no se podia
+                # elegir otra. Supabase reenvia el parametro a Google.
+                "query_params": {"prompt": "select_account"},
+            },
         }
     )
     verifier_key = f"{supabase.auth._storage_key}-code-verifier"
