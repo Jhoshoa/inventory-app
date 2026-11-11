@@ -3,6 +3,7 @@ import {
   AlertTriangle,
   ArrowRight,
   Boxes,
+  CalendarClock,
   CircleDollarSign,
   PackagePlus,
   PackageCheck,
@@ -25,6 +26,7 @@ import {
 import { formatCurrency } from "@/lib/format/currency";
 import { formatDateTimeShort, formatBusinessDate } from "@/lib/format/datetime";
 import type { UserRole } from "@/lib/auth/types";
+import { BATCH_STATUS_LABEL, BATCH_STATUS_VARIANT, daysLeftLabel, formatExpiryDate } from "@/features/products/batches";
 import { StoreDayStatusPanel } from "@/features/store-day/components/StoreDayStatusPanel";
 import type { StoreDayResult } from "@/features/store-day/types";
 import { DashboardScopeTabs } from "./DashboardScopeTabs";
@@ -82,6 +84,7 @@ export function DashboardOverview({
       <div className="grid min-w-0 gap-6 xl:grid-cols-[minmax(0,1.3fr)_minmax(360px,0.7fr)]">
         <LatestSalesPanel sales={data.latest_sales} />
         <div className="min-w-0 space-y-6">
+          <ExpiryPanel data={data} />
           <LowStockPanel data={data} />
           <ExchangeRatesPanel rates={data.exchange_rates} />
         </div>
@@ -234,6 +237,65 @@ function LowStockPanel({ data }: { data: DashboardSummary }) {
   );
 }
 
+/** Solo aparece si hay lotes vencidos o por vencer (muchas tiendas no usan lotes). */
+function ExpiryPanel({ data }: { data: DashboardSummary }) {
+  const expired = data.expired_batches_count ?? 0;
+  const expiring = data.expiring_batches_count ?? 0;
+  const alerts = data.expiry_alerts ?? [];
+  if (expired + expiring === 0) return null;
+  const parts = [
+    expired > 0 ? `${expired} ${expired === 1 ? "lote vencido" : "lotes vencidos"}` : null,
+    expiring > 0 ? `${expiring} por vencer` : null,
+  ].filter(Boolean);
+  const hidden = expired + expiring - alerts.length;
+
+  return (
+    <section className="min-w-0 space-y-3" aria-labelledby="expiry-panel-title">
+      <SectionHeading
+        id="expiry-panel-title"
+        title="Vencimientos"
+        description={parts.join(" · ")}
+        icon={CalendarClock}
+      />
+      <Table density="compact">
+        <thead>
+          <tr>
+            <TableHeaderCell>Producto</TableHeaderCell>
+            <TableHeaderCell align="right">Quedan</TableHeaderCell>
+            <TableHeaderCell>Vence</TableHeaderCell>
+          </tr>
+        </thead>
+        <tbody>
+          {alerts.map((batch) => (
+            <TableRow key={batch.id} tone={batch.status === "expired" ? "danger" : "warning"}>
+              <TableCell>
+                <Link
+                  href={`/dashboard/products/${batch.product_id}`}
+                  className="font-medium text-text-strong underline-offset-2 hover:underline"
+                >
+                  {batch.product_name ?? "Producto"}
+                </Link>
+              </TableCell>
+              <TableCell align="right">
+                {batch.quantity_remaining} {batch.product_unit ?? ""}
+              </TableCell>
+              <TableCell>
+                <div className="flex flex-wrap items-center gap-2">
+                  <Badge variant={BATCH_STATUS_VARIANT[batch.status]}>{BATCH_STATUS_LABEL[batch.status]}</Badge>
+                  <span className="text-xs text-text-muted">
+                    {formatExpiryDate(batch.expires_on)} · {daysLeftLabel(batch)}
+                  </span>
+                </div>
+              </TableCell>
+            </TableRow>
+          ))}
+        </tbody>
+      </Table>
+      {hidden > 0 ? <p className="text-xs text-text-muted">Y {hidden} lotes mas.</p> : null}
+    </section>
+  );
+}
+
 function ExchangeRatesPanel({ rates }: { rates: DashboardExchangeRate[] }) {
   return (
     <section className="rounded-lg border border-app-border bg-app-surface p-4 shadow-panel">
@@ -337,9 +399,11 @@ function SectionHeading({
   action,
   description,
   icon: Icon,
+  id,
   title,
 }: {
   action?: React.ReactNode;
+  id?: string;
   description: string;
   icon: React.ComponentType<{ className?: string; "aria-hidden"?: boolean }>;
   title: string;
@@ -349,7 +413,9 @@ function SectionHeading({
       <div className="flex min-w-0 items-start gap-3">
         <Icon className="mt-0.5 h-5 w-5 shrink-0 text-text-muted" aria-hidden />
         <div className="min-w-0">
-          <h2 className="text-base font-semibold text-text-strong">{title}</h2>
+          <h2 id={id} className="text-base font-semibold text-text-strong">
+            {title}
+          </h2>
           <p className="mt-1 text-sm text-text-muted">{description}</p>
         </div>
       </div>

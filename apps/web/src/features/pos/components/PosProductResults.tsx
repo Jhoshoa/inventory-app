@@ -4,6 +4,7 @@ import { Plus } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { formatCurrency } from "@/lib/format/currency";
+import { LocationList } from "@/features/store-locations/components/LocationList";
 import { canAddProduct } from "../schemas";
 import type { PosProduct } from "../types";
 
@@ -46,6 +47,7 @@ export function PosProductResults({
                 <span className="font-semibold text-text-strong">{formatCurrency(product.price)}</span>
                 <span className="text-text-muted">Codigo {product.qr_code ?? "sin codigo"}</span>
               </div>
+              <LocationList locations={product.locations} compact className="mt-1.5" />
             </div>
             <Button onClick={() => onAdd(product)} disabled={!available}>
               <Plus className="h-4 w-4" aria-hidden="true" />

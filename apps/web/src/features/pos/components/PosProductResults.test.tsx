@@ -49,4 +49,27 @@ describe("PosProductResults", () => {
 
     expect(screen.getByText("Sin productos para esta busqueda")).toBeInTheDocument();
   });
+
+  it("shows where to find the product, display first", () => {
+    render(
+      <PosProductResults
+        products={[
+          {
+            ...availableProduct,
+            locations: [
+              { label: "Deposito", kind: "storage" },
+              { label: "Pasillo 2 · Estante B", kind: "display" },
+            ],
+          },
+          outOfStockProduct,
+        ]}
+        onAdd={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByText("Pasillo 2 · Estante B")).toBeInTheDocument();
+    expect(screen.getByText("+1")).toBeInTheDocument();
+    expect(screen.queryByText("Deposito")).not.toBeInTheDocument();
+    expect(screen.getAllByText(/Ubicacion:/)).toHaveLength(1);
+  });
 });

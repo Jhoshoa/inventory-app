@@ -29,6 +29,7 @@ function toPosProduct(product: OfflineProduct): PosProduct {
     discount_type: product.discount_type,
     discount_value: product.discount_value,
     effective_price: product.effective_price,
+    locations: product.locations ?? [],
   };
 }
 
@@ -298,5 +299,6 @@ function compactProduct(product: PosProduct): PosProduct {
     discount_type: product.discount_type ?? null,
     discount_value: product.discount_value ?? "0",
     effective_price: product.effective_price ?? product.price,
+    locations: product.locations?.map(({ label, kind }) => ({ label, kind })) ?? [],
   };
 }

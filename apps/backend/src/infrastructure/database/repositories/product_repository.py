@@ -1,16 +1,18 @@
 from datetime import UTC, datetime, timedelta
 from decimal import Decimal
-from uuid import UUID
+from uuid import UUID, uuid4
 
 from sqlalchemy import func, or_, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.application.exceptions import StockConflictError
 from src.domain.entities.product import Product
+from src.domain.entities.product_batch import NewBatch
 from src.domain.repositories.product_repository import IProductRepository
 from src.infrastructure.database.models.product_model import ProductModel
 from src.infrastructure.database.models.sale_model import SaleItemModel, SaleModel
 from src.infrastructure.database.models.stock_movement_model import StockMovementModel
+from src.infrastructure.database.repositories import batch_ledger
 
 # Ventana del orden "Mas pedidos" del catalogo publico.
 POPULAR_WINDOW_DAYS = 90
@@ -414,7 +416,13 @@ class ProductRepository(IProductRepository):
         reason: str | None = None,
         sale_id: UUID | None = None,
         device_id: str | None = None,
+        batch_id: UUID | None = None,
+        new_batch: NewBatch | None = None,
     ) -> Product:
+        if batch_id is not None and quantity >= 0:
+            raise ValueError("Solo se elige un lote al descontar stock")
+        if new_batch is not None and quantity <= 0:
+            raise ValueError("Un lote nuevo solo entra con un ingreso de stock")
         filters = [
             ProductModel.store_id == store_id,
             ProductModel.id == product_id,
@@ -446,8 +454,10 @@ class ProductRepository(IProductRepository):
                     requested_quantity=abs(quantity),
                 )
             raise ValueError("No se pudo actualizar stock")
+        movement_id = uuid4()
         self._session.add(
             StockMovementModel(
+                id=movement_id,
                 store_id=store_id,
                 product_id=product_id,
                 sale_id=sale_id,
@@ -459,4 +469,57 @@ class ProductRepository(IProductRepository):
             )
         )
         await self._session.flush()
+        await self._apply_to_batches(
+            store_id,
+            product_id,
+            quantity,
+            stock_after=model.stock,
+            movement_type=movement_type,
+            movement_id=movement_id,
+            sale_id=sale_id,
+            batch_id=batch_id,
+            new_batch=new_batch,
+        )
         return self._to_entity(model)
+
+    async def _apply_to_batches(
+        self,
+        store_id: UUID,
+        product_id: UUID,
+        quantity: int,
+        *,
+        stock_after: int,
+        movement_type: str,
+        movement_id: UUID,
+        sale_id: UUID | None,
+        batch_id: UUID | None,
+        new_batch: NewBatch | None,
+    ) -> None:
+        """Lleva los lotes junto con el stock (ver batch_ledger)."""
+        if quantity < 0:
+            await batch_ledger.consume(
+                self._session,
+                store_id=store_id,
+                product_id=product_id,
+                quantity=-quantity,
+                stock_after=stock_after,
+                sale_id=sale_id,
+                movement_id=movement_id,
+                reason=movement_type,
+                batch_id=batch_id,
+            )
+        elif new_batch is not None:
+            await batch_ledger.add_batch(
+                self._session, store_id=store_id, product_id=product_id, quantity=quantity, batch=new_batch
+            )
+            await self._session.flush()
+        elif movement_type == "sale_void" and sale_id is not None:
+            await batch_ledger.restore_sale(
+                self._session,
+                store_id=store_id,
+                product_id=product_id,
+                sale_id=sale_id,
+                quantity=quantity,
+                movement_id=movement_id,
+            )
+        # Otro ingreso sin fecha: queda como stock sin lote.

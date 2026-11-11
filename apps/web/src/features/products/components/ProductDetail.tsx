@@ -12,16 +12,32 @@ import { Button } from "@/components/ui/Button";
 import { canAdjustStock, canManageProducts } from "@/lib/auth/permissions";
 import type { UserRole } from "@/lib/auth/types";
 import { formatCurrency } from "@/lib/format/currency";
+import { LocationList } from "@/features/store-locations/components/LocationList";
+import { ProductLocationsDialog } from "@/features/store-locations/components/ProductLocationsDialog";
+import type { StoreLocation } from "@/features/store-locations/types";
 import { ImageUploader } from "./ImageUploader";
+import { ProductBatches } from "./ProductBatches";
 import { ProductStockDialog } from "./ProductStockDialog";
 import { StockBadge } from "./ProductTable";
-import type { Product } from "../types";
+import type { Product, ProductBatch } from "../types";
 
 function isDiscountExpired(product: Product) {
   return Boolean(product.discount_ends_at) && new Date(product.discount_ends_at as string).getTime() <= Date.now();
 }
 
-export function ProductDetail({ product, role }: { product: Product; role: UserRole }) {
+export function ProductDetail({
+  product,
+  role,
+  batches,
+  storeLocations,
+}: {
+  product: Product;
+  role: UserRole;
+  /** null si no se pudieron cargar: el detalle se muestra igual. */
+  batches?: { items: ProductBatch[]; untracked_quantity: number } | null;
+  /** Solo para el dueno, que es quien asigna ubicaciones. */
+  storeLocations?: StoreLocation[];
+}) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const discountActive = Boolean(product.discount_type) && !isDiscountExpired(product);
@@ -54,7 +70,12 @@ export function ProductDetail({ product, role }: { product: Product; role: UserR
               </Button>
             ) : null}
             {canAdjustStock(role) ? (
-              <ProductStockDialog productId={product.id} productName={product.name} currentStock={product.stock} />
+              <ProductStockDialog
+                productId={product.id}
+                productName={product.name}
+                currentStock={product.stock}
+                batches={batches?.items}
+              />
             ) : null}
           </>
         }
@@ -110,6 +131,23 @@ export function ProductDetail({ product, role }: { product: Product; role: UserR
         </div>
         <div className="space-y-4">
           <div className="rounded-lg border border-app-border bg-app-surface p-4 shadow-panel">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <h2 className="text-base font-semibold text-text-strong">Ubicacion</h2>
+              {canManageProducts(role) && storeLocations ? (
+                <ProductLocationsDialog
+                  productId={product.id}
+                  current={product.locations ?? []}
+                  storeLocations={storeLocations}
+                />
+              ) : null}
+            </div>
+            {product.locations && product.locations.length > 0 ? (
+              <LocationList locations={product.locations} className="mt-3" />
+            ) : (
+              <p className="mt-3 text-sm text-text-muted">Sin ubicacion asignada.</p>
+            )}
+          </div>
+          <div className="rounded-lg border border-app-border bg-app-surface p-4 shadow-panel">
             <h2 className="text-base font-semibold text-text-strong">Datos</h2>
             <dl className="mt-4 grid gap-3 text-sm">
               <Row label="SKU" value={product.sku ?? "Sin SKU"} />
@@ -129,6 +167,18 @@ export function ProductDetail({ product, role }: { product: Product; role: UserR
           </div>
         </div>
       </div>
+
+      {batches ? (
+        <ProductBatches
+          productId={product.id}
+          productName={product.name}
+          unit={product.unit}
+          stock={product.stock}
+          batches={batches.items}
+          untrackedQuantity={batches.untracked_quantity}
+          canRemove={canAdjustStock(role)}
+        />
+      ) : null}
     </PageSection>
   );
 }

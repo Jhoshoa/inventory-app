@@ -1,3 +1,4 @@
+import type { ProductLocationSummary } from "@/features/store-locations/types";
 import { getDeviceId } from "./deviceId";
 import { getOfflineDb, LAST_PULLED_AT_KEY, type OfflineProduct, type PendingSale } from "./db";
 
@@ -79,6 +80,7 @@ export async function pullCatalog(): Promise<{ ok: boolean; updated: number }> {
         qr_code: string | null;
         discount_type?: "percentage" | "fixed" | null;
         discount_value?: string;
+        locations?: unknown;
       };
       const record: OfflineProduct = {
         id: payload.id,
@@ -94,6 +96,7 @@ export async function pullCatalog(): Promise<{ ok: boolean; updated: number }> {
           payload.discount_type ?? null,
           payload.discount_value ?? "0",
         ),
+        locations: parseLocations(payload.locations),
         deleted: false,
         serverUpdatedAt: change.server_updated_at,
       };
@@ -273,5 +276,16 @@ export async function discardPendingSale(saleId: string): Promise<void> {
       }
     }
     await db.pendingSales.delete(saleId);
+  });
+}
+
+/** Solo lo que el POS muestra; un payload raro no rompe el sync. */
+function parseLocations(value: unknown): ProductLocationSummary[] {
+  if (!Array.isArray(value)) return [];
+  return value.flatMap((item) => {
+    if (typeof item !== "object" || item === null) return [];
+    const { label, kind } = item as { label?: unknown; kind?: unknown };
+    if (typeof label !== "string" || !label) return [];
+    return [{ label, kind: kind === "storage" ? "storage" : "display" } as const];
   });
 }

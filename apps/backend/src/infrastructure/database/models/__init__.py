@@ -6,6 +6,10 @@ from src.infrastructure.database.models.exchange_rate_model import ExchangeRateM
 from src.infrastructure.database.models.import_job_model import ImportJobModel
 from src.infrastructure.database.models.lead_model import LeadModel
 from src.infrastructure.database.models.pkce_verifier_model import PkceVerifierModel
+from src.infrastructure.database.models.product_batch_model import (
+    BatchConsumptionModel,
+    ProductBatchModel,
+)
 from src.infrastructure.database.models.product_category_model import (
     ProductCategoryModel,
 )
@@ -21,6 +25,10 @@ from src.infrastructure.database.models.store_business_day_model import (
 from src.infrastructure.database.models.storefront_request_model import (
     StorefrontRequestItemModel,
     StorefrontRequestModel,
+)
+from src.infrastructure.database.models.store_location_model import (
+    ProductLocationModel,
+    StoreLocationModel,
 )
 from src.infrastructure.database.models.store_model import StoreModel
 from src.infrastructure.database.models.sync_change_model import SyncChangeModel
@@ -45,4 +53,8 @@ __all__ = [
     "BillingAuditLogModel",
     "StorefrontRequestItemModel",
     "StorefrontRequestModel",
+    "StoreLocationModel",
+    "ProductLocationModel",
+    "ProductBatchModel",
+    "BatchConsumptionModel",
 ]

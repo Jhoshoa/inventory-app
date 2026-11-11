@@ -1,5 +1,5 @@
 from datetime import datetime, timezone
-from uuid import UUID
+from uuid import UUID, uuid4
 
 from pydantic import ValidationError
 from sqlalchemy import select
@@ -29,10 +29,14 @@ from src.infrastructure.database.models.product_model import ProductModel
 from src.infrastructure.database.models.sale_model import SaleModel
 from src.infrastructure.database.models.stock_movement_model import StockMovementModel
 from src.infrastructure.database.models.sync_change_model import SyncChangeModel
+from src.infrastructure.database.repositories import batch_ledger
 from src.infrastructure.database.repositories.product_repository import ProductRepository
 from src.infrastructure.database.repositories.sale_repository import SaleRepository
 from src.infrastructure.database.repositories.store_business_day_repository import (
     StoreBusinessDayRepository,
+)
+from src.infrastructure.database.repositories.store_location_repository import (
+    StoreLocationRepository,
 )
 from src.infrastructure.database.repositories.store_repository import StoreRepository
 
@@ -50,7 +54,12 @@ class SyncRepository(ISyncRepository):
                 ProductModel.updated_at > since,
             )
         )
-        for product in product_result.scalars().all():
+        products = list(product_result.scalars().all())
+        # El POS sin conexion muestra donde esta cada producto.
+        locations = await StoreLocationRepository(self._session).for_products(
+            store_id, [product.id for product in products if product.deleted_at is None]
+        )
+        for product in products:
             changes.append(
                 SyncPullChangeDTO(
                     entity=SyncEntity.PRODUCT,
@@ -71,6 +80,10 @@ class SyncRepository(ISyncRepository):
                         "photo_url": product.photo_url,
                         "qr_code": product.qr_code,
                         "deleted_at": product.deleted_at,
+                        "locations": [
+                            {"label": link.location.label, "kind": link.kind.value}
+                            for link in locations.get(product.id, [])
+                        ],
                     },
                 )
             )
@@ -217,9 +230,12 @@ class SyncRepository(ISyncRepository):
             raise ValueError("Producto pertenece a otra tienda")
 
         now = datetime.now(timezone.utc)
+        previous_stock = None
         if model is None:
             model = ProductModel(id=change.entity_id, store_id=store_id)
             self._session.add(model)
+        else:
+            previous_stock = model.stock or 0
 
         model.name = payload.name
         model.price = payload.price
@@ -236,6 +252,17 @@ class SyncRepository(ISyncRepository):
         model.version = (model.version or 0) + 1
         model.updated_at = now
         await self._session.flush()
+        if previous_stock is not None and payload.stock < previous_stock:
+            # El stock se fijo desde el dispositivo: lo que bajo sale de los
+            # lotes igual que una venta, y los lotes nunca suman mas que el stock.
+            await batch_ledger.consume(
+                self._session,
+                store_id=store_id,
+                product_id=model.id,
+                quantity=previous_stock - payload.stock,
+                stock_after=payload.stock,
+                reason="sync_product_upsert",
+            )
         return model.version, model.updated_at
 
     async def _apply_product_delete(self, store_id: UUID, change: SyncChangeDTO) -> tuple[int | None, datetime]:
@@ -312,6 +339,7 @@ class SyncRepository(ISyncRepository):
         product.version = (product.version or 0) + 1
         product.updated_at = now
         movement = StockMovementModel(
+            id=uuid4(),
             store_id=store_id,
             product_id=product.id,
             movement_type=payload.movement_type,
@@ -322,6 +350,16 @@ class SyncRepository(ISyncRepository):
         )
         self._session.add(movement)
         await self._session.flush()
+        if payload.quantity_delta < 0:
+            await batch_ledger.consume(
+                self._session,
+                store_id=store_id,
+                product_id=product.id,
+                quantity=-payload.quantity_delta,
+                stock_after=product.stock,
+                movement_id=movement.id,
+                reason=payload.movement_type,
+            )
         return movement.created_at
 
     async def _get_processed_change(

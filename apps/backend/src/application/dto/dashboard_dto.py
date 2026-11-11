@@ -4,6 +4,7 @@ from decimal import Decimal
 from pydantic import BaseModel
 
 from src.application.dto.exchange_rate_dto import ExchangeRateResponseDTO
+from src.application.dto.product_batch_dto import ProductBatchResponseDTO
 from src.application.dto.product_dto import ProductResponseDTO
 from src.application.dto.sale_dto import SaleResponseDTO
 
@@ -22,3 +23,7 @@ class DashboardSummaryDTO(BaseModel):
     to_date: date | None = None
     timezone: str | None = None
     first_business_date: date | None = None
+    # Lotes con unidades: vencidos y los que entraron en su aviso (hoy en la tienda).
+    expiring_batches_count: int = 0
+    expired_batches_count: int = 0
+    expiry_alerts: list[ProductBatchResponseDTO] = []

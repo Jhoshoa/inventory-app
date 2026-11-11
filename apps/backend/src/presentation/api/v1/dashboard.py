@@ -11,6 +11,9 @@ from src.application.use_cases.dashboard.get_dashboard_summary import (
 from src.infrastructure.database.repositories.exchange_rate_repository import (
     ExchangeRateRepository,
 )
+from src.infrastructure.database.repositories.product_batch_repository import (
+    ProductBatchRepository,
+)
 from src.infrastructure.database.repositories.product_repository import (
     ProductRepository,
 )
@@ -19,6 +22,7 @@ from src.infrastructure.database.repositories.store_repository import StoreRepos
 from src.presentation.dependencies import (
     get_current_user,
     get_exchange_rate_repo,
+    get_product_batch_repo,
     get_product_repo,
     get_sale_repo,
     get_store_repo,
@@ -37,8 +41,11 @@ async def get_dashboard_summary(
     sale_repo: SaleRepository = Depends(get_sale_repo),
     exchange_rate_repo: ExchangeRateRepository = Depends(get_exchange_rate_repo),
     store_repo: StoreRepository = Depends(get_store_repo),
+    batch_repo: ProductBatchRepository = Depends(get_product_batch_repo),
 ):
-    return await GetDashboardSummaryUseCase(product_repo, sale_repo, exchange_rate_repo, store_repo).execute(
+    return await GetDashboardSummaryUseCase(
+        product_repo, sale_repo, exchange_rate_repo, store_repo, batch_repo=batch_repo
+    ).execute(
         GetDashboardSummaryInput(
             store_id=UUID(str(user["store_id"])),
             scope=scope,

@@ -1,11 +1,13 @@
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from decimal import Decimal
 from enum import StrEnum
 from uuid import UUID
 
 from pydantic import BaseModel, Field, computed_field, field_validator, model_validator
 
+from src.application.dto.store_location_dto import ProductLocationResponseDTO
 from src.domain.entities.product import product_discount_per_unit
+from src.domain.entities.product_batch import DEFAULT_ALERT_DAYS, MAX_ALERT_DAYS
 
 
 def _as_aware(dt: datetime) -> datetime:
@@ -52,9 +54,14 @@ class CreateProductDTO(BaseModel):
     discount_type: ProductDiscountTypeDTO | None = None
     discount_value: Decimal = Field(default=Decimal(0), ge=0)
     discount_ends_at: datetime | None = None
+    # Lote inicial: si el stock inicial vence, la fecha y con cuantos dias avisar.
+    expires_on: date | None = None
+    alert_days: int = Field(default=DEFAULT_ALERT_DAYS, ge=0, le=MAX_ALERT_DAYS)
 
     @model_validator(mode="after")
     def validate_discount(self) -> "CreateProductDTO":
+        if self.expires_on is not None and self.stock <= 0:
+            raise ValueError("La fecha de vencimiento necesita un stock inicial mayor a cero")
         if self.discount_type == ProductDiscountTypeDTO.PERCENTAGE and self.discount_value > 100:
             raise ValueError("El porcentaje de descuento no puede superar 100%")
         if self.discount_ends_at is not None:
@@ -114,6 +121,11 @@ class StockAdjustmentDTO(BaseModel):
         description="Positive to add stock, negative to subtract stock",
     )
     reason: str | None = Field(default=None, max_length=120)
+    # Al agregar: el lote que entra, si vence. Al descontar: de que lote sale
+    # (p. ej. retirar uno vencido); sin lote sale primero el que vence antes.
+    expires_on: date | None = None
+    alert_days: int = Field(default=DEFAULT_ALERT_DAYS, ge=0, le=MAX_ALERT_DAYS)
+    batch_id: UUID | None = None
 
     @field_validator("quantity")
     @classmethod
@@ -121,6 +133,14 @@ class StockAdjustmentDTO(BaseModel):
         if v == 0:
             raise ValueError("La cantidad debe ser mayor o menor a cero")
         return v
+
+    @model_validator(mode="after")
+    def validate_batch(self) -> "StockAdjustmentDTO":
+        if self.expires_on is not None and self.quantity < 0:
+            raise ValueError("La fecha de vencimiento solo se indica al agregar stock")
+        if self.batch_id is not None and self.quantity > 0:
+            raise ValueError("El lote solo se elige al descontar stock")
+        return self
 
 
 class ProductResponseDTO(BaseModel):
@@ -141,6 +161,7 @@ class ProductResponseDTO(BaseModel):
     discount_type: str | None = None
     discount_value: Decimal = Decimal(0)
     discount_ends_at: datetime | None = None
+    locations: list[ProductLocationResponseDTO] = Field(default_factory=list)
 
     model_config = {"from_attributes": True}
 
@@ -162,6 +183,7 @@ class ProductCompactResponseDTO(BaseModel):
     discount_type: str | None = None
     discount_value: Decimal = Decimal(0)
     discount_ends_at: datetime | None = None
+    locations: list[ProductLocationResponseDTO] = Field(default_factory=list)
 
     model_config = {"from_attributes": True}
 

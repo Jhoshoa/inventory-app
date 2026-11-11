@@ -10,6 +10,7 @@ import type {
   ImportJob,
   ImportJobListResponse,
   Product,
+  ProductBatchListResponse,
   ProductListResponse,
   ProductSearchParams,
   StockMovementListResponse,
@@ -52,6 +53,14 @@ export async function listProductStockMovements(productId: string, offset = 0) {
     `/products/${productId}/stock-movements?limit=50&offset=${offset}`,
     { token },
   );
+}
+
+export async function listProductBatches(productId: string) {
+  const token = await getAuthToken();
+  if (!token) {
+    return { ok: true as const, data: { items: [], untracked_quantity: 0, today: "" } };
+  }
+  return apiRequest<ProductBatchListResponse>(`/products/${productId}/batches`, { token });
 }
 
 function emptyProductList(limit: number, offset: number) {

@@ -9,6 +9,8 @@ from src.application.use_cases.sales.discount_engine import (
     validate_discount_against_policy,
 )
 from src.domain.entities.product import Product
+from src.domain.entities.product_batch import NewBatch
+from src.domain.repositories.product_batch_repository import IProductBatchRepository
 from src.domain.repositories.product_category_repository import (
     IProductCategoryRepository,
 )
@@ -33,6 +35,8 @@ class CreateProductInput:
     discount_type: str | None = None
     discount_value: Decimal = Decimal(0)
     discount_ends_at: datetime | None = None
+    # El stock inicial entra como un lote con esta fecha de vencimiento.
+    initial_batch: NewBatch | None = None
 
 
 class CreateProductUseCase:
@@ -41,12 +45,16 @@ class CreateProductUseCase:
         repo: IProductRepository,
         category_repo: IProductCategoryRepository | None = None,
         store_repo: IStoreRepository | None = None,
+        batch_repo: IProductBatchRepository | None = None,
     ):
         self._repo = repo
         self._category_repo = category_repo
         self._store_repo = store_repo
+        self._batch_repo = batch_repo
 
     async def execute(self, input: CreateProductInput) -> Product:
+        if input.initial_batch is not None and (input.stock <= 0 or self._batch_repo is None):
+            raise ValueError("La fecha de vencimiento necesita un stock inicial mayor a cero")
         if input.discount_type is not None:
             if self._store_repo is None:
                 raise NotFoundError("Tienda no encontrada")
@@ -98,7 +106,10 @@ class CreateProductUseCase:
             discount_value=input.discount_value,
             discount_ends_at=input.discount_ends_at if input.discount_type is not None else None,
         )
-        return await self._repo.save(product)
+        saved = await self._repo.save(product)
+        if input.initial_batch is not None and self._batch_repo is not None:
+            await self._batch_repo.add(input.store_id, saved.id, saved.stock, input.initial_batch)
+        return saved
 
     def _generate_qr_code(self, sku: str | None) -> str:
         if sku:

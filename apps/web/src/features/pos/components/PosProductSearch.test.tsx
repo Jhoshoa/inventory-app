@@ -55,7 +55,7 @@ describe("PosProductSearch", () => {
     await user.click(await screen.findByRole("button", { name: "Escanear" }));
     await user.click(screen.getByRole("button", { name: "Simular lectura" }));
 
-    await waitFor(() => expect(onAdd).toHaveBeenCalledWith(product));
+    await waitFor(() => expect(onAdd).toHaveBeenCalledWith({ ...product, locations: [] }));
     expect(fetchMock).toHaveBeenCalledWith("/api/products/qr/QR-1", expect.anything());
     expect(screen.queryByRole("button", { name: "Simular lectura" })).not.toBeInTheDocument();
     await waitFor(() => expect(input).toHaveValue(""));
@@ -77,7 +77,7 @@ describe("PosProductSearch", () => {
     const input = screen.getByRole("textbox", { name: "Buscar producto" });
     await user.type(input, "QR-1{Enter}");
 
-    await waitFor(() => expect(onAdd).toHaveBeenCalledWith(product));
+    await waitFor(() => expect(onAdd).toHaveBeenCalledWith({ ...product, locations: [] }));
     await waitFor(() => expect(input).toHaveValue(""));
     await waitFor(() => expect(input).toHaveFocus());
   });

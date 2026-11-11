@@ -4,8 +4,10 @@ export function CollapsibleSection({
   title,
   description,
   defaultOpen = false,
+  id,
   children,
 }: {
+  id?: string;
   title: string;
   description?: string;
   defaultOpen?: boolean;
@@ -13,6 +15,7 @@ export function CollapsibleSection({
 }) {
   return (
     <details
+      id={id}
       className="group rounded-lg border border-app-border bg-app-surface shadow-panel"
       open={defaultOpen}
     >

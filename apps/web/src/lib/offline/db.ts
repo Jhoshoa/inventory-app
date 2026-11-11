@@ -1,3 +1,4 @@
+import type { ProductLocationSummary } from "@/features/store-locations/types";
 import Dexie, { type Table } from "dexie";
 
 export interface OfflineProduct {
@@ -10,6 +11,8 @@ export interface OfflineProduct {
   discount_type: "percentage" | "fixed" | null;
   discount_value: string;
   effective_price: string;
+  /** Llega con el sync; sin indice, asi que no cambia la version de Dexie. */
+  locations?: ProductLocationSummary[];
   deleted: boolean;
   serverUpdatedAt: string;
 }

@@ -171,6 +171,45 @@ describe("DashboardOverview", () => {
     expect(screen.getByText("bcb")).toBeInTheDocument();
     expect(screen.getByText("paralelo")).toBeInTheDocument();
   });
+
+  it("shows the expiry panel only when there are expired or expiring batches", () => {
+    const { rerender } = render(<DashboardOverview summary={{ ok: true, data: createEmptyDashboardSummary() }} />);
+    expect(screen.queryByRole("heading", { name: "Vencimientos" })).not.toBeInTheDocument();
+
+    rerender(
+      <DashboardOverview
+        summary={{
+          ok: true,
+          data: {
+            ...createEmptyDashboardSummary(),
+            expired_batches_count: 1,
+            expiring_batches_count: 2,
+            expiry_alerts: [
+              {
+                id: "batch-1",
+                product_id: "product-9",
+                expires_on: "2026-11-09",
+                alert_days: 5,
+                quantity_initial: 4,
+                quantity_remaining: 3,
+                created_at: "2026-11-01T00:00:00Z",
+                days_left: -1,
+                status: "expired",
+                product_name: "Yogur",
+                product_unit: "unidad",
+              },
+            ],
+          },
+        }}
+      />,
+    );
+
+    expect(screen.getByRole("heading", { name: "Vencimientos" })).toBeInTheDocument();
+    expect(screen.getByText("1 lote vencido · 2 por vencer")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Yogur" })).toHaveAttribute("href", "/dashboard/products/product-9");
+    expect(screen.getByText("09/11/2026 · Vencio ayer")).toBeInTheDocument();
+    expect(screen.getByText("Y 2 lotes mas.")).toBeInTheDocument();
+  });
 });
 
 function datePrefix(value: string) {

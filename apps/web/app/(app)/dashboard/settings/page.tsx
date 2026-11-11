@@ -1,6 +1,7 @@
 import { ForbiddenState } from "@/components/ui/ForbiddenState";
 import { listProductCategories } from "@/features/product-categories/api";
 import { getStore } from "@/features/settings/api";
+import { listStoreLocations } from "@/features/store-locations/api";
 import { SettingsOverview } from "@/features/settings/components/SettingsOverview";
 import { getCurrentClosingPreview, getCurrentStoreDay, getCurrentStoreDayEvents, listCashMovements } from "@/features/store-day/api";
 import { listUserInvitations, listUsers } from "@/features/users/api";
@@ -12,11 +13,12 @@ export default async function SettingsPage() {
   if (!canViewSettings(session.role)) {
     return <ForbiddenState description="Ajustes requiere permisos de owner." />;
   }
-  const [storeData, storeDay, storeDayEvents, productCategories, users, userInvitations] = await Promise.all([
+  const [storeData, storeDay, storeDayEvents, productCategories, storeLocations, users, userInvitations] = await Promise.all([
     getStore().catch(() => null),
     getCurrentStoreDay(),
     getCurrentStoreDayEvents(),
     listProductCategories(true),
+    listStoreLocations(),
     listUsers(),
     listUserInvitations(),
   ]);
@@ -35,6 +37,7 @@ export default async function SettingsPage() {
       closingPreview={closingPreview}
       cashMovements={cashMovements}
       productCategories={productCategories}
+      storeLocations={storeLocations}
       users={users}
       userInvitations={userInvitations}
     />

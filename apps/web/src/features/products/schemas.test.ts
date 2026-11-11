@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 import {
   buildProductQueryString,
   parseProductSearchParams,
+  productToFormValues,
+  validateBatchFields,
   validateProductForm,
   validateStockAdjustment,
 } from "./schemas";
@@ -82,6 +84,8 @@ describe("validateProductForm", () => {
           discount_type: "",
           discount_value: "",
           discount_ends_at: "",
+          expires_on: "",
+          alert_days: "",
         },
         "create",
       ),
@@ -103,5 +107,59 @@ describe("validateStockAdjustment", () => {
     expect(validateStockAdjustment("-2", "")).toEqual({
       reason: "La razon es requerida para descontar stock",
     });
+  });
+});
+
+describe("expiry fields", () => {
+  it("validates the batch date and alert days", () => {
+    expect(validateBatchFields("2026-12-31", "")).toEqual({});
+    expect(validateBatchFields("2026-02-30", "")).toEqual({ expires_on: "Ingresa una fecha valida" });
+    expect(validateBatchFields("2205-01-01", "")).toEqual({ expires_on: "Revisa el anio de la fecha de vencimiento" });
+    expect(validateBatchFields("2026-12-31", "366").alert_days).toMatch(/entre 0 y 365/);
+    expect(validateBatchFields("2026-12-31", "1.5").alert_days).toBeDefined();
+  });
+
+  it("only allows expiry on additions and a batch on deductions", () => {
+    expect(validateStockAdjustment("-1", "merma", 5, { expiresOn: "2026-12-31" }).expires_on).toBeDefined();
+    expect(validateStockAdjustment("3", "", 5, { batchId: "b1" }).batch_id).toBeDefined();
+    expect(validateStockAdjustment("-3", "vencido", 5, { batchId: "b1", batchAvailable: 2 }).quantity).toBe(
+      "Ese lote solo tiene 2 unidades",
+    );
+    expect(validateStockAdjustment("-2", "vencido", 5, { batchId: "b1", batchAvailable: 2 })).toEqual({});
+  });
+
+  it("requires initial stock when creating a product with expiry", () => {
+    const values = { ...productToFormValues(), name: "Yogur", price: "5", stock: "0", expires_on: "2026-12-31" };
+    expect(validateProductForm(values, "create").expires_on).toMatch(/stock inicial/);
+    expect(validateProductForm({ ...values, stock: "4" }, "create")).toEqual({});
+    // Al editar no se usa: los lotes entran con "Ajustar stock".
+    expect(validateProductForm({ ...values, stock: "0" }, "edit")).toEqual({});
+  });
+});
+
+describe("expiry fields", () => {
+  it("validates the batch date and alert days", () => {
+    expect(validateBatchFields("2026-12-31", "")).toEqual({});
+    expect(validateBatchFields("2026-02-30", "")).toEqual({ expires_on: "Ingresa una fecha valida" });
+    expect(validateBatchFields("2205-01-01", "")).toEqual({ expires_on: "Revisa el anio de la fecha de vencimiento" });
+    expect(validateBatchFields("2026-12-31", "366").alert_days).toMatch(/entre 0 y 365/);
+    expect(validateBatchFields("2026-12-31", "1.5").alert_days).toBeDefined();
+  });
+
+  it("only allows expiry on additions and a batch on deductions", () => {
+    expect(validateStockAdjustment("-1", "merma", 5, { expiresOn: "2026-12-31" }).expires_on).toBeDefined();
+    expect(validateStockAdjustment("3", "", 5, { batchId: "b1" }).batch_id).toBeDefined();
+    expect(validateStockAdjustment("-3", "vencido", 5, { batchId: "b1", batchAvailable: 2 }).quantity).toBe(
+      "Ese lote solo tiene 2 unidades",
+    );
+    expect(validateStockAdjustment("-2", "vencido", 5, { batchId: "b1", batchAvailable: 2 })).toEqual({});
+  });
+
+  it("requires initial stock when creating a product with expiry", () => {
+    const values = { ...productToFormValues(), name: "Yogur", price: "5", stock: "0", expires_on: "2026-12-31" };
+    expect(validateProductForm(values, "create").expires_on).toMatch(/stock inicial/);
+    expect(validateProductForm({ ...values, stock: "4" }, "create")).toEqual({});
+    // Al editar no se usa: los lotes entran con "Ajustar stock".
+    expect(validateProductForm({ ...values, stock: "0" }, "edit")).toEqual({});
   });
 });

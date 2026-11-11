@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import { apiRequest } from "@/lib/api/client";
 import { getAuthToken } from "@/lib/auth/session";
 import {
+  alertDaysOrDefault,
   formDataToProductValues,
   validateProductForm,
   validateStockAdjustment,
@@ -112,7 +113,16 @@ export async function adjustStockAction(
   const reason = stringValue(formData, "reason");
   const currentStockRaw = stringValue(formData, "current_stock");
   const currentStock = currentStockRaw ? Number(currentStockRaw) : undefined;
-  const fieldErrors = validateStockAdjustment(quantity, reason, currentStock);
+  const expiresOn = stringValue(formData, "expires_on");
+  const alertDays = stringValue(formData, "alert_days");
+  const batchId = stringValue(formData, "batch_id");
+  const batchAvailableRaw = stringValue(formData, "batch_available");
+  const fieldErrors = validateStockAdjustment(quantity, reason, currentStock, {
+    expiresOn,
+    alertDays,
+    batchId,
+    batchAvailable: batchAvailableRaw ? Number(batchAvailableRaw) : undefined,
+  });
 
   if (!productId) return { ok: false, message: "Producto invalido", fieldErrors: {} };
   if (Object.keys(fieldErrors).length > 0) return { ok: false, fieldErrors };
@@ -124,6 +134,8 @@ export async function adjustStockAction(
     body: {
       quantity: Number(quantity),
       reason: reason || null,
+      ...(expiresOn ? { expires_on: expiresOn, alert_days: alertDaysOrDefault(alertDays) } : {}),
+      ...(batchId ? { batch_id: batchId } : {}),
     },
   });
 
@@ -179,6 +191,9 @@ function createPayload(values: ReturnType<typeof formDataToProductValues>) {
     discount_type: values.discount_type || null,
     discount_value: values.discount_type ? values.discount_value || "0" : "0",
     discount_ends_at: values.discount_type ? discountEndsAtIso(values.discount_ends_at) : null,
+    ...(values.expires_on
+      ? { expires_on: values.expires_on, alert_days: alertDaysOrDefault(values.alert_days) }
+      : {}),
   };
 }
 

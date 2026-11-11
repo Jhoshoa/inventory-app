@@ -4,14 +4,19 @@ from decimal import Decimal
 from uuid import UUID
 
 from src.application.dto.dashboard_dto import DashboardSummaryDTO
+from src.application.dto.product_batch_dto import ProductBatchResponseDTO
 from src.application.exceptions import NotFoundError
 from src.application.use_cases.date_ranges import BusinessDateRangeService
+from src.application.use_cases.store_day._business_date import local_business_date
+from src.domain.repositories.product_batch_repository import IProductBatchRepository
 from src.domain.repositories.product_repository import IProductRepository
 from src.domain.repositories.sale_repository import ISaleRepository
 from src.domain.repositories.store_repository import IStoreRepository
 from src.infrastructure.database.repositories.exchange_rate_repository import (
     ExchangeRateRepository,
 )
+
+EXPIRY_ALERTS_LIMIT = 20
 
 
 @dataclass
@@ -30,7 +35,9 @@ class GetDashboardSummaryUseCase:
         exchange_rate_repo: ExchangeRateRepository,
         store_repo: IStoreRepository,
         date_ranges: BusinessDateRangeService | None = None,
+        batch_repo: IProductBatchRepository | None = None,
     ):
+        self._batch_repo = batch_repo
         self._product_repo = product_repo
         self._sale_repo = sale_repo
         self._exchange_rate_repo = exchange_rate_repo
@@ -77,6 +84,16 @@ class GetDashboardSummaryUseCase:
         low_stock_products = await self._product_repo.list_low_stock(input.store_id, limit=5)
         exchange_rates = await self._exchange_rate_repo.list_latest(limit=5)
 
+        expiring_count = expired_count = 0
+        expiry_alerts: list[ProductBatchResponseDTO] = []
+        if self._batch_repo is not None:
+            today = local_business_date(store.timezone)
+            expiring_count, expired_count = await self._batch_repo.count_alerts(input.store_id, today)
+            expiry_alerts = [
+                ProductBatchResponseDTO.from_entity(batch, today)
+                for batch in await self._batch_repo.list_alerts(input.store_id, today, limit=EXPIRY_ALERTS_LIMIT)
+            ]
+
         return DashboardSummaryDTO(
             sales_today_total=sales_summary.get("total_sales", Decimal("0")),
             sales_today_count=sales_summary.get("sales_count", 0),
@@ -91,4 +108,7 @@ class GetDashboardSummaryUseCase:
             to_date=date_range.to_date,
             timezone=date_range.timezone,
             first_business_date=store.first_business_date,
+            expiring_batches_count=expiring_count,
+            expired_batches_count=expired_count,
+            expiry_alerts=expiry_alerts,
         )

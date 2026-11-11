@@ -35,6 +35,9 @@ from src.infrastructure.database.repositories.import_job_repository import (
     ImportJobRepository,
 )
 from src.infrastructure.database.repositories.lead_repository import LeadRepository
+from src.infrastructure.database.repositories.product_batch_repository import (
+    ProductBatchRepository,
+)
 from src.infrastructure.database.repositories.product_category_repository import (
     ProductCategoryRepository,
 )
@@ -53,6 +56,9 @@ from src.infrastructure.database.repositories.store_business_day_repository impo
 )
 from src.infrastructure.database.repositories.storefront_request_repository import (
     StorefrontRequestRepository,
+)
+from src.infrastructure.database.repositories.store_location_repository import (
+    StoreLocationRepository,
 )
 from src.infrastructure.database.repositories.store_repository import StoreRepository
 from src.infrastructure.database.repositories.sync_repository import SyncRepository
@@ -150,6 +156,14 @@ async def _verify_jwt_cached(token: str) -> dict:
 
 def get_product_repo(session: AsyncSession = Depends(get_db_session)) -> ProductRepository:
     return ProductRepository(session)
+
+
+def get_product_batch_repo(session: AsyncSession = Depends(get_db_session)) -> ProductBatchRepository:
+    return ProductBatchRepository(session)
+
+
+def get_store_location_repo(session: AsyncSession = Depends(get_db_session)) -> StoreLocationRepository:
+    return StoreLocationRepository(session)
 
 
 def get_product_category_repo(session: AsyncSession = Depends(get_db_session)) -> ProductCategoryRepository:

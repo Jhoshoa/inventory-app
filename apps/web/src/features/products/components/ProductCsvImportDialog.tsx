@@ -197,6 +197,10 @@ function IdleForm({
       <p className="mt-1 text-sm text-text-muted">
         Sube un archivo CSV con los productos a importar.
       </p>
+      <p className="mt-1 text-xs text-text-muted">
+        Columnas opcionales para productos que vencen: <code>vence</code> (2026-12-31 o 31/12/2026) y{" "}
+        <code>aviso_dias</code> (cuantos dias antes avisar; 5 si se deja vacio).
+      </p>
 
       <div
         className={`mt-4 cursor-pointer rounded-lg border-2 border-dashed p-8 text-center transition-colors ${

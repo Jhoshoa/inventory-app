@@ -17,7 +17,7 @@ import {
   createProductAction,
   updateProductAction,
 } from "../actions";
-import { productToFormValues } from "../schemas";
+import { DEFAULT_ALERT_DAYS, MAX_ALERT_DAYS, productToFormValues } from "../schemas";
 import type { Product, ProductActionState } from "../types";
 
 const initialProductActionState: ProductActionState = {
@@ -196,6 +196,36 @@ export function ProductForm({
             error={Boolean(state.fieldErrors.min_stock)}
           />
         </Field>
+        {mode === "create" ? (
+          <>
+            <Field name="expires_on" label="Vence el (opcional)" error={state.fieldErrors.expires_on}>
+              <Input
+                name="expires_on"
+                id="expires_on"
+                type="date"
+                value={formValues.expires_on}
+                onChange={(event) => updateField("expires_on", event.target.value)}
+                error={Boolean(state.fieldErrors.expires_on)}
+              />
+            </Field>
+            {formValues.expires_on ? (
+              <Field name="alert_days" label="Avisar dias antes" error={state.fieldErrors.alert_days}>
+                <Input
+                  name="alert_days"
+                  id="alert_days"
+                  type="number"
+                  step="1"
+                  min="0"
+                  max={MAX_ALERT_DAYS}
+                  placeholder={String(DEFAULT_ALERT_DAYS)}
+                  value={formValues.alert_days}
+                  onChange={(event) => updateField("alert_days", event.target.value)}
+                  error={Boolean(state.fieldErrors.alert_days)}
+                />
+              </Field>
+            ) : null}
+          </>
+        ) : null}
         <Field name="unit" label="Unidad" error={state.fieldErrors.unit}>
           <Input
             id="unit"

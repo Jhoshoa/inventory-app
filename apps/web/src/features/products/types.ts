@@ -1,4 +1,5 @@
 import type { ApiResult } from "@/lib/api/client";
+import type { ProductLocation } from "@/features/store-locations/types";
 
 export type ProductStockFilter = "all" | "available" | "low" | "out";
 export type ProductSortField = "name" | "stock" | "updated_at" | "price";
@@ -25,6 +26,31 @@ export interface Product {
   discount_value: string;
   discount_ends_at: string | null;
   effective_price: string;
+  /** Donde esta en la tienda (puede faltar en respuestas viejas). */
+  locations?: ProductLocation[];
+}
+
+export type ProductBatchStatus = "ok" | "expiring" | "expired" | "depleted";
+
+/** Lote con vencimiento. days_left y status se calculan con la fecha de la tienda. */
+export interface ProductBatch {
+  id: string;
+  product_id: string;
+  expires_on: string;
+  alert_days: number;
+  quantity_initial: number;
+  quantity_remaining: number;
+  created_at: string;
+  days_left: number;
+  status: ProductBatchStatus;
+  product_name: string | null;
+  product_unit: string | null;
+}
+
+export interface ProductBatchListResponse {
+  items: ProductBatch[];
+  untracked_quantity: number;
+  today: string;
 }
 
 export interface ProductListResponse {
@@ -79,6 +105,8 @@ export interface ProductFormValues {
   discount_type: ProductDiscountType | "";
   discount_value: string;
   discount_ends_at: string;
+  expires_on: string;
+  alert_days: string;
 }
 
 export interface ProductActionState {
@@ -86,13 +114,14 @@ export interface ProductActionState {
   message?: string;
   values?: ProductFormValues;
   fieldErrors: Partial<
-    Record<keyof ProductFormValues | "quantity" | "reason" | "confirm", string>
+    Record<keyof ProductFormValues | "quantity" | "reason" | "confirm" | "batch_id", string>
   >;
 }
 
 export type ProductListResult = ApiResult<ProductListResponse>;
 export type ProductResult = ApiResult<Product>;
 export type StockMovementListResult = ApiResult<StockMovementListResponse>;
+export type ProductBatchListResult = ApiResult<ProductBatchListResponse>;
 
 export type ImportJobStatus = "validating" | "inserting" | "completed";
 

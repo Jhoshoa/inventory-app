@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 from uuid import UUID
 
 from src.domain.entities.product import Product
+from src.domain.entities.product_batch import NewBatch
 
 
 class IProductRepository(ABC):
@@ -114,4 +115,6 @@ class IProductRepository(ABC):
         reason: str | None = None,
         sale_id: UUID | None = None,
         device_id: str | None = None,
+        batch_id: UUID | None = None,
+        new_batch: NewBatch | None = None,
     ) -> Product: ...

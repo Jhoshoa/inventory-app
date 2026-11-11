@@ -128,6 +128,8 @@ describe("ProductForm", () => {
         discount_type: "",
         discount_value: "",
         discount_ends_at: "",
+        expires_on: "",
+        alert_days: "",
       },
     };
 

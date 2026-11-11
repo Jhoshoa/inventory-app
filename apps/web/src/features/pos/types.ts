@@ -1,3 +1,4 @@
+import type { ProductLocationSummary } from "@/features/store-locations/types";
 import type { SaleActionState } from "@/features/sales/types";
 
 export interface PosProduct {
@@ -10,6 +11,8 @@ export interface PosProduct {
   discount_type: "percentage" | "fixed" | null;
   discount_value: string;
   effective_price: string;
+  /** Donde buscarlo en la tienda (opcional: productos guardados antes no la traen). */
+  locations?: ProductLocationSummary[];
 }
 
 export interface PosProductListResponse {

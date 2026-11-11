@@ -19,7 +19,15 @@ from src.application.dto.product_dto import (
     StockAdjustmentDTO,
     UpdateProductDTO,
 )
+from src.application.dto.product_batch_dto import (
+    ProductBatchListResponseDTO,
+    ProductBatchResponseDTO,
+)
 from src.application.dto.stock_movement_dto import StockMovementListResponseDTO
+from src.application.dto.store_location_dto import (
+    ProductLocationResponseDTO,
+    SetProductLocationsDTO,
+)
 from src.application.ports.image_validator import (
     ALLOWED_MIME_TYPES,
     validate_image_magic_bytes,
@@ -38,6 +46,9 @@ from src.application.use_cases.products.import_products_csv import (
 from src.application.use_cases.products.list_low_stock_products import (
     ListLowStockProductsUseCase,
 )
+from src.application.use_cases.products.list_product_batches import (
+    ListProductBatchesUseCase,
+)
 from src.application.use_cases.products.search_products import (
     SearchProductsInput,
     SearchProductsUseCase,
@@ -47,13 +58,24 @@ from src.application.use_cases.products.update_product import (
     UpdateProductUseCase,
 )
 from src.application.use_cases.products.update_stock import UpdateStockUseCase
+from src.application.use_cases.store_day._business_date import local_business_date
+from src.application.use_cases.store_locations.set_product_locations import (
+    SetProductLocationsInput,
+    SetProductLocationsUseCase,
+)
 from src.application.use_cases.stock_movements.list_product_stock_movements import (
     ListProductStockMovementsInput,
     ListProductStockMovementsUseCase,
 )
 from src.config.settings import settings
+from src.domain.entities.product import Product
+from src.domain.entities.product_batch import NewBatch
+from src.domain.entities.store_location import ProductLocation
 from src.infrastructure.database.repositories.import_job_repository import (
     ImportJobRepository,
+)
+from src.infrastructure.database.repositories.product_batch_repository import (
+    ProductBatchRepository,
 )
 from src.infrastructure.database.repositories.product_category_repository import (
     ProductCategoryRepository,
@@ -64,6 +86,9 @@ from src.infrastructure.database.repositories.product_repository import (
 from src.infrastructure.database.repositories.stock_movement_repository import (
     StockMovementRepository,
 )
+from src.infrastructure.database.repositories.store_location_repository import (
+    StoreLocationRepository,
+)
 from src.infrastructure.database.repositories.store_repository import StoreRepository
 from src.infrastructure.services.cloudinary.photo_storage import (
     parse_public_id_from_url,
@@ -72,15 +97,50 @@ from src.presentation.dependencies import (
     get_db_session,
     get_import_job_repo,
     get_photo_storage,
+    get_product_batch_repo,
     get_product_category_repo,
     get_product_repo,
     get_stock_movement_repo,
+    get_store_location_repo,
     get_store_repo,
     require_active_user,
     require_owner,
 )
 
 router = APIRouter(prefix="/products", tags=["products"])
+
+
+def _location_dtos(links: list[ProductLocation]) -> list[ProductLocationResponseDTO]:
+    return [
+        ProductLocationResponseDTO(
+            id=link.location.id,
+            label=link.location.label,
+            zone=link.location.zone,
+            shelf=link.location.shelf,
+            level=link.location.level,
+            kind=link.kind,
+        )
+        for link in links
+    ]
+
+
+async def _with_locations(
+    products: list[Product], store_id: UUID, location_repo: StoreLocationRepository
+) -> list[ProductResponseDTO]:
+    """Producto + donde esta en la tienda (visible para dueno y cajeros)."""
+    by_product = await location_repo.for_products(store_id, [product.id for product in products])
+    return [
+        ProductResponseDTO.model_validate(product).model_copy(
+            update={"locations": _location_dtos(by_product.get(product.id, []))}
+        )
+        for product in products
+    ]
+
+
+async def _one_with_locations(
+    product: Product, store_id: UUID, location_repo: StoreLocationRepository
+) -> ProductResponseDTO:
+    return (await _with_locations([product], store_id, location_repo))[0]
 
 
 @router.get("", response_model=ProductListResponseDTO)
@@ -95,6 +155,7 @@ async def list_products(
     direction: SortDirection = SortDirection.ASC,
     user=Depends(require_active_user),
     repo: ProductRepository = Depends(get_product_repo),
+    location_repo: StoreLocationRepository = Depends(get_store_location_repo),
 ):
     products, total = await SearchProductsUseCase(repo).execute(
         SearchProductsInput(
@@ -109,7 +170,12 @@ async def list_products(
             direction=direction.value,
         )
     )
-    return ProductListResponseDTO(items=products, total=total, limit=limit, offset=offset)
+    return ProductListResponseDTO(
+        items=await _with_locations(products, user.store_id, location_repo),
+        total=total,
+        limit=limit,
+        offset=offset,
+    )
 
 
 @router.get("/pos", response_model=ProductCompactListResponseDTO)
@@ -119,6 +185,7 @@ async def list_products_for_pos(
     offset: int = Query(default=0, ge=0),
     user=Depends(require_active_user),
     repo: ProductRepository = Depends(get_product_repo),
+    location_repo: StoreLocationRepository = Depends(get_store_location_repo),
 ):
     products, total = await SearchProductsUseCase(repo).execute(
         SearchProductsInput(
@@ -130,6 +197,7 @@ async def list_products_for_pos(
             direction="asc",
         )
     )
+    locations = await location_repo.for_products(user.store_id, [product.id for product in products])
     return ProductCompactListResponseDTO(
         items=[
             ProductCompactResponseDTO(
@@ -142,6 +210,7 @@ async def list_products_for_pos(
                 discount_type=product.discount_type,
                 discount_value=product.discount_value,
                 discount_ends_at=product.discount_ends_at,
+                locations=_location_dtos(locations.get(product.id, [])),
             )
             for product in products
         ],
@@ -156,8 +225,10 @@ async def list_low_stock_products(
     limit: int = Query(default=20, ge=1, le=100),
     user=Depends(require_active_user),
     repo: ProductRepository = Depends(get_product_repo),
+    location_repo: StoreLocationRepository = Depends(get_store_location_repo),
 ):
-    return await ListLowStockProductsUseCase(repo).execute(user.store_id, limit)
+    products = await ListLowStockProductsUseCase(repo).execute(user.store_id, limit)
+    return await _with_locations(products, user.store_id, location_repo)
 
 
 @router.get("/qr/{qr_code}", response_model=ProductResponseDTO)
@@ -165,8 +236,10 @@ async def get_product_by_qr(
     qr_code: str,
     user=Depends(require_active_user),
     repo: ProductRepository = Depends(get_product_repo),
+    location_repo: StoreLocationRepository = Depends(get_store_location_repo),
 ):
-    return await GetProductByQRUseCase(repo).execute(user.store_id, qr_code)
+    product = await GetProductByQRUseCase(repo).execute(user.store_id, qr_code)
+    return await _one_with_locations(product, user.store_id, location_repo)
 
 
 @router.get("/{product_id}/stock-movements", response_model=StockMovementListResponseDTO)
@@ -189,6 +262,42 @@ async def list_product_stock_movements(
     return StockMovementListResponseDTO(items=movements, total=total, limit=limit, offset=offset)
 
 
+@router.get("/{product_id}/batches", response_model=ProductBatchListResponseDTO)
+async def list_product_batches(
+    product_id: UUID,
+    user=Depends(require_active_user),
+    repo: ProductRepository = Depends(get_product_repo),
+    batch_repo: ProductBatchRepository = Depends(get_product_batch_repo),
+    store_repo: StoreRepository = Depends(get_store_repo),
+):
+    batches, untracked = await ListProductBatchesUseCase(batch_repo, repo).execute(user.store_id, product_id)
+    store = await store_repo.get_by_id(user.store_id)
+    today = local_business_date(store.timezone if store else None)
+    return ProductBatchListResponseDTO(
+        items=[ProductBatchResponseDTO.from_entity(batch, today) for batch in batches],
+        untracked_quantity=untracked,
+        today=today,
+    )
+
+
+@router.put("/{product_id}/locations", response_model=list[ProductLocationResponseDTO])
+async def set_product_locations(
+    product_id: UUID,
+    dto: SetProductLocationsDTO,
+    user=Depends(require_owner),
+    repo: ProductRepository = Depends(get_product_repo),
+    location_repo: StoreLocationRepository = Depends(get_store_location_repo),
+):
+    links = await SetProductLocationsUseCase(location_repo, repo).execute(
+        SetProductLocationsInput(
+            store_id=user.store_id,
+            product_id=product_id,
+            items=[(item.location_id, item.kind) for item in dto.items],
+        )
+    )
+    return _location_dtos(links)
+
+
 @router.post("", response_model=ProductResponseDTO, status_code=201)
 async def create_product(
     dto: CreateProductDTO,
@@ -196,8 +305,9 @@ async def create_product(
     repo: ProductRepository = Depends(get_product_repo),
     category_repo: ProductCategoryRepository = Depends(get_product_category_repo),
     store_repo: StoreRepository = Depends(get_store_repo),
+    batch_repo: ProductBatchRepository = Depends(get_product_batch_repo),
 ):
-    product = await CreateProductUseCase(repo, category_repo, store_repo).execute(
+    product = await CreateProductUseCase(repo, category_repo, store_repo, batch_repo).execute(
         CreateProductInput(
             store_id=user.store_id,
             name=dto.name,
@@ -214,6 +324,9 @@ async def create_product(
             discount_type=dto.discount_type.value if dto.discount_type else None,
             discount_value=dto.discount_value,
             discount_ends_at=dto.discount_ends_at,
+            initial_batch=(
+                NewBatch(expires_on=dto.expires_on, alert_days=dto.alert_days) if dto.expires_on else None
+            ),
         )
     )
     return product
@@ -224,8 +337,10 @@ async def get_product(
     product_id: UUID,
     user=Depends(require_active_user),
     repo: ProductRepository = Depends(get_product_repo),
+    location_repo: StoreLocationRepository = Depends(get_store_location_repo),
 ):
-    return await GetProductUseCase(repo).execute(user.store_id, product_id)
+    product = await GetProductUseCase(repo).execute(user.store_id, product_id)
+    return await _one_with_locations(product, user.store_id, location_repo)
 
 
 @router.patch("/{product_id}", response_model=ProductResponseDTO)
@@ -236,6 +351,7 @@ async def update_product(
     repo: ProductRepository = Depends(get_product_repo),
     category_repo: ProductCategoryRepository = Depends(get_product_category_repo),
     store_repo: StoreRepository = Depends(get_store_repo),
+    location_repo: StoreLocationRepository = Depends(get_store_location_repo),
 ):
     product = await UpdateProductUseCase(repo, category_repo, store_repo).execute(
         UpdateProductInput(
@@ -267,7 +383,7 @@ async def update_product(
                 delta,
                 "stock set from product update",
             )
-    return product
+    return await _one_with_locations(product, user.store_id, location_repo)
 
 
 @router.patch("/{product_id}/stock", response_model=ProductResponseDTO)
@@ -276,8 +392,17 @@ async def adjust_stock(
     dto: StockAdjustmentDTO,
     user=Depends(require_owner),
     repo: ProductRepository = Depends(get_product_repo),
+    location_repo: StoreLocationRepository = Depends(get_store_location_repo),
 ):
-    return await UpdateStockUseCase(repo).execute(user.store_id, product_id, dto.quantity, dto.reason)
+    product = await UpdateStockUseCase(repo).execute(
+        user.store_id,
+        product_id,
+        dto.quantity,
+        dto.reason,
+        new_batch=NewBatch(expires_on=dto.expires_on, alert_days=dto.alert_days) if dto.expires_on else None,
+        batch_id=dto.batch_id,
+    )
+    return await _one_with_locations(product, user.store_id, location_repo)
 
 
 @router.post("/{product_id}/photo", response_model=ProductResponseDTO)
@@ -409,7 +534,8 @@ async def import_products_csv(
     product_repo = ProductRepository(session)
     category_repo = ProductCategoryRepository(session)
     job_repo = ImportJobRepository(session)
-    use_case = ImportProductsCsvUseCase(session, product_repo, category_repo, job_repo)
+    batch_repo = ProductBatchRepository(session)
+    use_case = ImportProductsCsvUseCase(session, product_repo, category_repo, job_repo, batch_repo)
     job = await use_case.execute(user.store_id, user.id, file.filename or "productos.csv", content)
 
     return _job_to_response(job)

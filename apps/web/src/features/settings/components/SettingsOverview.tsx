@@ -11,6 +11,8 @@ import { CollapsibleSection } from "@/components/ui/CollapsibleSection";
 import type { Session } from "@/lib/auth/session";
 import { ProductCategorySettings } from "@/features/product-categories/components/ProductCategorySettings";
 import type { ProductCategoryListResult } from "@/features/product-categories/types";
+import { StoreLocationSettings } from "@/features/store-locations/components/StoreLocationSettings";
+import type { StoreLocationListResult } from "@/features/store-locations/types";
 import { StoreDayEventTimeline } from "@/features/store-day/components/StoreDayEventTimeline";
 import { StoreDayStatusPanel } from "@/features/store-day/components/StoreDayStatusPanel";
 import type { CashMovementListResult, StoreDayClosingPreviewResult, StoreDayEventListResult, StoreDayResult } from "@/features/store-day/types";
@@ -29,6 +31,7 @@ export function SettingsOverview({
   closingPreview,
   cashMovements,
   productCategories,
+  storeLocations,
   users,
   userInvitations,
 }: {
@@ -39,6 +42,7 @@ export function SettingsOverview({
   closingPreview?: StoreDayClosingPreviewResult;
   cashMovements?: CashMovementListResult;
   productCategories?: ProductCategoryListResult;
+  storeLocations?: StoreLocationListResult;
   users?: UserListResult;
   userInvitations?: UserInvitationListResult;
 }) {
@@ -134,6 +138,16 @@ export function SettingsOverview({
                 description="Agrupacion de productos y prefijos SKU."
               >
                 <DataFetchError resource="las categorias" error={productCategories.error.message} />
+              </AdminSection>
+            )
+          ) : null}
+
+          {storeLocations ? (
+            storeLocations.ok ? (
+              <StoreLocationSettings locations={storeLocations.data.items} />
+            ) : (
+              <AdminSection title="Ubicaciones" description="Zona, mueble y nivel donde estan los productos.">
+                <DataFetchError resource="las ubicaciones" error={storeLocations.error.message} />
               </AdminSection>
             )
           ) : null}

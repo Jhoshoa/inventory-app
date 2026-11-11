@@ -99,13 +99,49 @@ export function validateProductForm(values: ProductFormValues, mode: "create" | 
     errors.discount_ends_at = "No se puede fijar una fecha de vencimiento sin un descuento";
   }
 
+  if (mode === "create" && values.expires_on) {
+    Object.assign(errors, validateBatchFields(values.expires_on, values.alert_days));
+    if (!errors.stock && !(stock > 0)) errors.expires_on = "Para indicar vencimiento el stock inicial debe ser mayor a 0";
+  }
+
   return errors;
+}
+
+/** Igual que el backend: aviso entre 0 y 365 dias (5 si se deja vacio). */
+export const DEFAULT_ALERT_DAYS = 5;
+export const MAX_ALERT_DAYS = 365;
+
+export function validateBatchFields(expiresOn: string, alertDays: string) {
+  const errors: { expires_on?: string; alert_days?: string } = {};
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(expiresOn);
+  const parsed = match ? new Date(`${expiresOn}T12:00:00`) : null;
+  if (!match || !parsed || Number.isNaN(parsed.getTime()) || parsed.toISOString().slice(0, 10) !== expiresOn) {
+    errors.expires_on = "Ingresa una fecha valida";
+  } else if (Number(match[1]) < 2000 || Number(match[1]) > 2100) {
+    errors.expires_on = "Revisa el anio de la fecha de vencimiento";
+  }
+  if (alertDays !== "") {
+    const days = Number(alertDays);
+    if (!Number.isInteger(days) || days < 0 || days > MAX_ALERT_DAYS) {
+      errors.alert_days = `El aviso debe ser un entero entre 0 y ${MAX_ALERT_DAYS} dias`;
+    }
+  }
+  return errors;
+}
+
+export function alertDaysOrDefault(alertDays: string) {
+  return alertDays === "" ? DEFAULT_ALERT_DAYS : Number(alertDays);
 }
 
 export const STOCK_ADJUSTMENT_MAX = 1_000_000;
 
-export function validateStockAdjustment(quantity: string, reason: string, currentStock?: number) {
-  const errors: { quantity?: string; reason?: string } = {};
+export function validateStockAdjustment(
+  quantity: string,
+  reason: string,
+  currentStock?: number,
+  batch: { expiresOn?: string; alertDays?: string; batchId?: string; batchAvailable?: number } = {},
+) {
+  const errors: { quantity?: string; reason?: string; expires_on?: string; alert_days?: string; batch_id?: string } = {};
   const parsed = Number(quantity);
 
   if (!quantity) {
@@ -123,6 +159,21 @@ export function validateStockAdjustment(quantity: string, reason: string, curren
   }
 
   if (reason.length > 120) errors.reason = "La razon debe tener maximo 120 caracteres";
+
+  if (batch.expiresOn) {
+    if (parsed < 0) errors.expires_on = "La fecha de vencimiento solo se indica al agregar stock";
+    else Object.assign(errors, validateBatchFields(batch.expiresOn, batch.alertDays ?? ""));
+  }
+  if (batch.batchId) {
+    if (parsed > 0) errors.batch_id = "El lote solo se elige al descontar stock";
+    else if (
+      !errors.quantity &&
+      typeof batch.batchAvailable === "number" &&
+      Math.abs(parsed) > batch.batchAvailable
+    ) {
+      errors.quantity = `Ese lote solo tiene ${batch.batchAvailable} unidades`;
+    }
+  }
 
   return errors;
 }
@@ -144,6 +195,8 @@ export function formDataToProductValues(formData: FormData): ProductFormValues {
     discount_type: discountType === "percentage" || discountType === "fixed" ? discountType : "",
     discount_value: stringValue(formData, "discount_value"),
     discount_ends_at: stringValue(formData, "discount_ends_at"),
+    expires_on: stringValue(formData, "expires_on"),
+    alert_days: stringValue(formData, "alert_days"),
   };
 }
 
@@ -178,6 +231,8 @@ export function productToFormValues(product?: {
     discount_type: product?.discount_type ?? "",
     discount_value: product?.discount_value ?? "",
     discount_ends_at: product?.discount_ends_at ? product.discount_ends_at.slice(0, 10) : "",
+    expires_on: "",
+    alert_days: "",
   };
 }
 

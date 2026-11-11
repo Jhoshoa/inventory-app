@@ -1,4 +1,5 @@
 import type { ApiResult } from "@/lib/api/client";
+import type { ProductBatch } from "@/features/products/types";
 
 export interface DashboardSummary {
   sales_today_total: string;
@@ -14,6 +15,10 @@ export interface DashboardSummary {
   to_date: string | null;
   timezone: string | null;
   first_business_date: string | null;
+  /** Lotes vencidos y en su aviso; faltan en respuestas de un backend anterior. */
+  expiring_batches_count?: number;
+  expired_batches_count?: number;
+  expiry_alerts?: ProductBatch[];
 }
 
 export type DashboardScope = "today" | "month";

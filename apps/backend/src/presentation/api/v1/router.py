@@ -17,6 +17,7 @@ from src.presentation.api.v1 import (
     stock_movements,
     store,
     store_day,
+    store_locations,
     storefront_requests,
     sync,
     user_invitations,
@@ -26,6 +27,7 @@ from src.presentation.api.v1 import (
 api_v1_router = APIRouter()
 api_v1_router.include_router(product_categories.router)
 api_v1_router.include_router(products.router)
+api_v1_router.include_router(store_locations.router)
 api_v1_router.include_router(sales.router)
 api_v1_router.include_router(sync.router)
 api_v1_router.include_router(auth.router)

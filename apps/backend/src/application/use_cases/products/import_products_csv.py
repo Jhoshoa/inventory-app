@@ -1,6 +1,7 @@
 import csv
 import io
 from dataclasses import dataclass
+from datetime import date, datetime
 from decimal import Decimal, InvalidOperation
 from uuid import UUID, uuid4
 
@@ -10,6 +11,14 @@ from src.application.exceptions import ConflictError
 from src.application.use_cases.products.name_normalizer import normalize_product_name
 from src.domain.entities.import_job import ImportJob, ImportJobStatus, RowError
 from src.domain.entities.product import Product
+from src.domain.entities.product_batch import (
+    DEFAULT_ALERT_DAYS,
+    MAX_ALERT_DAYS,
+    MAX_EXPIRY_YEAR,
+    MIN_EXPIRY_YEAR,
+    NewBatch,
+)
+from src.domain.repositories.product_batch_repository import IProductBatchRepository
 from src.domain.repositories.import_job_repository import IImportJobRepository
 from src.domain.repositories.product_category_repository import (
     IProductCategoryRepository,
@@ -34,6 +43,8 @@ class RawProductRow:
     cost_price: str | None
     qr_code: str | None
     photo_url: str | None
+    expires_on: str | None = None
+    alert_days: str | None = None
 
 
 @dataclass
@@ -50,6 +61,7 @@ class ParsedProductRow:
     cost_price: Decimal | None
     qr_code: str | None
     photo_url: str | None
+    initial_batch: NewBatch | None = None
 
 
 EXPECTED_HEADERS = [
@@ -64,7 +76,23 @@ EXPECTED_HEADERS = [
     "cost_price",
     "qr_code",
     "photo_url",
+    # Opcionales: el stock inicial entra como un lote que vence ese dia.
+    "vence",
+    "aviso_dias",
 ]
+
+# Formatos aceptados en "vence": 2026-12-31 (planillas) o 31/12/2026 (como se escribe aca).
+EXPIRY_DATE_FORMATS = ("%Y-%m-%d", "%d/%m/%Y")
+
+
+def parse_expiry_date(value: str) -> date | None:
+    for fmt in EXPIRY_DATE_FORMATS:
+        try:
+            parsed = datetime.strptime(value.strip(), fmt).date()
+        except ValueError:
+            continue
+        return parsed if MIN_EXPIRY_YEAR <= parsed.year <= MAX_EXPIRY_YEAR else None
+    return None
 
 
 class ImportProductsCsvUseCase:
@@ -74,11 +102,13 @@ class ImportProductsCsvUseCase:
         product_repo: IProductRepository,
         category_repo: IProductCategoryRepository,
         job_repo: IImportJobRepository,
+        batch_repo: IProductBatchRepository | None = None,
     ):
         self._session = session
         self._product_repo = product_repo
         self._category_repo = category_repo
         self._job_repo = job_repo
+        self._batch_repo = batch_repo
 
     async def execute(
         self,
@@ -128,7 +158,9 @@ class ImportProductsCsvUseCase:
         await self._job_repo.save(job)
 
         imported = 0
-        async with self._session.begin():
+        # La sesion ya tiene una transaccion abierta (el job se guardo arriba):
+        # un SAVEPOINT deja la insercion en todo o nada sin abrir otra.
+        async with self._session.begin_nested():
             for row in parsed:
                 if row.category_id and not row.sku:
                     sku = await self._category_repo.reserve_next_sku(store_id, row.category_id)
@@ -154,6 +186,8 @@ class ImportProductsCsvUseCase:
                     qr_code=row.qr_code,
                 )
                 await self._product_repo.save(product)
+                if row.initial_batch is not None and self._batch_repo is not None:
+                    await self._batch_repo.add(store_id, product.id, product.stock, row.initial_batch)
                 imported += 1
 
         job.complete(len(raw_rows), imported, [])
@@ -182,6 +216,8 @@ class ImportProductsCsvUseCase:
                     cost_price=self._get(row, "cost_price"),
                     qr_code=self._get(row, "qr_code"),
                     photo_url=self._get(row, "photo_url"),
+                    expires_on=self._get(row, "vence"),
+                    alert_days=self._get(row, "aviso_dias"),
                 )
             )
         return rows
@@ -257,6 +293,40 @@ class ImportProductsCsvUseCase:
             if row.photo_url is not None and len(row.photo_url) > 500:
                 errors.append(RowError(row=row.row_number, field="photo_url", message="photo_url debe tener maximo 500 caracteres"))
 
+            errors.extend(self._validate_expiry(row))
+
+        return errors
+
+    def _validate_expiry(self, row: RawProductRow) -> list[RowError]:
+        errors: list[RowError] = []
+        if row.expires_on is not None:
+            if parse_expiry_date(row.expires_on) is None:
+                errors.append(
+                    RowError(
+                        row=row.row_number,
+                        field="vence",
+                        message="vence debe ser una fecha valida (AAAA-MM-DD o DD/MM/AAAA)",
+                    )
+                )
+            elif self._batch_repo is None:
+                errors.append(RowError(row=row.row_number, field="vence", message="vence no esta disponible"))
+            elif not (row.stock or "").isdigit() or int(row.stock or 0) <= 0:
+                errors.append(
+                    RowError(row=row.row_number, field="vence", message="vence necesita un stock mayor a 0")
+                )
+        if row.alert_days is not None:
+            if row.expires_on is None:
+                errors.append(
+                    RowError(row=row.row_number, field="aviso_dias", message="aviso_dias necesita una fecha en vence")
+                )
+            elif not row.alert_days.isdigit() or int(row.alert_days) > MAX_ALERT_DAYS:
+                errors.append(
+                    RowError(
+                        row=row.row_number,
+                        field="aviso_dias",
+                        message=f"aviso_dias debe ser un numero entero entre 0 y {MAX_ALERT_DAYS}",
+                    )
+                )
         return errors
 
     def _parse_rows(self, raw_rows: list[RawProductRow]) -> list[ParsedProductRow]:
@@ -274,6 +344,12 @@ class ImportProductsCsvUseCase:
             if row.cost_price is not None:
                 cost_price = Decimal(row.cost_price)
 
+            initial_batch: NewBatch | None = None
+            expires_on = parse_expiry_date(row.expires_on) if row.expires_on else None
+            if expires_on is not None:
+                alert_days = int(row.alert_days) if row.alert_days is not None else DEFAULT_ALERT_DAYS
+                initial_batch = NewBatch(expires_on=expires_on, alert_days=alert_days)
+
             parsed.append(
                 ParsedProductRow(
                     row_number=row.row_number,
@@ -288,6 +364,7 @@ class ImportProductsCsvUseCase:
                     cost_price=cost_price,
                     qr_code=row.qr_code,
                     photo_url=row.photo_url,
+                    initial_batch=initial_batch,
                 )
             )
         return parsed

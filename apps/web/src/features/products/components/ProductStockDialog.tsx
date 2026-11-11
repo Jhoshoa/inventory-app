@@ -1,6 +1,6 @@
 "use client";
 
-import { type FormEvent, useState } from "react";
+import { type FormEvent, useId, useState } from "react";
 import { useRouter } from "next/navigation";
 import { PackagePlus } from "lucide-react";
 import { toast } from "sonner";
@@ -9,10 +9,12 @@ import { Dialog, DialogTitle, DialogBody, DialogFooter } from "@/components/ui/D
 import { FieldError } from "@/components/ui/FieldError";
 import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
+import { Select } from "@/components/ui/Select";
 import { Textarea } from "@/components/ui/Textarea";
 import { adjustStockAction } from "../actions";
-import { STOCK_ADJUSTMENT_MAX } from "../schemas";
-import type { ProductActionState } from "../types";
+import { batchOptionLabel } from "../batches";
+import { DEFAULT_ALERT_DAYS, MAX_ALERT_DAYS, STOCK_ADJUSTMENT_MAX } from "../schemas";
+import type { ProductActionState, ProductBatch } from "../types";
 
 const initialProductActionState: ProductActionState = {
   ok: false,
@@ -24,25 +26,41 @@ export function ProductStockDialog({
   productName,
   currentStock,
   trigger = "text",
+  triggerLabel = "Ajustar stock",
+  batches = [],
+  preset,
 }: {
   productId: string;
   productName: string;
   currentStock: number;
   trigger?: "icon" | "text";
+  triggerLabel?: string;
+  /** Lotes con unidades: para elegir de cual sale al descontar. */
+  batches?: ProductBatch[];
+  /** Valores con los que abre (p. ej. "Retirar" un lote vencido). */
+  preset?: { quantity: number; batchId: string; reason?: string };
 }) {
   const [open, setOpen] = useState(false);
   const [state, setState] = useState<ProductActionState>(initialProductActionState);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [quantity, setQuantity] = useState("");
+  const [quantity, setQuantity] = useState(preset ? String(preset.quantity) : "");
+  const [expiresOn, setExpiresOn] = useState("");
+  const [batchId, setBatchId] = useState(preset?.batchId ?? "");
   const router = useRouter();
+  // Puede haber varios en la pagina (uno por lote): ids propios para los labels.
+  const fieldId = useId();
 
   const parsedQuantity = Number(quantity);
   const hasValidQuantity = quantity.trim() !== "" && Number.isInteger(parsedQuantity) && parsedQuantity !== 0;
   const resultingStock = hasValidQuantity ? currentStock + parsedQuantity : currentStock;
   const isDeduction = hasValidQuantity && parsedQuantity < 0;
+  const isAddition = hasValidQuantity && parsedQuantity > 0;
+  const selectedBatch = batches.find((batch) => batch.id === batchId);
 
   function resetLocalState() {
-    setQuantity("");
+    setQuantity(preset ? String(preset.quantity) : "");
+    setExpiresOn("");
+    setBatchId(preset?.batchId ?? "");
     setState(initialProductActionState);
   }
 
@@ -75,12 +93,12 @@ export function ProductStockDialog({
   return (
     <>
       {trigger === "icon" ? (
-        <Button variant="icon" onClick={() => setOpen(true)} aria-label="Ajustar stock">
+        <Button variant="icon" onClick={() => setOpen(true)} aria-label={triggerLabel}>
           <PackagePlus className="h-4 w-4" aria-hidden="true" />
         </Button>
       ) : (
         <Button variant="ghost" onClick={() => setOpen(true)}>
-          Ajustar stock
+          {triggerLabel}
         </Button>
       )}
       <Dialog
@@ -101,12 +119,12 @@ export function ProductStockDialog({
             <input type="hidden" name="current_stock" value={currentStock} />
             <div className="mt-4 space-y-3">
               <div className="space-y-1">
-                <Label htmlFor={`quantity-${productId}`}>Cantidad a ajustar</Label>
+                <Label htmlFor={`quantity-${fieldId}`}>Cantidad a ajustar</Label>
                 <p className="text-xs text-text-muted">
                   Usa un numero positivo para sumar stock (ej. 10) o negativo para descontarlo (ej. -5).
                 </p>
                 <Input
-                  id={`quantity-${productId}`}
+                  id={`quantity-${fieldId}`}
                   name="quantity"
                   type="number"
                   step="1"
@@ -124,8 +142,67 @@ export function ProductStockDialog({
                   </p>
                 ) : null}
               </div>
+              {isAddition ? (
+                <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_150px]">
+                  <div className="space-y-1">
+                    <Label htmlFor={`expires-${fieldId}`}>Vence el (opcional)</Label>
+                    <Input
+                      id={`expires-${fieldId}`}
+                      name="expires_on"
+                      type="date"
+                      value={expiresOn}
+                      onChange={(event) => setExpiresOn(event.target.value)}
+                      error={Boolean(state.fieldErrors.expires_on)}
+                    />
+                    <FieldError message={state.fieldErrors.expires_on} />
+                  </div>
+                  {expiresOn ? (
+                    <div className="space-y-1">
+                      <Label htmlFor={`alert-${fieldId}`}>Avisar dias antes</Label>
+                      <Input
+                        id={`alert-${fieldId}`}
+                        name="alert_days"
+                        type="number"
+                        step="1"
+                        min={0}
+                        max={MAX_ALERT_DAYS}
+                        defaultValue={DEFAULT_ALERT_DAYS}
+                        error={Boolean(state.fieldErrors.alert_days)}
+                      />
+                      <FieldError message={state.fieldErrors.alert_days} />
+                    </div>
+                  ) : null}
+                  {expiresOn ? (
+                    <p className="text-xs text-text-muted sm:col-span-2">
+                      Entra como un lote nuevo. Las ventas sacan primero del lote que vence antes.
+                    </p>
+                  ) : null}
+                </div>
+              ) : null}
+              {isDeduction && batches.length > 0 ? (
+                <div className="space-y-1">
+                  <Label htmlFor={`batch-${fieldId}`}>Sale de</Label>
+                  <Select
+                    id={`batch-${fieldId}`}
+                    name="batch_id"
+                    value={batchId}
+                    onChange={(event) => setBatchId(event.target.value)}
+                  >
+                    <option value="">Automatico: primero el que vence antes</option>
+                    {batches.map((batch) => (
+                      <option key={batch.id} value={batch.id}>
+                        {batchOptionLabel(batch)}
+                      </option>
+                    ))}
+                  </Select>
+                  {selectedBatch ? (
+                    <input type="hidden" name="batch_available" value={selectedBatch.quantity_remaining} />
+                  ) : null}
+                  <FieldError message={state.fieldErrors.batch_id} />
+                </div>
+              ) : null}
               <div className="space-y-1">
-                <Label htmlFor={`reason-${productId}`}>
+                <Label htmlFor={`reason-${fieldId}`}>
                   Razon{isDeduction ? <span className="text-status-danger"> *</span> : " (opcional)"}
                 </Label>
                 {isDeduction ? (
@@ -133,7 +210,12 @@ export function ProductStockDialog({
                     Requerida para descontar stock (ej. merma, conteo fisico, producto danado).
                   </p>
                 ) : null}
-                <Textarea id={`reason-${productId}`} name="reason" maxLength={120} />
+                <Textarea
+                  id={`reason-${fieldId}`}
+                  name="reason"
+                  maxLength={120}
+                  defaultValue={preset?.reason}
+                />
                 <FieldError message={state.fieldErrors.reason} />
               </div>
             </div>
