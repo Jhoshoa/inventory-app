@@ -54,6 +54,7 @@ describe("navigation", () => {
     expect(shouldShowMobileTabBar("/dashboard/products/p-1/edit")).toBe(false);
     expect(shouldShowMobileTabBar("/dashboard/products/p-1")).toBe(true);
     expect(shouldShowMobileTabBar("/dashboard/products/categorias")).toBe(true);
+    expect(shouldShowMobileTabBar("/dashboard/products/labels")).toBe(false);
     expect(shouldShowMobileTabBar("/dashboard")).toBe(true);
   });
 

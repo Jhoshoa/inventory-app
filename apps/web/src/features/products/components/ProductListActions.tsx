@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import type { ReactNode } from "react";
 import { Plus } from "lucide-react";
@@ -29,6 +30,7 @@ export function ProductListActions({
   /** Aviso de vencimiento de la tienda; null si no se pudo leer (la opción no aparece). */
   alertDays?: number | null;
 }) {
+  const router = useRouter();
   const [sheetOpen, setSheetOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
   const [alertOpen, setAlertOpen] = useState(false);
@@ -135,7 +137,8 @@ export function ProductListActions({
         onClose={() => setImportOpen(false)}
         onSuccess={() => {
           setImportOpen(false);
-          window.location.reload();
+          // La lista y los conteos se vuelven a pedir al servidor.
+          router.refresh();
         }}
       />
     </>

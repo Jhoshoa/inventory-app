@@ -250,7 +250,8 @@ export function ProductBrowser({
           onClose={() => setImportOpen(false)}
           onSuccess={() => {
             setImportOpen(false);
-            window.location.reload();
+            // La lista y los conteos se vuelven a pedir al servidor.
+          router.refresh();
           }}
         />
       ) : null}

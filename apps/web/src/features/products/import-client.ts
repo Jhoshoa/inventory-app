@@ -4,13 +4,14 @@
 
 import type { ImportJob, ImportJobListResponse } from "./types";
 
-export async function importProductsCsv(file: File): Promise<ImportJob> {
+export async function importProductsCsv(file: File, signal?: AbortSignal): Promise<ImportJob> {
   const formData = new FormData();
   formData.append("file", file);
 
   const response = await fetch("/api/products/import", {
     method: "POST",
     body: formData,
+    signal,
   });
 
   if (!response.ok) {

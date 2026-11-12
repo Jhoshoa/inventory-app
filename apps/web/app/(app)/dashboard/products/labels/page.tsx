@@ -1,18 +1,19 @@
-import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
-import { PageHeader } from "@/components/layout/PageHeader";
-import { PageSection } from "@/components/layout/PageSection";
+import type { Metadata } from "next";
 import { DataFetchError } from "@/components/ui/DataFetchError";
 import { ForbiddenState } from "@/components/ui/ForbiddenState";
 import { listProductCategories } from "@/features/product-categories/api";
 import { getProduct, listProducts } from "@/features/products/api";
 import { ProductLabelPage } from "@/features/products/components/ProductLabelPage";
-import {
-  DEFAULT_PRODUCT_LIMIT,
-  parseProductSearchParams,
-} from "@/features/products/schemas";
+import { parseProductSearchParams } from "@/features/products/schemas";
 import { canManageProducts } from "@/lib/auth/permissions";
 import { requireSession } from "@/lib/auth/session";
 
+export const metadata: Metadata = { title: "Imprimir etiquetas" };
+
+/** Resultados que se ven sin buscar (los primeros por nombre). */
+const RESULTS_LIMIT = 30;
+
+// Imprimir etiquetas (tablero P05). Solo el dueño.
 export default async function ProductLabelsPage({
   searchParams,
 }: {
@@ -21,55 +22,34 @@ export default async function ProductLabelsPage({
   const [session, rawParams] = await Promise.all([requireSession(), searchParams]);
 
   if (!canManageProducts(session.role)) {
-    return <ForbiddenState description="Solo el dueño de la tienda puede imprimir etiquetas." />;
+    return (
+      <ForbiddenState
+        description="Solo el dueño de la tienda puede imprimir etiquetas."
+        actionHref="/dashboard/products"
+        actionLabel="Volver a Productos"
+      />
+    );
   }
 
-  const params = {
-    ...parseProductSearchParams(rawParams),
-    limit: DEFAULT_PRODUCT_LIMIT,
-    offset: 0,
-  };
-  const emptyProducts = {
-    ok: true as const,
-    data: { items: [], total: 0, limit: params.limit, offset: params.offset },
-  };
+  const params = { ...parseProductSearchParams(rawParams), limit: RESULTS_LIMIT, offset: 0 };
   const preselectedId = typeof rawParams.producto === "string" ? rawParams.producto : null;
   const [products, categories, preselected] = await Promise.all([
-    params.q ? listProducts(params) : Promise.resolve(emptyProducts),
+    listProducts(params),
     listProductCategories(),
     preselectedId ? getProduct(preselectedId) : Promise.resolve(null),
   ]);
-  // Solo si tiene código: sin código no hay QR que imprimir.
+  // Desde "Imprimir etiqueta" del QR: llega elegido, si tiene código (sin código no hay QR).
   const initialSelected =
     preselected?.ok && preselected.data.qr_code?.trim() ? [{ product: preselected.data, quantity: 1 }] : [];
 
-  return (
-    <PageSection className="space-y-6">
-      <PageHeader
-        className="print-hidden"
-        breadcrumbs={
-          <Breadcrumbs
-            items={[
-              { label: "Inicio", href: "/dashboard" },
-              { label: "Productos", href: "/dashboard/products" },
-              { label: "Imprimir etiquetas" },
-            ]}
-          />
-        }
-        title="Imprimir etiquetas"
-        description="Selecciona productos con codigo escaneable y genera una hoja imprimible."
-      />
+  if (!products.ok) return <DataFetchError resource="los productos" error={products.error.message} />;
 
-      {!products.ok ? (
-        <DataFetchError resource="los productos" error={products.error.message} />
-      ) : (
-        <ProductLabelPage
-          initialParams={params}
-          initialProducts={products.data}
-          categories={categories.ok ? categories.data.items : []}
-          initialSelected={initialSelected}
-        />
-      )}
-    </PageSection>
+  return (
+    <ProductLabelPage
+      initialParams={params}
+      initialProducts={products.data}
+      categories={categories.ok ? categories.data.items : []}
+      initialSelected={initialSelected}
+    />
   );
 }

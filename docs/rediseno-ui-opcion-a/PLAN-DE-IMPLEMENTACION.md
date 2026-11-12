@@ -141,6 +141,7 @@ Se arreglan en la **Fase 0** porque son chicos, no dependen del rediseño y ya m
 | **E9** | E1 quedó a medias en la Fase 0: los campos de caja usaban `sanitizeMoneyInput`, que **borraba la coma mientras se escribía** ("30,50" → "3050"), y `pattern` también la rechazaba. | `features/store-day` | Arreglado en la Fase 2 con `MoneyInput` (`components/ui`): solo quita lo que no es número ni separador y no recorta en silencio; la validación explica. Usarlo en **todos** los montos de las fases siguientes. | Probado en el navegador: "50,50" se guarda como Bs 50,50. |
 | **E10** | Los diálogos se montaban en `body`, fuera de `.theme-app`, y no tomaban los colores del estilo A. | `components/ui/Dialog.tsx` | Arreglado en la Fase 2: se montan en `.theme-app` cuando existe. Nueva posición `sheet`: hoja desde abajo en el celular, ventana centrada desde 640 px. | Revisado en el navegador. |
 | **E11** | Con B4 hecho, el aviso de la tienda igual no se usaba: si "Avisar días antes" quedaba vacío, la web mandaba **5** (`alertDaysOrDefault`) y la ventana de ajustar stock lo traía escrito. | `features/products/schemas.ts`, `actions.ts`, `ProductStockDialog`, `ProductForm` | Arreglado en la Fase 3 (P01B): vacío va como `null` y la API usa el aviso de la tienda; el campo dice "Como la tienda". | unit + probado en el navegador: aviso de la tienda en 7, lote nuevo sin número → `alert_days` 7. |
+| **E12** | "Descargar plantilla CSV" iba a `/api/v1/exports/products.csv`, que en la web no existe (404). Y la exportación tampoco sirve de plantilla: trae `id` e `is_active` y, subida de nuevo, choca con los SKU y códigos que ya existen. | `ProductCsvImportDialog` | Arreglado en la Fase 3 (P05): la plantilla se arma en la web con las columnas exactas del importador y una fila de ejemplo. | unit (columnas = importador). |
 | **E8** | `Button` era componente de cliente: una página del servidor con `<Button asChild><Link/></Button>` (Reportes, 404, estados vacíos) se caía con "React.Children.only expected…", porque el hijo llegaba como referencia del servidor. Por eso fallaban Reportes y sus e2e. | `components/ui/Button.tsx` | Arreglado en la Fase 1: `Button` ya no lleva `"use client"` (no usa hooks). | e2e de Reportes y smoke en verde. |
 | **E7** | Tests e2e que ya fallan en `main` (9 al probar el 2026-11-11 sin `.env.local`): `a11y` (rutas principales), `auth` (sesión simulada llega a Productos), `pos` (render), `products` (vacío y validación al crear), `reports` (los 3) y `smoke` (rutas principales). Fallan por textos y enlaces que cambiaron y por tiempos de `next dev`. | `apps/web/e2e/` | Rehacerlos en la Fase 1 junto con los nombres nuevos del menú, y desde ahí cada fase deja sus e2e en verde. | La rama no agrega fallas: 7 de esos 9 siguen fallando, ninguna nueva. |
 
@@ -312,6 +313,15 @@ Aceptación: todas las páginas actuales se ven dentro del marco nuevo y se pued
 - `Dialog`: con una ventana sobre otra, Escape cerraba las dos; ahora cierra solo la de arriba.
 - Probado con la API: agregar 2 sin fecha, descontar 1 del lote con "Conteo físico" (el lote bajó de 11 a 10), Dónde está con Exhibición / Depósito, QR → Etiquetas, Duplicar → crear la copia → eliminarla.
 
+**Etiquetas e Importar CSV (P05) hechos (2026-11-12). Fase 3 completa.** Notas:
+
+- Etiquetas: escritorio en 3 columnas (productos · vista previa · diseño) con "Descargar SVG" e "Imprimir N etiquetas" arriba; hasta 1024 px, 3 pasos (Productos → Diseño → Imprimir) y barra fija "24 etiquetas · 1 hoja Carta · Siguiente". Sin buscar ya se ven los primeros 30 productos. Cantidad por producto 1–100 con − / +; tope de 500 por vez. Hoja Carta / A4, tamaños de 20×10 a 70×35 mm, margen 0–30 mm (vacío = 8), qué se ve, "N columnas × M filas = X por hoja" y "Vista previa · N hojas". Si la etiqueta no entra con ese margen, se avisa y no se imprime.
+- La configuración ahora sí se recuerda en este equipo (el tablero decía "como hoy", pero no se guardaba). La vista previa siempre está en la página para imprimir aunque el paso del celular no la muestre.
+- Llegar desde el QR de un producto lo trae elegido (`?producto=`).
+- Importar CSV: elegir o arrastrar (.csv, hasta 5 MB y 5.000 filas, se revisa antes de subir y cuenta las filas), "Validando filas…" con "Reintentar" al minuto, y si falla: "No se importó ningún producto · Hay N errores… todo o nada", tabla Fila · Campo · Qué pasa y "Descargar errores". La fila es la de la planilla (la API cuenta desde el primer producto; se suma 1 por los títulos). Al terminar: "Se importaron N productos" y la lista se vuelve a pedir (antes recargaba toda la página). **E12** arreglado (plantilla).
+- Probado con la API: un archivo con precio 0 y fecha mal → 2 errores y nada importado; uno bueno → "Se importaron 2 productos" y la lista y los conteos se actualizan.
+- Para el backend (no se tocó): al crear un producto con stock no se guarda un movimiento de stock inicial (el detalle muestra "Todavía no hay movimientos"); el CSV solo acepta coma como separador y punto en los precios (un CSV de Excel en español sale con `;` y coma decimal); no hay límite de tamaño en `POST /products/import` (lo pone la web).
+
 ### Fase 4 · Vender (2,5–3 días)
 
 Es la fase más delicada: es lo que más se usa y funciona sin conexión.
@@ -428,6 +438,7 @@ Manual en cada fase: celular (375), tablet (768) y escritorio (1280); dueño y c
 | Fecha | Cambio |
 |---|---|
 | 2026-11-11 | Primera versión. E3 encontrado al revisar el código (apertura y contado en 0). Nota de P08 corregida (razón obligatoria al anular un movimiento de caja). |
+| 2026-11-12 | Fase 3, P05: Etiquetas en 3 pasos / 3 columnas con la configuración recordada, Importar CSV con plantilla propia (E12) y errores por fila. **Fase 3 completa.** |
 | 2026-11-12 | Fase 3, P03 y P04: detalle del producto y ventanas (ajustar stock, dónde está, eliminar, QR, cámara). Duplicar. Escape con ventanas una sobre otra. |
 | 2026-11-12 | Fase 3, P02: formulario nuevo / editar con validaciones, 409 en su campo, categoría y lugar sin salir, "Así se ve al vender" y "¿Salir sin guardar?". |
 | 2026-11-11 | Fase 3, P01B: Categorías y Lugares en la tienda con sus rutas y pestañas, Aviso de vencimiento, fuera de Configuración. E11 encontrado y arreglado (el aviso de la tienda no se usaba). |

@@ -1,34 +1,49 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Download, Plus, Printer, Search, Trash2 } from "lucide-react";
-import { ResponsiveToolbar } from "@/components/layout/ResponsiveToolbar";
-import { Alert } from "@/components/ui/Alert";
+import { Download, Minus, Plus, Printer, Search, X } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import type { ProductCategory } from "@/features/product-categories/types";
+import { errorFromResponse } from "@/lib/api/errors";
+import { PRODUCT_SEARCH_DEBOUNCE_MS } from "@/lib/constants/ui";
+import { exportLabelSheetSvg } from "../label-export";
 import {
   calculateLabelDimensions,
   DEFAULT_LABEL_SETTINGS,
   LABEL_SIZE_OPTIONS,
+  loadLabelSettings,
+  MAX_LABELS_PER_PRODUCT,
+  MAX_LABELS_TOTAL,
   PAGE_SIZE_OPTIONS,
+  saveLabelSettings,
+  sheetCount,
+  validateMargin,
   type LabelPageSize,
   type LabelSizePreset,
   type ProductLabelSettings,
 } from "../label-settings";
-import { exportLabelSheetSvg } from "../label-export";
-import {
-  buildProductQueryString,
-  MIN_PRODUCT_SEARCH_LENGTH,
-} from "../schemas";
+import { buildProductQueryString, MIN_PRODUCT_SEARCH_LENGTH } from "../schemas";
 import type { Product, ProductListResponse, ProductSearchParams } from "../types";
-import { errorFromResponse } from "@/lib/api/errors";
 import { ProductLabelPreview, type SelectedLabelProduct } from "./ProductLabelPreview";
 
-const PRODUCT_SEARCH_DEBOUNCE_MS = 500;
-const MAX_LABELS_PER_PRINT = 100;
+type Step = "products" | "design" | "print";
 
+const STEPS: { key: Step; label: string }[] = [
+  { key: "products", label: "1 · Productos" },
+  { key: "design", label: "2 · Diseño" },
+  { key: "print", label: "3 · Imprimir" },
+];
+
+const PAGE_SHORT: Record<LabelPageSize, string> = { Letter: "Carta", A4: "A4" };
+
+/**
+ * Imprimir etiquetas (tablero P05). Escritorio: productos, vista previa y diseño en
+ * tres columnas. Hasta 1024 px: tres pasos (Productos → Diseño → Imprimir) con una
+ * barra fija abajo. La configuración se recuerda en este equipo.
+ */
 export function ProductLabelPage({
   initialParams,
   initialProducts,
@@ -44,159 +59,133 @@ export function ProductLabelPage({
   const [params, setParams] = useState(initialParams);
   const [query, setQuery] = useState(initialParams.q ?? "");
   const [products, setProducts] = useState(initialProducts);
-  const [selected, setSelected] = useState<Record<string, SelectedLabelProduct>>(() =>
-    Object.fromEntries(initialSelected.map((item) => [item.product.id, item])),
-  );
-  const [labelSettings, setLabelSettings] = useState<ProductLabelSettings>(DEFAULT_LABEL_SETTINGS);
+  const [selected, setSelected] = useState<SelectedLabelProduct[]>(initialSelected);
+  const [settings, setSettings] = useState<ProductLabelSettings>(DEFAULT_LABEL_SETTINGS);
+  const [step, setStep] = useState<Step>("products");
   const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
   const mountedRef = useRef(false);
-  const loadedKeyRef = useRef("");
+  const settingsLoadedRef = useRef(false);
+
+  // La configuración guardada se lee en el navegador (en el servidor no existe).
+  useEffect(() => {
+    setSettings(loadLabelSettings());
+    settingsLoadedRef.current = true;
+  }, []);
+
+  useEffect(() => {
+    if (settingsLoadedRef.current) saveLabelSettings(settings);
+  }, [settings]);
 
   useEffect(() => {
     const trimmed = query.trim();
     const timeout = window.setTimeout(() => {
-      const nextQuery =
-        trimmed.length >= MIN_PRODUCT_SEARCH_LENGTH ? trimmed : undefined;
-
+      const nextQuery = trimmed.length >= MIN_PRODUCT_SEARCH_LENGTH ? trimmed : undefined;
       if ((params.q ?? undefined) === nextQuery) return;
       setParams((current) => ({ ...current, q: nextQuery, offset: 0 }));
     }, PRODUCT_SEARCH_DEBOUNCE_MS);
-
     return () => window.clearTimeout(timeout);
   }, [params.q, query]);
 
-  const paramsKey = `${params.q ?? ""}|${params.category ?? ""}|${params.category_id ?? ""}|${params.stock}|${params.limit}|${params.offset}`;
-  const hasAppliedSearch = !!params.q;
-  const isLoading = mountedRef.current && hasAppliedSearch && loadedKeyRef.current !== paramsKey;
-
+  const paramsKey = `${params.q ?? ""}|${params.category_id ?? ""}|${params.stock}`;
   useEffect(() => {
     if (!mountedRef.current) {
       mountedRef.current = true;
-      loadedKeyRef.current = paramsKey;
       return;
     }
-    if (!params.q) {
-      setProducts({ items: [], total: 0, limit: params.limit, offset: 0 });
-      setError(null);
-      return;
-    }
-
     const controller = new AbortController();
+    setLoading(true);
     setError(null);
-
-    fetch(`/api/products?${buildProductQueryString(params)}`, {
-      signal: controller.signal,
-    })
+    fetch(`/api/products?${buildProductQueryString(params)}`, { signal: controller.signal })
       .then(async (response) => {
-        if (!response.ok) {
-          const err = await errorFromResponse(response);
-          throw new Error(err.message);
-        }
+        if (!response.ok) throw new Error((await errorFromResponse(response)).message);
         return response.json() as Promise<ProductListResponse>;
       })
-      .then((data) => {
-        loadedKeyRef.current = paramsKey;
-        setProducts(data);
-      })
+      .then((data) => setProducts(data))
       .catch((fetchError) => {
         if (controller.signal.aborted) return;
-        loadedKeyRef.current = paramsKey;
-        setError(fetchError instanceof Error ? fetchError.message : "No se pudieron cargar productos");
+        setError(fetchError instanceof Error ? fetchError.message : "No se pudieron cargar los productos");
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setLoading(false);
       });
-
     return () => controller.abort();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [paramsKey, params.q, params]);
+  }, [paramsKey]);
 
-  const selectedProducts = useMemo(() => Object.values(selected), [selected]);
-  const totalLabels = useMemo(
-    () => selectedProducts.reduce((total, item) => total + item.quantity, 0),
-    [selectedProducts],
-  );
-  const dimensions = useMemo(() => calculateLabelDimensions(labelSettings), [labelSettings]);
-  const hasPrintableLabels = totalLabels > 0 && totalLabels <= MAX_LABELS_PER_PRINT;
-  const hasSelection = selectedProducts.length > 0;
+  const totalLabels = selected.reduce((total, item) => total + item.quantity, 0);
+  const dimensions = useMemo(() => calculateLabelDimensions(settings), [settings]);
+  const sheets = sheetCount(totalLabels, dimensions.labelsPerPage);
+  const marginError = validateMargin(settings.marginMm);
+  const fitsOnPage = dimensions.labelsPerPage > 0;
+  const tooMany = totalLabels > MAX_LABELS_TOTAL;
+  const canPrint = totalLabels > 0 && fitsOnPage && !marginError && !tooMany;
+  const selectedIds = new Set(selected.map((item) => item.product.id));
 
-  function updateFilters(patch: Partial<ProductSearchParams>) {
-    setParams((current) => ({ ...current, ...patch, offset: 0 }));
+  function add(product: Product) {
+    if (!product.qr_code?.trim() || selectedIds.has(product.id)) return;
+    setSelected((current) => [...current, { product, quantity: 1 }]);
   }
 
-  function addProduct(product: Product) {
-    const code = product.qr_code?.trim();
-    if (!code) return;
-
-    setSelected((current) => {
-      if (current[product.id]) return current;
-      return { ...current, [product.id]: { product, quantity: 1 } };
-    });
+  function setQuantity(productId: string, quantity: number) {
+    const next = Math.min(Math.max(Math.round(quantity) || 1, 1), MAX_LABELS_PER_PRODUCT);
+    setSelected((current) => current.map((item) => (item.product.id === productId ? { ...item, quantity: next } : item)));
   }
 
-  function removeProduct(productId: string) {
-    setSelected((current) => {
-      const next = { ...current };
-      delete next[productId];
-      return next;
-    });
+  function remove(productId: string) {
+    setSelected((current) => current.filter((item) => item.product.id !== productId));
   }
 
-  function updateQuantity(product: Product, quantity: number) {
-    const nextQuantity = Math.min(Math.max(quantity, 1), MAX_LABELS_PER_PRINT);
-    setSelected((current) => ({
-      ...current,
-      [product.id]: { product, quantity: nextQuantity },
-    }));
+  function update(patch: Partial<ProductLabelSettings>) {
+    setSettings((current) => ({ ...current, ...patch }));
   }
 
-  function printLabels() {
-    if (!hasPrintableLabels) return;
-    window.print();
+  function print() {
+    if (canPrint) window.print();
   }
 
-  async function exportSvg() {
-    if (!hasPrintableLabels) return;
-    await exportLabelSheetSvg({ selectedProducts, settings: labelSettings, dimensions });
+  async function downloadSvg() {
+    if (canPrint) await exportLabelSheetSvg({ selectedProducts: selected, settings, dimensions });
   }
 
-  function updateLabelSettings(patch: Partial<ProductLabelSettings>) {
-    setLabelSettings((current) => ({ ...current, ...patch }));
-  }
+  const summary = `${totalLabels === 1 ? "1 etiqueta" : `${totalLabels} etiquetas`}${
+    sheets > 0 ? ` · ${sheets === 1 ? "1 hoja" : `${sheets} hojas`} ${PAGE_SHORT[settings.pageSize]}` : ""
+  }`;
+  const problem = tooMany
+    ? `Son muchas: hasta ${MAX_LABELS_TOTAL} etiquetas por vez.`
+    : marginError
+      ? `Margen: ${marginError}.`
+      : !fitsOnPage
+        ? "La etiqueta no entra en la hoja con ese margen. Achica el margen o la etiqueta."
+        : null;
+  const printLabel = totalLabels > 0 ? `Imprimir ${totalLabels === 1 ? "1 etiqueta" : `${totalLabels} etiquetas`}` : "Imprimir";
 
-  return (
-    <div className="space-y-6">
-      <section className="print-hidden space-y-4 rounded-lg border border-app-border bg-app-surface p-4 shadow-panel">
-        <ResponsiveToolbar className="shadow-none xl:grid xl:grid-cols-[minmax(220px,1fr)_190px_150px_auto_auto]">
-          <label className="relative block">
-            <span className="sr-only">Buscar productos</span>
-            <Search className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-text-muted" aria-hidden />
-            <Input
-              className="pl-9"
-              aria-describedby="product-label-search-help"
-              placeholder="Buscar por nombre, SKU o codigo"
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-            />
-            <span
-              id="product-label-search-help"
-              className={`mt-1 block min-h-4 text-xs ${
-                query.trim() && query.trim().length < MIN_PRODUCT_SEARCH_LENGTH
-                  ? "text-status-warning"
-                  : "text-text-muted"
-              }`}
-            >
-              Escribe al menos {MIN_PRODUCT_SEARCH_LENGTH} caracteres para buscar.
-            </span>
-          </label>
+  const productsPanel = (
+    <div className="flex min-w-0 flex-col gap-3">
+      <div className="space-y-2 rounded-card border border-app-border bg-app-surface p-3">
+        <label className="flex h-control items-center gap-2 rounded-control border border-app-borderStrong bg-app-surface px-3 focus-within:ring-2 focus-within:ring-focus">
+          <Search className="h-4 w-4 shrink-0 text-text-muted" aria-hidden="true" />
+          <span className="sr-only">Buscar productos</span>
+          <input
+            type="search"
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="Buscar nombre, SKU o código"
+            className="min-w-0 flex-1 bg-transparent text-[15px] outline-none placeholder:text-text-muted md:text-sm"
+          />
+        </label>
+        {query.trim() && query.trim().length < MIN_PRODUCT_SEARCH_LENGTH ? (
+          <p role="status" className="text-xs text-text-muted">
+            Escribe al menos {MIN_PRODUCT_SEARCH_LENGTH} letras
+          </p>
+        ) : null}
+        <div className="grid grid-cols-2 gap-2">
           <Select
-            aria-label="Filtro de categoria"
+            aria-label="Categoría"
             value={params.category_id ?? ""}
-            onChange={(event) =>
-              updateFilters({
-                category_id: event.target.value || undefined,
-                category: undefined,
-              })
-            }
+            onChange={(event) => setParams((current) => ({ ...current, category_id: event.target.value || undefined, category: undefined, offset: 0 }))}
           >
-            <option value="">Todas las categorias</option>
+            <option value="">Todas</option>
             {categories.map((category) => (
               <option key={category.id} value={category.id}>
                 {category.name}
@@ -204,269 +193,294 @@ export function ProductLabelPage({
             ))}
           </Select>
           <Select
-            aria-label="Filtro de stock"
+            aria-label="Stock"
             value={params.stock}
-            onChange={(event) =>
-              updateFilters({ stock: event.target.value as ProductSearchParams["stock"] })
-            }
+            onChange={(event) => setParams((current) => ({ ...current, stock: event.target.value as ProductSearchParams["stock"], offset: 0 }))}
           >
             <option value="all">Todo stock</option>
             <option value="available">Disponible</option>
             <option value="low">Stock bajo</option>
             <option value="out">Sin stock</option>
+            <option value="expiring">Por vencer</option>
           </Select>
-          <Button type="button" onClick={printLabels} disabled={!hasPrintableLabels}>
-            <Printer className="h-4 w-4" aria-hidden="true" />
-            Imprimir
-          </Button>
-          <Button type="button" variant="secondary" onClick={() => void exportSvg()} disabled={!hasPrintableLabels}>
-            <Download className="h-4 w-4" aria-hidden="true" />
-            SVG
-          </Button>
-        </ResponsiveToolbar>
-
-        <div
-          className={`grid gap-4 rounded-lg border border-app-border bg-app-surface-muted p-4 xl:grid-cols-[minmax(0,1fr)_220px] ${
-            hasSelection ? "" : "opacity-60"
-          }`}
-        >
-          <div className="space-y-4">
-            <div className="grid gap-3 md:grid-cols-2">
-              <label className="min-w-0 space-y-2">
-                <span className="text-xs font-medium uppercase text-text-muted">Hoja</span>
-                <Select
-                  className="w-full truncate"
-                  aria-label="Tamano de hoja"
-                  value={labelSettings.pageSize}
-                  disabled={!hasSelection}
-                  onChange={(event) => updateLabelSettings({ pageSize: event.target.value as LabelPageSize })}
-                >
-                  {Object.entries(PAGE_SIZE_OPTIONS).map(([value, option]) => (
-                    <option key={value} value={value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </Select>
-              </label>
-              <label className="min-w-0 space-y-2">
-                <span className="text-xs font-medium uppercase text-text-muted">Etiqueta</span>
-                <Select
-                  className="w-full truncate"
-                  aria-label="Tamano de etiqueta"
-                  value={labelSettings.labelSize}
-                  disabled={!hasSelection}
-                  onChange={(event) => updateLabelSettings({ labelSize: event.target.value as LabelSizePreset })}
-                >
-                  {Object.entries(LABEL_SIZE_OPTIONS).map(([value, option]) => (
-                    <option key={value} value={value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </Select>
-              </label>
-            </div>
-
-            <div>
-              <p className="text-xs font-medium uppercase text-text-muted">Datos visibles</p>
-              <div className="mt-2 grid gap-2 text-sm text-text-body sm:grid-cols-3 lg:grid-cols-5">
-                <LabelToggle
-                  label="Nombre"
-                  checked={labelSettings.showName}
-                  disabled={!hasSelection}
-                  onChange={(checked) => updateLabelSettings({ showName: checked })}
-                />
-                <LabelToggle
-                  label="Codigo"
-                  checked={labelSettings.showCode}
-                  disabled={!hasSelection}
-                  onChange={(checked) => updateLabelSettings({ showCode: checked })}
-                />
-                <LabelToggle
-                  label="SKU"
-                  checked={labelSettings.showSku}
-                  disabled={!hasSelection}
-                  onChange={(checked) => updateLabelSettings({ showSku: checked })}
-                />
-                <LabelToggle
-                  label="Categoria"
-                  checked={labelSettings.showCategory}
-                  disabled={!hasSelection}
-                  onChange={(checked) => updateLabelSettings({ showCategory: checked })}
-                />
-                <LabelToggle
-                  label="Precio"
-                  checked={labelSettings.showPrice}
-                  disabled={!hasSelection}
-                  onChange={(checked) => updateLabelSettings({ showPrice: checked })}
-                />
-              </div>
-            </div>
-          </div>
-
-          <div className="rounded-md border border-app-border bg-app-surface p-3 text-sm text-text-body">
-            <p className="font-medium text-text-strong">Resumen</p>
-            <dl className="mt-2 grid grid-cols-2 gap-x-3 gap-y-1">
-              <dt>Hoja</dt>
-              <dd className="text-right">{labelSettings.pageSize}</dd>
-              <dt>Margen</dt>
-              <dd className="text-right">{dimensions.marginMm} mm</dd>
-              <dt>Etiqueta</dt>
-              <dd className="text-right">{toCm(dimensions.labelWidthMm)} x {toCm(dimensions.labelHeightMm)} cm</dd>
-              <dt>QR</dt>
-              <dd className="text-right">{toCm(dimensions.qrSizeMm)} x {toCm(dimensions.qrSizeMm)} cm</dd>
-              <dt>Columnas</dt>
-              <dd className="text-right">{dimensions.columns}</dd>
-              <dt>Filas aprox.</dt>
-              <dd className="text-right">{dimensions.rows}</dd>
-              <dt>Por hoja</dt>
-              <dd className="text-right">{dimensions.labelsPerPage}</dd>
-            </dl>
-          </div>
         </div>
+      </div>
 
-        {error ? <Alert variant="error">{error}</Alert> : null}
-        {totalLabels > MAX_LABELS_PER_PRINT ? (
-          <Alert variant="error">Reduce la seleccion a {MAX_LABELS_PER_PRINT} etiquetas o menos.</Alert>
-        ) : null}
-
-        <div className="grid items-start gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(420px,0.9fr)]">
-          <section className="min-h-[260px] overflow-hidden rounded-lg border border-app-border bg-app-surface">
-            <div className="border-b border-app-border px-4 py-3">
-              <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between">
-                <div>
-                  <h2 className="text-sm font-semibold text-text-strong">Resultados</h2>
-                  <p className="text-xs text-text-muted">Busca por nombre, SKU o codigo y agrega productos a la seleccion.</p>
+      <section aria-labelledby="chosen-title" className="rounded-card border border-app-border bg-app-surface p-3">
+        <div className="mb-2 flex items-center justify-between gap-2">
+          <h2 id="chosen-title" className="text-sm font-bold text-text-strong">
+            Elegidos · {selected.length}
+          </h2>
+          {selected.length > 0 ? (
+            <button type="button" className="text-sm font-bold text-brand-700 hover:underline" onClick={() => setSelected([])}>
+              Quitar todos
+            </button>
+          ) : null}
+        </div>
+        {selected.length === 0 ? (
+          <p className="py-3 text-center text-sm text-text-muted">Agrega productos de los resultados.</p>
+        ) : (
+          <ul className="divide-y divide-app-border">
+            {selected.map(({ product, quantity }) => (
+              <li key={product.id} className="flex items-center gap-2 py-2">
+                <span className="min-w-0 flex-1">
+                  <strong className="block truncate text-sm text-text-strong">{product.name}</strong>
+                  <span className="block truncate font-mono text-xs text-text-muted">{product.qr_code}</span>
+                </span>
+                <div className="flex shrink-0 items-center gap-1">
+                  <button
+                    type="button"
+                    aria-label={`Una etiqueta menos de ${product.name}`}
+                    disabled={quantity <= 1}
+                    onClick={() => setQuantity(product.id, quantity - 1)}
+                    className="flex h-8 w-8 items-center justify-center rounded-control border border-app-borderStrong disabled:opacity-40"
+                  >
+                    <Minus className="h-3.5 w-3.5" aria-hidden="true" />
+                  </button>
+                  <input
+                    inputMode="numeric"
+                    aria-label={`Etiquetas de ${product.name}`}
+                    value={quantity}
+                    onChange={(event) => setQuantity(product.id, Number(event.target.value.replace(/[^\d]/g, "")))}
+                    className="h-8 w-11 rounded-control border border-app-borderStrong text-center text-sm font-bold"
+                  />
+                  <button
+                    type="button"
+                    aria-label={`Una etiqueta más de ${product.name}`}
+                    disabled={quantity >= MAX_LABELS_PER_PRODUCT}
+                    onClick={() => setQuantity(product.id, quantity + 1)}
+                    className="flex h-8 w-8 items-center justify-center rounded-control border border-app-borderStrong disabled:opacity-40"
+                  >
+                    <Plus className="h-3.5 w-3.5" aria-hidden="true" />
+                  </button>
+                  <button
+                    type="button"
+                    aria-label={`Quitar ${product.name}`}
+                    onClick={() => remove(product.id)}
+                    className="flex h-8 w-8 items-center justify-center rounded-control text-text-muted hover:bg-app-surface-muted"
+                  >
+                    <X className="h-4 w-4" aria-hidden="true" />
+                  </button>
                 </div>
-              </div>
-            </div>
-            {isLoading && hasAppliedSearch && products.items.length > 0 ? (
-              <div className="divide-y divide-app-border">
-                {Array.from({ length: 5 }, (_, i) => (
-                  <div key={i} className="flex items-center gap-4 px-4 py-3">
-                    <span className="block h-5 w-5 animate-pulse rounded bg-app-surface-muted" />
-                    <div className="min-w-0 flex-1">
-                      <span className="block h-4 w-48 animate-pulse rounded bg-app-surface-muted" />
-                      <span className="mt-1 block h-3 w-32 animate-pulse rounded bg-app-surface-muted" />
-                    </div>
-                    <span className="block h-9 w-24 animate-pulse rounded-md bg-app-surface-muted" />
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div>
-                {!hasAppliedSearch ? (
-                  <div className="p-6 text-center text-sm text-text-muted">
-                    Escribe al menos {MIN_PRODUCT_SEARCH_LENGTH} caracteres para buscar productos.
-                  </div>
-                ) : products.items.length === 0 ? (
-                  <div className="p-6 text-center text-sm text-text-muted">No hay productos para la busqueda actual.</div>
-                ) : (
-                  <div className="divide-y divide-app-border">
-                    {products.items.map((product) => {
-                      const isSelected = Boolean(selected[product.id]);
-                      const hasCode = Boolean(product.qr_code?.trim());
-                      return (
-                        <div key={product.id} className="flex flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
-                          <div className="min-w-0">
-                            <p className="truncate font-medium text-text-strong">{product.name}</p>
-                            <p className="truncate text-xs text-text-muted">
-                              SKU: {product.sku || "Sin SKU"} · Codigo: {product.qr_code || "Sin codigo"}
-                            </p>
-                          </div>
-                          <Button
-                            type="button"
-                            variant="secondary"
-                            disabled={!hasCode || isSelected}
-                            onClick={() => addProduct(product)}
-                          >
-                            <Plus className="h-4 w-4" aria-hidden="true" />
-                            {isSelected ? "Agregado" : hasCode ? "Agregar" : "Sin codigo"}
-                          </Button>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-            )}
-          </section>
-
-          <section className="overflow-hidden rounded-lg border border-app-border bg-app-surface">
-            <div className="border-b border-app-border px-4 py-3">
-              <h2 className="text-sm font-semibold text-text-strong">Seleccionados</h2>
-              <p className="text-xs text-text-muted">{totalLabels} etiquetas en total.</p>
-            </div>
-            {selectedProducts.length === 0 ? (
-              <div className="p-6 text-center text-sm text-text-muted">
-                Agrega productos desde los resultados para configurar cantidades e imprimir.
-              </div>
-            ) : (
-              <div className="divide-y divide-app-border">
-                {selectedProducts.map(({ product, quantity }) => (
-                  <div key={product.id} className="grid gap-3 px-4 py-3 sm:grid-cols-[minmax(0,1fr)_96px_auto] sm:items-center">
-                    <div className="min-w-0">
-                      <p className="truncate font-medium text-text-strong">{product.name}</p>
-                      <p className="truncate font-mono text-xs text-text-muted">{product.qr_code}</p>
-                    </div>
-                    <Input
-                      type="number"
-                      min="1"
-                      max={MAX_LABELS_PER_PRINT}
-                      value={quantity}
-                      aria-label={`Cantidad ${product.name}`}
-                      onChange={(event) => {
-                        const raw = event.target.value;
-                        if (raw === "" || raw === "0") {
-                          updateQuantity(product, 1);
-                          return;
-                        }
-                        const num = parseInt(raw, 10);
-                        if (!isNaN(num) && num >= 1) {
-                          updateQuantity(product, Math.min(num, MAX_LABELS_PER_PRINT));
-                        }
-                      }}
-                    />
-                    <Button type="button" variant="ghost" onClick={() => removeProduct(product.id)} aria-label={`Quitar ${product.name}`}>
-                      <Trash2 className="h-4 w-4" aria-hidden="true" />
-                    </Button>
-                  </div>
-                ))}
-              </div>
-            )}
-          </section>
-        </div>
+              </li>
+            ))}
+          </ul>
+        )}
       </section>
 
-      <ProductLabelPreview selectedProducts={selectedProducts} settings={labelSettings} dimensions={dimensions} />
+      <section aria-labelledby="results-title" className="rounded-card border border-app-border bg-app-surface p-3" aria-busy={loading}>
+        <h2 id="results-title" className="mb-2 text-sm font-bold text-text-strong">
+          Resultados
+        </h2>
+        {error ? (
+          <p role="alert" className="text-sm text-status-danger">
+            {error}
+          </p>
+        ) : products.items.length === 0 ? (
+          <p className="py-3 text-center text-sm text-text-muted">{loading ? "Buscando…" : "Ningún producto con esa búsqueda."}</p>
+        ) : (
+          <ul className={`divide-y divide-app-border ${loading ? "opacity-60" : ""}`}>
+            {products.items.map((product) => {
+              const hasCode = Boolean(product.qr_code?.trim());
+              const isChosen = selectedIds.has(product.id);
+              return (
+                <li key={product.id} className="flex items-center gap-2 py-2">
+                  <span className="min-w-0 flex-1">
+                    <strong className="block truncate text-sm text-text-strong">{product.name}</strong>
+                    <span className="block truncate text-xs text-text-muted">
+                      {hasCode ? product.qr_code : "Sin código: agrégalo en Editar"}
+                    </span>
+                  </span>
+                  <Button
+                    variant="secondary"
+                    className="!h-8 shrink-0 !px-3 text-[13px]"
+                    disabled={!hasCode || isChosen}
+                    onClick={() => add(product)}
+                    aria-label={isChosen ? `${product.name} ya está elegido` : `Agregar ${product.name}`}
+                  >
+                    {isChosen ? "Elegido" : hasCode ? "Agregar" : "Sin código"}
+                  </Button>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </section>
     </div>
   );
-}
 
-function LabelToggle({
-  label,
-  checked,
-  disabled,
-  onChange,
-}: {
-  label: string;
-  checked: boolean;
-  disabled?: boolean;
-  onChange: (checked: boolean) => void;
-}) {
-  return (
-    <label className="flex items-center gap-2">
-      <input
-        type="checkbox"
-        className="h-4 w-4 rounded border-app-borderStrong text-brand-700 focus:ring-focus"
-        checked={checked}
-        disabled={disabled}
-        onChange={(event) => onChange(event.target.checked)}
-      />
-      {label}
-    </label>
+  const designPanel = (
+    <section aria-labelledby="design-title" className="flex flex-col gap-4 rounded-card border border-app-border bg-app-surface p-4">
+      <h2 id="design-title" className="text-[15px] font-bold text-text-strong">
+        Diseño
+      </h2>
+      <fieldset>
+        <legend className="mb-1.5 text-sm font-medium text-text-body">Hoja</legend>
+        <div className="grid gap-2">
+          {(Object.keys(PAGE_SIZE_OPTIONS) as LabelPageSize[]).map((size) => (
+            <label
+              key={size}
+              className={`flex min-h-11 cursor-pointer items-center gap-2 rounded-control border px-3 text-sm has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-focus ${
+                settings.pageSize === size ? "border-brand-700 bg-brand-50 font-bold text-text-strong" : "border-app-border text-text-body"
+              }`}
+            >
+              <input
+                type="radio"
+                name="label-page"
+                className="h-4 w-4 accent-brand-700"
+                checked={settings.pageSize === size}
+                onChange={() => update({ pageSize: size })}
+              />
+              {PAGE_SIZE_OPTIONS[size].label}
+            </label>
+          ))}
+        </div>
+      </fieldset>
+      <div className="grid grid-cols-[minmax(0,1fr)_96px] gap-2">
+        <div className="space-y-1.5">
+          <label htmlFor="label-size" className="block text-sm font-medium text-text-body">
+            Tamaño de etiqueta
+          </label>
+          <Select id="label-size" value={settings.labelSize} onChange={(event) => update({ labelSize: event.target.value as LabelSizePreset })}>
+            {(Object.keys(LABEL_SIZE_OPTIONS) as LabelSizePreset[]).map((size) => (
+              <option key={size} value={size}>
+                {LABEL_SIZE_OPTIONS[size].label}
+              </option>
+            ))}
+          </Select>
+        </div>
+        <div className="space-y-1.5">
+          <label htmlFor="label-margin" className="block text-sm font-medium text-text-body">
+            Margen (mm)
+          </label>
+          <Input
+            id="label-margin"
+            inputMode="decimal"
+            placeholder="8"
+            value={settings.marginMm}
+            onChange={(event) => update({ marginMm: event.target.value })}
+            error={Boolean(marginError)}
+            aria-describedby={marginError ? "label-margin-error" : undefined}
+          />
+        </div>
+      </div>
+      {marginError ? (
+        <p id="label-margin-error" className="-mt-2 text-sm text-status-danger">
+          {marginError}
+        </p>
+      ) : null}
+      <fieldset>
+        <legend className="mb-1.5 text-sm font-medium text-text-body">Qué se ve</legend>
+        <div className="grid grid-cols-2 gap-2 text-sm text-text-body">
+          {(
+            [
+              ["showName", "Nombre"],
+              ["showPrice", "Precio"],
+              ["showCode", "Código (QR)"],
+              ["showSku", "SKU"],
+              ["showCategory", "Categoría"],
+            ] as const
+          ).map(([key, label]) => (
+            <label key={key} className="flex min-h-9 items-center gap-2">
+              <input type="checkbox" className="h-4 w-4 accent-brand-700" checked={settings[key]} onChange={(event) => update({ [key]: event.target.checked })} />
+              {label}
+            </label>
+          ))}
+        </div>
+      </fieldset>
+      <p className="rounded-control bg-app-surface-muted px-3 py-2 text-sm text-text-body">
+        {fitsOnPage
+          ? `${dimensions.columns} ${dimensions.columns === 1 ? "columna" : "columnas"} × ${dimensions.rows} ${dimensions.rows === 1 ? "fila" : "filas"} = ${dimensions.labelsPerPage} por hoja`
+          : "No entra ninguna etiqueta por hoja."}
+      </p>
+    </section>
   );
-}
 
-function toCm(mm: number) {
-  return (mm / 10).toFixed(2);
+  return (
+    <div className="flex flex-col gap-4 pb-24 lg:pb-4">
+      <header className="print-hidden flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+        <div className="min-w-0">
+          <nav aria-label="Ruta" className="mb-1 text-[13px] font-semibold text-text-muted">
+            <Link href="/dashboard/products" className="hover:text-text-strong">
+              Productos
+            </Link>{" "}
+            <span aria-hidden="true">/</span> Etiquetas
+          </nav>
+          <h1 className="text-[22px] font-extrabold tracking-tight text-text-strong sm:text-[26px]">Imprimir etiquetas</h1>
+        </div>
+        <div className="flex gap-2 max-lg:hidden">
+          <Button variant="secondary" onClick={() => void downloadSvg()} disabled={!canPrint}>
+            <Download className="h-4 w-4" aria-hidden="true" />
+            Descargar SVG
+          </Button>
+          <Button onClick={print} disabled={!canPrint}>
+            <Printer className="h-4 w-4" aria-hidden="true" />
+            {printLabel}
+          </Button>
+        </div>
+      </header>
+
+      <nav aria-label="Pasos" className="print-hidden grid grid-cols-3 gap-1 rounded-control bg-app-surface-muted p-1 lg:hidden">
+        {STEPS.map((item) => (
+          <button
+            key={item.key}
+            type="button"
+            aria-current={step === item.key ? "step" : undefined}
+            onClick={() => setStep(item.key)}
+            className={`h-9 rounded-[8px] text-[13px] font-bold ${step === item.key ? "bg-app-surface text-text-strong shadow-sm" : "text-text-muted"}`}
+          >
+            {item.label}
+          </button>
+        ))}
+      </nav>
+
+      {problem ? (
+        <p role="alert" className="print-hidden rounded-control border border-status-warningBorder bg-status-warningBg px-3 py-2 text-sm text-status-warning">
+          {problem}
+        </p>
+      ) : null}
+
+      {/* minmax(0,1fr): sin columnas definidas la única columna crecía con nombres largos (desborde a 375 px). */}
+      <div className="grid grid-cols-[minmax(0,1fr)] items-start gap-4 lg:grid-cols-[320px_minmax(0,1fr)_280px]">
+        <div className={`print-hidden ${step === "products" ? "" : "max-lg:hidden"}`}>{productsPanel}</div>
+        {/* La vista previa es lo que se imprime: siempre en la página, aunque el paso no la muestre. */}
+        <div className={`min-w-0 ${step === "print" ? "" : "max-lg:hidden print:!block"}`}>
+          <ProductLabelPreview selectedProducts={selected} settings={settings} dimensions={dimensions} sheets={sheets} />
+          <div className="print-hidden mt-3 grid grid-cols-2 gap-2 lg:hidden">
+            <Button variant="secondary" onClick={() => void downloadSvg()} disabled={!canPrint}>
+              <Download className="h-4 w-4" aria-hidden="true" />
+              Descargar SVG
+            </Button>
+            <Button onClick={print} disabled={!canPrint}>
+              <Printer className="h-4 w-4" aria-hidden="true" />
+              Imprimir
+            </Button>
+          </div>
+        </div>
+        <div className={`print-hidden ${step === "design" ? "" : "max-lg:hidden"}`}>{designPanel}</div>
+      </div>
+
+      {/* Hasta 1024 px: barra fija con el total y el paso siguiente. */}
+      <div className="print-hidden fixed inset-x-0 bottom-0 z-30 flex items-center gap-3 border-t border-app-border bg-app-surface px-4 pb-[calc(env(safe-area-inset-bottom)+12px)] pt-3 lg:hidden">
+        <p className="min-w-0 flex-1 text-sm">
+          <strong className="text-text-strong">{summary.split(" · ")[0]}</strong>
+          {summary.includes(" · ") ? <span className="text-text-muted"> · {summary.split(" · ")[1]}</span> : null}
+        </p>
+        {step === "products" ? (
+          <Button onClick={() => setStep("design")} disabled={selected.length === 0}>
+            Siguiente: diseño
+          </Button>
+        ) : step === "design" ? (
+          <Button onClick={() => setStep("print")} disabled={selected.length === 0}>
+            Siguiente: imprimir
+          </Button>
+        ) : (
+          <Button onClick={print} disabled={!canPrint}>
+            <Printer className="h-4 w-4" aria-hidden="true" />
+            {printLabel}
+          </Button>
+        )}
+      </div>
+    </div>
+  );
 }

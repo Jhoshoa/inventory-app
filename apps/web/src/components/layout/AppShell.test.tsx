@@ -4,7 +4,7 @@ import type { Session } from "@/lib/auth/session";
 import { AppShell } from "./AppShell";
 import type { ShellStatus } from "./shellStatus";
 
-let pathname = "/dashboard/products/labels";
+let pathname = "/dashboard/products/categorias";
 const push = vi.fn();
 
 vi.mock("next/navigation", () => ({
@@ -50,7 +50,7 @@ function renderShell(session: Session = ownerSession, shellStatus: ShellStatus =
 
 describe("AppShell", () => {
   beforeEach(() => {
-    pathname = "/dashboard/products/labels";
+    pathname = "/dashboard/products/categorias";
     push.mockReset();
   });
 
