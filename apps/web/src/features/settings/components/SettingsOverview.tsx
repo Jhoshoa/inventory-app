@@ -4,16 +4,11 @@ import { ChevronRight, Store as StoreIcon } from "lucide-react";
 import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { PageSection } from "@/components/layout/PageSection";
-import { DataFetchError } from "@/components/ui/DataFetchError";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { CollapsibleSection } from "@/components/ui/CollapsibleSection";
 import type { Session } from "@/lib/auth/session";
 import { formatPhone } from "@/lib/format/phone";
-import { ProductCategorySettings } from "@/features/product-categories/components/ProductCategorySettings";
-import type { ProductCategoryListResult } from "@/features/product-categories/types";
-import { StoreLocationSettings } from "@/features/store-locations/components/StoreLocationSettings";
-import type { StoreLocationListResult } from "@/features/store-locations/types";
 import { UsersSection } from "@/features/users/components/UsersSection";
 import type { UserInvitationListResult, UserListResult } from "@/features/users/types";
 import { DiscountPolicyDialog } from "./DiscountPolicyDialog";
@@ -24,15 +19,11 @@ import { PermissionMatrix } from "./PermissionMatrix";
 export function SettingsOverview({
   session,
   storeData,
-  productCategories,
-  storeLocations,
   users,
   userInvitations,
 }: {
   session: Session;
   storeData?: StoreResponse;
-  productCategories?: ProductCategoryListResult;
-  storeLocations?: StoreLocationListResult;
   users?: UserListResult;
   userInvitations?: UserInvitationListResult;
 }) {
@@ -48,7 +39,7 @@ export function SettingsOverview({
           />
         }
         title="Configuración"
-        description="Datos de la tienda, permisos, categorías, ubicaciones y personas."
+        description="Datos de la tienda, permisos y personas."
       />
 
       <div className="grid min-w-0 gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(360px,420px)]">
@@ -119,29 +110,6 @@ export function SettingsOverview({
             <PermissionMatrix />
           </AdminSection>
 
-          {productCategories ? (
-            productCategories.ok ? (
-              <ProductCategorySettings categories={productCategories.data.items} />
-            ) : (
-              <AdminSection
-                title="Categorias"
-                description="Agrupacion de productos y prefijos SKU."
-              >
-                <DataFetchError resource="las categorias" error={productCategories.error.message} />
-              </AdminSection>
-            )
-          ) : null}
-
-          {storeLocations ? (
-            storeLocations.ok ? (
-              <StoreLocationSettings locations={storeLocations.data.items} />
-            ) : (
-              <AdminSection title="Ubicaciones" description="Zona, mueble y nivel donde estan los productos.">
-                <DataFetchError resource="las ubicaciones" error={storeLocations.error.message} />
-              </AdminSection>
-            )
-          ) : null}
-
           {session.role === "owner" && users && userInvitations ? (
             <AdminSection
               title="Usuarios"
@@ -161,6 +129,22 @@ export function SettingsOverview({
               <Button asChild variant="secondary">
                 <Link href="/dashboard/caja">Ir a Caja</Link>
               </Button>
+            </div>
+          </AdminSection>
+          <AdminSection title="Categorías y lugares" description="Ahora están en Productos.">
+            <div className="flex flex-col items-start gap-3">
+              <p className="text-sm text-text-muted">
+                Las categorías (prefijo del SKU), los lugares en la tienda y el aviso de vencimiento se usan al cargar
+                productos, así que pasaron a Productos.
+              </p>
+              <div className="flex flex-wrap gap-2">
+                <Button asChild variant="secondary">
+                  <Link href="/dashboard/products/categorias">Ir a Categorías</Link>
+                </Button>
+                <Button asChild variant="secondary">
+                  <Link href="/dashboard/products/lugares">Ir a Lugares en la tienda</Link>
+                </Button>
+              </div>
             </div>
           </AdminSection>
         </div>

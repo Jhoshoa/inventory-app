@@ -95,9 +95,9 @@ export function ProductLocationsDialog({
         <DialogBody>
           {storeLocations.length === 0 ? (
             <p className="text-sm text-text-muted">
-              Todavia no hay ubicaciones. Crealas en{" "}
-              <Link href="/dashboard/settings#ubicaciones" className="font-medium text-accent-primary underline">
-                Configuración
+              Todavía no hay lugares. Créalos en{" "}
+              <Link href="/dashboard/products/lugares" className="font-medium text-accent-primary underline">
+                Productos › Lugares en la tienda
               </Link>{" "}
               (por ejemplo: Pasillo 2 · Estante B · Nivel 3).
             </p>

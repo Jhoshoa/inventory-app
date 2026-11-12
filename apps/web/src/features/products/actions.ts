@@ -6,8 +6,9 @@ import { redirect } from "next/navigation";
 import { apiRequest } from "@/lib/api/client";
 import { getAuthToken } from "@/lib/auth/session";
 import {
-  alertDaysOrDefault,
+  alertDaysOrStoreDefault,
   formDataToProductValues,
+  validateDefaultAlertDays,
   validateProductForm,
   validateStockAdjustment,
 } from "./schemas";
@@ -134,7 +135,7 @@ export async function adjustStockAction(
     body: {
       quantity: Number(quantity),
       reason: reason || null,
-      ...(expiresOn ? { expires_on: expiresOn, alert_days: alertDaysOrDefault(alertDays) } : {}),
+      ...(expiresOn ? { expires_on: expiresOn, alert_days: alertDaysOrStoreDefault(alertDays) } : {}),
       ...(batchId ? { batch_id: batchId } : {}),
     },
   });
@@ -192,7 +193,7 @@ function createPayload(values: ReturnType<typeof formDataToProductValues>) {
     discount_value: values.discount_type ? values.discount_value || "0" : "0",
     discount_ends_at: values.discount_type ? discountEndsAtIso(values.discount_ends_at) : null,
     ...(values.expires_on
-      ? { expires_on: values.expires_on, alert_days: alertDaysOrDefault(values.alert_days) }
+      ? { expires_on: values.expires_on, alert_days: alertDaysOrStoreDefault(values.alert_days) }
       : {}),
   };
 }
@@ -236,4 +237,24 @@ function findPhotoFile(formData: FormData): File | null {
     }
   }
   return null;
+}
+
+/** Aviso de vencimiento de la tienda (tablero P01B, backend B4): se usa al cargar un lote sin otro número. */
+export async function updateDefaultAlertDaysAction(
+  value: string,
+): Promise<{ ok: boolean; message?: string; fieldError?: string; days?: number }> {
+  const fieldError = validateDefaultAlertDays(value);
+  if (fieldError) return { ok: false, fieldError };
+
+  const token = await getAuthToken();
+  const result = await apiRequest<{ default_alert_days: number }>("/store", {
+    method: "PATCH",
+    token: token ?? undefined,
+    body: { default_alert_days: Number(value.trim()) },
+  });
+  if (!result.ok) return { ok: false, message: result.error.message };
+
+  revalidatePath("/dashboard/products", "layout");
+  revalidatePath("/dashboard");
+  return { ok: true, message: "Aviso de vencimiento guardado", days: result.data.default_alert_days };
 }

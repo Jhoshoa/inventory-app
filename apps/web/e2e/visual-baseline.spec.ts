@@ -14,6 +14,8 @@ const routes = [
   { path: "/dashboard/pos", name: "pos" },
   { path: "/dashboard/products", name: "products" },
   { path: "/dashboard/products/labels", name: "product-labels" },
+  { path: "/dashboard/products/categorias", name: "product-categories" },
+  { path: "/dashboard/products/lugares", name: "store-locations" },
   { path: "/dashboard/sales", name: "sales" },
   { path: "/dashboard/reports", name: "reports" },
   { path: "/dashboard/settings", name: "settings" },

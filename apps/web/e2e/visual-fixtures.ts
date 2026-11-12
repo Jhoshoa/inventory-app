@@ -278,6 +278,7 @@ function resolvePayload(url: URL) {
   if (path === "/store-day/current/closing-preview") return closingPreview();
   if (path === "/store-day/current/close-report") return closeReport();
   if (path === "/product-categories") return { items: categories };
+  if (path === "/store-locations") return { items: storeLocations };
   if (path === "/products") return productList(url);
   if (path === "/products/pos") return productList(url);
   if (path.startsWith("/products/qr/")) return products[0];
@@ -289,6 +290,12 @@ function resolvePayload(url: URL) {
 
   return undefined;
 }
+
+const storeLocations = [
+  { id: "loc-1", zone: "Heladera", shelf: null, level: null, label: "Heladera", product_count: 6 },
+  { id: "loc-2", zone: "Pasillo 1", shelf: "Estante A", level: null, label: "Pasillo 1 · Estante A", product_count: 2 },
+  { id: "loc-3", zone: "Pasillo 2", shelf: "Estante B", level: "3", label: "Pasillo 2 · Estante B · 3", product_count: 0 },
+];
 
 function dashboardSummary() {
   return {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formDataToStoreLocationValues, storeLocationPayload, validateStoreLocation } from "./schemas";
+import { formDataToStoreLocationValues, locationConflictField, storeLocationPayload, validateStoreLocation } from "./schemas";
 
 function form(values: Record<string, string>) {
   const data = new FormData();
@@ -15,9 +15,14 @@ describe("store location schemas", () => {
   });
 
   it("requires a zone and a shelf before a level", () => {
-    expect(validateStoreLocation({ zone: "", shelf: "", level: "" }).zone).toBe("La zona es requerida");
-    expect(validateStoreLocation({ zone: "Deposito", shelf: "", level: "2" }).level).toMatch(/mueble/);
+    expect(validateStoreLocation({ zone: "", shelf: "", level: "" }).zone).toMatch(/Escribe la zona/);
+    expect(validateStoreLocation({ zone: "Deposito", shelf: "", level: "2" }).level).toMatch(/estante/);
     expect(validateStoreLocation({ zone: "Deposito", shelf: "Rack A", level: "2" })).toEqual({});
     expect(validateStoreLocation({ zone: "x".repeat(51), shelf: "", level: "" }).zone).toMatch(/50/);
+  });
+
+  it("puts a repeated place on the zone field", () => {
+    expect(locationConflictField("Ya existe la ubicacion 'Heladera'")).toEqual({ zone: "Ese lugar ya existe." });
+    expect(locationConflictField("La tienda ya tiene 300 ubicaciones")).toEqual({});
   });
 });

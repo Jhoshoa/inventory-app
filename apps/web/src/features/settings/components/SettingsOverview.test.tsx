@@ -55,6 +55,10 @@ describe("SettingsOverview", () => {
     expect(screen.getByRole("link", { name: "Ir a Caja" })).toHaveAttribute("href", "/dashboard/caja");
     expect(screen.queryByRole("button", { name: "Abrir tienda" })).not.toBeInTheDocument();
     expect(screen.getByTestId("users-section")).toBeInTheDocument();
+    // Categorías y Lugares pasaron a Productos (tablero P01B).
+    expect(screen.getByRole("link", { name: "Ir a Categorías" })).toHaveAttribute("href", "/dashboard/products/categorias");
+    expect(screen.getByRole("link", { name: "Ir a Lugares en la tienda" })).toHaveAttribute("href", "/dashboard/products/lugares");
+    expect(screen.queryByRole("button", { name: "Agregar" })).not.toBeInTheDocument();
   });
 
   it("shows store data when storeData is provided", () => {
@@ -72,6 +76,7 @@ describe("SettingsOverview", () => {
           allow_manual_discount: false,
           max_manual_discount_amount: "0",
           allow_cashier_discount_override: false,
+          default_alert_days: 5,
           storefront_enabled: false,
           storefront_slug: null,
           storefront_tier: "none",
@@ -109,6 +114,7 @@ describe("SettingsOverview", () => {
           allow_manual_discount: false,
           max_manual_discount_amount: "0",
           allow_cashier_discount_override: false,
+          default_alert_days: 5,
           storefront_enabled: false,
           storefront_slug: null,
           storefront_tier: "none",

@@ -5,9 +5,12 @@ import { listProductCategories } from "@/features/product-categories/api";
 import { listProducts } from "@/features/products/api";
 import { ProductBrowser } from "@/features/products/components/ProductBrowser";
 import { ProductListActions } from "@/features/products/components/ProductListActions";
+import { ProductSectionTabs } from "@/features/products/components/ProductSectionTabs";
 import type { ProductListCounts } from "@/features/products/list";
 import { parseProductSearchParams } from "@/features/products/schemas";
 import type { ProductSearchParams, ProductStockFilter } from "@/features/products/types";
+import { getStore } from "@/features/settings/api";
+import { canManageProducts } from "@/lib/auth/permissions";
 import { requireSession } from "@/lib/auth/session";
 
 export const metadata: Metadata = { title: "Productos" };
@@ -35,11 +38,14 @@ export default async function ProductsPage({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const params = parseProductSearchParams(await searchParams);
-  const [session, products, categories, counts] = await Promise.all([
-    requireSession(),
+  const session = await requireSession();
+  const owner = canManageProducts(session.role);
+  const [products, categories, counts, store] = await Promise.all([
     listProducts(params),
     listProductCategories(),
     loadCounts(),
+    // Aviso de vencimiento (⋯ del dueño); si no se puede leer, la opción no aparece.
+    owner ? getStore().catch(() => null) : Promise.resolve(null),
   ]);
 
   return (
@@ -50,8 +56,9 @@ export default async function ProductsPage({
           <h1 className="text-[22px] font-extrabold tracking-tight text-text-strong sm:text-[26px]">Productos</h1>
           {counts ? <CountsLine counts={counts} /> : null}
         </div>
-        <ProductListActions role={session.role} />
+        <ProductListActions role={session.role} alertDays={store?.default_alert_days ?? null} />
       </header>
+      {owner ? <ProductSectionTabs /> : null}
 
       {!products.ok ? (
         <DataFetchError resource="los productos" error={products.error.message} />

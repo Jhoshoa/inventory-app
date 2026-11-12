@@ -140,6 +140,7 @@ Se arreglan en la **Fase 0** porque son chicos, no dependen del rediseño y ya m
 | **E6** | Pedidos se filtran en la web sobre los últimos 50; con más pedidos, los contadores y las pestañas mienten. | `GET /storefront-requests` | **B7** | integración: filtro y conteo por estado. |
 | **E9** | E1 quedó a medias en la Fase 0: los campos de caja usaban `sanitizeMoneyInput`, que **borraba la coma mientras se escribía** ("30,50" → "3050"), y `pattern` también la rechazaba. | `features/store-day` | Arreglado en la Fase 2 con `MoneyInput` (`components/ui`): solo quita lo que no es número ni separador y no recorta en silencio; la validación explica. Usarlo en **todos** los montos de las fases siguientes. | Probado en el navegador: "50,50" se guarda como Bs 50,50. |
 | **E10** | Los diálogos se montaban en `body`, fuera de `.theme-app`, y no tomaban los colores del estilo A. | `components/ui/Dialog.tsx` | Arreglado en la Fase 2: se montan en `.theme-app` cuando existe. Nueva posición `sheet`: hoja desde abajo en el celular, ventana centrada desde 640 px. | Revisado en el navegador. |
+| **E11** | Con B4 hecho, el aviso de la tienda igual no se usaba: si "Avisar días antes" quedaba vacío, la web mandaba **5** (`alertDaysOrDefault`) y la ventana de ajustar stock lo traía escrito. | `features/products/schemas.ts`, `actions.ts`, `ProductStockDialog`, `ProductForm` | Arreglado en la Fase 3 (P01B): vacío va como `null` y la API usa el aviso de la tienda; el campo dice "Como la tienda". | unit + probado en el navegador: aviso de la tienda en 7, lote nuevo sin número → `alert_days` 7. |
 | **E8** | `Button` era componente de cliente: una página del servidor con `<Button asChild><Link/></Button>` (Reportes, 404, estados vacíos) se caía con "React.Children.only expected…", porque el hijo llegaba como referencia del servidor. Por eso fallaban Reportes y sus e2e. | `components/ui/Button.tsx` | Arreglado en la Fase 1: `Button` ya no lleva `"use client"` (no usa hooks). | e2e de Reportes y smoke en verde. |
 | **E7** | Tests e2e que ya fallan en `main` (9 al probar el 2026-11-11 sin `.env.local`): `a11y` (rutas principales), `auth` (sesión simulada llega a Productos), `pos` (render), `products` (vacío y validación al crear), `reports` (los 3) y `smoke` (rutas principales). Fallan por textos y enlaces que cambiaron y por tiempos de `next dev`. | `apps/web/e2e/` | Rehacerlos en la Fase 1 junto con los nombres nuevos del menú, y desde ahí cada fase deja sus e2e en verde. | La rama no agrega fallas: 7 de esos 9 siguen fallando, ninguna nueva. |
 
@@ -271,7 +272,17 @@ Aceptación: todas las páginas actuales se ven dentro del marco nuevo y se pued
 - Enter con un código exacto (sin espacios) abre el producto con `GET /products/qr/{code}`; si no hay, busca como texto. Enter cancela la búsqueda que estaba por salir (a los 400 ms), porque su cambio de URL pisaba la navegación al producto.
 - "Vence · N días" se calcula con la fecha del navegador después de cargar; antes solo se muestra la fecha (evita diferencias entre servidor y navegador).
 - Menú ⋯ de la fila: componente nuevo `components/ui/Menu` (teclado, Escape, clic afuera, se abre hacia arriba si no entra). "Dónde está" lleva al detalle (`#donde-esta`) y "Eliminar…" usa la ventana actual (escribir ELIMINAR); las dos ventanas nuevas son de P04.
-- Pendiente para P01B: pestañas Categorías · Lugares en la tienda, y esas entradas más "Aviso de vencimiento" en los dos ⋯.
+
+**Categorías, Lugares en la tienda y Aviso de vencimiento (P01B) hechos (2026-11-11).** Notas:
+
+- Rutas `/dashboard/products/categorias` y `/dashboard/products/lugares`, solo dueño (el cajero ve "No tienes permiso" con "Volver a Productos"). Pestañas Productos · Categorías · Lugares en la tienda desde 640 px, también en la lista; en el celular se entra desde el ⋯ de Productos y arriba dice "‹ Productos". Como en el tablero, desde 640 px el título es "Productos" y la pestaña marca la sección (el lector oye "Productos · Categorías").
+- Categorías: tarjetas en el celular y tabla desde 768 px (prefijo, próximo SKU, estado). Nueva / Editar en hoja o ventana, con el ejemplo del SKU mientras se escribe el prefijo; el 409 de nombre o prefijo repetido va en su campo. "Desactivar…" desde la fila o desde Editar, con confirmación (no se puede volver a activar: la API no lo permite). Activas primero.
+- Lugares: tarjetas con cuántos productos tiene cada uno y "Nuevo lugar" debajo de la lista en el celular; tabla con Zona · Estante · Nivel · Productos desde 768 px. Eliminar avisa a cuántos productos se les quita (`product_count`); el 409 ("ya existe") va en Zona.
+- Aviso de vencimiento: en los dos ⋯ de Productos (en el celular muestra "N días antes"). Entero de 0 a 365. Si `GET /store` falla, la opción no aparece. Al probarlo apareció **E11**.
+- Configuración ya no tiene Categorías ni Ubicaciones: queda una tarjeta "Categorías y lugares · Ahora están en Productos" con los dos enlaces (como "Ir a Caja"). El enlace de "Dónde está" sin lugares ahora lleva a Productos › Lugares en la tienda.
+- Al cometer un error el foco va al primer campo con error. `Dialog` ahora respeta `data-autofocus` (antes enfocaba siempre la ventana y `autoFocus` no servía). `ConfirmDialog` se puede abrir desde afuera (`open` / `onOpenChange`).
+- Se borraron `ProductCategorySettings` y `StoreLocationSettings` (y su test).
+- Quedan para P02 / P04: mostrar el número del aviso de la tienda en "Avisar días antes" (hoy dice "Como la tienda") y "+ Nueva categoría" / "+ Nuevo lugar" dentro del formulario.
 
 ### Fase 4 · Vender (2,5–3 días)
 
@@ -389,6 +400,7 @@ Manual en cada fase: celular (375), tablet (768) y escritorio (1280); dueño y c
 | Fecha | Cambio |
 |---|---|
 | 2026-11-11 | Primera versión. E3 encontrado al revisar el código (apertura y contado en 0). Nota de P08 corregida (razón obligatoria al anular un movimiento de caja). |
+| 2026-11-11 | Fase 3, P01B: Categorías y Lugares en la tienda con sus rutas y pestañas, Aviso de vencimiento, fuera de Configuración. E11 encontrado y arreglado (el aviso de la tienda no se usaba). |
 | 2026-11-11 | Fase 3, lista de productos (P01): tarjetas y tabla, chips con conteos, filtros en la URL, Enter con código, menús ⋯ y estados. |
 | 2026-11-11 | Fase 2 hecha: Caja (P09) e Inicio. E9 (coma en montos de caja) y E10 (diálogos fuera del tema) arreglados. D8 abierta (unidades vendidas). |
 | 2026-11-11 | Fase 1 hecha: marco, navegación, Más, Caja provisoria, franjas y estados. E8 encontrado y arreglado (Button en páginas del servidor). Los e2e que fallaban en `main` (E7) pasan con los nombres nuevos. |

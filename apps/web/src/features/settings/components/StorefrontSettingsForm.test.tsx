@@ -29,6 +29,7 @@ const storeData: StoreResponse = {
   allow_manual_discount: false,
   max_manual_discount_amount: "0",
   allow_cashier_discount_override: false,
+  default_alert_days: 5,
   storefront_enabled: false,
   storefront_slug: null,
   storefront_tier: "none",

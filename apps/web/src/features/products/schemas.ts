@@ -107,7 +107,7 @@ export function validateProductForm(values: ProductFormValues, mode: "create" | 
   return errors;
 }
 
-/** Igual que el backend: aviso entre 0 y 365 dias (5 si se deja vacio). */
+/** Igual que el backend: aviso entre 0 y 365 días. Vacío usa el aviso de la tienda (5 si nunca se cambió). */
 export const DEFAULT_ALERT_DAYS = 5;
 export const MAX_ALERT_DAYS = 365;
 
@@ -129,8 +129,20 @@ export function validateBatchFields(expiresOn: string, alertDays: string) {
   return errors;
 }
 
-export function alertDaysOrDefault(alertDays: string) {
-  return alertDays === "" ? DEFAULT_ALERT_DAYS : Number(alertDays);
+/** Vacío va como null: la API usa el "Aviso de vencimiento" de la tienda (E11). */
+export function alertDaysOrStoreDefault(alertDays: string) {
+  return alertDays === "" ? null : Number(alertDays);
+}
+
+/** Aviso de vencimiento de la tienda: entero de 0 a 365, obligatorio. */
+export function validateDefaultAlertDays(value: string) {
+  const text = value.trim();
+  if (!text) return "Escribe cuántos días antes avisar";
+  const days = Number(text);
+  if (!/^\d+$/.test(text) || !Number.isInteger(days) || days > MAX_ALERT_DAYS) {
+    return `Un número entero de 0 a ${MAX_ALERT_DAYS}`;
+  }
+  return null;
 }
 
 export const STOCK_ADJUSTMENT_MAX = 1_000_000;

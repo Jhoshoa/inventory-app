@@ -1,9 +1,11 @@
 import { describe, expect, it } from "vitest";
 import {
+  alertDaysOrStoreDefault,
   buildProductQueryString,
   parseProductSearchParams,
   productToFormValues,
   validateBatchFields,
+  validateDefaultAlertDays,
   validateProductForm,
   validateStockAdjustment,
 } from "./schemas";
@@ -161,5 +163,22 @@ describe("expiry fields", () => {
     expect(validateProductForm({ ...values, stock: "4" }, "create")).toEqual({});
     // Al editar no se usa: los lotes entran con "Ajustar stock".
     expect(validateProductForm({ ...values, stock: "0" }, "edit")).toEqual({});
+  });
+});
+
+describe("expiry alert days", () => {
+  it("an empty field leaves the store default to the API (E11)", () => {
+    expect(alertDaysOrStoreDefault("")).toBeNull();
+    expect(alertDaysOrStoreDefault("0")).toBe(0);
+    expect(alertDaysOrStoreDefault("12")).toBe(12);
+  });
+
+  it("the store default is a whole number from 0 to 365", () => {
+    expect(validateDefaultAlertDays("")).toMatch(/cuántos días/);
+    expect(validateDefaultAlertDays("0")).toBeNull();
+    expect(validateDefaultAlertDays(" 365 ")).toBeNull();
+    expect(validateDefaultAlertDays("366")).toMatch(/0 a 365/);
+    expect(validateDefaultAlertDays("2.5")).toMatch(/0 a 365/);
+    expect(validateDefaultAlertDays("-1")).toMatch(/0 a 365/);
   });
 });

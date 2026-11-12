@@ -9,6 +9,7 @@ import { Dialog, DialogBody, DialogTitle } from "@/components/ui/Dialog";
 import { Menu, MenuItem } from "@/components/ui/Menu";
 import { canExport, canManageProducts } from "@/lib/auth/permissions";
 import type { UserRole } from "@/lib/auth/types";
+import { ExpiryAlertDialog } from "./ExpiryAlertDialog";
 import { ProductCsvImportDialog } from "./ProductCsvImportDialog";
 
 const EXPORT_HREF = "/api/exports/products";
@@ -16,12 +17,21 @@ const EXPORT_HREF = "/api/exports/products";
 /**
  * Acciones de la lista (tablero P01). Desde 1024 px: botones y ⋯ junto a
  * "+ Nuevo producto"; entre 640 y 1024 px Etiquetas e Importar pasan al ⋯.
- * En el celular: ⋯ abre "Más acciones" y el botón flotante crea el producto.
+ * En el celular: ⋯ abre "Más acciones" (también Categorías, Lugares en la tienda y
+ * Aviso de vencimiento, tablero P01B) y el botón flotante crea el producto.
  * El cajero no tiene acciones.
  */
-export function ProductListActions({ role }: { role: UserRole }) {
+export function ProductListActions({
+  role,
+  alertDays = null,
+}: {
+  role: UserRole;
+  /** Aviso de vencimiento de la tienda; null si no se pudo leer (la opción no aparece). */
+  alertDays?: number | null;
+}) {
   const [sheetOpen, setSheetOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
+  const [alertOpen, setAlertOpen] = useState(false);
 
   if (!canManageProducts(role)) return null;
   const exportAllowed = canExport(role);
@@ -47,6 +57,7 @@ export function ProductListActions({ role }: { role: UserRole }) {
               Descargar lista (CSV)
             </MenuItem>
           ) : null}
+          {alertDays !== null ? <MenuItem onSelect={() => setAlertOpen(true)}>Aviso de vencimiento</MenuItem> : null}
         </Menu>
         <Button asChild>
           <Link href="/dashboard/products/new">
@@ -58,7 +69,7 @@ export function ProductListActions({ role }: { role: UserRole }) {
 
       <button
         type="button"
-        aria-label="Más acciones: importar, etiquetas y descargar"
+        aria-label="Más acciones: importar, etiquetas, descargar, categorías y lugares en la tienda"
         aria-haspopup="dialog"
         onClick={() => setSheetOpen(true)}
         className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-control border-2 border-brand-700 bg-brand-50 text-lg font-extrabold text-brand-700 sm:hidden"
@@ -94,6 +105,23 @@ export function ProductListActions({ role }: { role: UserRole }) {
                 Descargar lista (CSV)
               </SheetRow>
             ) : null}
+            <SheetRow href="/dashboard/products/categorias" hint="Prefijo del SKU">
+              Categorías
+            </SheetRow>
+            <SheetRow href="/dashboard/products/lugares" hint="Pasillo, estante, heladera…">
+              Lugares en la tienda
+            </SheetRow>
+            {alertDays !== null ? (
+              <SheetRow
+                onClick={() => {
+                  setSheetOpen(false);
+                  setAlertOpen(true);
+                }}
+                hint={alertDays === 1 ? "1 día antes" : `${alertDays} días antes`}
+              >
+                Aviso de vencimiento
+              </SheetRow>
+            ) : null}
           </div>
           <Button variant="secondary" className="mt-3 w-full" onClick={() => setSheetOpen(false)}>
             Cerrar
@@ -101,6 +129,7 @@ export function ProductListActions({ role }: { role: UserRole }) {
         </DialogBody>
       </Dialog>
 
+      {alertDays !== null ? <ExpiryAlertDialog open={alertOpen} days={alertDays} onOpenChange={setAlertOpen} /> : null}
       <ProductCsvImportDialog
         open={importOpen}
         onClose={() => setImportOpen(false)}

@@ -16,12 +16,17 @@ export function formDataToStoreLocationValues(formData: FormData): StoreLocation
 
 export function validateStoreLocation(values: StoreLocationValues): StoreLocationActionState["fieldErrors"] {
   const errors: StoreLocationActionState["fieldErrors"] = {};
-  if (!values.zone) errors.zone = "La zona es requerida";
-  else if (values.zone.length > LOCATION_LIMITS.zone) errors.zone = `Maximo ${LOCATION_LIMITS.zone} caracteres`;
-  if (values.shelf.length > LOCATION_LIMITS.shelf) errors.shelf = `Maximo ${LOCATION_LIMITS.shelf} caracteres`;
-  if (values.level.length > LOCATION_LIMITS.level) errors.level = `Maximo ${LOCATION_LIMITS.level} caracteres`;
-  else if (values.level && !values.shelf) errors.level = "Para indicar un nivel primero indica el mueble";
+  if (!values.zone) errors.zone = "Escribe la zona (pasillo, heladera, depósito…)";
+  else if (values.zone.length > LOCATION_LIMITS.zone) errors.zone = `Máximo ${LOCATION_LIMITS.zone} caracteres`;
+  if (values.shelf.length > LOCATION_LIMITS.shelf) errors.shelf = `Máximo ${LOCATION_LIMITS.shelf} caracteres`;
+  if (values.level.length > LOCATION_LIMITS.level) errors.level = `Máximo ${LOCATION_LIMITS.level} caracteres`;
+  else if (values.level && !values.shelf) errors.level = "Para poner un nivel, primero escribe el estante";
   return errors;
+}
+
+/** 409 de la API: el lugar ya existe (sin importar mayúsculas). Va en el campo Zona. */
+export function locationConflictField(message: string): StoreLocationActionState["fieldErrors"] {
+  return message.toLowerCase().includes("ya existe") ? { zone: "Ese lugar ya existe." } : {};
 }
 
 export function storeLocationPayload(values: StoreLocationValues) {

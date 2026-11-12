@@ -17,7 +17,7 @@ import {
   createProductAction,
   updateProductAction,
 } from "../actions";
-import { DEFAULT_ALERT_DAYS, MAX_ALERT_DAYS, productToFormValues } from "../schemas";
+import { MAX_ALERT_DAYS, productToFormValues } from "../schemas";
 import type { Product, ProductActionState } from "../types";
 
 const initialProductActionState: ProductActionState = {
@@ -217,7 +217,7 @@ export function ProductForm({
                   step="1"
                   min="0"
                   max={MAX_ALERT_DAYS}
-                  placeholder={String(DEFAULT_ALERT_DAYS)}
+                  placeholder="Como la tienda"
                   value={formValues.alert_days}
                   onChange={(event) => updateField("alert_days", event.target.value)}
                   error={Boolean(state.fieldErrors.alert_days)}

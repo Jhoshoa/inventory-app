@@ -11,6 +11,8 @@ export interface StoreResponse {
   allow_manual_discount: boolean;
   max_manual_discount_amount: string;
   allow_cashier_discount_override: boolean;
+  /** Aviso de vencimiento por defecto de los lotes nuevos (B4). */
+  default_alert_days: number;
   storefront_enabled: boolean;
   storefront_slug: string | null;
   storefront_tier: string;

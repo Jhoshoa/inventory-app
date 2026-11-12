@@ -13,7 +13,7 @@ import { Select } from "@/components/ui/Select";
 import { Textarea } from "@/components/ui/Textarea";
 import { adjustStockAction } from "../actions";
 import { batchOptionLabel } from "../batches";
-import { DEFAULT_ALERT_DAYS, MAX_ALERT_DAYS, STOCK_ADJUSTMENT_MAX } from "../schemas";
+import { MAX_ALERT_DAYS, STOCK_ADJUSTMENT_MAX } from "../schemas";
 import type { ProductActionState, ProductBatch } from "../types";
 
 const initialProductActionState: ProductActionState = {
@@ -171,9 +171,13 @@ export function ProductStockDialog({
                         step="1"
                         min={0}
                         max={MAX_ALERT_DAYS}
-                        defaultValue={DEFAULT_ALERT_DAYS}
+                        placeholder="Como la tienda"
+                        aria-describedby={`alert-hint-${fieldId}`}
                         error={Boolean(state.fieldErrors.alert_days)}
                       />
+                      <p id={`alert-hint-${fieldId}`} className="text-xs text-text-muted">
+                        Vacío: usa el aviso de vencimiento de la tienda.
+                      </p>
                       <FieldError message={state.fieldErrors.alert_days} />
                     </div>
                   ) : null}

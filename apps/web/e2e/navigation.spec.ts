@@ -74,7 +74,10 @@ test.describe("desktop navigation", () => {
     await addSession(context);
     await page.goto("/dashboard/sales");
     await expect(page.getByRole("heading", { name: "Ventas", exact: true })).toBeVisible();
-    await page.keyboard.press("F2");
-    await expect(page).toHaveURL(/\/dashboard\/pos$/, { timeout: 15_000 });
+    // El atajo existe cuando la página terminó de cargar en el navegador: se reintenta.
+    await expect(async () => {
+      await page.keyboard.press("F2");
+      await expect(page).toHaveURL(/\/dashboard\/pos$/, { timeout: 3_000 });
+    }).toPass({ timeout: 20_000 });
   });
 });

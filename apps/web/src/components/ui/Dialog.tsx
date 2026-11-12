@@ -143,7 +143,9 @@ export function Dialog({
   useEffect(() => {
     if (open) {
       previousFocusRef.current = document.activeElement as HTMLElement;
-      surfaceRef.current?.focus();
+      // Un campo con data-autofocus recibe el foco (p. ej. "Nombre" al crear); si no, la ventana.
+      const preferred = surfaceRef.current?.querySelector<HTMLElement>("[data-autofocus]");
+      (preferred ?? surfaceRef.current)?.focus();
     } else {
       previousFocusRef.current?.focus();
     }

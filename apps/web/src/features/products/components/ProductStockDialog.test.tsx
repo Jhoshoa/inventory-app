@@ -109,13 +109,15 @@ describe("ProductStockDialog", () => {
     await user.type(screen.getByLabelText("Cantidad a ajustar"), "6");
     expect(screen.queryByLabelText("Avisar dias antes")).not.toBeInTheDocument();
     await user.type(screen.getByLabelText("Vence el (opcional)"), "2026-12-31");
-    expect(screen.getByLabelText("Avisar dias antes")).toHaveValue(5);
+    // Vacío: la API usa el aviso de vencimiento de la tienda (E11).
+    expect(screen.getByLabelText("Avisar dias antes")).toHaveValue(null);
+    expect(screen.getByText("Vacío: usa el aviso de vencimiento de la tienda.")).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "Guardar ajuste" }));
 
     const formData = vi.mocked(adjustStockAction).mock.calls[0][1];
     expect(formData.get("expires_on")).toBe("2026-12-31");
-    expect(formData.get("alert_days")).toBe("5");
+    expect(formData.get("alert_days")).toBe("");
   });
 
   it("lets the owner pick the batch a deduction comes from", async () => {
