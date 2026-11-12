@@ -361,6 +361,7 @@ Es la fase más delicada: es lo que más se usa y funciona sin conexión.
 
 1. P08: rango compartido (máx. 90 días), ventas con comparación, por método con cantidad, más vendidos, cierres con diferencia (Cuadra / falta o sobra / Sin conteo), movimientos de caja y de stock, descargas CSV.
 2. Cajero: solo Ventas y Movimientos de stock.
+3. **E14 en Reportes:** con una tienda de menos de 30 días, los rangos "7 días", "30 días" o "Mes" que empiezan antes de la apertura reciben 400 ("anterior a la apertura operativa"). Recortar el inicio del rango a `first_business_date` (o avisar "Tu tienda abrió el …") en lugar de mostrar el error. Probar con una tienda nueva.
 
 ### Fase 7 · Configuración (2 días)
 
