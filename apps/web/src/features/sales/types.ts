@@ -24,9 +24,13 @@ export interface Sale {
   /** Quién vendió (B6). */
   created_by_name?: string | null;
   customer_name?: string | null;
+  /** "web-pos" = en línea; otro = hecha sin conexión y enviada después. */
+  device_id?: string | null;
   created_at: string;
   voided_at: string | null;
   void_reason: string | null;
+  /** Quién la anuló (B6). */
+  voided_by_name?: string | null;
 }
 
 export type SaleStatusFilter = "all" | "completed" | "voided";
@@ -65,6 +69,10 @@ export interface SaleActionState {
   fieldErrors: Partial<
     Record<"items" | "payment_method" | "customer_name" | "discount_value" | "reason", string>
   >;
+  /** La venta anulada, para marcarla en la lista sin volver a cargar. */
+  sale?: Sale;
+  /** La API respondió 409 (ya estaba anulada). */
+  conflict?: boolean;
 }
 
 export type SaleListResult = ApiResult<SaleListResponse>;

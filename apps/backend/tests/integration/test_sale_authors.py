@@ -73,3 +73,23 @@ async def test_void_records_who_voided_the_sale(client, db_session):
     assert body["created_by_name"] != "Luis Mamani"
     detail = (await client.get(f"/api/v1/sales/{sale['id']}")).json()
     assert detail["voided_by_name"] == "Luis Mamani"
+
+
+async def test_sale_shows_customer_and_device(client):
+    product = await client.post("/api/v1/products", json={"name": "Leche", "price": "6.00", "stock": 5})
+    current = await client.get("/api/v1/store-day/current")
+    if current.json()["status"] != "open":
+        assert (await client.post("/api/v1/store-day/open")).status_code == 201
+    sale = await client.post(
+        "/api/v1/sales",
+        json={
+            "items": [{"product_id": product.json()["id"], "quantity": 1}],
+            "customer_name": "Ana",
+            "device_id": "web-pos",
+        },
+    )
+    assert sale.status_code == 201, sale.text
+
+    detail = (await client.get(f"/api/v1/sales/{sale.json()['id']}")).json()
+    assert detail["customer_name"] == "Ana"
+    assert detail["device_id"] == "web-pos"

@@ -1,30 +1,24 @@
-import { PageSection } from "@/components/layout/PageSection";
-
+/** Mientras carga la página de la venta (misma forma que el detalle). */
 export function SaleDetailSkeleton() {
   return (
-    <PageSection className="space-y-6" aria-label="Cargando detalle de venta">
-      <div className="rounded-lg border border-app-border bg-app-surface p-4 shadow-panel">
-        <div className="space-y-3">
-          <div className="h-6 w-48 animate-pulse rounded bg-app-border" />
-          <div className="h-4 w-32 animate-pulse rounded bg-app-border" />
-          <div className="h-4 w-40 animate-pulse rounded bg-app-border" />
-          <div className="h-4 w-24 animate-pulse rounded bg-app-border" />
-          <div className="h-8 w-36 animate-pulse rounded bg-app-border" />
-        </div>
+    <div className="mx-auto flex w-full max-w-2xl flex-col gap-3" aria-busy="true" aria-label="Cargando venta">
+      <div className="flex items-center gap-3 py-1">
+        <span className="h-9 w-9 animate-pulse rounded-control bg-app-surface-muted" />
+        <span className="flex flex-1 flex-col gap-1.5">
+          <span className="h-5 w-40 animate-pulse rounded bg-app-surface-muted" />
+          <span className="h-3 w-28 animate-pulse rounded bg-app-surface-muted" />
+        </span>
       </div>
-
-      <div className="rounded-lg border border-app-border bg-app-surface shadow-panel">
+      <div className="flex flex-col gap-3 rounded-card border border-app-border bg-app-surface p-4">
         {Array.from({ length: 3 }, (_, index) => (
-          <div
-            key={index}
-            className="flex items-center justify-between border-b border-app-border px-4 py-3 last:border-b-0"
-          >
-            <div className="h-4 w-48 animate-pulse rounded bg-app-surface-muted" />
-            <div className="h-4 w-12 animate-pulse rounded bg-app-surface-muted" />
-            <div className="h-4 w-20 animate-pulse rounded bg-app-surface-muted" />
+          <div key={index} className="flex justify-between">
+            <span className="h-4 w-48 animate-pulse rounded bg-app-surface-muted" />
+            <span className="h-4 w-14 animate-pulse rounded bg-app-surface-muted" />
           </div>
         ))}
+        <span className="ml-auto h-6 w-28 animate-pulse rounded bg-app-surface-muted" />
       </div>
-    </PageSection>
+      <div className="h-24 animate-pulse rounded-card border border-app-border bg-app-surface" />
+    </div>
   );
 }

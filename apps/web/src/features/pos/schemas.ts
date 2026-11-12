@@ -218,14 +218,18 @@ export function receiptText({
   total,
   paymentLabel,
   when,
+  discount = 0,
 }: {
   storeName: string;
   items: { name: string; quantity: number; amount: number }[];
   total: number;
   paymentLabel: string;
   when: string;
+  /** Descuento de la venta; si hay, va su línea antes del total. */
+  discount?: number;
 }) {
   const money = (value: number) => `Bs ${value.toLocaleString("es-BO", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   const lines = items.map((item) => `${item.quantity} × ${item.name} — ${money(item.amount)}`);
-  return [`${storeName}`, when, "", ...lines, "", `Total: ${money(total)} · ${paymentLabel}`, "¡Gracias por tu compra!"].join("\n");
+  const discountLine = discount > 0 ? [`Descuento: − ${money(discount)}`] : [];
+  return [`${storeName}`, when, "", ...lines, "", ...discountLine, `Total: ${money(total)} · ${paymentLabel}`, "¡Gracias por tu compra!"].join("\n");
 }

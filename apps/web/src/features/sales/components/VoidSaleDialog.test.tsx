@@ -2,57 +2,58 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { voidSaleAction } from "../actions";
+import { makeSale } from "../test/fixtures";
 import { VoidSaleDialog } from "./VoidSaleDialog";
 
-const mocks = vi.hoisted(() => ({
-  refresh: vi.fn(),
-}));
+vi.mock("../actions", () => ({ voidSaleAction: vi.fn() }));
+vi.mock("sonner", () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 
-vi.mock("../actions", () => ({
-  voidSaleAction: vi.fn(),
-}));
-
-vi.mock("next/navigation", () => ({
-  useRouter: () => ({ refresh: mocks.refresh }),
-}));
+function setup() {
+  const props = { onOpenChange: vi.fn(), onVoided: vi.fn(), onConflict: vi.fn() };
+  render(<VoidSaleDialog sale={makeSale()} open {...props} />);
+  return { user: userEvent.setup(), ...props };
+}
 
 describe("VoidSaleDialog", () => {
-  beforeEach(() => {
-    vi.mocked(voidSaleAction).mockReset();
-    mocks.refresh.mockClear();
+  beforeEach(() => vi.mocked(voidSaleAction).mockReset());
+
+  it("asks with the total and the units that go back to stock", () => {
+    setup();
+    expect(screen.getByRole("heading", { name: /¿Anular la venta de Bs\s?46,2/ })).toBeInTheDocument();
+    expect(screen.getByText(/Las 5 unidades vuelven al stock/)).toBeInTheDocument();
   });
 
-  it("opens the void form and shows validation errors", async () => {
-    vi.mocked(voidSaleAction).mockResolvedValue({
-      ok: false,
-      fieldErrors: { reason: "La razon es requerida" },
-    });
-    const user = userEvent.setup();
-    render(<VoidSaleDialog saleId="sale-1" />);
-
+  it("requires a reason before calling the API", async () => {
+    const { user } = setup();
     await user.click(screen.getByRole("button", { name: "Anular venta" }));
-    await user.click(screen.getByRole("button", { name: "Confirmar anulacion" }));
-
-    expect(screen.getByRole("heading", { name: "Anular venta" })).toBeInTheDocument();
-    expect(screen.getByText("La razon es requerida")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Confirmar anulacion" })).toBeEnabled();
+    expect(screen.getByText("La razón es requerida.")).toBeInTheDocument();
+    expect(screen.getByLabelText("Razón")).toHaveAttribute("aria-invalid", "true");
+    expect(voidSaleAction).not.toHaveBeenCalled();
   });
 
-  it("refreshes the route after a successful void", async () => {
-    vi.mocked(voidSaleAction).mockResolvedValue({
-      ok: true,
-      message: "Venta anulada",
-      fieldErrors: {},
-    });
-    const user = userEvent.setup();
+  it("fills the reason from a quick chip and voids", async () => {
+    const voided = makeSale({ status: "voided", void_reason: "Venta duplicada" });
+    vi.mocked(voidSaleAction).mockResolvedValue({ ok: true, fieldErrors: {}, sale: voided });
+    const { user, onVoided, onOpenChange } = setup();
 
-    render(<VoidSaleDialog saleId="sale-1" />);
-
+    await user.click(screen.getByRole("button", { name: "Venta duplicada" }));
+    expect(screen.getByLabelText("Razón")).toHaveValue("Venta duplicada");
     await user.click(screen.getByRole("button", { name: "Anular venta" }));
-    await user.type(screen.getByLabelText("Razon"), "Error de cobro");
-    await user.click(screen.getByRole("button", { name: "Confirmar anulacion" }));
 
-    expect(mocks.refresh).toHaveBeenCalled();
-    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    const formData = vi.mocked(voidSaleAction).mock.calls[0][1];
+    expect(formData.get("reason")).toBe("Venta duplicada");
+    expect(onVoided).toHaveBeenCalledWith(voided);
+    expect(onOpenChange).toHaveBeenCalledWith(false);
+  });
+
+  it("reloads the sale when it was already voided (409)", async () => {
+    vi.mocked(voidSaleAction).mockResolvedValue({ ok: false, fieldErrors: {}, message: "La venta ya fue anulada", conflict: true });
+    const { user, onConflict, onVoided } = setup();
+
+    await user.type(screen.getByLabelText("Razón"), "Error al cobrar");
+    await user.click(screen.getByRole("button", { name: "Anular venta" }));
+
+    expect(onConflict).toHaveBeenCalled();
+    expect(onVoided).not.toHaveBeenCalled();
   });
 });

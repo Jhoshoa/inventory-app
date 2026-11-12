@@ -49,7 +49,9 @@ describe("navigation", () => {
 
   it("hides the bottom bar only where the page has its own fixed bar", () => {
     expect(shouldShowMobileTabBar("/dashboard/sales/abc/print")).toBe(false);
-    expect(shouldShowMobileTabBar("/dashboard/sales/abc")).toBe(true);
+    // Detalle de venta: barra fija Recibo · WhatsApp · Imprimir · Anular (Fase 5).
+    expect(shouldShowMobileTabBar("/dashboard/sales/abc")).toBe(false);
+    expect(shouldShowMobileTabBar("/dashboard/sales")).toBe(true);
     expect(shouldShowMobileTabBar("/dashboard/products/new")).toBe(false);
     expect(shouldShowMobileTabBar("/dashboard/products/p-1/edit")).toBe(false);
     expect(shouldShowMobileTabBar("/dashboard/products/p-1")).toBe(true);

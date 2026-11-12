@@ -90,6 +90,8 @@ const ROUTES_WITHOUT_TAB_BAR = [
   /^\/dashboard\/pos$/,
   // Etiquetas: barra fija con el total y el paso siguiente (tablero P05).
   /^\/dashboard\/products\/labels$/,
+  // Detalle de venta: barra fija Recibo · WhatsApp · Imprimir · Anular (tablero P06).
+  /^\/dashboard\/sales\/[^/]+$/,
 ];
 
 export function shouldShowMobileTabBar(pathname: string) {

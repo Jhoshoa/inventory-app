@@ -1,6 +1,5 @@
-import { formatCurrency } from "@/lib/format/currency";
-import { formatDateTimeShort } from "@/lib/format/datetime";
 import { formatPhone } from "@/lib/format/phone";
+import { paymentLabel, saleDateTime, shortSaleId } from "../list";
 import { discountLabel } from "../schemas";
 import type { Sale } from "../types";
 
@@ -11,78 +10,73 @@ export interface ReceiptStoreInfo {
   nit?: string | null;
 }
 
+const amountFormatter = new Intl.NumberFormat("es-BO", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+function amount(value: string | number) {
+  return amountFormatter.format(Number(value) || 0);
+}
+
+/**
+ * Ticket de 80 mm (tablero P06 · Recibo): el mismo en la ventana y en la página de
+ * impresión. Montos sin "Bs" salvo el total, como un ticket de caja.
+ */
 export function SaleReceipt({ sale, store }: { sale: Sale; store: ReceiptStoreInfo }) {
+  const contact = [store.address, store.phone ? `Tel ${formatPhone(store.phone)}` : null].filter(Boolean).join(" · ");
+  const discount = Number(sale.discount_amount);
+
   return (
-    <div className="receipt-print-area mx-auto w-full max-w-md space-y-4 rounded-lg border border-app-border bg-app-surface p-6 text-sm text-text-body">
-      <div className="space-y-1 text-center">
-        <p className="text-lg font-semibold text-text-strong">{store.name}</p>
-        {store.address ? <p className="text-xs text-text-muted">{store.address}</p> : null}
-        {store.phone ? <p className="text-xs text-text-muted">Tel: {formatPhone(store.phone)}</p> : null}
-        {store.nit ? <p className="text-xs text-text-muted">NIT: {store.nit}</p> : null}
-      </div>
-
-      <div className="space-y-1 border-t border-dashed border-app-border pt-3 text-xs">
-        <div className="flex justify-between">
-          <span className="text-text-muted">Comprobante</span>
-          <span className="font-mono font-medium text-text-strong">{sale.id.slice(0, 8).toUpperCase()}</span>
-        </div>
-        <div className="flex justify-between">
-          <span className="text-text-muted">Fecha</span>
-          <span>{formatDateTimeShort(sale.created_at)}</span>
-        </div>
-        <div className="flex justify-between">
-          <span className="text-text-muted">Pago</span>
-          <span className="capitalize">{sale.payment_method}</span>
-        </div>
-      </div>
-
-      <table className="w-full border-t border-dashed border-app-border pt-2 text-xs">
-        <thead>
-          <tr className="text-left text-text-muted">
-            <th className="pb-1 font-normal">Producto</th>
-            <th className="pb-1 text-right font-normal">Cant.</th>
-            <th className="pb-1 text-right font-normal">P. Unit.</th>
-            <th className="pb-1 text-right font-normal">Subtotal</th>
-          </tr>
-        </thead>
-        <tbody>
-          {sale.items.map((item) => (
-            <tr key={item.product_id}>
-              <td className="py-0.5 text-text-strong">{item.product_name}</td>
-              <td className="py-0.5 text-right">{item.quantity}</td>
-              <td className="py-0.5 text-right">{formatCurrency(item.unit_price)}</td>
-              <td className="py-0.5 text-right font-medium text-text-strong">{formatCurrency(item.subtotal)}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-
-      <div className="space-y-1 border-t border-dashed border-app-border pt-2">
-        <div className="flex justify-between text-text-muted">
-          <span>Subtotal</span>
-          <span>{formatCurrency(sale.subtotal)}</span>
-        </div>
-        {Number(sale.discount_amount) > 0 ? (
-          <div className="flex justify-between text-status-success">
-            <span>{discountLabel(sale)}</span>
-            <span>-{formatCurrency(sale.discount_amount)}</span>
-          </div>
-        ) : null}
-        <div className="flex justify-between border-t border-app-border pt-1 text-base font-semibold text-text-strong">
-          <span>Total</span>
-          <span>{formatCurrency(sale.total)}</span>
-        </div>
-      </div>
-
-      {sale.status === "voided" ? (
-        <p className="rounded-md bg-status-dangerBg py-1 text-center text-xs font-semibold uppercase text-status-danger">
-          Venta anulada
-        </p>
-      ) : null}
-
-      <p className="pt-2 text-center text-[11px] text-text-muted">
-        Comprobante interno de venta. No tiene validez como factura fiscal.
+    <div
+      className="receipt-print-area mx-auto w-full max-w-[302px] bg-white px-4 py-5 font-mono text-xs leading-relaxed text-[#101828] shadow-panel print:max-w-none print:p-0 print:shadow-none"
+      aria-label="Recibo"
+    >
+      <p className="text-center text-sm font-bold uppercase">{store.name}</p>
+      {contact ? <p className="text-center">{contact}</p> : null}
+      {store.nit ? <p className="text-center">NIT {store.nit}</p> : null}
+      <Rule />
+      <p>Venta {shortSaleId(sale.id)}</p>
+      <p>
+        {saleDateTime(sale.created_at)} · {paymentLabel(sale.payment_method)}
       </p>
+      {sale.customer_name ? <p>Cliente: {sale.customer_name}</p> : null}
+      <Rule />
+      <ul>
+        {sale.items.map((item) => (
+          <li key={item.product_id} className="flex justify-between gap-3">
+            <span className="min-w-0 break-words">
+              {item.quantity} × {item.product_name}
+            </span>
+            <span className="shrink-0 tabular-nums">{amount(item.subtotal)}</span>
+          </li>
+        ))}
+      </ul>
+      <Rule />
+      {discount > 0 ? (
+        <>
+          <Line label="Subtotal" value={amount(sale.subtotal)} />
+          <Line label={sale.discount_type === "product" ? "Desc. producto" : discountLabel(sale)} value={`-${amount(discount)}`} />
+        </>
+      ) : null}
+      <div className="flex justify-between text-sm font-bold">
+        <span>TOTAL Bs</span>
+        <span className="tabular-nums">{amount(sale.total)}</span>
+      </div>
+      {sale.status === "voided" ? <p className="mt-2 border border-[#101828] py-0.5 text-center font-bold">VENTA ANULADA</p> : null}
+      <Rule />
+      <p className="text-center">Comprobante de venta · no es factura</p>
+      <p className="text-center">¡Gracias por tu compra!</p>
+    </div>
+  );
+}
+
+function Rule() {
+  return <div className="my-2 border-t border-dashed border-[#101828]" aria-hidden="true" />;
+}
+
+function Line({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex justify-between">
+      <span>{label}</span>
+      <span className="tabular-nums">{value}</span>
     </div>
   );
 }

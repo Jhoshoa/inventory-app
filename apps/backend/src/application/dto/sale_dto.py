@@ -79,6 +79,9 @@ class SaleResponseDTO(BaseModel):
     voided_by_user_id: UUID | None = None
     created_by_name: str | None = None
     voided_by_name: str | None = None
+    customer_name: str | None = None
+    # "web-pos" = venta en linea; otro valor = venta hecha sin conexion y enviada luego.
+    device_id: str | None = None
 
     model_config = {"from_attributes": True}
 
