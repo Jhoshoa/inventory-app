@@ -79,11 +79,14 @@ DEV_CASHIER_ACCESS_TOKEN = "dev-cashier-token-123"
 
 
 async def get_db_session():
+    # Se usa siempre con scope="function": asi el commit pasa al terminar el endpoint,
+    # antes de enviar la respuesta. Con el alcance por defecto FastAPI cerraba la sesion
+    # despues de responder y una lectura inmediata podia traer datos viejos (E15).
     async with get_session() as session:
         yield session
 
 
-def get_user_repo(session: AsyncSession = Depends(get_db_session)) -> UserRepository:
+def get_user_repo(session: AsyncSession = Depends(get_db_session, scope="function")) -> UserRepository:
     return UserRepository(session)
 
 
@@ -154,70 +157,70 @@ async def _verify_jwt_cached(token: str) -> dict:
     return payload
 
 
-def get_product_repo(session: AsyncSession = Depends(get_db_session)) -> ProductRepository:
+def get_product_repo(session: AsyncSession = Depends(get_db_session, scope="function")) -> ProductRepository:
     return ProductRepository(session)
 
 
-def get_product_batch_repo(session: AsyncSession = Depends(get_db_session)) -> ProductBatchRepository:
+def get_product_batch_repo(session: AsyncSession = Depends(get_db_session, scope="function")) -> ProductBatchRepository:
     return ProductBatchRepository(session)
 
 
-def get_store_location_repo(session: AsyncSession = Depends(get_db_session)) -> StoreLocationRepository:
+def get_store_location_repo(session: AsyncSession = Depends(get_db_session, scope="function")) -> StoreLocationRepository:
     return StoreLocationRepository(session)
 
 
-def get_product_category_repo(session: AsyncSession = Depends(get_db_session)) -> ProductCategoryRepository:
+def get_product_category_repo(session: AsyncSession = Depends(get_db_session, scope="function")) -> ProductCategoryRepository:
     return ProductCategoryRepository(session)
 
 
-def get_sale_repo(session: AsyncSession = Depends(get_db_session)) -> SaleRepository:
+def get_sale_repo(session: AsyncSession = Depends(get_db_session, scope="function")) -> SaleRepository:
     return SaleRepository(session)
 
 
-def get_sync_repo(session: AsyncSession = Depends(get_db_session)) -> SyncRepository:
+def get_sync_repo(session: AsyncSession = Depends(get_db_session, scope="function")) -> SyncRepository:
     return SyncRepository(session)
 
 
-def get_store_repo(session: AsyncSession = Depends(get_db_session)) -> StoreRepository:
+def get_store_repo(session: AsyncSession = Depends(get_db_session, scope="function")) -> StoreRepository:
     return StoreRepository(session)
 
 
-def get_store_business_day_repo(session: AsyncSession = Depends(get_db_session)) -> StoreBusinessDayRepository:
+def get_store_business_day_repo(session: AsyncSession = Depends(get_db_session, scope="function")) -> StoreBusinessDayRepository:
     return StoreBusinessDayRepository(session)
 
 
-def get_store_business_day_event_repo(session: AsyncSession = Depends(get_db_session)) -> StoreBusinessDayEventRepository:
+def get_store_business_day_event_repo(session: AsyncSession = Depends(get_db_session, scope="function")) -> StoreBusinessDayEventRepository:
     return StoreBusinessDayEventRepository(session)
 
 
-def get_exchange_rate_repo(session: AsyncSession = Depends(get_db_session)) -> ExchangeRateRepository:
+def get_exchange_rate_repo(session: AsyncSession = Depends(get_db_session, scope="function")) -> ExchangeRateRepository:
     return ExchangeRateRepository(session)
 
 
-def get_import_job_repo(session: AsyncSession = Depends(get_db_session)) -> ImportJobRepository:
+def get_import_job_repo(session: AsyncSession = Depends(get_db_session, scope="function")) -> ImportJobRepository:
     return ImportJobRepository(session)
 
 
-def get_stock_movement_repo(session: AsyncSession = Depends(get_db_session)) -> StockMovementRepository:
+def get_stock_movement_repo(session: AsyncSession = Depends(get_db_session, scope="function")) -> StockMovementRepository:
     return StockMovementRepository(session)
 
 
-def get_cash_movement_repo(session: AsyncSession = Depends(get_db_session)) -> CashMovementRepository:
+def get_cash_movement_repo(session: AsyncSession = Depends(get_db_session, scope="function")) -> CashMovementRepository:
     return CashMovementRepository(session)
 
 
-def get_lead_repo(session: AsyncSession = Depends(get_db_session)) -> LeadRepository:
+def get_lead_repo(session: AsyncSession = Depends(get_db_session, scope="function")) -> LeadRepository:
     return LeadRepository(session)
 
 
 def get_storefront_request_repo(
-    session: AsyncSession = Depends(get_db_session),
+    session: AsyncSession = Depends(get_db_session, scope="function"),
 ) -> StorefrontRequestRepository:
     return StorefrontRequestRepository(session)
 
 
 def get_billing_audit_log_repo(
-    session: AsyncSession = Depends(get_db_session),
+    session: AsyncSession = Depends(get_db_session, scope="function"),
 ) -> BillingAuditLogRepository:
     return BillingAuditLogRepository(session)
 
@@ -296,7 +299,7 @@ def get_photo_storage() -> IPhotoStorage:
     return CloudinaryPhotoStorage()
 
 
-def get_user_invitation_repo(session: AsyncSession = Depends(get_db_session)) -> UserInvitationRepository:
+def get_user_invitation_repo(session: AsyncSession = Depends(get_db_session, scope="function")) -> UserInvitationRepository:
     return UserInvitationRepository(session)
 
 

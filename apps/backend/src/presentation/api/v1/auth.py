@@ -452,7 +452,7 @@ async def dev_login(
 
 @router.post("/oauth/google")
 async def oauth_google(
-    session: AsyncSession = Depends(get_db_session),
+    session: AsyncSession = Depends(get_db_session, scope="function"),
 ):
     if settings.DEBUG or settings.ENVIRONMENT == "local":
         return {"url": f"{settings.FRONTEND_URL}/login?oauth=dev"}
@@ -484,7 +484,7 @@ async def oauth_google(
 @router.post("/oauth/callback", response_model=AuthResponseDTO)
 async def oauth_callback(
     dto: OAuthCallbackDTO,
-    session: AsyncSession = Depends(get_db_session),
+    session: AsyncSession = Depends(get_db_session, scope="function"),
     user_repo: UserRepository = Depends(get_user_repo),
     store_repo: StoreRepository = Depends(get_store_repo),
 ):

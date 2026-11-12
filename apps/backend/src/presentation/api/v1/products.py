@@ -562,7 +562,7 @@ async def delete_product(
 async def import_products_csv(
     file: UploadFile = File(...),
     user=Depends(require_owner),
-    session: AsyncSession = Depends(get_db_session),
+    session: AsyncSession = Depends(get_db_session, scope="function"),
 ):
     if file.content_type not in {"text/csv", "application/vnd.ms-excel", "application/octet-stream"}:
         raise HTTPException(status_code=415, detail="Solo se aceptan archivos CSV")

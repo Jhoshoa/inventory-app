@@ -14,7 +14,7 @@ async def live():
 
 
 @router.get("/ready")
-async def ready(response: Response, session: AsyncSession = Depends(get_db_session)):
+async def ready(response: Response, session: AsyncSession = Depends(get_db_session, scope="function")):
     try:
         await session.execute(text("select 1"))
         is_ready = True

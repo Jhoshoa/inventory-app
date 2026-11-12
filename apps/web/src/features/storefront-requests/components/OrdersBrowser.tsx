@@ -144,7 +144,7 @@ export function OrdersBrowser({
   }
 
   // El pedido queda en la lista aunque cambie de estado (no desaparece mientras se mira);
-  // los conteos se ajustan aquí: pedirlos enseguida puede traer los de antes (E15).
+  // los conteos se ajustan aquí, sin volver a pedirlos.
   function updateRequest(updated: StorefrontRequestResponse, previous: StorefrontRequestResponse) {
     setRequests((current) => current.map((request) => (request.id === updated.id ? updated : request)));
     if (previous.status !== updated.status) {

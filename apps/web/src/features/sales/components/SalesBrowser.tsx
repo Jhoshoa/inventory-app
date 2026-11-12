@@ -147,8 +147,7 @@ export function SalesBrowser({
   function replaceSale(updated: Sale) {
     const previous = sales.find((sale) => sale.id === updated.id);
     setSales((current) => current.map((sale) => (sale.id === updated.id ? updated : sale)));
-    // Recién anulada: los totales se ajustan aquí. Volver a pedir el reporte enseguida
-    // puede traer los de antes (la API guarda después de responder).
+    // Recién anulada: los totales se ajustan aquí, sin volver a pedir el reporte.
     if (previous?.status === "completed" && updated.status === "voided") {
       setSummary((current) => (current ? withoutSale(current, updated) : current));
     }
