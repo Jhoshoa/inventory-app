@@ -1,5 +1,5 @@
-import { StockMovementsSkeleton } from "@/features/reports/components/StockMovementsSkeleton";
+import { ReportsSkeleton } from "@/features/reports/components/ReportsSkeleton";
 
 export default function Loading() {
-  return <StockMovementsSkeleton />;
+  return <ReportsSkeleton />;
 }

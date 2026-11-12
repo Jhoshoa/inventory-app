@@ -64,6 +64,8 @@ export interface StoreDayClosingPreview {
 }
 
 export interface StoreDayCloseReport extends StoreDayClosingPreview {
+  /** Hora de apertura de la jornada (Reportes: "08:00–21:10"); falta en una API anterior. */
+  opened_at?: string | null;
   closed_at: string;
   closed_by_user_id: string;
   counted_cash_amount: string | null;

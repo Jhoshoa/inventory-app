@@ -15,3 +15,5 @@ class StockMovement:
     reason: str | None
     device_id: str | None
     created_at: datetime
+    # Para mostrar; se llena al listar (el producto puede haberse borrado).
+    product_name: str | None = None

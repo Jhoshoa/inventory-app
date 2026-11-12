@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.domain.entities.stock_movement import StockMovement
 from src.domain.repositories.stock_movement_repository import IStockMovementRepository
+from src.infrastructure.database.models.product_model import ProductModel
 from src.infrastructure.database.models.stock_movement_model import StockMovementModel
 
 
@@ -48,13 +49,15 @@ class StockMovementRepository(IStockMovementRepository):
             select(func.count()).select_from(StockMovementModel).where(*filters)
         )
         result = await self._session.execute(
-            select(StockMovementModel)
+            select(StockMovementModel, ProductModel.name)
+            .outerjoin(ProductModel, ProductModel.id == StockMovementModel.product_id)
             .where(*filters)
             .order_by(StockMovementModel.created_at.desc(), StockMovementModel.id.asc())
             .limit(limit)
             .offset(offset)
         )
-        return [self._to_entity(model) for model in result.scalars().all()], int(total_result.scalar_one())
+        movements = [self._to_entity(model, product_name) for model, product_name in result.all()]
+        return movements, int(total_result.scalar_one())
 
     async def list_for_export(
         self,
@@ -81,7 +84,7 @@ class StockMovementRepository(IStockMovementRepository):
                 movements.append(self._to_entity(model))
         return movements
 
-    def _to_entity(self, model: StockMovementModel) -> StockMovement:
+    def _to_entity(self, model: StockMovementModel, product_name: str | None = None) -> StockMovement:
         return StockMovement(
             id=model.id,
             store_id=model.store_id,
@@ -93,4 +96,5 @@ class StockMovementRepository(IStockMovementRepository):
             reason=model.reason,
             device_id=model.device_id,
             created_at=model.created_at,
+            product_name=product_name,
         )

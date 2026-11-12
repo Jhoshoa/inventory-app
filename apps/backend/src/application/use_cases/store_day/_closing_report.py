@@ -57,6 +57,7 @@ def close_report_from_business_day(business_day: StoreBusinessDay) -> StoreDayCl
         cash_movements_out_total=business_day.closing_cash_movements_out_total or Decimal("0"),
         cash_movements_count=business_day.closing_cash_movements_count or 0,
         expected_cash_amount=business_day.expected_cash_amount or Decimal("0"),
+        opened_at=business_day.opened_at,
         closed_at=business_day.closed_at,
         closed_by_user_id=business_day.closed_by_user_id,
         counted_cash_amount=business_day.counted_cash_amount,

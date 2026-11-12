@@ -23,9 +23,9 @@ export async function getSalesReport(params: ReportSearchParams) {
 }
 
 /**
- * Más vendidos para Vender: los últimos 30 días. Una tienda más nueva que eso recibe 400
- * ("anterior a la apertura operativa"); entonces se piden sin fechas (la API usa el mes
- * desde la apertura).
+ * Más vendidos para Vender: los últimos 30 días. La API ya recorta el rango al primer día
+ * de la tienda (E14); si una API anterior responde 400 ("anterior a la apertura"), se piden
+ * sin fechas (el mes desde la apertura).
  */
 export async function getTopSellingProducts(params: ReportSearchParams) {
   const token = await getAuthToken();

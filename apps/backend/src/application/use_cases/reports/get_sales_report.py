@@ -39,11 +39,14 @@ class GetSalesReportUseCase:
             to_date = input.to_date or input.from_date
             if from_date is None or to_date is None:
                 raise ValueError("Rango de fechas invalido")
+            # Un rango que empieza antes de la apertura (p. ej. "30 dias" en una tienda nueva)
+            # se recorta al primer dia, como los cierres; la respuesta trae el rango real (E14).
             date_range = self._date_ranges.custom(
                 from_date,
                 to_date,
                 store.timezone,
                 first_business_date=store.first_business_date,
+                clamp_to_first_business_date=True,
             )
             response_from = date_range.from_date
             response_to = date_range.to_date

@@ -1,5 +1,5 @@
-import { ReportsPageSkeleton } from "@/features/reports/components/ReportsPageSkeleton";
+import { ReportsSkeleton } from "@/features/reports/components/ReportsSkeleton";
 
-export default function ReportsLoading() {
-  return <ReportsPageSkeleton />;
+export default function Loading() {
+  return <ReportsSkeleton />;
 }
