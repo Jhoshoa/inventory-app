@@ -92,8 +92,8 @@ describe("validateProductForm", () => {
         "create",
       ),
     ).toMatchObject({
-      name: "Nombre es requerido",
-      price: "Precio debe ser mayor a 0",
+      name: "Escribe el nombre del producto",
+      price: "El precio tiene que ser mayor a 0",
     });
   });
 });
@@ -115,9 +115,9 @@ describe("validateStockAdjustment", () => {
 describe("expiry fields", () => {
   it("validates the batch date and alert days", () => {
     expect(validateBatchFields("2026-12-31", "")).toEqual({});
-    expect(validateBatchFields("2026-02-30", "")).toEqual({ expires_on: "Ingresa una fecha valida" });
-    expect(validateBatchFields("2205-01-01", "")).toEqual({ expires_on: "Revisa el anio de la fecha de vencimiento" });
-    expect(validateBatchFields("2026-12-31", "366").alert_days).toMatch(/entre 0 y 365/);
+    expect(validateBatchFields("2026-02-30", "")).toEqual({ expires_on: "Elige una fecha válida" });
+    expect(validateBatchFields("2205-01-01", "")).toEqual({ expires_on: "Revisa el año de la fecha de vencimiento" });
+    expect(validateBatchFields("2026-12-31", "366").alert_days).toMatch(/0 a 365/);
     expect(validateBatchFields("2026-12-31", "1.5").alert_days).toBeDefined();
   });
 
@@ -142,9 +142,9 @@ describe("expiry fields", () => {
 describe("expiry fields", () => {
   it("validates the batch date and alert days", () => {
     expect(validateBatchFields("2026-12-31", "")).toEqual({});
-    expect(validateBatchFields("2026-02-30", "")).toEqual({ expires_on: "Ingresa una fecha valida" });
-    expect(validateBatchFields("2205-01-01", "")).toEqual({ expires_on: "Revisa el anio de la fecha de vencimiento" });
-    expect(validateBatchFields("2026-12-31", "366").alert_days).toMatch(/entre 0 y 365/);
+    expect(validateBatchFields("2026-02-30", "")).toEqual({ expires_on: "Elige una fecha válida" });
+    expect(validateBatchFields("2205-01-01", "")).toEqual({ expires_on: "Revisa el año de la fecha de vencimiento" });
+    expect(validateBatchFields("2026-12-31", "366").alert_days).toMatch(/0 a 365/);
     expect(validateBatchFields("2026-12-31", "1.5").alert_days).toBeDefined();
   });
 

@@ -282,7 +282,22 @@ Aceptación: todas las páginas actuales se ven dentro del marco nuevo y se pued
 - Configuración ya no tiene Categorías ni Ubicaciones: queda una tarjeta "Categorías y lugares · Ahora están en Productos" con los dos enlaces (como "Ir a Caja"). El enlace de "Dónde está" sin lugares ahora lleva a Productos › Lugares en la tienda.
 - Al cometer un error el foco va al primer campo con error. `Dialog` ahora respeta `data-autofocus` (antes enfocaba siempre la ventana y `autoFocus` no servía). `ConfirmDialog` se puede abrir desde afuera (`open` / `onOpenChange`).
 - Se borraron `ProductCategorySettings` y `StoreLocationSettings` (y su test).
-- Quedan para P02 / P04: mostrar el número del aviso de la tienda en "Avisar días antes" (hoy dice "Como la tienda") y "+ Nueva categoría" / "+ Nuevo lugar" dentro del formulario.
+- Quedan para P04: el número del aviso de la tienda en "Avisar días antes" de Ajustar stock (hoy dice "Como la tienda"; en el formulario ya muestra el número).
+
+**Formulario nuevo / editar (P02) hecho (2026-11-12).** Notas:
+
+- Secciones en tarjetas: Foto, Datos, Precio (con Descuento), Stock, Dónde está y, al editar, Lotes. Escritorio: datos a la izquierda, foto y "Así se ve al vender" a la derecha, Cancelar y Guardar arriba. Celular: una columna y barra fija Cancelar · Crear producto (las rutas `new` y `[id]/edit` ya no muestran la barra de pestañas).
+- Montos con `MoneyInput` (coma o punto) y al editar se muestran con coma ("6,50"). Margen "Ganas Bs 6,50 por unidad (35%)" sobre el precio de venta, o "Pierdes…" si el costo es mayor.
+- Descuento: Sin descuento / % / Bs según la política de la tienda (`GET /store`), con el límite y el precio final. Se valida en la web y la API lo vuelve a revisar (su 403 va al campo).
+- 409 de la API en su campo: SKU repetido, código escaneable repetido y nombre + unidad repetidos; categoría desactivada → en Categoría. Arriba: "Revisa N campos antes de guardar" y el foco va al primer campo con error. Se conserva lo escrito.
+- SKU automático con categoría ("se generará LAC000005") y "Escribir otro". Código vacío: el aviso dice qué va a crear la API (QR-SKU o al azar). Escanear con la cámara en el celular; Ver QR.
+- "+ Nueva" categoría y "+ Nuevo lugar" sin salir del formulario: la categoría queda elegida (prefijo sugerido del nombre, también en Productos › Categorías) y el lugar queda marcado. Los formularios de las hojas no disparan el del producto (el submit pasaba por el portal).
+- Dónde está al crear: hasta 6, el primero Exhibición y los demás Depósito (tocar cambia). Se guarda justo después de crear (`PUT /products/{id}/locations`); si falla, el producto queda y se avisa en el detalle. Al editar se usa la ventana actual (P04 la rehace).
+- Vence el: "Avisar días antes" muestra el aviso de la tienda (B4) y "Las 24 unidades entran como un lote que vence el 02/12".
+- "¿Salir sin guardar?" con Cancelar y con cualquier enlace de la app; el navegador avisa al recargar o cerrar. El botón Atrás del navegador no se puede frenar sin romper el historial: no pregunta.
+- Al guardar, el detalle muestra "Producto creado" / "Cambios guardados" (una sola vez).
+- `Select` ahora tiene `error` como `Input`; "Exhibición" y "Depósito" con tilde; textos de la foto con tilde. La foto no cambió de componente (`ImageUploader`); en el celular sus cuadros son bajos (2:1).
+- Probado con la API: nombre repetido → error en Nombre sin perder número de SKU (la API deshace la reserva), producto con categoría, lugar existente y uno nuevo, vencimiento (aviso 7 de la tienda); editar con precio "8,50" y descuento 10% (límite 15%) → `effective_price` 7.65, igual que la vista previa.
 
 ### Fase 4 · Vender (2,5–3 días)
 
@@ -400,6 +415,7 @@ Manual en cada fase: celular (375), tablet (768) y escritorio (1280); dueño y c
 | Fecha | Cambio |
 |---|---|
 | 2026-11-11 | Primera versión. E3 encontrado al revisar el código (apertura y contado en 0). Nota de P08 corregida (razón obligatoria al anular un movimiento de caja). |
+| 2026-11-12 | Fase 3, P02: formulario nuevo / editar con validaciones, 409 en su campo, categoría y lugar sin salir, "Así se ve al vender" y "¿Salir sin guardar?". |
 | 2026-11-11 | Fase 3, P01B: Categorías y Lugares en la tienda con sus rutas y pestañas, Aviso de vencimiento, fuera de Configuración. E11 encontrado y arreglado (el aviso de la tienda no se usaba). |
 | 2026-11-11 | Fase 3, lista de productos (P01): tarjetas y tabla, chips con conteos, filtros en la URL, Enter con código, menús ⋯ y estados. |
 | 2026-11-11 | Fase 2 hecha: Caja (P09) e Inicio. E9 (coma en montos de caja) y E10 (diálogos fuera del tema) arreglados. D8 abierta (unidades vendidas). |

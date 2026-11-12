@@ -42,9 +42,18 @@ export function ProductDetail({
   const searchParams = useSearchParams();
   const discountActive = Boolean(product.discount_type) && !isDiscountExpired(product);
 
+  // Avisos al volver del formulario (tablero P02): creado / guardado, y si la foto
+  // o "Dónde está" no se pudieron guardar, se avisa pero el producto ya está.
   useEffect(() => {
-    if (searchParams.get("photo_error") !== "1") return;
-    toast.error("El producto se creo, pero la foto no se pudo subir. Podes intentar de nuevo desde Editar.");
+    const created = searchParams.get("creado") === "1";
+    const saved = searchParams.get("guardado") === "1";
+    const photoFailed = searchParams.get("photo_error") === "1";
+    const placesFailed = searchParams.get("lugares_error") === "1";
+    if (!created && !saved && !photoFailed && !placesFailed) return;
+    if (created) toast.success("Producto creado", { id: "product-created" });
+    if (saved) toast.success("Cambios guardados", { id: "product-saved" });
+    if (photoFailed) toast.error("El producto se guardó, pero la foto no se pudo subir. Intenta de nuevo desde Editar.", { id: "product-photo-error" });
+    if (placesFailed) toast.error('El producto se guardó, pero "Dónde está" no. Márcalo de nuevo en Ubicación.', { id: "product-places-error" });
     router.replace(`/dashboard/products/${product.id}`);
   }, [searchParams, router, product.id]);
 

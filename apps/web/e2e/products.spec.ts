@@ -51,8 +51,9 @@ test("create product validates required fields", async ({ context, page }) => {
 
   await page.getByRole("button", { name: "Crear producto" }).click();
 
-  await expect(page.getByText("Nombre es requerido")).toBeVisible();
-  await expect(page.getByText("Precio es requerido")).toBeVisible();
+  await expect(page.getByText("Revisa 2 campos antes de guardar.")).toBeVisible();
+  await expect(page.getByText("Escribe el nombre del producto")).toBeVisible();
+  await expect(page.getByText("Escribe el precio de venta")).toBeVisible();
 });
 
 test.describe("products on the phone", () => {
@@ -110,5 +111,22 @@ test.describe("Categorías on the phone", () => {
     await expect(page.getByRole("heading", { level: 1, name: "Categorías", exact: true })).toBeVisible();
     await page.getByRole("link", { name: "Productos", exact: true }).first().click();
     await expect(page).toHaveURL(/\/dashboard\/products$/, { timeout: 15_000 });
+  });
+});
+
+test.describe("product form on the phone", () => {
+  test.use({ viewport: { width: 375, height: 812 } });
+
+  // Tablero P02: barra fija Cancelar · Crear producto en lugar de la barra de pestañas.
+  test("has its own bottom bar and asks before leaving with changes", async ({ context, page }) => {
+    await addRoleSession(context);
+    await page.goto("/dashboard/products/new");
+    await expect(page.getByRole("heading", { name: "Nuevo producto" })).toBeVisible();
+    await expect(page.locator('[data-nav="tabs"]')).toHaveCount(0);
+    await page.getByLabel("Nombre").fill("Pan integral");
+    await page.getByRole("button", { name: "Cancelar" }).last().click();
+    await expect(page.getByRole("dialog", { name: "¿Salir sin guardar?" })).toBeVisible();
+    await page.getByRole("button", { name: "Salir sin guardar" }).click();
+    await expect(page).toHaveURL(/\/dashboard\/products$/, { timeout: 30_000 });
   });
 });

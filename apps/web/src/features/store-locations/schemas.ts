@@ -32,3 +32,8 @@ export function locationConflictField(message: string): StoreLocationActionState
 export function storeLocationPayload(values: StoreLocationValues) {
   return { zone: values.zone, shelf: values.shelf || null, level: values.level || null };
 }
+
+/** Cómo se ve el lugar al vender ("Pasillo 4 · Estante A · 2"), igual que el `label` de la API. */
+export function locationLabel(values: StoreLocationValues) {
+  return [values.zone, values.shelf, values.level].filter(Boolean).join(" · ");
+}

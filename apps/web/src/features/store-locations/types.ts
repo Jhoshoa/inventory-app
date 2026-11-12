@@ -38,8 +38,8 @@ export interface StoreLocationActionState {
 export type StoreLocationListResult = ApiResult<StoreLocationListResponse>;
 
 export const LOCATION_KIND_LABEL: Record<ProductLocationKind, string> = {
-  display: "Exhibicion",
-  storage: "Deposito",
+  display: "Exhibición",
+  storage: "Depósito",
 };
 
 /** Mismo limite que el backend (MAX_LOCATIONS_PER_PRODUCT). */

@@ -397,14 +397,14 @@ export function ImageUploader({
         <div className="flex aspect-square w-full items-center justify-center rounded-lg border border-app-border bg-app-surface-muted">
           <div className="flex flex-col items-center gap-2">
             <Loader2 className="h-8 w-8 animate-spin text-brand-700" />
-            <p className="text-sm text-text-muted">Optimizando foto...</p>
+            <p className="text-sm text-text-muted">Optimizando foto…</p>
           </div>
         </div>
       ) : state === "uploading" ? (
         <div className="flex aspect-square w-full items-center justify-center rounded-lg border border-app-border bg-app-surface-muted">
           <div className="flex flex-col items-center gap-2">
             <Loader2 className="h-8 w-8 animate-spin text-brand-700" />
-            <p className="text-sm text-text-muted">Subiendo foto...</p>
+            <p className="text-sm text-text-muted">Subiendo foto…</p>
           </div>
         </div>
       ) : state === "error" ? (
@@ -466,7 +466,7 @@ export function ImageUploader({
             onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); fileInputRef.current?.click(); } }}
             role="button"
             tabIndex={0}
-            aria-label="Arrastra una imagen aqui o haz clic para seleccionar"
+            aria-label="Arrastra una imagen aquí o toca para elegirla"
             className="flex aspect-square w-full cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-app-border bg-app-surface-muted transition-colors hover:border-brand-700 hover:bg-app-surface"
           >
             <svg
@@ -484,7 +484,7 @@ export function ImageUploader({
               />
             </svg>
             <p className="text-sm text-text-muted">
-              Arrastra una imagen aqui o haz clic para seleccionar
+              Arrastra una imagen aquí o toca para elegirla
             </p>
             <p className="text-xs text-text-muted">
               JPEG, PNG o WebP &middot; Máx 5 MB
@@ -515,7 +515,7 @@ export function ImageUploader({
                 d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0z"
               />
             </svg>
-            Tomar foto con la camara
+            Tomar foto con la cámara
           </Button>
         </div>
       )}

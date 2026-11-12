@@ -60,7 +60,7 @@ describe("CategoryManager", () => {
 
     fireEvent.click(screen.getAllByRole("button", { name: /Nueva categoría/ })[0]);
     const dialog = screen.getByRole("dialog", { name: "Nueva categoría" });
-    expect(within(dialog).getByLabelText("Nombre")).toHaveFocus();
+    await waitFor(() => expect(within(dialog).getByLabelText("Nombre")).toHaveFocus());
     fireEvent.change(within(dialog).getByLabelText("Nombre"), { target: { value: "Panadería" } });
     fireEvent.change(within(dialog).getByLabelText("Prefijo del SKU"), { target: { value: "pan" } });
     expect(within(dialog).getByLabelText("Prefijo del SKU")).toHaveValue("PAN");
@@ -69,7 +69,7 @@ describe("CategoryManager", () => {
     fireEvent.click(within(dialog).getByRole("button", { name: "Crear categoría" }));
     expect(await within(dialog).findByText("Ya existe una categoría con ese prefijo SKU.")).toBeInTheDocument();
     expect(within(dialog).getByLabelText("Prefijo del SKU")).toHaveAttribute("aria-invalid", "true");
-    expect(within(dialog).getByLabelText("Prefijo del SKU")).toHaveFocus();
+    await waitFor(() => expect(within(dialog).getByLabelText("Prefijo del SKU")).toHaveFocus());
 
     fireEvent.click(within(dialog).getByRole("button", { name: "Crear categoría" }));
     await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());

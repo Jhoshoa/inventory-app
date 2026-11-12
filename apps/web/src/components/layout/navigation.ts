@@ -81,7 +81,12 @@ export function moreParentFor(pathname: string): { href: string; label: string }
 // Pantallas con su propia barra fija abajo (P00): ahí no va la barra de pestañas.
 // Cada fase agrega las suyas cuando esa barra existe (Vender en la Fase 4,
 // formularios de producto en la 3, detalle de venta en la 5).
-const ROUTES_WITHOUT_TAB_BAR = [/^\/dashboard\/sales\/[^/]+\/print$/];
+const ROUTES_WITHOUT_TAB_BAR = [
+  /^\/dashboard\/sales\/[^/]+\/print$/,
+  // Formulario de producto: barra fija Cancelar · Crear producto (tablero P02).
+  /^\/dashboard\/products\/new$/,
+  /^\/dashboard\/products\/[^/]+\/edit$/,
+];
 
 export function shouldShowMobileTabBar(pathname: string) {
   return !ROUTES_WITHOUT_TAB_BAR.some((pattern) => pattern.test(pathname));

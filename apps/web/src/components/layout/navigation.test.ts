@@ -50,6 +50,10 @@ describe("navigation", () => {
   it("hides the bottom bar only where the page has its own fixed bar", () => {
     expect(shouldShowMobileTabBar("/dashboard/sales/abc/print")).toBe(false);
     expect(shouldShowMobileTabBar("/dashboard/sales/abc")).toBe(true);
+    expect(shouldShowMobileTabBar("/dashboard/products/new")).toBe(false);
+    expect(shouldShowMobileTabBar("/dashboard/products/p-1/edit")).toBe(false);
+    expect(shouldShowMobileTabBar("/dashboard/products/p-1")).toBe(true);
+    expect(shouldShowMobileTabBar("/dashboard/products/categorias")).toBe(true);
     expect(shouldShowMobileTabBar("/dashboard")).toBe(true);
   });
 

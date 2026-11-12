@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { categoryConflictField, formDataToProductCategoryValues, nextSku, validateProductCategoryForm } from "./schemas";
+import { categoryConflictField, formDataToProductCategoryValues, nextSku, suggestSkuPrefix, validateProductCategoryForm } from "./schemas";
 
 describe("product category schemas", () => {
   it("cleans the name and upper-cases the prefix", () => {
@@ -34,5 +34,12 @@ describe("product category schemas", () => {
 
   it("builds the next SKU with 6 digits", () => {
     expect(nextSku({ sku_prefix: "LAC", next_sku_number: 5 })).toBe("LAC000005");
+  });
+
+  it("suggests a prefix from the name", () => {
+    expect(suggestSkuPrefix("Pan integral")).toBe("PAN");
+    expect(suggestSkuPrefix("Lácteos")).toBe("LAC");
+    expect(suggestSkuPrefix("  ñ 1 a")).toBe("N1A");
+    expect(suggestSkuPrefix("")).toBe("");
   });
 });

@@ -31,6 +31,16 @@ export function categoryConflictField(message: string): Partial<Record<keyof Pro
   return {};
 }
 
+/** Prefijo sugerido a partir del nombre: "Pan integral" → "PAN", "Lácteos" → "LAC". */
+export function suggestSkuPrefix(name: string) {
+  return name
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]/gi, "")
+    .slice(0, 3)
+    .toUpperCase();
+}
+
 /** "LAC000005": prefijo + próximo número con 6 dígitos, como lo arma la API. */
 export function nextSku(category: Pick<ProductCategory, "sku_prefix" | "next_sku_number">) {
   return `${category.sku_prefix}${String(category.next_sku_number).padStart(6, "0")}`;

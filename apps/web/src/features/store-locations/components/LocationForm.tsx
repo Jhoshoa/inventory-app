@@ -7,7 +7,7 @@ import { FieldError } from "@/components/ui/FieldError";
 import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
 import { saveStoreLocationAction } from "../actions";
-import { formDataToStoreLocationValues, validateStoreLocation } from "../schemas";
+import { formDataToStoreLocationValues, locationLabel, validateStoreLocation } from "../schemas";
 import { LOCATION_LIMITS, type StoreLocation, type StoreLocationActionState } from "../types";
 
 const initialState: StoreLocationActionState = { ok: false, fieldErrors: {} };
@@ -23,7 +23,10 @@ export function LocationForm({
   autoFocus = false,
   onSaved,
   actions,
+  showPreview = false,
 }: {
+  /** "Se verá así al vender: …" mientras se escribe (formulario de producto). */
+  showPreview?: boolean;
   location?: StoreLocation | null;
   /** Ids propios: puede haber dos formularios en la página (celular y ventana). */
   idPrefix: string;
@@ -43,9 +46,12 @@ export function LocationForm({
     formRef.current?.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus();
   }, [state.fieldErrors]);
   const [formKey, setFormKey] = useState(0);
+  const [preview, setPreview] = useState(location?.label ?? "");
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    // Puede estar dentro del formulario de producto (React pasa el submit a través del portal).
+    event.stopPropagation();
     if (saving) return;
     const formData = new FormData(event.currentTarget);
     const fieldErrors = validateStoreLocation(formDataToStoreLocationValues(formData));
@@ -76,7 +82,17 @@ export function LocationForm({
   const id = (field: string) => `${idPrefix}-${field}`;
 
   return (
-    <form ref={formRef} key={formKey} onSubmit={onSubmit} noValidate className="flex flex-col gap-3">
+    <form
+      ref={formRef}
+      key={formKey}
+      onSubmit={onSubmit}
+      noValidate
+      className="flex flex-col gap-3"
+      onChange={(event) => {
+        event.stopPropagation();
+        if (showPreview) setPreview(locationLabel(formDataToStoreLocationValues(new FormData(event.currentTarget))));
+      }}
+    >
       {location ? <input type="hidden" name="location_id" value={location.id} /> : null}
       {state.message ? (
         <p role="alert" className="rounded-control border border-status-dangerBorder bg-status-dangerBg px-3 py-2 text-sm text-status-danger">
@@ -132,6 +148,11 @@ export function LocationForm({
           <FieldError id={id("level-error")} message={state.fieldErrors.level} />
         </div>
       </div>
+      {showPreview && preview ? (
+        <p className="rounded-control bg-app-surface-muted px-3 py-2 text-sm text-text-muted">
+          Se verá así al vender: <strong className="text-text-strong">{preview}</strong>
+        </p>
+      ) : null}
       {actions(saving)}
     </form>
   );

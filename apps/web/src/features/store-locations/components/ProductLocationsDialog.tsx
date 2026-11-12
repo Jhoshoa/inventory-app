@@ -88,7 +88,7 @@ export function ProductLocationsDialog({
   return (
     <>
       <Button variant="ghost" onClick={() => onOpenChange(true)}>
-        {current.length > 0 ? "Cambiar ubicacion" : "Asignar ubicacion"}
+        {current.length > 0 ? "Cambiar" : "Elegir lugares"}
       </Button>
       <Dialog open={open} onOpenChange={onOpenChange} size="lg">
         <DialogTitle close>Ubicacion en la tienda</DialogTitle>
