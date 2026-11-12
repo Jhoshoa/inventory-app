@@ -2,12 +2,14 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useReducer, useRef, useState } from "react";
-import { ChevronLeft, X } from "lucide-react";
+import { ChevronLeft, PackageCheck, X } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/Button";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { formatCurrency } from "@/lib/format/currency";
 import { useConnectionStatus } from "@/lib/offline/useConnectionStatus";
 import { loadTopProducts } from "../catalog";
+import { loadOrderProducts, resolveOrderItems, takeOrderForPos } from "../order";
 import {
   calculateCartTotal,
   calculateProductDiscountTotal,
@@ -36,12 +38,15 @@ export function PosScreen({
   storeName,
   sellerName,
   topProductIds,
+  orderId = null,
 }: {
   policy: ManualDiscountPolicy;
   storeName: string;
   sellerName: string | null;
   /** Más vendidos de los últimos 30 días; null si el reporte no respondió (se usan los guardados). */
   topProductIds: string[] | null;
+  /** ?pedido=: el pedido del catálogo que se cobra (Cobrar en Vender, tablero P07). */
+  orderId?: string | null;
 }) {
   const [cart, dispatch] = useReducer(posCartReducer, initialCartState);
   const [view, setView] = useState<View>("search");
@@ -49,6 +54,7 @@ export function PosScreen({
   const [lastAdded, setLastAdded] = useState<{ name: string; previous: CartItem[] } | null>(null);
   const [topProducts, setTopProducts] = useState<PosProduct[]>([]);
   const [confirmClear, setConfirmClear] = useState(false);
+  const [order, setOrder] = useState<{ id: string; customerName: string; notes: string[] } | null>(null);
   const searchRef = useRef<PosSearchHandle>(null);
   const connection = useConnectionStatus();
 
@@ -68,6 +74,25 @@ export function PosScreen({
       cancelled = true;
     };
   }, [topProductIds, connection.isSyncing, connection.lastSyncedAt]);
+
+  // Cobrar en Vender: el pedido se toma una sola vez; lo borrado o sin stock se avisa y no entra.
+  const orderLoadedRef = useRef(false);
+  useEffect(() => {
+    if (!orderId || orderLoadedRef.current) return;
+    orderLoadedRef.current = true;
+    const saved = takeOrderForPos(orderId);
+    if (!saved) {
+      toast.error("No se encontró el pedido. Ábrelo de nuevo desde Pedidos y toca Cobrar en Vender.");
+      return;
+    }
+    const ids = saved.items.flatMap((item) => (item.productId ? [item.productId] : []));
+    void loadOrderProducts(ids, navigator.onLine).then((products) => {
+      const resolved = resolveOrderItems(saved, products);
+      dispatch({ type: "restore", items: resolved.items });
+      setOrder({ id: saved.id, customerName: saved.customerName, notes: resolved.notes });
+      if (resolved.items.length > 0) setView("sale");
+    });
+  }, [orderId]);
 
   useEffect(() => {
     if (!lastAdded) return;
@@ -103,6 +128,10 @@ export function PosScreen({
 
   function newSale() {
     setFinished(null);
+    if (order) {
+      setOrder(null);
+      window.history.replaceState(null, "", "/dashboard/pos");
+    }
     setView("search");
     setLastAdded(null);
     window.setTimeout(() => searchRef.current?.focus(), 0);
@@ -117,7 +146,7 @@ export function PosScreen({
   if (finished) {
     return (
       <div className="mx-auto flex w-full max-w-md flex-col gap-4 py-2">
-        <PosDone finished={finished} storeName={storeName} sellerName={sellerName} onNewSale={newSale} />
+        <PosDone finished={finished} storeName={storeName} sellerName={sellerName} order={order} onNewSale={newSale} />
       </div>
     );
   }
@@ -144,6 +173,22 @@ export function PosScreen({
           <X className="h-5 w-5" aria-hidden="true" />
         </Link>
       </header>
+
+      {order ? (
+        <div role="status" className="flex items-start gap-3 rounded-card border border-status-infoBorder bg-status-infoBg px-3.5 py-2.5 text-sm text-status-info">
+          <PackageCheck className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+          <div className="min-w-0 flex-1">
+            <p className="font-bold">Cobrando el pedido de {order.customerName}</p>
+            {order.notes.length > 0 ? (
+              <ul className="mt-0.5 list-disc pl-4 text-text-body">
+                {order.notes.map((note) => (
+                  <li key={note}>{note}</li>
+                ))}
+              </ul>
+            ) : null}
+          </div>
+        </div>
+      ) : null}
 
       <div className="grid grid-cols-[minmax(0,1fr)] items-start gap-4 lg:grid-cols-[minmax(0,1fr)_400px]">
         <div className={`flex min-w-0 flex-col gap-3 ${view === "search" ? "" : "max-lg:hidden"}`}>
@@ -221,6 +266,7 @@ export function PosScreen({
               items={items}
               policy={policy}
               isOnline={connection.isOnline}
+              customerName={order?.customerName}
               onStockChanged={(products) => {
                 dispatch({ type: "syncProducts", products });
                 setView("sale");

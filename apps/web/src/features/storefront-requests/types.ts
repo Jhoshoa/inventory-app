@@ -42,4 +42,6 @@ export type StorefrontRequestListResult = ApiResult<StorefrontRequestListRespons
 export type StorefrontRequestActionState = {
   ok: boolean;
   message: string;
+  /** El pedido como quedó, para actualizar la lista sin recargar. */
+  request?: StorefrontRequestResponse;
 };

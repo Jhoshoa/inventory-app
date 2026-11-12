@@ -371,6 +371,17 @@ Es la fase más delicada: es lo que más se usa y funciona sin conexión.
 - Backend: la venta ahora trae `customer_name` y `device_id` (ya estaban guardados; no hay migración).
 - `Chip` pasó a `components/ui` (lo usan Productos y Ventas). Se borraron `SalesTable` y `SalesDateFilter` (y sus tests).
 
+**Pedidos (P07) hecha (2026-11-12). Fase 5 completa.** Notas:
+
+- Pestañas Pendientes · N, Contactados · N, Cerrados (sin número, como el tablero) y Todos (desde 768 px), con `status` y `status_counts` de la API (B7, ya hecho; arregla **E6**). `?estado=` en la dirección; "Ver más pedidos" en lugar de páginas.
+- Celular: tarjetas (cliente, "hace 25 min", "3 productos · Recojo en tienda", total, Pendiente / Sin pago) y el detalle en una hoja. Desde 768 px: tabla Cliente · Pedido · Entrega · Pago · Total · Recibido; el detalle al costado desde 1280 px (la tabla oculta Entrega y Recibido mientras tanto) y en una ventana lateral más angosto.
+- Detalle: productos y total, entrega y nota; "Escribir por WhatsApp" con el pedido armado; si estaba pendiente, sugiere "¿Ya le escribiste? Marcar como contactado". Estado en 3 botones (se puede volver atrás) y "Pago recibido" aparte. Los pedidos viejos de un producto muestran "Consulta por …" sin total.
+- Los cambios de estado y de pago actualizan la fila y los conteos sin recargar (las acciones devuelven el pedido; conteos ajustados en la web por **E15**).
+- **Cobrar en Vender:** el pedido pasa por `sessionStorage` (misma pestaña) a `/dashboard/pos?pedido=`. Vender lee los productos de la API (o del equipo sin conexión): borrados o sin stock no entran y se avisa, si hay menos entra lo que hay ("pidieron 4, solo hay 2"); el cliente queda escrito. En "Venta registrada" aparece "Cerrar pedido" (sin conexión: "Ciérralo en Pedidos al volver internet"). Nueva venta limpia el pedido y la dirección.
+- Vacío: "No tienes pedidos por responder" con "Copiar link" del catálogo, o "Activar el catálogo" (solo el dueño) si está apagado.
+- Vender (Fase 4): en el celular el nombre del producto de la venta va en su propia línea (antes quedaba "Coc…").
+- `useMediaQuery` en `lib/hooks` (lo usan Ventas y Pedidos). Se borró `StorefrontRequestsTable` (y su test).
+
 ### Fase 6 · Reportes (1,5 días)
 
 1. P08: rango compartido (máx. 90 días), ventas con comparación, por método con cantidad, más vendidos, cierres con diferencia (Cuadra / falta o sobra / Sin conteo), movimientos de caja y de stock, descargas CSV.
@@ -469,6 +480,7 @@ Manual en cada fase: celular (375), tablet (768) y escritorio (1280); dueño y c
 | Fecha | Cambio |
 |---|---|
 | 2026-11-11 | Primera versión. E3 encontrado al revisar el código (apertura y contado en 0). Nota de P08 corregida (razón obligatoria al anular un movimiento de caja). |
+| 2026-11-12 | Fase 5, P07: Pedidos nuevo (pestañas con conteo B7, detalle en hoja o al costado, WhatsApp con sugerencia de "Contactado", pago recibido, Cobrar en Vender con avisos y "Cerrar pedido"). **Fase 5 completa.** |
 | 2026-11-12 | Fase 5, P06: Ventas nueva (lista por día con resumen, detalle al costado o página, recibo de 80 mm, WhatsApp, anular con razón y 409, exportar). La venta trae cliente y dispositivo. E15 (la API guarda después de responder) anotado. |
 | 2026-11-12 | Fase 4 hecha: Vender nuevo (buscar, venta, cobro con cambio, "Venta registrada", celular en 3 vistas, caja cerrada, sin conexión). E13 (sincronización en paralelo) y E14 (Más vendidos en tiendas nuevas) arreglados. |
 | 2026-11-12 | Fase 3, P05: Etiquetas en 3 pasos / 3 columnas con la configuración recordada, Importar CSV con plantilla propia (E12) y errores por fila. **Fase 3 completa.** |

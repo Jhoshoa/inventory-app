@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { FormEvent } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/Button";
@@ -44,21 +44,29 @@ export function PosCheckout({
   isOnline,
   onFinished,
   onStockChanged,
+  customerName,
 }: {
   items: CartItem[];
   policy: ManualDiscountPolicy;
   isOnline: boolean;
   onFinished: (sale: FinishedSale) => void;
   onStockChanged: (products: PosProduct[]) => void;
+  /** Cliente del pedido que se está cobrando (Cobrar en Vender). */
+  customerName?: string;
 }) {
   const [payment, setPayment] = useState<PaymentMethod>("efectivo");
   const [received, setReceived] = useState("");
   const [discountType, setDiscountType] = useState<DiscountType>("");
   const [discountValue, setDiscountValue] = useState("");
   const [override, setOverride] = useState<DiscountSourceOverride>("auto");
-  const [customer, setCustomer] = useState("");
+  const [customer, setCustomer] = useState(customerName ?? "");
   const [errors, setErrors] = useState<Record<string, string | undefined>>({});
   const [saving, setSaving] = useState(false);
+
+  // El pedido llega después de montar (se leen sus productos): su cliente se escribe solo.
+  useEffect(() => {
+    if (customerName) setCustomer(customerName);
+  }, [customerName]);
 
   const subtotal = calculateCartTotal(items);
   const productDiscount = calculateProductDiscountTotal(items);

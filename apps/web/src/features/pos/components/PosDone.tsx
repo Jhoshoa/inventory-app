@@ -1,11 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect } from "react";
-import { CheckCircle2, CloudOff, MessageCircle, Printer } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Check, CheckCircle2, CloudOff, MessageCircle, Printer } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/Button";
 import { formatCurrency } from "@/lib/format/currency";
 import { formatTimeShort } from "@/lib/format/datetime";
+import { updateStorefrontRequestStatusAction } from "@/features/storefront-requests/actions";
 import { PAYMENT_METHOD_LABEL, isPaymentMethod, receiptText } from "../schemas";
 import type { FinishedSale } from "./PosCheckout";
 
@@ -18,13 +20,17 @@ export function PosDone({
   finished,
   storeName,
   sellerName,
+  order = null,
   onNewSale,
 }: {
   finished: FinishedSale;
   storeName: string;
   sellerName: string | null;
+  /** Pedido del catálogo que se cobró: se ofrece cerrarlo. */
+  order?: { id: string; customerName: string } | null;
   onNewSale: () => void;
 }) {
+  const [orderState, setOrderState] = useState<"open" | "closing" | "closed">("open");
   const online = finished.kind === "online";
   const total = online ? Number(finished.sale.total) : finished.total;
   const method = online ? finished.sale.payment_method : finished.paymentMethod;
@@ -34,6 +40,24 @@ export function PosDone({
   const seller = (online ? finished.sale.created_by_name : null) ?? sellerName;
   const time = formatTimeShort(createdAt);
   const receivedAmount = finished.received.trim() ? Number(finished.received.replace(",", ".")) : null;
+
+  async function closeOrder() {
+    if (!order || orderState !== "open") return;
+    setOrderState("closing");
+    try {
+      const result = await updateStorefrontRequestStatusAction(order.id, "closed");
+      if (result.ok) {
+        setOrderState("closed");
+        toast.success("Pedido cerrado");
+      } else {
+        setOrderState("open");
+        toast.error(result.message || "No se pudo cerrar el pedido");
+      }
+    } catch {
+      setOrderState("open");
+      toast.error("No se pudo cerrar el pedido. Ciérralo desde Pedidos.");
+    }
+  }
 
   // Listo para la siguiente: Enter en "Nueva venta".
   useEffect(() => document.getElementById("pos-new-sale")?.focus(), []);
@@ -110,6 +134,25 @@ export function PosDone({
         <Link href={`/dashboard/sales/${saleId}`} className="text-center text-sm font-bold text-brand-700 hover:underline">
           Ver detalle de la venta
         </Link>
+      ) : null}
+      {order ? (
+        <div className="flex items-center justify-between gap-3 rounded-card border border-app-border px-3.5 py-2.5 text-sm">
+          <span className="min-w-0 text-text-body">
+            Pedido de <strong className="text-text-strong">{order.customerName}</strong>
+          </span>
+          {orderState === "closed" ? (
+            <span className="inline-flex shrink-0 items-center gap-1 font-bold text-status-success">
+              <Check className="h-4 w-4" aria-hidden="true" />
+              Cerrado
+            </span>
+          ) : online ? (
+            <Button variant="secondary" className="!h-9 shrink-0 px-3" disabled={orderState === "closing"} onClick={() => void closeOrder()}>
+              {orderState === "closing" ? "Cerrando…" : "Cerrar pedido"}
+            </Button>
+          ) : (
+            <span className="shrink-0 text-xs text-text-muted">Ciérralo en Pedidos al volver internet</span>
+          )}
+        </div>
       ) : null}
       <Button id="pos-new-sale" className="!h-[52px] text-base" onClick={onNewSale}>
         Nueva venta

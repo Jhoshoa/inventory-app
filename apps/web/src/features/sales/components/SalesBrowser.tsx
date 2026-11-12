@@ -8,6 +8,7 @@ import { DataFetchError } from "@/components/ui/DataFetchError";
 import { readErrorMessage } from "@/lib/api/errors";
 import { formatCurrency } from "@/lib/format/currency";
 import { formatTimeShort } from "@/lib/format/datetime";
+import { useMediaQuery } from "@/lib/hooks/useMediaQuery";
 import { canExport } from "@/lib/auth/permissions";
 import type { UserRole } from "@/lib/auth/types";
 import type { SalesReport } from "@/features/reports/types";
@@ -57,19 +58,6 @@ async function fetchSummary(filters: SalesFilterValue, signal: AbortSignal) {
   return toSalesSummary(report, voided);
 }
 
-/** Desde 1280 px el detalle va al costado; más angosto, en una ventana lateral. */
-function useWideLayout() {
-  const [wide, setWide] = useState(false);
-  useEffect(() => {
-    const query = window.matchMedia("(min-width: 1280px)");
-    const update = () => setWide(query.matches);
-    update();
-    query.addEventListener("change", update);
-    return () => query.removeEventListener("change", update);
-  }, []);
-  return wide;
-}
-
 /**
  * Ventas (tablero P06). Celular: resumen del rango y lista por día con su total; tocar
  * abre la página de la venta. Desde 768 px: tabla; la fila abre el detalle al costado
@@ -99,7 +87,8 @@ export function SalesBrowser({
   const [error, setError] = useState<string | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const controllerRef = useRef<AbortController | null>(null);
-  const wide = useWideLayout();
+  // Desde 1280 px el detalle va al costado; más angosto, en una ventana lateral.
+  const wide = useMediaQuery("(min-width: 1280px)");
   const firstBusinessDate = initialData.first_business_date;
   const selected = sales.find((sale) => sale.id === selectedId) ?? null;
 

@@ -10,7 +10,7 @@ export async function updateStorefrontRequestStatusAction(
   status: StorefrontRequestStatus,
 ): Promise<StorefrontRequestActionState> {
   const token = await getAuthToken();
-  if (!token) return { ok: false, message: "Sesion no valida" };
+  if (!token) return { ok: false, message: "Tu sesión terminó. Vuelve a entrar." };
 
   const result = await apiRequest<StorefrontRequestResponse>(`/storefront-requests/${requestId}/status`, {
     method: "PATCH",
@@ -23,12 +23,13 @@ export async function updateStorefrontRequestStatusAction(
   }
 
   revalidatePath("/dashboard/solicitudes");
+  revalidatePath("/dashboard");
   const labels: Record<StorefrontRequestStatus, string> = {
-    pending: "Marcada como pendiente",
-    contacted: "Marcada como contactada",
-    closed: "Marcada como cerrada",
+    pending: "Pedido marcado como pendiente",
+    contacted: "Pedido marcado como contactado",
+    closed: "Pedido cerrado",
   };
-  return { ok: true, message: labels[status] };
+  return { ok: true, message: labels[status], request: result.data };
 }
 
 export async function updateStorefrontRequestPaymentAction(
@@ -36,7 +37,7 @@ export async function updateStorefrontRequestPaymentAction(
   paymentConfirmed: boolean,
 ): Promise<StorefrontRequestActionState> {
   const token = await getAuthToken();
-  if (!token) return { ok: false, message: "Sesion no valida" };
+  if (!token) return { ok: false, message: "Tu sesión terminó. Vuelve a entrar." };
 
   const result = await apiRequest<StorefrontRequestResponse>(`/storefront-requests/${requestId}/payment`, {
     method: "PATCH",
@@ -49,5 +50,5 @@ export async function updateStorefrontRequestPaymentAction(
   }
 
   revalidatePath("/dashboard/solicitudes");
-  return { ok: true, message: paymentConfirmed ? "Pago confirmado" : "Pago desmarcado" };
+  return { ok: true, message: paymentConfirmed ? "Pago recibido" : "Pago desmarcado", request: result.data };
 }

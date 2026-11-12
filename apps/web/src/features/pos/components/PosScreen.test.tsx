@@ -1,7 +1,9 @@
 import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { Sale } from "@/features/sales/types";
+import { updateStorefrontRequestStatusAction } from "@/features/storefront-requests/actions";
 import { createSaleAction } from "../actions";
+import { saveOrderForPos } from "../order";
 import type { PosProduct } from "../types";
 import { PosScreen } from "./PosScreen";
 
@@ -10,6 +12,7 @@ const offline = vi.hoisted(() => ({ products: [] as Array<Record<string, unknown
 const queueSale = vi.hoisted(() => vi.fn());
 
 vi.mock("../actions", () => ({ createSaleAction: vi.fn() }));
+vi.mock("@/features/storefront-requests/actions", () => ({ updateStorefrontRequestStatusAction: vi.fn() }));
 vi.mock("sonner", () => ({ toast: Object.assign(vi.fn(), { success: vi.fn(), error: vi.fn() }) }));
 vi.mock("@/lib/offline/useConnectionStatus", () => ({
   useConnectionStatus: () => ({
@@ -252,5 +255,70 @@ describe("PosScreen", () => {
     fireEvent.click(screen.getByRole("button", { name: "Vaciar" }));
     fireEvent.click(within(screen.getByRole("dialog", { name: "¿Vaciar la venta?" })).getByRole("button", { name: "Vaciar" }));
     expect(screen.getByText("Todavía no hay productos")).toBeInTheDocument();
+  });
+
+  it("charges a catalog order: loads its products, warns what can't go in, then offers to close it", async () => {
+    fetchMock.mockImplementation(async (url: string) => {
+      if (url === "/api/products/p-1") return json({ ...coca, is_active: true });
+      if (url === "/api/products/p-2") return json({ ...pan, is_active: true });
+      if (url === "/api/products/p-gone") return json({ detail: "No encontrado" }, 404);
+      return json({}, 404);
+    });
+    saveOrderForPos({
+      id: "order-1",
+      customerName: "María Choque",
+      items: [
+        { productId: "p-1", name: "Coca Cola 2l", quantity: 3 },
+        { productId: "p-2", name: "Pan de batalla", quantity: 20 },
+        { productId: "p-gone", name: "Galletas", quantity: 1 },
+      ],
+    });
+    const sale = {
+      id: "c0ffee00-0000-0000-0000-000000000000",
+      items: [],
+      subtotal: "28.00",
+      discount_type: null,
+      discount_value: "0",
+      discount_amount: "0",
+      total: "28.00",
+      payment_method: "efectivo",
+      status: "completed",
+      business_day_id: null,
+      business_date: null,
+      created_by_user_id: "u-1",
+      created_at: "2026-11-12T15:47:00Z",
+      voided_at: null,
+      void_reason: null,
+    } satisfies Sale;
+    vi.mocked(createSaleAction).mockResolvedValue({ ok: true, fieldErrors: {}, sale });
+    vi.mocked(updateStorefrontRequestStatusAction).mockResolvedValue({ ok: true, message: "Pedido cerrado" });
+
+    render(<PosScreen policy={policy} storeName="Tienda Local" sellerName="Luis" topProductIds={null} orderId="order-1" />);
+
+    const banner = await screen.findByText("Cobrando el pedido de María Choque");
+    const notes = banner.closest("[role=status]") as HTMLElement;
+    expect(within(notes).getByText("Coca Cola 2l: pidieron 3, solo hay 2.")).toBeInTheDocument();
+    expect(within(notes).getByText("Pan de batalla no tiene stock; no se agregó.")).toBeInTheDocument();
+    expect(within(notes).getByText("Galletas ya no está en tu catálogo; no se agregó.")).toBeInTheDocument();
+    const items = screen.getByRole("list", { name: "Productos de la venta" });
+    expect(within(items).getByText("Coca Cola 2l")).toBeInTheDocument();
+    expect(within(items).queryByText("Pan de batalla")).not.toBeInTheDocument();
+    await waitFor(() => expect(screen.getByLabelText(/Cliente/)).toHaveValue("María Choque"));
+
+    fireEvent.click(screen.getByRole("button", { name: /Confirmar venta/ }));
+    expect(await screen.findByRole("heading", { name: "Venta registrada" })).toBeInTheDocument();
+    const formData = vi.mocked(createSaleAction).mock.calls[0][1];
+    expect(JSON.parse(String(formData.get("items")))).toMatchObject([{ product: { id: "p-1" }, quantity: 2 }]);
+    expect(formData.get("customer_name")).toBe("María Choque");
+
+    fireEvent.click(screen.getByRole("button", { name: "Cerrar pedido" }));
+    await waitFor(() => expect(updateStorefrontRequestStatusAction).toHaveBeenCalledWith("order-1", "closed"));
+    expect(await screen.findByText("Cerrado")).toBeInTheDocument();
+  });
+
+  it("says so when the order did not reach Vender", async () => {
+    const { toast } = await import("sonner");
+    render(<PosScreen policy={policy} storeName="Tienda Local" sellerName="Luis" topProductIds={null} orderId="order-404" />);
+    await waitFor(() => expect(toast.error).toHaveBeenCalledWith(expect.stringMatching(/No se encontró el pedido/)));
   });
 });

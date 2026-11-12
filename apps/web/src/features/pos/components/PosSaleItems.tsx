@@ -39,8 +39,9 @@ export function PosSaleItems({
         const discounted = Number(product.effective_price) < Number(product.price);
         return (
           <li key={product.id} className="py-2.5">
-            <div className="flex items-center gap-2">
-              <div className="min-w-0 flex-1">
+            {/* Celular: el nombre en su propia línea y debajo los controles (si no, quedaba "Coc…"). */}
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5 sm:flex-nowrap">
+              <div className="min-w-0 flex-1 max-sm:basis-full">
                 <p className="truncate text-sm font-bold text-text-strong">{product.name}</p>
                 <p className="text-xs text-text-muted">
                   {formatCurrency(product.price)} c/u
@@ -77,7 +78,7 @@ export function PosSaleItems({
                   <Plus className="h-4 w-4" aria-hidden="true" />
                 </button>
               </div>
-              <span className="w-[76px] shrink-0 text-right text-sm font-bold tabular-nums text-text-strong">
+              <span className="w-[76px] shrink-0 text-right text-sm font-bold tabular-nums text-text-strong max-sm:ml-auto">
                 {formatCurrency(Number(product.price) * quantity)}
               </span>
               <button

@@ -13,7 +13,13 @@ import { requireSession } from "@/lib/auth/session";
 export const metadata: Metadata = { title: "Vender" };
 
 // Vender (Fase 4, tableros A · POS). La caja tiene que estar abierta.
-export default async function PosPage() {
+export default async function PosPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const pedido = (await searchParams).pedido;
+  const orderId = typeof pedido === "string" && pedido ? pedido : null;
   const session = await requireSession();
   const [storeDay, store, topProducts] = await Promise.all([
     getCurrentStoreDay(),
@@ -34,6 +40,7 @@ export default async function PosPage() {
       storeName={store.name}
       sellerName={session.fullName ?? session.email.split("@")[0]}
       topProductIds={topProductIds}
+      orderId={orderId}
     />
   );
 }
