@@ -86,6 +86,8 @@ const ROUTES_WITHOUT_TAB_BAR = [
   // Formulario de producto: barra fija Cancelar · Crear producto (tablero P02).
   /^\/dashboard\/products\/new$/,
   /^\/dashboard\/products\/[^/]+\/edit$/,
+  // Vender: barra fija "Ver venta · Cobrar" (Fase 4).
+  /^\/dashboard\/pos$/,
   // Etiquetas: barra fija con el total y el paso siguiente (tablero P05).
   /^\/dashboard\/products\/labels$/,
 ];

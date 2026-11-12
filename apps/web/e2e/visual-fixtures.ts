@@ -279,6 +279,7 @@ function resolvePayload(url: URL) {
   if (path === "/store-day/current/close-report") return closeReport();
   if (path === "/product-categories") return { items: categories };
   if (path === "/store-locations") return { items: storeLocations };
+  if (path === "/store") return store;
   if (path === "/products") return productList(url);
   if (path === "/products/pos") return productList(url);
   if (path.startsWith("/products/qr/")) return products[0];
@@ -290,6 +291,32 @@ function resolvePayload(url: URL) {
 
   return undefined;
 }
+
+const store = {
+  id: "store-1",
+  name: "Tienda Visual",
+  address: null,
+  phone: null,
+  is_active: true,
+  allow_percentage_discount: true,
+  max_percentage_discount: "15",
+  allow_manual_discount: true,
+  max_manual_discount_amount: "10",
+  allow_cashier_discount_override: true,
+  default_alert_days: 5,
+  storefront_enabled: false,
+  storefront_slug: null,
+  storefront_tier: "free",
+  storefront_logo_url: null,
+  storefront_banner_url: null,
+  storefront_color_primary: null,
+  storefront_color_secondary: null,
+  storefront_description: null,
+  storefront_whatsapp: null,
+  storefront_payment_qr_url: null,
+  storefront_payment_instructions: null,
+  storefront_settings: {},
+};
 
 const storeLocations = [
   { id: "loc-1", zone: "Heladera", shelf: null, level: null, label: "Heladera", product_count: 6 },

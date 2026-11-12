@@ -21,6 +21,9 @@ export interface Sale {
   business_day_id: string | null;
   business_date: string | null;
   created_by_user_id: string | null;
+  /** Quién vendió (B6). */
+  created_by_name?: string | null;
+  customer_name?: string | null;
   created_at: string;
   voided_at: string | null;
   void_reason: string | null;

@@ -142,6 +142,8 @@ Se arreglan en la **Fase 0** porque son chicos, no dependen del rediseño y ya m
 | **E10** | Los diálogos se montaban en `body`, fuera de `.theme-app`, y no tomaban los colores del estilo A. | `components/ui/Dialog.tsx` | Arreglado en la Fase 2: se montan en `.theme-app` cuando existe. Nueva posición `sheet`: hoja desde abajo en el celular, ventana centrada desde 640 px. | Revisado en el navegador. |
 | **E11** | Con B4 hecho, el aviso de la tienda igual no se usaba: si "Avisar días antes" quedaba vacío, la web mandaba **5** (`alertDaysOrDefault`) y la ventana de ajustar stock lo traía escrito. | `features/products/schemas.ts`, `actions.ts`, `ProductStockDialog`, `ProductForm` | Arreglado en la Fase 3 (P01B): vacío va como `null` y la API usa el aviso de la tienda; el campo dice "Como la tienda". | unit + probado en el navegador: aviso de la tienda en 7, lote nuevo sin número → `alert_days` 7. |
 | **E12** | "Descargar plantilla CSV" iba a `/api/v1/exports/products.csv`, que en la web no existe (404). Y la exportación tampoco sirve de plantilla: trae `id` e `is_active` y, subida de nuevo, choca con los SKU y códigos que ya existen. | `ProductCsvImportDialog` | Arreglado en la Fase 3 (P05): la plantilla se arma en la web con las columnas exactas del importador y una fila de ejemplo. | unit (columnas = importador). |
+| **E13** | Sin conexión y al volver, el marco y Vender sincronizaban a la vez: uno marcaba la venta como enviada y el otro la devolvía a "pendiente". El servidor no la duplicaba (mismo `client_change_id`), pero el equipo quedaba en "enviando 1" hasta recargar, porque nada reintentaba. | `lib/offline/syncEngine.ts`, `useConnectionStatus.ts` | Arreglado en la Fase 4: un solo envío a la vez por pestaña y reintento cada 30 s mientras haya pendientes. | unit (dos envíos a la vez = una llamada) + probado en el navegador: 2 ventas sin conexión → enviadas, sin duplicados. |
+| **E14** | Un rango de 30 días que empieza antes de la apertura de la tienda da 400 ("anterior a la apertura operativa"): una tienda con menos de un mes no tenía "Más vendidos". | `GET /reports/sales` desde Vender | Arreglado en Vender (si da 400 se pide sin fechas: el mes desde la apertura). **Revisar lo mismo en Reportes (Fase 6).** | Probado con la API. |
 | **E8** | `Button` era componente de cliente: una página del servidor con `<Button asChild><Link/></Button>` (Reportes, 404, estados vacíos) se caía con "React.Children.only expected…", porque el hijo llegaba como referencia del servidor. Por eso fallaban Reportes y sus e2e. | `components/ui/Button.tsx` | Arreglado en la Fase 1: `Button` ya no lleva `"use client"` (no usa hooks). | e2e de Reportes y smoke en verde. |
 | **E7** | Tests e2e que ya fallan en `main` (9 al probar el 2026-11-11 sin `.env.local`): `a11y` (rutas principales), `auth` (sesión simulada llega a Productos), `pos` (render), `products` (vacío y validación al crear), `reports` (los 3) y `smoke` (rutas principales). Fallan por textos y enlaces que cambiaron y por tiempos de `next dev`. | `apps/web/e2e/` | Rehacerlos en la Fase 1 junto con los nombres nuevos del menú, y desde ahí cada fase deja sus e2e en verde. | La rama no agrega fallas: 7 de esos 9 siguen fallando, ninguna nueva. |
 
@@ -336,6 +338,20 @@ Es la fase más delicada: es lo que más se usa y funciona sin conexión.
 8. Caja cerrada: pantalla que lleva a abrir caja (dueño) o explica (cajero).
 9. Recorrer la nota "Todo lo que hace hoy el POS" del lienzo punto por punto antes de cerrar la fase.
 
+**Fase 4 hecha (2026-11-12).** Notas:
+
+- Escritorio: buscar y "Más vendidos" a la izquierda; Venta actual y Cobro a la derecha. Atajos `/` (buscar) y F9 (confirmar); F2 abre Vender desde cualquier página. Celular y tablet (hasta 1024 px): Buscar → Venta actual → Cobrar, con barra fija "Ver venta (N) · Cobrar Bs X" y × para salir; sin barra de pestañas.
+- Buscar: 3+ letras con 400 ms (en el equipo si no hay conexión), código + Enter (lector USB) y cámara; si el código no existe, lo dice. Resultados con Dónde está, stock, código y precio con descuento; "Sin stock" no se puede tocar. "Agregado: X · Deshacer" 6 s.
+- Más vendidos: ids del reporte de 30 días, guardados en el equipo; los datos salen del catálogo guardado (también sin conexión).
+- Venta actual: − / +, escribir la cantidad (tope = stock), quitar, Vaciar con confirmación, "El stock cambió: quedan N y llevas M · Ajustar a N" cuando la API rechaza por stock (se traen los productos de nuevo).
+- Cobro: los 4 métodos; efectivo con Recibido, "Justo" y los dos billetes siguientes, Cambio o "Falta"; descuento manual % / Bs según la política (validado antes de enviar), "Qué descuento aplicar" solo si la tienda lo permite, cliente. Botón "Confirmar venta · Bs X".
+- "Venta registrada" en Vender (antes saltaba al detalle): número, hora, método y quién vendió (B6), total, recibido y cambio con el total real de la API, Imprimir recibo, WhatsApp, Ver detalle, Nueva venta (con el foco). Sin conexión: "Venta guardada en este equipo · se enviará al volver internet" e imprimir deshabilitado hasta enviar.
+- Caja cerrada: el dueño va a Caja; el cajero sabe que la abre el dueño. Con errores o caja cerrada el título "Vender" se mantiene.
+- `createSaleAction` devuelve la venta en vez de redirigir; acepta coma en el descuento.
+- Se borraron `PosWorkspace`, `PosCart`, `PosCheckoutPanel`, `PosProductSearch` y `PosProductResults` (y sus tests); los casos que cubrían están en los tests nuevos.
+- Probado con la API: venta en línea (cambio Bs 2,00, stock 43 → 42), dos ventas sin conexión enviadas al volver sin duplicados (**E13**), Más vendidos en una tienda nueva (**E14**). Visuales con datos de tienda en el mock (antes Vender salía con error).
+- Pendiente para más adelante: imprimir el recibo sin conexión con los datos locales (hoy se imprime cuando la venta llega al servidor).
+
 ### Fase 5 · Ventas y Pedidos (2 días)
 
 1. Ventas (P06): lista por día con total, filtros de fecha y estado, detalle al costado (escritorio) o página (celular), recibo (80 mm) y WhatsApp, anular con razón (solo dueño, 409 si ya está anulada), exportar. Quién vendió y quién anuló con B6.
@@ -438,6 +454,7 @@ Manual en cada fase: celular (375), tablet (768) y escritorio (1280); dueño y c
 | Fecha | Cambio |
 |---|---|
 | 2026-11-11 | Primera versión. E3 encontrado al revisar el código (apertura y contado en 0). Nota de P08 corregida (razón obligatoria al anular un movimiento de caja). |
+| 2026-11-12 | Fase 4 hecha: Vender nuevo (buscar, venta, cobro con cambio, "Venta registrada", celular en 3 vistas, caja cerrada, sin conexión). E13 (sincronización en paralelo) y E14 (Más vendidos en tiendas nuevas) arreglados. |
 | 2026-11-12 | Fase 3, P05: Etiquetas en 3 pasos / 3 columnas con la configuración recordada, Importar CSV con plantilla propia (E12) y errores por fila. **Fase 3 completa.** |
 | 2026-11-12 | Fase 3, P03 y P04: detalle del producto y ventanas (ajustar stock, dónde está, eliminar, QR, cámara). Duplicar. Escape con ventanas una sobre otra. |
 | 2026-11-12 | Fase 3, P02: formulario nuevo / editar con validaciones, 409 en su campo, categoría y lugar sin salir, "Así se ve al vender" y "¿Salir sin guardar?". |

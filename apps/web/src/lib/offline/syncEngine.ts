@@ -186,7 +186,22 @@ export async function queueSale(input: QueueSaleInput): Promise<PendingSale> {
   return sale;
 }
 
-export async function flushPendingSales(): Promise<{ synced: number; conflicts: number }> {
+// Un solo envío a la vez en esta pestaña: el marco y Vender usan cada uno el hook de
+// conexión y los dos sincronizan al volver internet. En paralelo, uno marcaba la venta
+// como enviada y el otro la devolvía a "pendiente" (el servidor no la duplica, pero
+// quedaba "enviando 1").
+let flushInFlight: Promise<{ synced: number; conflicts: number }> | null = null;
+
+export function flushPendingSales(): Promise<{ synced: number; conflicts: number }> {
+  if (!flushInFlight) {
+    flushInFlight = flushPendingSalesOnce().finally(() => {
+      flushInFlight = null;
+    });
+  }
+  return flushInFlight;
+}
+
+async function flushPendingSalesOnce(): Promise<{ synced: number; conflicts: number }> {
   const db = getOfflineDb();
   const pending = await db.pendingSales.where("status").equals("pending").toArray();
   if (pending.length === 0) return { synced: 0, conflicts: 0 };

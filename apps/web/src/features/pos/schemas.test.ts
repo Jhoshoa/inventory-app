@@ -1,9 +1,15 @@
 import { describe, expect, it } from "vitest";
 import {
   calculateCartTotal,
+  calculateDiscountAmount,
+  changeDue,
   initialCartState,
   posCartReducer,
+  quickCashAmounts,
+  receiptText,
+  resolveDiscount,
   validateCheckout,
+  validateManualDiscount,
 } from "./schemas";
 import type { CartItem, PosProduct } from "./types";
 
@@ -97,13 +103,75 @@ describe("checkout helpers", () => {
       items: "Agrega al menos un producto",
     });
     expect(validateCheckout([{ product, quantity: 3 }])).toEqual({
-      items: "Cantidad invalida para Arroz 1kg",
+      items: "Arroz 1kg: quedan 2 y llevas 3",
     });
   });
 
   it("validates payment methods", () => {
     expect(validateCheckout([{ product, quantity: 1 }], "crypto")).toEqual({
-      payment_method: "Metodo de pago invalido",
+      payment_method: "Elige cómo te pagan",
     });
+  });
+});
+
+describe("cobro", () => {
+  const policy = {
+    allow_percentage_discount: true,
+    max_percentage_discount: "15",
+    allow_manual_discount: true,
+    max_manual_discount_amount: "10",
+    allow_cashier_discount_override: false,
+  };
+
+  it("gives the change or says how much is missing", () => {
+    expect(changeDue("50", 46.2)).toEqual({ change: 3.8, missing: 0 });
+    expect(changeDue("46,20", 46.2)).toEqual({ change: 0, missing: 0 });
+    expect(changeDue("40", 46.2)).toEqual({ change: 0, missing: 6.2 });
+    expect(changeDue("", 46.2)).toBeNull();
+    expect(changeDue("abc", 46.2)).toBeNull();
+  });
+
+  it("offers exact and the next notes", () => {
+    expect(quickCashAmounts(46.2)).toEqual({ exact: 46.2, notes: [50, 100] });
+    expect(quickCashAmounts(150)).toEqual({ exact: 150, notes: [200] });
+    expect(quickCashAmounts(8)).toEqual({ exact: 8, notes: [10, 20] });
+  });
+
+  it("checks the manual discount against the store limits", () => {
+    expect(validateManualDiscount("", "", 100, policy)).toBeNull();
+    expect(validateManualDiscount("percentage", "20", 100, policy)).toBe("El máximo es 15%");
+    expect(validateManualDiscount("percentage", "12,5", 100, policy)).toBeNull();
+    expect(validateManualDiscount("fixed", "12", 100, policy)).toMatch(/El máximo es Bs/);
+    expect(validateManualDiscount("fixed", "8", 5, policy)).toBe("La rebaja no puede ser mayor que el subtotal");
+    expect(validateManualDiscount("fixed", "", 100, policy)).toMatch(/2,50/);
+    expect(validateManualDiscount("percentage", "5", 100, { ...policy, allow_percentage_discount: false })).toMatch(/no permite/);
+    expect(calculateDiscountAmount(47.5, "fixed", "2,50")).toBe(2.5);
+  });
+
+  it("picks the discount like the API", () => {
+    const base = { productDiscountAmount: 1.3, manualDiscountType: "fixed" as const, manualDiscountAmount: 2 };
+    expect(resolveDiscount({ ...base, override: "auto" }).source).toBe("manual");
+    expect(resolveDiscount({ ...base, override: "auto", manualDiscountAmount: 1 }).source).toBe("product");
+    expect(resolveDiscount({ ...base, override: "auto", manualDiscountAmount: 1.3 }).source).toBe("manual");
+    expect(resolveDiscount({ ...base, override: "product" }).amount).toBe(1.3);
+    expect(resolveDiscount({ ...base, override: "none" }).amount).toBe(0);
+  });
+
+  it("writes the WhatsApp receipt", () => {
+    const text = receiptText({
+      storeName: "Tienda Local",
+      when: "11:47 · venta b07038f2",
+      items: [{ name: "Coca Cola 2l", quantity: 2, amount: 28 }],
+      total: 28,
+      paymentLabel: "Efectivo",
+    });
+    expect(text).toContain("Tienda Local");
+    expect(text).toMatch(/2 × Coca Cola 2l — Bs 28,00/);
+    expect(text).toMatch(/Total: Bs 28,00 · Efectivo/);
+  });
+
+  it("undo restores the previous sale", () => {
+    const withProduct = posCartReducer(initialCartState, { type: "add", product });
+    expect(posCartReducer(withProduct, { type: "restore", items: [] }).items).toEqual([]);
   });
 });

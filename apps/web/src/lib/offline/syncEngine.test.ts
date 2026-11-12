@@ -130,6 +130,43 @@ describe("flushPendingSales", () => {
     expect(stored?.status).toBe("synced");
   });
 
+  it("two syncs at the same time send once and the sale stays synced", async () => {
+    const db = getOfflineDb();
+    const sale = await queueSale({
+      items: [{ product_id: "product-1", product_name: "Arroz", quantity: 1, unit_price: "10.00" }],
+      paymentMethod: "efectivo",
+      customerName: null,
+      discountType: null,
+      discountValue: "0",
+      discountSourceOverride: null,
+      totalEstimate: "10.00",
+    });
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        results: [
+          {
+            client_change_id: sale.id,
+            entity: "sale",
+            operation: "create",
+            entity_id: sale.id,
+            status: "accepted",
+            server_version: 1,
+            server_updated_at: new Date().toISOString(),
+            error: null,
+          },
+        ],
+        server_time: new Date().toISOString(),
+      }),
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    const [first, second] = await Promise.all([flushPendingSales(), flushPendingSales()]);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(first).toEqual(second);
+    expect((await db.pendingSales.get(sale.id))?.status).toBe("synced");
+  });
+
   it("marks conflicting sales for manual review without discarding them", async () => {
     const db = getOfflineDb();
     const sale = await queueSale({
