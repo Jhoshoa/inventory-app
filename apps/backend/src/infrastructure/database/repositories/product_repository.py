@@ -274,8 +274,13 @@ class ProductRepository(IProductRepository):
         model = result.scalar_one_or_none()
         return self._to_entity(model) if model else None
 
-    async def qr_code_exists(self, qr_code: str, exclude_product_id: UUID | None = None) -> bool:
-        filters = [ProductModel.qr_code == qr_code, ProductModel.deleted_at.is_(None)]
+    async def qr_code_exists(self, store_id: UUID, qr_code: str, exclude_product_id: UUID | None = None) -> bool:
+        # Unico por tienda: el mismo codigo de barras puede estar en dos tiendas.
+        filters = [
+            ProductModel.store_id == store_id,
+            ProductModel.qr_code == qr_code,
+            ProductModel.deleted_at.is_(None),
+        ]
         if exclude_product_id is not None:
             filters.append(ProductModel.id != exclude_product_id)
         result = await self._session.execute(select(func.count()).select_from(ProductModel).where(*filters))
@@ -316,11 +321,12 @@ class ProductRepository(IProductRepository):
         )
         return {row[0] for row in result.all()}
 
-    async def qr_codes_exist(self, qr_codes: list[str]) -> set[str]:
+    async def qr_codes_exist(self, store_id: UUID, qr_codes: list[str]) -> set[str]:
         if not qr_codes:
             return set()
         result = await self._session.execute(
             select(ProductModel.qr_code).where(
+                ProductModel.store_id == store_id,
                 ProductModel.qr_code.in_(qr_codes),
                 ProductModel.deleted_at.is_(None),
             )

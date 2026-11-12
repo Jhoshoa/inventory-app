@@ -283,7 +283,7 @@ export function ProductForm({
                   spellCheck={false}
                   className="font-mono"
                   value={values.sku}
-                  onChange={(event) => set("sku", event.target.value)}
+                  onChange={(event) => set("sku", event.target.value.toUpperCase())}
                 />
               </FormField>
             )}
@@ -305,7 +305,7 @@ export function ProductForm({
                   className="font-mono"
                   placeholder="7751234000123"
                   value={values.qr_code}
-                  onChange={(event) => set("qr_code", event.target.value)}
+                  onChange={(event) => set("qr_code", event.target.value.toUpperCase())}
                 />
                 <Button type="button" variant="secondary" className="shrink-0 sm:hidden" onClick={() => setScanning(true)}>
                   <ScanLine className="h-4 w-4" aria-hidden="true" />
@@ -497,7 +497,7 @@ export function ProductForm({
         open={scanning}
         onOpenChange={setScanning}
         onDetected={(code) => {
-          set("qr_code", code);
+          set("qr_code", code.toUpperCase());
           setScanning(false);
         }}
         onTypeCode={() => window.setTimeout(() => document.getElementById("qr_code")?.focus(), 0)}

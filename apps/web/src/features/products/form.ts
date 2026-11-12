@@ -1,5 +1,5 @@
 import type { StoreResponse } from "@/features/settings/types";
-import { moneyNumber, type DiscountPolicy } from "./schemas";
+import { PRODUCT_CODE_MESSAGE, moneyNumber, type DiscountPolicy } from "./schemas";
 import type { ProductDiscountType, ProductFormValues } from "./types";
 
 /** Política de descuentos de la tienda para validar en el formulario (la API la vuelve a revisar). */
@@ -48,6 +48,10 @@ export function productApiFieldErrors(
       return { qr_code: "El código escaneable ya está en uso por otro producto." };
     }
     if (text.includes("nombre")) return { name: "Ya hay un producto con ese nombre y esa unidad." };
+  }
+  // 400 de formato ("SKU: Usa solo letras A-Z…", "Codigo para escanear: …").
+  if (status === 400 && text.includes("letras a-z")) {
+    return text.startsWith("sku") ? { sku: PRODUCT_CODE_MESSAGE } : { qr_code: PRODUCT_CODE_MESSAGE };
   }
   if (status === 403 && (text.includes("descuento") || text.includes("rebaja"))) {
     return { discount_value: withAccents(message) };

@@ -11,7 +11,7 @@ from sqlalchemy import (
     Integer,
     Numeric,
     String,
-    UniqueConstraint,
+    text,
 )
 from sqlalchemy.orm import DeclarativeBase
 
@@ -20,6 +20,9 @@ from src.infrastructure.database.types import GUID
 
 class Base(DeclarativeBase):
     pass
+
+
+_ACTIVE = text("deleted_at IS NULL")
 
 
 class ProductModel(Base):
@@ -37,7 +40,7 @@ class ProductModel(Base):
     min_stock = Column(Integer, default=1)
     unit = Column(String(20), default="unidad")
     photo_url = Column(String(500))
-    qr_code = Column(String(100), unique=True)
+    qr_code = Column(String(100))
     is_active = Column(Boolean, default=True)
     discount_type = Column(String(20), nullable=True)
     discount_value = Column(Numeric(12, 2), nullable=False, default=0)
@@ -58,6 +61,8 @@ class ProductModel(Base):
         Index("ix_products_store_qr_code", "store_id", "qr_code"),
         Index("ix_products_store_stock", "store_id", "stock"),
         Index("ix_products_updated_at", "updated_at"),
-        UniqueConstraint("store_id", "sku", name="uq_products_store_sku"),
-        UniqueConstraint("store_id", "name", "unit", name="uq_products_store_name_unit"),
+        # Unicos por tienda y solo entre productos no borrados (migracion 042).
+        Index("uq_products_store_qr_code", "store_id", "qr_code", unique=True, postgresql_where=_ACTIVE, sqlite_where=_ACTIVE),
+        Index("uq_products_store_sku", "store_id", "sku", unique=True, postgresql_where=_ACTIVE, sqlite_where=_ACTIVE),
+        Index("uq_products_store_name_unit", "store_id", "name", "unit", unique=True, postgresql_where=_ACTIVE, sqlite_where=_ACTIVE),
     )

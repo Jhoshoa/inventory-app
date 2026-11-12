@@ -2,6 +2,7 @@ from datetime import datetime, timezone
 from uuid import UUID, uuid4
 
 from pydantic import ValidationError
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
@@ -208,7 +209,18 @@ class SyncRepository(ISyncRepository):
             )
         try:
             if change.entity == SyncEntity.PRODUCT and change.operation == SyncOperation.UPSERT:
-                version, updated_at = await self._apply_product_upsert(store_id, change)
+                # En un SAVEPOINT: si el nombre, SKU o codigo ya lo usa otro producto de la
+                # tienda, ese cambio queda en conflicto y el resto del envio sigue.
+                try:
+                    async with self._session.begin_nested():
+                        version, updated_at = await self._apply_product_upsert(store_id, change)
+                except IntegrityError:
+                    return self._error_result(
+                        change,
+                        SyncResultStatus.CONFLICT,
+                        "conflict",
+                        "El nombre, SKU o codigo ya lo usa otro producto de la tienda",
+                    )
                 return self._result(change, SyncResultStatus.ACCEPTED, version, updated_at)
             if change.entity == SyncEntity.PRODUCT and change.operation == SyncOperation.DELETE:
                 version, updated_at = await self._apply_product_delete(store_id, change)

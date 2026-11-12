@@ -1,9 +1,14 @@
 from dataclasses import dataclass
 from datetime import datetime
 from decimal import Decimal
-from uuid import UUID, uuid4
+from uuid import UUID
 
-from src.application.exceptions import ConflictError, NotFoundError
+from src.application.exceptions import ApplicationError, ConflictError, NotFoundError
+from src.application.use_cases.products.code_rules import (
+    free_product_code,
+    normalize_product_code,
+    product_code_error,
+)
 from src.application.use_cases.products.name_normalizer import normalize_product_name
 from src.application.use_cases.sales.discount_engine import (
     validate_discount_against_policy,
@@ -63,8 +68,14 @@ class CreateProductUseCase:
                 raise NotFoundError("Tienda no encontrada")
             validate_discount_against_policy(store, input.discount_type, input.discount_value)
 
+        sku = normalize_product_code(input.sku)
+        qr_code = normalize_product_code(input.qr_code)
+        for field, label, value in (("sku", "SKU", sku), ("qr_code", "Codigo para escanear", qr_code)):
+            message = product_code_error(value)
+            if message:
+                raise ApplicationError(f"{label}: {message}", {"field": field})
+
         category_name = input.category
-        sku = input.sku
         if input.category_id is not None:
             if self._category_repo is None:
                 raise NotFoundError("Categoria no encontrada")
@@ -83,11 +94,12 @@ class CreateProductUseCase:
         if await self._repo.product_name_exists(input.store_id, normalize_product_name(input.name), input.unit):
             raise ConflictError(f"Ya existe un producto con el nombre '{input.name}' y unidad '{input.unit}'")
 
-        qr_code = input.qr_code
-        if not qr_code:
-            qr_code = self._generate_qr_code(sku)
-        if await self._repo.qr_code_exists(qr_code):
-            raise ConflictError("El codigo escaneable ya esta en uso por otro producto")
+        # El codigo es unico en la tienda (no entre tiendas): el automatico busca uno libre.
+        if qr_code:
+            if await self._repo.qr_code_exists(input.store_id, qr_code):
+                raise ConflictError("El codigo escaneable ya esta en uso por otro producto")
+        else:
+            qr_code = await free_product_code(sku, lambda code: self._repo.qr_code_exists(input.store_id, code))
 
         product = Product.create(
             store_id=input.store_id,
@@ -110,8 +122,3 @@ class CreateProductUseCase:
         if input.initial_batch is not None and self._batch_repo is not None:
             await self._batch_repo.add(input.store_id, saved.id, saved.stock, input.initial_batch)
         return saved
-
-    def _generate_qr_code(self, sku: str | None) -> str:
-        if sku:
-            return f"QR-{sku}"
-        return f"P-{uuid4().hex[:12].upper()}"

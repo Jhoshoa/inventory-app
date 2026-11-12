@@ -72,3 +72,32 @@ describe("product form validation", () => {
     expect(validateProductForm({ ...base, discount_ends_at: "2030-01-01" }, "edit").discount_ends_at).toMatch(/solo va con un descuento/);
   });
 });
+
+describe("scan code and SKU format", () => {
+  const values = { ...productToFormValues(), name: "Pan", price: "1", stock: "1" };
+
+  it("accepts A-Z, digits and hyphen, also typed in lowercase", () => {
+    expect(validateProductForm({ ...values, qr_code: "7751234000123", sku: "pan-01" }, "create")).toEqual({});
+    expect(validateProductForm({ ...values, qr_code: " qr-lac000001 " }, "create")).toEqual({});
+  });
+
+  it("rejects spaces and other characters when creating, with the max of 50", () => {
+    const errors = validateProductForm({ ...values, qr_code: "PAN 01", sku: "SKU#1" }, "create");
+    expect(errors.qr_code).toBe("Usa solo letras A-Z, números y guion");
+    expect(errors.sku).toBe("Usa solo letras A-Z, números y guion");
+    expect(validateProductForm({ ...values, qr_code: "A".repeat(51) }, "create").qr_code).toBe("Máximo 50 caracteres");
+  });
+
+  it("lets an old code stay when editing (the API checks changes)", () => {
+    expect(validateProductForm({ ...values, qr_code: "viejo codigo" }, "edit")).toEqual({});
+  });
+
+  it("puts the API's format error under its field", () => {
+    expect(productApiFieldErrors(400, "SKU: Usa solo letras A-Z, numeros y guion (maximo 50)")).toEqual({
+      sku: "Usa solo letras A-Z, números y guion",
+    });
+    expect(productApiFieldErrors(400, "Codigo para escanear: Usa solo letras A-Z, numeros y guion (maximo 50)")).toEqual({
+      qr_code: "Usa solo letras A-Z, números y guion",
+    });
+  });
+});

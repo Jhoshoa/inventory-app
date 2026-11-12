@@ -58,7 +58,23 @@ export interface DiscountPolicy {
   fixed: { allowed: boolean; max: number };
 }
 
-export const PRODUCT_LIMITS = { name: 100, unit: 20, sku: 50, qr_code: 100 } as const;
+export const PRODUCT_LIMITS = { name: 100, unit: 20, sku: 50, qr_code: 50 } as const;
+
+/** Código para escanear y SKU: letras A-Z, números y guion (la API los guarda en mayúsculas). */
+const PRODUCT_CODE = /^[A-Z0-9-]+$/;
+export const PRODUCT_CODE_MESSAGE = "Usa solo letras A-Z, números y guion";
+
+/** Como lo guarda la API: sin espacios alrededor y en mayúsculas. */
+export function normalizeProductCode(value: string) {
+  return value.trim().toUpperCase();
+}
+
+export function productCodeError(value: string, max: number) {
+  const code = normalizeProductCode(value);
+  if (!code) return undefined;
+  if (code.length > max) return `Máximo ${max} caracteres`;
+  return PRODUCT_CODE.test(code) ? undefined : PRODUCT_CODE_MESSAGE;
+}
 
 /** Número de un monto escrito con coma o punto ("18,50"); null si no es un monto válido. */
 export function moneyNumber(text: string) {
@@ -95,8 +111,17 @@ export function validateProductForm(
   }
 
   if (values.unit.trim().length > PRODUCT_LIMITS.unit) errors.unit = `Máximo ${PRODUCT_LIMITS.unit} caracteres`;
-  if (values.sku.length > PRODUCT_LIMITS.sku) errors.sku = `Máximo ${PRODUCT_LIMITS.sku} caracteres`;
-  if (values.qr_code.length > PRODUCT_LIMITS.qr_code) errors.qr_code = `Máximo ${PRODUCT_LIMITS.qr_code} caracteres`;
+  // Al editar solo se mira el largo: un código de antes de la regla se puede dejar como
+  // está, y si se cambia la API revisa el formato.
+  if (mode === "create") {
+    const skuError = productCodeError(values.sku, PRODUCT_LIMITS.sku);
+    const codeError = productCodeError(values.qr_code, PRODUCT_LIMITS.qr_code);
+    if (skuError) errors.sku = skuError;
+    if (codeError) errors.qr_code = codeError;
+  } else {
+    if (values.sku.trim().length > PRODUCT_LIMITS.sku) errors.sku = `Máximo ${PRODUCT_LIMITS.sku} caracteres`;
+    if (values.qr_code.trim().length > 100) errors.qr_code = "Máximo 100 caracteres";
+  }
 
   if (values.discount_type) {
     const discount = moneyNumber(values.discount_value);

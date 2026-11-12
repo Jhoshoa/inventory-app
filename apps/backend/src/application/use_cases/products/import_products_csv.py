@@ -3,11 +3,17 @@ import io
 from dataclasses import dataclass
 from datetime import date, datetime
 from decimal import Decimal, InvalidOperation
-from uuid import UUID, uuid4
+from uuid import UUID
 
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.application.exceptions import ConflictError
+from src.application.use_cases.products.code_rules import (
+    free_product_code,
+    normalize_product_code,
+    product_code_error,
+)
 from src.application.use_cases.products.name_normalizer import normalize_product_name
 from src.domain.entities.import_job import ImportJob, ImportJobStatus, RowError
 from src.domain.entities.product import Product
@@ -159,37 +165,63 @@ class ImportProductsCsvUseCase:
         await self._job_repo.save(job)
 
         imported = 0
+        # Codigos que ya trae el archivo: un automatico no puede repetir uno de ellos.
+        used_codes = {row.qr_code for row in parsed if row.qr_code}
+
+        async def code_taken(code: str) -> bool:
+            return code in used_codes or await self._product_repo.qr_code_exists(store_id, code)
+
+        current_row = 0
         # La sesion ya tiene una transaccion abierta (el job se guardo arriba):
         # un SAVEPOINT deja la insercion en todo o nada sin abrir otra.
-        async with self._session.begin_nested():
-            for row in parsed:
-                if row.category_id and not row.sku:
-                    sku = await self._category_repo.reserve_next_sku(store_id, row.category_id)
-                    if sku is None:
-                        raise ConflictError(f"No se pudo generar SKU para la categoria en fila {row.row_number}")
-                    row.sku = sku
+        try:
+            async with self._session.begin_nested():
+                for row in parsed:
+                    current_row = row.row_number
+                    if row.category_id and not row.sku:
+                        sku = await self._category_repo.reserve_next_sku(store_id, row.category_id)
+                        if sku is None:
+                            raise ConflictError(f"No se pudo generar SKU para la categoria en fila {row.row_number}")
+                        row.sku = sku
 
-                if not row.qr_code:
-                    row.qr_code = self._generate_qr_code(row.sku)
+                    if not row.qr_code:
+                        row.qr_code = await free_product_code(row.sku, code_taken)
+                        used_codes.add(row.qr_code)
 
-                product = Product.create(
-                    store_id=store_id,
-                    name=normalize_product_name(row.name),
-                    price=row.price,
-                    stock=row.stock,
-                    category_id=row.category_id,
-                    category=row.category,
-                    min_stock=row.min_stock,
-                    unit=row.unit,
-                    sku=row.sku,
-                    cost_price=row.cost_price,
-                    photo_url=row.photo_url,
-                    qr_code=row.qr_code,
-                )
-                await self._product_repo.save(product)
-                if row.initial_batch is not None and self._batch_repo is not None:
-                    await self._batch_repo.add(store_id, product.id, product.stock, row.initial_batch)
-                imported += 1
+                    product = Product.create(
+                        store_id=store_id,
+                        name=normalize_product_name(row.name),
+                        price=row.price,
+                        stock=row.stock,
+                        category_id=row.category_id,
+                        category=row.category,
+                        min_stock=row.min_stock,
+                        unit=row.unit,
+                        sku=row.sku,
+                        cost_price=row.cost_price,
+                        photo_url=row.photo_url,
+                        qr_code=row.qr_code,
+                    )
+                    await self._product_repo.save(product)
+                    if row.initial_batch is not None and self._batch_repo is not None:
+                        await self._batch_repo.add(store_id, product.id, product.stock, row.initial_batch)
+                    imported += 1
+        except IntegrityError:
+            # Otro producto tomo el mismo nombre, SKU o codigo mientras se importaba (o un
+            # caso que la revision no vio): se informa la fila en lugar de un error 500.
+            job.complete(
+                len(raw_rows),
+                0,
+                [
+                    RowError(
+                        row=current_row,
+                        field="file",
+                        message="El nombre, SKU o codigo de esta fila ya esta en uso. Revisa y vuelve a importar.",
+                    )
+                ],
+            )
+            await self._job_repo.save(job)
+            return job
 
         job.complete(len(raw_rows), imported, [])
         await self._job_repo.save(job)
@@ -211,11 +243,11 @@ class ImportProductsCsvUseCase:
                     stock=self._get(row, "stock"),
                     category=self._get(row, "category"),
                     category_id=self._get(row, "category_id"),
-                    sku=self._get(row, "sku"),
+                    sku=normalize_product_code(self._get(row, "sku")),
                     unit=self._get(row, "unit"),
                     min_stock=self._get(row, "min_stock"),
                     cost_price=self._get(row, "cost_price"),
-                    qr_code=self._get(row, "qr_code"),
+                    qr_code=normalize_product_code(self._get(row, "qr_code")),
                     photo_url=self._get(row, "photo_url"),
                     expires_on=self._get(row, "vence"),
                     alert_days=self._get(row, "aviso_dias"),
@@ -266,8 +298,9 @@ class ImportProductsCsvUseCase:
                 except (ValueError, TypeError):
                     errors.append(RowError(row=row.row_number, field="category_id", message="category_id debe ser un UUID valido"))
 
-            if row.sku is not None and len(row.sku) > 50:
-                errors.append(RowError(row=row.row_number, field="sku", message="El SKU debe tener maximo 50 caracteres"))
+            sku_error = product_code_error(row.sku)
+            if sku_error:
+                errors.append(RowError(row=row.row_number, field="sku", message=f"SKU: {sku_error}"))
 
             if row.unit is not None and len(row.unit) > 20:
                 errors.append(RowError(row=row.row_number, field="unit", message="La unidad debe tener maximo 20 caracteres"))
@@ -288,8 +321,9 @@ class ImportProductsCsvUseCase:
                 except InvalidOperation:
                     errors.append(RowError(row=row.row_number, field="cost_price", message="cost_price debe ser un numero valido"))
 
-            if row.qr_code is not None and len(row.qr_code) > 100:
-                errors.append(RowError(row=row.row_number, field="qr_code", message="qr_code debe tener maximo 100 caracteres"))
+            qr_error = product_code_error(row.qr_code)
+            if qr_error:
+                errors.append(RowError(row=row.row_number, field="qr_code", message=f"Codigo para escanear: {qr_error}"))
 
             if row.photo_url is not None and len(row.photo_url) > 500:
                 errors.append(RowError(row=row.row_number, field="photo_url", message="photo_url debe tener maximo 500 caracteres"))
@@ -463,7 +497,7 @@ class ImportProductsCsvUseCase:
         all_names = [(normalize_product_name(row.name), row.unit) for row in rows]
 
         existing_skus = await self._product_repo.skus_exist(store_id, all_skus) if all_skus else set()
-        existing_qrs = await self._product_repo.qr_codes_exist(all_qrs) if all_qrs else set()
+        existing_qrs = await self._product_repo.qr_codes_exist(store_id, all_qrs) if all_qrs else set()
         existing_names = await self._product_repo.names_exist(store_id, all_names) if all_names else set()
 
         for row in rows:
@@ -477,8 +511,3 @@ class ImportProductsCsvUseCase:
                 errors.append(RowError(row=row.row_number, field="name", message=f"Ya existe un producto con el nombre '{row.name}' y unidad '{row.unit}'"))
 
         return errors
-
-    def _generate_qr_code(self, sku: str | None) -> str:
-        if sku:
-            return f"QR-{sku}"
-        return f"P-{uuid4().hex[:12].upper()}"

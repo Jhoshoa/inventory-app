@@ -265,7 +265,8 @@ export function ProductCsvImportDialog({
               <code className="font-mono">category</code> o <code className="font-mono">category_id</code>,{" "}
               <code className="font-mono">sku, unit, min_stock, cost_price, qr_code, photo_url, vence, aviso_dias</code>. Precio con
               punto (7.50). <code className="font-mono">vence</code> como 31/12/2026; <code className="font-mono">aviso_dias</code> vacío
-              usa el aviso de la tienda.
+              usa el aviso de la tienda. <code className="font-mono">sku</code> y{" "}
+              <code className="font-mono">qr_code</code>: letras A-Z, números y guion; vacíos se crean solos.
             </p>
           </DialogBody>
           <DialogFooter align="between" className="flex-wrap">

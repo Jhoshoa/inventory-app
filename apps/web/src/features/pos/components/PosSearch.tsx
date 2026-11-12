@@ -110,7 +110,11 @@ export const PosSearch = forwardRef<
         else if (response.status !== 404) throw new Error("lookup");
       }
       if (!product) {
-        const local = await getOfflineDb().products.where("qr_code").equals(code).first();
+        // Los códigos se guardan en mayúsculas: "pan-01" escrito a mano encuentra "PAN-01".
+        const db = getOfflineDb();
+        const local =
+          (await db.products.where("qr_code").equals(code).first()) ??
+          (code.toUpperCase() !== code ? await db.products.where("qr_code").equals(code.toUpperCase()).first() : undefined);
         product = local && !local.deleted ? toPosProduct(local) : null;
       }
       if (controller.signal.aborted) return;
