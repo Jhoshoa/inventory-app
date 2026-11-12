@@ -33,15 +33,20 @@ export function ProductLabelPage({
   initialParams,
   initialProducts,
   categories,
+  initialSelected = [],
 }: {
   initialParams: ProductSearchParams;
   initialProducts: ProductListResponse;
   categories: ProductCategory[];
+  /** "Imprimir etiqueta" desde el QR de un producto: llega ya elegido (?producto=). */
+  initialSelected?: SelectedLabelProduct[];
 }) {
   const [params, setParams] = useState(initialParams);
   const [query, setQuery] = useState(initialParams.q ?? "");
   const [products, setProducts] = useState(initialProducts);
-  const [selected, setSelected] = useState<Record<string, SelectedLabelProduct>>({});
+  const [selected, setSelected] = useState<Record<string, SelectedLabelProduct>>(() =>
+    Object.fromEntries(initialSelected.map((item) => [item.product.id, item])),
+  );
   const [labelSettings, setLabelSettings] = useState<ProductLabelSettings>(DEFAULT_LABEL_SETTINGS);
   const [error, setError] = useState<string | null>(null);
   const mountedRef = useRef(false);

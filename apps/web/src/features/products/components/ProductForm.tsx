@@ -54,7 +54,10 @@ export function ProductForm({
   policy = null,
   defaultAlertDays = DEFAULT_ALERT_DAYS,
   batches = null,
+  duplicateOf = null,
 }: {
+  /** "Duplicar" (tablero P03): nuevo producto con los datos de otro, sin SKU, código ni stock. */
+  duplicateOf?: Product | null;
   mode: "create" | "edit";
   product?: Product;
   categories?: ProductCategory[];
@@ -67,12 +70,18 @@ export function ProductForm({
 }) {
   const action = mode === "create" ? createProductAction : updateProductAction;
   const [state, formAction, isPending] = useActionState(action, initialState);
-  const initialValues = useMemo(() => productToFormValues(product), [product]);
+  const initialValues = useMemo(() => {
+    if (!duplicateOf) return productToFormValues(product);
+    const copied = productToFormValues(duplicateOf);
+    return { ...copied, name: `${duplicateOf.name} (copia)`.slice(0, PRODUCT_LIMITS.name), sku: "", qr_code: "", stock: "0" };
+  }, [product, duplicateOf]);
   const [values, setValues] = useState<ProductFormValues>(initialValues);
   const [clientErrors, setClientErrors] = useState<Errors | null>(null);
   const [categories, setCategories] = useState(initialCategories);
   const [storeLocations, setStoreLocations] = useState(initialLocations);
-  const [picked, setPicked] = useState<PickedLocation[]>([]);
+  const [picked, setPicked] = useState<PickedLocation[]>(
+    () => duplicateOf?.locations?.map((location) => ({ location_id: location.id, kind: location.kind })) ?? [],
+  );
   const [manualSku, setManualSku] = useState(mode === "edit");
   const [photoChosen, setPhotoChosen] = useState(false);
   const [creatingCategory, setCreatingCategory] = useState(false);
@@ -93,7 +102,7 @@ export function ProductForm({
   const errorCount = Object.values(errors).filter(Boolean).length;
   const dirty =
     !submittedRef.current &&
-    (JSON.stringify(values) !== JSON.stringify(initialValues) || picked.length > 0 || photoChosen);
+    (JSON.stringify(values) !== JSON.stringify(initialValues) || picked.length > (duplicateOf?.locations?.length ?? 0) || photoChosen);
   const guard = useUnsavedChangesGuard(dirty);
 
   useEffect(() => {
@@ -164,6 +173,12 @@ export function ProductForm({
           </Button>
         </div>
       </header>
+
+      {duplicateOf && mode === "create" ? (
+        <p className="rounded-control border border-status-infoBorder bg-status-infoBg px-3 py-2.5 text-sm text-text-body">
+          Copiado de <strong>{duplicateOf.name}</strong>. Cambia el nombre; el SKU, el código y el stock empiezan vacíos.
+        </p>
+      ) : null}
 
       {errorCount > 0 ? (
         <p role="alert" className="rounded-control border border-status-dangerBorder bg-status-dangerBg px-3 py-2.5 text-sm font-semibold text-status-danger">
@@ -485,6 +500,7 @@ export function ProductForm({
           set("qr_code", code);
           setScanning(false);
         }}
+        onTypeCode={() => window.setTimeout(() => document.getElementById("qr_code")?.focus(), 0)}
       />
       <QrPreviewDialog open={showingQr} code={values.qr_code} productName={values.name} onClose={() => setShowingQr(false)} />
       {guard.dialog}

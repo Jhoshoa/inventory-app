@@ -71,6 +71,7 @@ export function ProductFilters({
             <Search className="h-4 w-4 shrink-0 text-text-muted" aria-hidden="true" />
             <span className="sr-only">Buscar productos</span>
             <input
+              id="product-search"
               type="search"
               value={query}
               onChange={(event) => onQueryChange(event.target.value)}

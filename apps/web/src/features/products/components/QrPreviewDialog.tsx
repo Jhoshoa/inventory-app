@@ -2,8 +2,9 @@
 
 /* eslint-disable @next/next/no-img-element */
 
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { Download, Loader2 } from "lucide-react";
+import { Download, Loader2, Tags } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import {
   Dialog,
@@ -18,6 +19,8 @@ interface QrPreviewDialogProps {
   open: boolean;
   code: string;
   productName?: string;
+  /** Con el id aparece "Imprimir etiqueta" (abre Etiquetas con este producto elegido). */
+  productId?: string;
   onClose: () => void;
 }
 
@@ -25,6 +28,7 @@ export function QrPreviewDialog({
   open,
   code,
   productName,
+  productId,
   onClose,
 }: QrPreviewDialogProps) {
   const normalizedCode = code.trim();
@@ -67,17 +71,15 @@ export function QrPreviewDialog({
   }, [svg]);
 
   return (
-    <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
+    <Dialog open={open} onOpenChange={(v) => !v && onClose()} position="sheet">
       <DialogTitle close>QR del producto</DialogTitle>
-      {productName ? (
-        <DialogDescription>{productName}</DialogDescription>
-      ) : null}
+      <DialogDescription>{[normalizedCode, productName].filter(Boolean).join(" · ")}</DialogDescription>
       <DialogBody>
         <div className="flex min-h-72 flex-col items-center justify-center rounded-lg border border-app-border bg-app-surface-muted p-6">
           {isGenerating ? (
             <div className="flex items-center gap-2 text-sm text-text-muted">
               <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
-              Generando QR...
+              Generando QR…
             </div>
           ) : previewSrc ? (
             <img
@@ -87,22 +89,24 @@ export function QrPreviewDialog({
             />
           ) : (
             <p className="text-sm text-text-muted">
-              {error ?? "Ingresa un codigo escaneable para generar el QR."}
+              {error ?? "Escribe un código escaneable para ver su QR."}
             </p>
           )}
         </div>
-        <div className="mt-4 rounded-md bg-app-surface-muted px-3 py-2 font-mono text-sm text-text-body">
-          {normalizedCode || "Sin codigo"}
-        </div>
       </DialogBody>
-      <DialogFooter>
-        <Button variant="secondary" onClick={onClose}>
-          Cerrar
-        </Button>
-        <Button onClick={() => downloadSvg(svg, normalizedCode)} disabled={!svg}>
+      <DialogFooter className="flex-wrap">
+        <Button variant="secondary" onClick={() => downloadSvg(svg, normalizedCode)} disabled={!svg}>
           <Download className="h-4 w-4" aria-hidden="true" />
-          Descargar SVG
+          Descargar
         </Button>
+        {productId ? (
+          <Button asChild>
+            <Link href={`/dashboard/products/labels?producto=${encodeURIComponent(productId)}`}>
+              <Tags className="h-4 w-4" aria-hidden="true" />
+              Imprimir etiqueta
+            </Link>
+          </Button>
+        ) : null}
       </DialogFooter>
     </Dialog>
   );

@@ -99,15 +99,22 @@ describe("validateProductForm", () => {
 });
 
 describe("validateStockAdjustment", () => {
+  it("says how much stock there is when deducting too much", () => {
+    expect(validateStockAdjustment("-12", "Conteo", 11).quantity).toBe("Stock insuficiente: hay 11");
+    expect(validateStockAdjustment("", "", 11).quantity).toBe("Escribe la cantidad");
+    expect(validateStockAdjustment("1.5", "", 11).quantity).toMatch(/entero/);
+    expect(validateStockAdjustment("-1", "x".repeat(121), 11).reason).toBe("Máximo 120 caracteres");
+  });
+
   it("rejects zero quantity", () => {
     expect(validateStockAdjustment("0", "")).toEqual({
-      quantity: "Cantidad debe ser un entero distinto de 0",
+      quantity: "Un número entero de 1 a 1.000.000",
     });
   });
 
   it("requires reason for negative adjustments", () => {
     expect(validateStockAdjustment("-2", "")).toEqual({
-      reason: "La razon es requerida para descontar stock",
+      reason: "Escribe la razón (por ejemplo: Roto o dañado)",
     });
   });
 });
@@ -125,7 +132,7 @@ describe("expiry fields", () => {
     expect(validateStockAdjustment("-1", "merma", 5, { expiresOn: "2026-12-31" }).expires_on).toBeDefined();
     expect(validateStockAdjustment("3", "", 5, { batchId: "b1" }).batch_id).toBeDefined();
     expect(validateStockAdjustment("-3", "vencido", 5, { batchId: "b1", batchAvailable: 2 }).quantity).toBe(
-      "Ese lote solo tiene 2 unidades",
+      "Ese lote solo tiene 2 unidades.",
     );
     expect(validateStockAdjustment("-2", "vencido", 5, { batchId: "b1", batchAvailable: 2 })).toEqual({});
   });
@@ -152,7 +159,7 @@ describe("expiry fields", () => {
     expect(validateStockAdjustment("-1", "merma", 5, { expiresOn: "2026-12-31" }).expires_on).toBeDefined();
     expect(validateStockAdjustment("3", "", 5, { batchId: "b1" }).batch_id).toBeDefined();
     expect(validateStockAdjustment("-3", "vencido", 5, { batchId: "b1", batchAvailable: 2 }).quantity).toBe(
-      "Ese lote solo tiene 2 unidades",
+      "Ese lote solo tiene 2 unidades.",
     );
     expect(validateStockAdjustment("-2", "vencido", 5, { batchId: "b1", batchAvailable: 2 })).toEqual({});
   });

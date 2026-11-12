@@ -1,48 +1,41 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { PageSection } from "@/components/layout/PageSection";
 import { DataFetchError } from "@/components/ui/DataFetchError";
 import { getProduct, listProductBatches, listProductStockMovements } from "@/features/products/api";
 import { ProductDetail } from "@/features/products/components/ProductDetail";
-import { ProductStockMovements } from "@/features/products/components/ProductStockMovements";
+import { DEFAULT_ALERT_DAYS } from "@/features/products/schemas";
+import { getStore } from "@/features/settings/api";
 import { listStoreLocations } from "@/features/store-locations/api";
 import { canManageProducts } from "@/lib/auth/permissions";
 import { requireSession } from "@/lib/auth/session";
 
-export default async function ProductDetailPage({
-  params,
-}: {
-  params: Promise<{ productId: string }>;
-}) {
+export const metadata: Metadata = { title: "Producto" };
+
+// Detalle del producto (tablero P03).
+export default async function ProductDetailPage({ params }: { params: Promise<{ productId: string }> }) {
   const { productId } = await params;
   const session = await requireSession();
-  const [product, movements, batches, storeLocations] = await Promise.all([
+  const owner = canManageProducts(session.role);
+  const [product, movements, batches, storeLocations, store] = await Promise.all([
     getProduct(productId),
-    listProductStockMovements(productId),
+    listProductStockMovements(productId, 0, 5),
     listProductBatches(productId),
-    canManageProducts(session.role) ? listStoreLocations() : null,
+    owner ? listStoreLocations() : null,
+    getStore().catch(() => null),
   ]);
 
   if (!product.ok && product.error.status === 404) notFound();
+  if (!product.ok) return <DataFetchError resource="el producto" error={product.error.message} />;
 
   return (
-    <PageSection className="space-y-6">
-      {!product.ok ? (
-        <DataFetchError resource="el producto" error={product.error.message} />
-      ) : (
-        <>
-          <ProductDetail
-            product={product.data}
-            role={session.role}
-            batches={batches.ok ? batches.data : null}
-            storeLocations={storeLocations?.ok ? storeLocations.data.items : undefined}
-          />
-          {!movements.ok ? (
-            <DataFetchError resource="el historial" error={movements.error.message} />
-          ) : (
-            <ProductStockMovements movements={movements.data.items} />
-          )}
-        </>
-      )}
-    </PageSection>
+    <ProductDetail
+      product={product.data}
+      role={session.role}
+      batches={batches.ok ? batches.data : null}
+      movements={movements.ok ? movements.data.items : null}
+      storeLocations={storeLocations?.ok ? storeLocations.data.items : undefined}
+      storefrontEnabled={store?.storefront_enabled ?? false}
+      defaultAlertDays={store?.default_alert_days ?? DEFAULT_ALERT_DAYS}
+    />
   );
 }

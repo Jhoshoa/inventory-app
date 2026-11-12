@@ -238,7 +238,12 @@ export function ProductBrowser({
         </div>
       )}
 
-      <PosCameraScanner open={scanOpen} onOpenChange={setScanOpen} onDetected={(code) => void onScanned(code)} />
+      <PosCameraScanner
+        open={scanOpen}
+        onOpenChange={setScanOpen}
+        onDetected={(code) => void onScanned(code)}
+        onTypeCode={() => window.setTimeout(() => document.getElementById("product-search")?.focus(), 0)}
+      />
       {owner ? (
         <ProductCsvImportDialog
           open={importOpen}

@@ -268,4 +268,15 @@ describe("ProductForm", () => {
     fireEvent.click(screen.getByRole("link", { name: "Ventas" }));
     expect(screen.getByRole("dialog", { name: "¿Salir sin guardar?" })).toBeInTheDocument();
   });
+
+  it("Duplicar copies the data without SKU, code or stock", () => {
+    render(<ProductForm mode="create" categories={categories} storeLocations={locations} duplicateOf={product} />);
+    expect(screen.getByText(/Copiado de/)).toHaveTextContent("Copiado de Yogur Frutilla.");
+    expect(screen.getByLabelText("Nombre")).toHaveValue("Yogur Frutilla (copia)");
+    expect(screen.getByLabelText("Precio de venta")).toHaveValue("6,50");
+    expect(screen.getByLabelText("Stock inicial")).toHaveValue(0);
+    expect(screen.getByLabelText(/^Código para escanear/)).toHaveValue("");
+    expect(screen.getByText("LAC000005")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Heladera, Exhibición/ })).toBeInTheDocument();
+  });
 });

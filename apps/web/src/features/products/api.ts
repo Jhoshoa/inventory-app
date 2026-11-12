@@ -41,7 +41,7 @@ export async function getProduct(productId: string) {
   return apiRequest<Product>(`/products/${productId}`, { token });
 }
 
-export async function listProductStockMovements(productId: string, offset = 0) {
+export async function listProductStockMovements(productId: string, offset = 0, limit = 50) {
   const token = await getAuthToken();
   if (!token) {
     return {
@@ -50,7 +50,7 @@ export async function listProductStockMovements(productId: string, offset = 0) {
     };
   }
   return apiRequest<StockMovementListResponse>(
-    `/products/${productId}/stock-movements?limit=50&offset=${offset}`,
+    `/products/${productId}/stock-movements?limit=${limit}&offset=${offset}`,
     { token },
   );
 }

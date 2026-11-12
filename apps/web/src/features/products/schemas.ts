@@ -189,6 +189,14 @@ export function validateDefaultAlertDays(value: string) {
 
 export const STOCK_ADJUSTMENT_MAX = 1_000_000;
 
+/** Razones rápidas al descontar (tablero P04): solo llenan el texto, se pueden editar. */
+export const QUICK_DEDUCTION_REASONS = ["Vencido", "Roto o dañado", "Conteo físico", "Consumo propio"] as const;
+export const STOCK_REASON_MAX = 120;
+
+/**
+ * Ajuste de stock. `quantity` lleva el signo (la ventana tiene Agregar / Descontar y
+ * la web pone el signo); la API recibe lo mismo.
+ */
 export function validateStockAdjustment(
   quantity: string,
   reason: string,
@@ -197,35 +205,36 @@ export function validateStockAdjustment(
 ) {
   const errors: { quantity?: string; reason?: string; expires_on?: string; alert_days?: string; batch_id?: string } = {};
   const parsed = Number(quantity);
+  const limit = STOCK_ADJUSTMENT_MAX.toLocaleString("es-BO");
 
-  if (!quantity) {
-    errors.quantity = "Cantidad es requerida";
-  } else if (!Number.isInteger(parsed) || parsed === 0) {
-    errors.quantity = "Cantidad debe ser un entero distinto de 0";
+  if (!quantity || quantity === "-") {
+    errors.quantity = "Escribe la cantidad";
+  } else if (!/^-?\d+$/.test(quantity) || parsed === 0) {
+    errors.quantity = `Un número entero de 1 a ${limit}`;
   } else if (Math.abs(parsed) > STOCK_ADJUSTMENT_MAX) {
-    errors.quantity = `La cantidad no puede superar ${STOCK_ADJUSTMENT_MAX.toLocaleString("es-BO")} unidades`;
+    errors.quantity = `Un número entero de 1 a ${limit}`;
   } else if (parsed < 0 && typeof currentStock === "number" && Math.abs(parsed) > currentStock) {
-    errors.quantity = `Stock insuficiente: disponible ${currentStock}`;
+    errors.quantity = `Stock insuficiente: hay ${currentStock}`;
   }
 
   if (parsed < 0 && !reason.trim()) {
-    errors.reason = "La razon es requerida para descontar stock";
+    errors.reason = "Escribe la razón (por ejemplo: Roto o dañado)";
   }
 
-  if (reason.length > 120) errors.reason = "La razon debe tener maximo 120 caracteres";
+  if (reason.length > STOCK_REASON_MAX) errors.reason = `Máximo ${STOCK_REASON_MAX} caracteres`;
 
   if (batch.expiresOn) {
-    if (parsed < 0) errors.expires_on = "La fecha de vencimiento solo se indica al agregar stock";
+    if (parsed < 0) errors.expires_on = "La fecha de vencimiento va solo al agregar";
     else Object.assign(errors, validateBatchFields(batch.expiresOn, batch.alertDays ?? ""));
   }
   if (batch.batchId) {
-    if (parsed > 0) errors.batch_id = "El lote solo se elige al descontar stock";
+    if (parsed > 0) errors.batch_id = "El lote se elige solo al descontar";
     else if (
       !errors.quantity &&
       typeof batch.batchAvailable === "number" &&
       Math.abs(parsed) > batch.batchAvailable
     ) {
-      errors.quantity = `Ese lote solo tiene ${batch.batchAvailable} unidades`;
+      errors.quantity = `Ese lote solo tiene ${batch.batchAvailable} ${batch.batchAvailable === 1 ? "unidad" : "unidades"}.`;
     }
   }
 

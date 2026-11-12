@@ -299,6 +299,19 @@ Aceptación: todas las páginas actuales se ven dentro del marco nuevo y se pued
 - `Select` ahora tiene `error` como `Input`; "Exhibición" y "Depósito" con tilde; textos de la foto con tilde. La foto no cambió de componente (`ImageUploader`); en el celular sus cuadros son bajos (2:1).
 - Probado con la API: nombre repetido → error en Nombre sin perder número de SKU (la API deshace la reserva), producto con categoría, lugar existente y uno nuevo, vencimiento (aviso 7 de la tienda); editar con precio "8,50" y descuento 10% (límite 15%) → `effective_price` 7.65, igual que la vista previa.
 
+**Detalle (P03) y ventanas (P04) hechos (2026-11-12).** Notas:
+
+- Detalle: foto o iniciales, nombre, SKU y código, "En el catálogo" (producto activo y catálogo encendido, de `GET /store`). Tarjetas Precio (con descuento "−10% hasta 14/11"), Costo y margen (solo dueño; "Ganas Bs 1,65 con descuento" o "Agregar el costo"), Stock (estado y mínimo) y Próximo vencimiento. Lotes (tarjetas en el celular, tabla desde 768 px; sin los agotados) con Retirar, Dónde está con su tipo, y los últimos 5 movimientos con "Ver todos" → Reportes › Movimientos de stock de ese producto.
+- Celular: "‹ Productos" y ⋯ arriba (Ver QR, Duplicar, Eliminar), Ajustar stock y Editar debajo de las tarjetas. Escritorio: Ver QR, Editar, Ajustar stock y ⋯ (Duplicar, Eliminar). Cajero: todo menos costo y margen, solo "Ver QR".
+- La foto se cambia en Editar (el detalle ya no tiene el cargador). `#donde-esta` (desde el ⋯ de la lista) abre la ventana "Dónde está".
+- Las horas de los movimientos se escriben en el navegador: hechas en el servidor salían en UTC ("Hoy 14:45" contra "Hoy 10:45") y React fallaba al hidratar.
+- Duplicar: `/dashboard/products/new?duplicar={id}` con los datos copiados, nombre "… (copia)", sin SKU, código ni stock, con sus lugares marcados.
+- Ajustar stock: pestañas Agregar / Descontar, cantidad siempre positiva con − / + (la web pone el signo), "Stock después" en vivo, Vence el con el aviso de la tienda, "Sale de" (automático o un lote, con su estado), razones rápidas, botón "Agregar 6 unidades" / "Descontar 4 unidades" (rojo al descontar). Pasarse del stock o del lote se avisa al escribir y bloquea el botón. Retirar abre Descontar con ese lote y sus unidades ("Vencido" si venció).
+- Dónde está: checkboxes con tipo, buscador con más de 8, hasta 6, "+ Nuevo lugar" encima y vuelve marcado, "Todavía no hay lugares".
+- Eliminar: "¿Eliminar X?", qué se conserva, el botón se habilita solo con ELIMINAR exacto. QR: "Descargar" y "Imprimir etiqueta" (abre Etiquetas con el producto elegido, `?producto={id}`). Cámara: "Permite la cámara en tu navegador o escribe el código" y "Escribir el código" (deja el cursor en el campo).
+- `Dialog`: con una ventana sobre otra, Escape cerraba las dos; ahora cierra solo la de arriba.
+- Probado con la API: agregar 2 sin fecha, descontar 1 del lote con "Conteo físico" (el lote bajó de 11 a 10), Dónde está con Exhibición / Depósito, QR → Etiquetas, Duplicar → crear la copia → eliminarla.
+
 ### Fase 4 · Vender (2,5–3 días)
 
 Es la fase más delicada: es lo que más se usa y funciona sin conexión.
@@ -415,6 +428,7 @@ Manual en cada fase: celular (375), tablet (768) y escritorio (1280); dueño y c
 | Fecha | Cambio |
 |---|---|
 | 2026-11-11 | Primera versión. E3 encontrado al revisar el código (apertura y contado en 0). Nota de P08 corregida (razón obligatoria al anular un movimiento de caja). |
+| 2026-11-12 | Fase 3, P03 y P04: detalle del producto y ventanas (ajustar stock, dónde está, eliminar, QR, cámara). Duplicar. Escape con ventanas una sobre otra. |
 | 2026-11-12 | Fase 3, P02: formulario nuevo / editar con validaciones, 409 en su campo, categoría y lugar sin salir, "Así se ve al vender" y "¿Salir sin guardar?". |
 | 2026-11-11 | Fase 3, P01B: Categorías y Lugares en la tienda con sus rutas y pestañas, Aviso de vencimiento, fuera de Configuración. E11 encontrado y arreglado (el aviso de la tienda no se usaba). |
 | 2026-11-11 | Fase 3, lista de productos (P01): tarjetas y tabla, chips con conteos, filtros en la URL, Enter con código, menús ⋯ y estados. |

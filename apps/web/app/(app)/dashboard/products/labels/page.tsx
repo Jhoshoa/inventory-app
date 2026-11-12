@@ -4,7 +4,7 @@ import { PageSection } from "@/components/layout/PageSection";
 import { DataFetchError } from "@/components/ui/DataFetchError";
 import { ForbiddenState } from "@/components/ui/ForbiddenState";
 import { listProductCategories } from "@/features/product-categories/api";
-import { listProducts } from "@/features/products/api";
+import { getProduct, listProducts } from "@/features/products/api";
 import { ProductLabelPage } from "@/features/products/components/ProductLabelPage";
 import {
   DEFAULT_PRODUCT_LIMIT,
@@ -33,10 +33,15 @@ export default async function ProductLabelsPage({
     ok: true as const,
     data: { items: [], total: 0, limit: params.limit, offset: params.offset },
   };
-  const [products, categories] = await Promise.all([
+  const preselectedId = typeof rawParams.producto === "string" ? rawParams.producto : null;
+  const [products, categories, preselected] = await Promise.all([
     params.q ? listProducts(params) : Promise.resolve(emptyProducts),
     listProductCategories(),
+    preselectedId ? getProduct(preselectedId) : Promise.resolve(null),
   ]);
+  // Solo si tiene código: sin código no hay QR que imprimir.
+  const initialSelected =
+    preselected?.ok && preselected.data.qr_code?.trim() ? [{ product: preselected.data, quantity: 1 }] : [];
 
   return (
     <PageSection className="space-y-6">
@@ -62,6 +67,7 @@ export default async function ProductLabelsPage({
           initialParams={params}
           initialProducts={products.data}
           categories={categories.ok ? categories.data.items : []}
+          initialSelected={initialSelected}
         />
       )}
     </PageSection>

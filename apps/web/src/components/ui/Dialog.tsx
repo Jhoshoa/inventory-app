@@ -36,6 +36,9 @@ interface DialogContextValue {
 
 const DialogContext = createContext<DialogContextValue | null>(null);
 
+/** Ventanas abiertas, de abajo hacia arriba: solo la última responde a Escape. */
+const openDialogs: symbol[] = [];
+
 function useDialogContext() {
   const ctx = useContext(DialogContext);
   if (!ctx) {
@@ -126,17 +129,27 @@ export function Dialog({
 
   /* ── Escape key ────────────────────────────────────────────── */
 
+  // Con una ventana abierta encima de otra (p. ej. "+ Nuevo lugar" sobre "Dónde está"),
+  // Escape cierra solo la de arriba. El lugar en la pila se toma al abrir (no en cada render).
+  const onOpenChangeRef = useRef(onOpenChange);
+  onOpenChangeRef.current = onOpenChange;
+
   useEffect(() => {
     if (!open) return;
+    const token = Symbol("dialog");
+    openDialogs.push(token);
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
+      if (e.key === "Escape" && openDialogs[openDialogs.length - 1] === token) {
         e.preventDefault();
-        onOpenChange(false);
+        onOpenChangeRef.current(false);
       }
     };
     document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
-  }, [open, onOpenChange]);
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      openDialogs.splice(openDialogs.indexOf(token), 1);
+    };
+  }, [open]);
 
   /* ── Focus management ──────────────────────────────────────── */
 
