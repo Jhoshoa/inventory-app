@@ -2696,6 +2696,28 @@
             ],
             "title": "Created By User Id"
           },
+          "customer_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Customer Name"
+          },
+          "device_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Device Id"
+          },
           "discount_amount": {
             "default": "0",
             "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
@@ -3062,6 +3084,17 @@
             "title": "Product Id",
             "type": "string"
           },
+          "product_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Product Name"
+          },
           "quantity_delta": {
             "title": "Quantity Delta",
             "type": "integer"
@@ -3303,6 +3336,18 @@
           "items_count": {
             "title": "Items Count",
             "type": "integer"
+          },
+          "opened_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Opened At"
           },
           "opening_cash_amount": {
             "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
@@ -4180,6 +4225,11 @@
               }
             ],
             "title": "Storefront Whatsapp"
+          },
+          "timezone": {
+            "default": "America/La_Paz",
+            "title": "Timezone",
+            "type": "string"
           }
         },
         "required": [
@@ -5698,6 +5748,17 @@
             "format": "date-time",
             "title": "Expires At",
             "type": "string"
+          },
+          "invited_by_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Invited By Name"
           },
           "role": {
             "title": "Role",
