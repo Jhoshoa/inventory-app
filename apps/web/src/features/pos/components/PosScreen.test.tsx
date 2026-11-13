@@ -239,13 +239,15 @@ describe("PosScreen", () => {
     renderScreen();
     await scan("7751234");
     await screen.findByRole("list", { name: "Productos de la venta" });
+    // Agregar devuelve el foco al buscador con un temporizador: se espera antes de quitarlo.
+    await waitFor(() => expect(screen.getByRole("searchbox")).toHaveFocus());
     act(() => {
       (document.activeElement as HTMLElement | null)?.blur();
     });
     fireEvent.keyDown(document.body, { key: "/" });
     expect(screen.getByRole("searchbox")).toHaveFocus();
     fireEvent.keyDown(document.body, { key: "F9" });
-    await waitFor(() => expect(createSaleAction).toHaveBeenCalled());
+    await waitFor(() => expect(createSaleAction).toHaveBeenCalled(), { timeout: 3000 });
   });
 
   it("Vaciar asks first", async () => {

@@ -20,9 +20,9 @@ export function PaymentRequestButton() {
       }
 
       const message = [
-        `Hola, soy owner de ${result.storeName} en ${BRAND.name}.`,
+        `Hola, soy el dueño de ${result.storeName} en ${BRAND.name}.`,
         result.billingNit ? `NIT: ${result.billingNit}.` : null,
-        `Quiero coordinar el pago de mi suscripcion (estado actual: ${result.subscriptionStatus}).`,
+        `Quiero coordinar el pago de mi plan (estado actual: ${result.subscriptionStatus}).`,
       ]
         .filter(Boolean)
         .join(" ");
@@ -30,7 +30,7 @@ export function PaymentRequestButton() {
       toast.success("Solicitud registrada. Abrimos WhatsApp para coordinar el pago.");
       window.open(whatsappHref(message), "_blank", "noopener,noreferrer");
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "No se pudo generar la solicitud de pago");
+      toast.error(error instanceof Error ? error.message : "No se pudo registrar la solicitud de pago");
     } finally {
       setIsSubmitting(false);
     }
@@ -38,7 +38,7 @@ export function PaymentRequestButton() {
 
   return (
     <Button type="button" variant="primary" onClick={handleClick} disabled={isSubmitting}>
-      {isSubmitting ? "Generando solicitud..." : "Pagar ahora por WhatsApp"}
+      {isSubmitting ? "Abriendo WhatsApp…" : "Pagar por WhatsApp"}
     </Button>
   );
 }

@@ -409,6 +409,18 @@ Es la fase más delicada: es lo que más se usa y funciona sin conexión.
 6. Redirigir cualquier enlace viejo a Categorías o Ubicaciones dentro de Configuración hacia Productos.
 7. Cambio de texto "Tu boleta" → "Tu pedido" en las plantillas del catálogo (Vitrina y Lista).
 
+**Fase 7 hecha (2026-11-12).** Notas:
+
+- Índice (P10): tienda y plan arriba ("Ver planes"), buscador por palabras de cada sección y sin acentos ("whatsapp" → Catálogo público), tres grupos con resumen en vivo (descuentos, personas e invitaciones, catálogo Activo / Apagado). Escritorio y tablet: menú de Configuración a la izquierda; en el catálogo va a lo ancho porque trae su menú de partes y la vista previa.
+- Datos de la tienda: logo (el del catálogo; ahora también sale en el recibo impreso), nombre, dirección, teléfono +591, zona horaria solo lectura (la API la entrega ahora), "Ver cómo se imprime" con un recibo de ejemplo. "Cambios sin guardar · Descartar · Guardar" y aviso al salir con cambios.
+- Precios y descuentos en la página (antes ventana); montos con coma.
+- Usuarios y permisos: personas con rol y último ingreso (B3), invitaciones con "vence en N días", ⋯ con confirmación (hacer / quitar dueño, desactivar / activar, reenviar / revocar), la regla del último dueño explicada ("Siempre debe quedar al menos un dueño activo."), invitar en una hoja con el rol en tarjetas; sin correo configurado se muestra el enlace con Copiar.
+- Catálogo público (P11): un solo formulario mostrado por partes (celular: tarjeta de estado con el interruptor, el link, Copiar y Compartir, y la lista de partes con resumen; escritorio: menú de partes, la parte y la vista previa). Al guardar con errores se abre la parte del primero. "Tu boleta" → "Tu pedido" en las plantillas, la vista previa y el mensaje de la API.
+- Plan y pagos (P12): la tarjeta cambia por estado (Prueba, Activo, En gracia, Suspendido) con "Pagar por WhatsApp", datos de la suscripción e historial de cambios del plan.
+- Mi perfil: correo, "Cambiar" contraseña (envía el enlace de recuperación), cerrar sesión. El cajero llega desde Más; también hay un enlace en Más para el dueño. La API no dice si la persona entró con Google, así que se muestra la nota para cuentas de Google en lugar de ocultar la opción.
+- Enlaces viejos a Categorías o Lugares en Configuración redirigen a Productos.
+- Se borraron `SettingsOverview`, `StoreEditorDialog`, `DiscountPolicyDialog`, `PermissionMatrix`, `BillingSettings`, `BillingHistoryTable`, `UsersSection`, `UsersTable`, `InvitationsTable`, `InviteCashierForm` (y sus tests).
+
 ### Fase 8 · Acceso (1 día)
 
 1. P13: entrar (Google siempre pide la cuenta), crear tienda, recuperar contraseña (mismo mensaje exista o no la cuenta), nueva contraseña, aceptar invitación.
@@ -491,6 +503,7 @@ Manual en cada fase: celular (375), tablet (768) y escritorio (1280); dueño y c
 | Fecha | Cambio |
 |---|---|
 | 2026-11-11 | Primera versión. E3 encontrado al revisar el código (apertura y contado en 0). Nota de P08 corregida (razón obligatoria al anular un movimiento de caja). |
+| 2026-11-12 | Fase 7 hecha: Configuración con índice y menú, datos de la tienda, descuentos, usuarios, catálogo por partes, plan y perfil. "Tu boleta" → "Tu pedido". |
 | 2026-11-12 | E16 arreglado: código para escanear único por tienda (migración 042), formato A–Z 0–9 y guion, sin 500 al importar. |
 | 2026-11-12 | Fase 6 hecha: Reportes con rango compartido, pestañas, ventas con comparación, cierres con diferencia, movimientos de caja y de stock, descargas. E14 arreglado en la API. |
 | 2026-11-12 | E15 arreglado: la API guarda antes de responder (sesión con `scope="function"`). |

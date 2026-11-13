@@ -1,5 +1,5 @@
-import { BillingSkeleton } from "@/features/settings/components/BillingSkeleton";
+import { SettingsSkeleton } from "@/features/settings/components/SettingsSkeleton";
 
 export default function Loading() {
-  return <BillingSkeleton />;
+  return <SettingsSkeleton />;
 }
