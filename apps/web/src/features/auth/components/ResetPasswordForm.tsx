@@ -3,13 +3,12 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Eye, EyeOff } from "lucide-react";
-import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
 import { FieldError } from "@/components/ui/FieldError";
-import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
-import { PASSWORD_HINT, passwordStrengthError } from "../passwordRules";
+import { passwordMeetsRules } from "../passwordRules";
+import { authErrorMessage, destinationAfterLogin, emailFromAccessToken } from "../session";
+import { AuthNotice, PasswordChecklist, PasswordField } from "./AuthParts";
 
 type LinkState = "checking" | "ready" | "invalid";
 
@@ -19,7 +18,7 @@ interface ResetErrors {
   form?: string;
 }
 
-const INVALID_LINK_MESSAGE = "El enlace expiró o no es válido. Solicita uno nuevo.";
+const INVALID_LINK_MESSAGE = "Este enlace ya no sirve.";
 
 /**
  * Supabase entrega el access token de recuperación en el *fragmento* de la URL
@@ -38,11 +37,10 @@ export function ResetPasswordForm() {
   const router = useRouter();
   const tokenRef = useRef<string | null>(null);
   const parsedRef = useRef(false);
-  const passwordRef = useRef<HTMLInputElement>(null);
   const [linkState, setLinkState] = useState<LinkState>("checking");
+  const [email, setEmail] = useState<string | null>(null);
   const [password, setPassword] = useState("");
   const [confirmation, setConfirmation] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState<ResetErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -56,6 +54,7 @@ export function ResetPasswordForm() {
     if (window.location.hash) {
       window.history.replaceState(null, "", window.location.pathname);
     }
+    setEmail(emailFromAccessToken(tokenRef.current));
     setLinkState(tokenRef.current ? "ready" : "invalid");
   }, []);
 
@@ -64,13 +63,11 @@ export function ResetPasswordForm() {
     if (isSubmitting || !tokenRef.current) return;
 
     const nextErrors: ResetErrors = {};
-    if (!password) nextErrors.password = "Contraseña es requerida";
-    else nextErrors.password = passwordStrengthError(password);
-    if (password && password !== confirmation) {
-      nextErrors.confirmation = "Las contraseñas no coinciden";
-    }
+    if (!passwordMeetsRules(password)) nextErrors.password = "La contraseña todavía no cumple los requisitos";
+    if (password && password !== confirmation) nextErrors.confirmation = "Las contraseñas no coinciden.";
     if (nextErrors.password || nextErrors.confirmation) {
       setErrors(nextErrors);
+      document.getElementById(nextErrors.password ? "password" : "confirmation")?.focus();
       return;
     }
     setErrors({});
@@ -84,6 +81,20 @@ export function ResetPasswordForm() {
       });
 
       if (response.ok) {
+        // "Guardar y entrar": con la contraseña nueva se entra directo; si no se puede, al login con aviso.
+        if (email) {
+          const login = await fetch("/api/auth/login", {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ email, password }),
+          }).catch(() => null);
+          if (login?.ok) {
+            const body = (await login.json().catch(() => ({}))) as { user?: { role?: string } };
+            router.replace(await destinationAfterLogin(body.user?.role));
+            router.refresh();
+            return;
+          }
+        }
         router.replace("/login?reset=success");
         return;
       }
@@ -95,78 +106,69 @@ export function ResetPasswordForm() {
       }
 
       const body = await response.json().catch(() => ({}));
-      setErrors({ form: body.message ?? "No se pudo actualizar la contraseña. Intenta de nuevo." });
+      setErrors({ form: authErrorMessage(response.status, body.message, "No se pudo cambiar la contraseña. Intenta de nuevo.") });
     } catch {
-      setErrors({ form: "No se pudo conectar con el servidor." });
+      setErrors({ form: "No se pudo conectar con el servidor. Revisa tu conexión." });
     } finally {
       setIsSubmitting(false);
     }
   }
 
   if (linkState === "checking") {
-    return <p className="text-center text-sm text-text-muted">Verificando enlace...</p>;
+    return <p className="text-center text-sm text-text-muted">Revisando el enlace…</p>;
   }
 
   if (linkState === "invalid") {
     return (
-      <div className="space-y-4">
-        <Alert variant="error">{INVALID_LINK_MESSAGE}</Alert>
+      <div className="flex flex-col gap-4">
+        <AuthNotice tone="error">{INVALID_LINK_MESSAGE}</AuthNotice>
+        <p className="text-sm text-text-body">Puede que ya lo hayas usado o que haya vencido. Pide otro y ábrelo desde el último correo.</p>
         <Button asChild className="w-full">
-          <Link href="/forgot-password">Solicitar un enlace nuevo</Link>
+          <Link href="/forgot-password">Pedir un enlace nuevo</Link>
         </Button>
       </div>
     );
   }
 
   return (
-    <form className="space-y-4" onSubmit={onSubmit} noValidate>
-      {errors.form ? <Alert variant="error">{errors.form}</Alert> : null}
-      <div className="space-y-2">
+    <form className="flex flex-col gap-4" onSubmit={onSubmit} noValidate>
+      {email ? (
+        <p className="text-sm text-text-muted">
+          Para <strong className="text-text-strong">{email}</strong>
+        </p>
+      ) : null}
+      {errors.form ? <AuthNotice tone="error">{errors.form}</AuthNotice> : null}
+      <div className="space-y-1.5">
         <Label htmlFor="password">Nueva contraseña</Label>
-        <div className="relative">
-          <Input
-            ref={passwordRef}
-            id="password"
-            name="password"
-            type={showPassword ? "text" : "password"}
-            autoComplete="new-password"
-            maxLength={128}
-            value={password}
-            error={Boolean(errors.password)}
-            onChange={(event) => setPassword(event.target.value)}
-            className="pr-10"
-          />
-          <button
-            type="button"
-            onClick={() => {
-              setShowPassword(!showPassword);
-              passwordRef.current?.focus();
-            }}
-            className="absolute right-2 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-strong"
-            aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
-          >
-            {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-          </button>
-        </div>
-        <p className="text-xs text-text-muted">{PASSWORD_HINT}</p>
-        <FieldError message={errors.password} />
+        <PasswordField
+          id="password"
+          name="password"
+          autoComplete="new-password"
+          maxLength={128}
+          value={password}
+          error={Boolean(errors.password)}
+          aria-describedby="password-rules"
+          onChange={(event) => setPassword(event.target.value)}
+        />
+        <FieldError id="password-error" message={errors.password} />
       </div>
-      <div className="space-y-2">
-        <Label htmlFor="confirmation">Confirmar contraseña</Label>
-        <Input
+      <div className="space-y-1.5">
+        <Label htmlFor="confirmation">Repite la contraseña</Label>
+        <PasswordField
           id="confirmation"
           name="confirmation"
-          type={showPassword ? "text" : "password"}
           autoComplete="new-password"
           maxLength={128}
           value={confirmation}
           error={Boolean(errors.confirmation)}
+          aria-describedby={errors.confirmation ? "confirmation-error" : undefined}
           onChange={(event) => setConfirmation(event.target.value)}
         />
-        <FieldError message={errors.confirmation} />
+        <FieldError id="confirmation-error" message={errors.confirmation} />
       </div>
-      <Button className="w-full" type="submit" disabled={isSubmitting}>
-        {isSubmitting ? "Guardando..." : "Guardar contraseña"}
+      <PasswordChecklist id="password-rules" password={password} />
+      <Button className="!h-12 w-full text-base" type="submit" disabled={isSubmitting || !passwordMeetsRules(password)}>
+        {isSubmitting ? "Guardando…" : "Guardar y entrar"}
       </Button>
     </form>
   );

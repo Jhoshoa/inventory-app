@@ -35,6 +35,18 @@ function normalizeSpaces(text: string): string {
   return text.replace(WHITESPACE_VARIANTS_RE, " ");
 }
 
+const timeShortFormatter = new Intl.DateTimeFormat("es-BO", {
+  hour: "2-digit",
+  minute: "2-digit",
+  hour12: false,
+  timeZone: BOLIVIA_TIMEZONE,
+});
+
+/** "08:02": hora en Bolivia, 24 h. */
+export function formatTimeShort(value: string) {
+  return normalizeSpaces(timeShortFormatter.format(new Date(value)));
+}
+
 export function formatDateTimeShort(value: string) {
   return normalizeSpaces(dateTimeShortFormatter.format(new Date(value)));
 }

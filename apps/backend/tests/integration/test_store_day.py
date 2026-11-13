@@ -205,6 +205,8 @@ async def test_owner_can_preview_and_close_store_day_with_cash_count(client):
     report = report_response.json()
     assert report["business_day_id"] == open_response.json()["id"]
     assert report["cash_difference_amount"] == "-2.00"
+    # Reportes muestra el horario de la jornada.
+    assert report["opened_at"].rstrip("Z") == open_response.json()["opened_at"].rstrip("Z")
 
 
 async def test_current_close_report_rejects_open_day_after_reopen(client):

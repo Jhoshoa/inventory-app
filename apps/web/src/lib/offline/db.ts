@@ -10,6 +10,8 @@ export interface OfflineProduct {
   qr_code: string | null;
   discount_type: "percentage" | "fixed" | null;
   discount_value: string;
+  /** Hasta cuando vale el descuento (ISO). Los guardados antes no lo traen. */
+  discount_ends_at?: string | null;
   effective_price: string;
   /** Llega con el sync; sin indice, asi que no cambia la version de Dexie. */
   locations?: ProductLocationSummary[];

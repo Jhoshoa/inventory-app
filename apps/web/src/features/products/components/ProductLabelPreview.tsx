@@ -17,10 +17,13 @@ export function ProductLabelPreview({
   selectedProducts,
   settings,
   dimensions,
+  sheets,
 }: {
   selectedProducts: SelectedLabelProduct[];
   settings: ProductLabelSettings;
   dimensions: LabelDimensions;
+  /** Hojas que ocupan (para "Vista previa · 2 hojas"). */
+  sheets?: number;
 }) {
   const [qrByCode, setQrByCode] = useState<Record<string, string>>({});
   const [isGenerating, setIsGenerating] = useState(false);
@@ -89,23 +92,27 @@ export function ProductLabelPreview({
       </style>
       <div className="print-hidden flex items-center justify-between gap-3">
         <div>
-          <h2 className="text-base font-semibold text-text-strong">Vista previa</h2>
-          <p className="text-sm text-text-muted">{printableItems.length} etiquetas listas para imprimir.</p>
+          <h2 className="text-[15px] font-bold text-text-strong">
+            Vista previa{sheets ? ` · ${sheets === 1 ? "1 hoja" : `${sheets} hojas`}` : ""}
+          </h2>
+          <p className="text-sm text-text-muted">
+            {printableItems.length === 1 ? "1 etiqueta lista" : `${printableItems.length} etiquetas listas`} para imprimir.
+          </p>
         </div>
         {isGenerating ? (
           <div className="flex items-center gap-2 text-sm text-text-muted">
             <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
-            Generando QR
+            Generando QR…
           </div>
         ) : null}
       </div>
 
       {error ? <Alert variant="error">{error}</Alert> : null}
 
-      <div className="print-label-sheet min-h-96 overflow-x-auto rounded-lg border border-app-border bg-app-surface p-4 shadow-panel">
+      <div className="print-label-sheet min-h-72 overflow-x-auto rounded-card border border-app-border bg-app-surface p-4">
         {printableItems.length === 0 ? (
           <div className="print-hidden flex h-72 items-center justify-center text-sm text-text-muted">
-            Selecciona productos con codigo escaneable para previsualizar etiquetas.
+            Elige productos con código para ver las etiquetas.
           </div>
         ) : (
           <div

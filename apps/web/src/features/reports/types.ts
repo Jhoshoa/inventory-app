@@ -57,6 +57,8 @@ export interface StockMovement {
   reason: string | null;
   device_id: string | null;
   created_at: string;
+  /** Nombre del producto (null si se borró o con una API anterior). */
+  product_name?: string | null;
 }
 
 export interface StockMovementListResponse {

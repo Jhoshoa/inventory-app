@@ -1,15 +1,12 @@
+import type { Metadata } from "next";
 import { AuthShell } from "@/features/auth/components/AuthShell";
 import { ResetPasswordForm } from "@/features/auth/components/ResetPasswordForm";
 
+export const metadata: Metadata = { title: "Nueva contraseña" };
+
 export default function ResetPasswordPage() {
   return (
-    <AuthShell
-      title="Nueva contraseña"
-      description="Elige una contraseña nueva para tu cuenta."
-      footerText="¿Ya la cambiaste?"
-      footerHref="/login"
-      footerLinkLabel="Iniciar sesión"
-    >
+    <AuthShell title="Nueva contraseña" footerText="¿Te acordaste?" footerHref="/login" footerLinkLabel="Entra">
       <ResetPasswordForm />
     </AuthShell>
   );

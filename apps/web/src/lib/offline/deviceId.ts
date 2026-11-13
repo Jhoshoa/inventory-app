@@ -1,10 +1,12 @@
+import { randomUuid } from "./uuid";
+
 const DEVICE_ID_KEY = "tiendastock_device_id";
 
 export function getDeviceId(): string {
   if (typeof window === "undefined") return "server";
   let id = window.localStorage.getItem(DEVICE_ID_KEY);
   if (!id) {
-    id = crypto.randomUUID();
+    id = randomUuid();
     window.localStorage.setItem(DEVICE_ID_KEY, id);
   }
   return id;

@@ -16,7 +16,7 @@ export function CollapsibleSection({
   return (
     <details
       id={id}
-      className="group rounded-lg border border-app-border bg-app-surface shadow-panel"
+      className="group rounded-card border border-app-border bg-app-surface shadow-panel"
       open={defaultOpen}
     >
       <summary className="flex cursor-pointer list-none items-start justify-between gap-4 px-4 py-4">

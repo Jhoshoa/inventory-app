@@ -41,7 +41,7 @@ export async function getProduct(productId: string) {
   return apiRequest<Product>(`/products/${productId}`, { token });
 }
 
-export async function listProductStockMovements(productId: string, offset = 0) {
+export async function listProductStockMovements(productId: string, offset = 0, limit = 50) {
   const token = await getAuthToken();
   if (!token) {
     return {
@@ -50,7 +50,7 @@ export async function listProductStockMovements(productId: string, offset = 0) {
     };
   }
   return apiRequest<StockMovementListResponse>(
-    `/products/${productId}/stock-movements?limit=50&offset=${offset}`,
+    `/products/${productId}/stock-movements?limit=${limit}&offset=${offset}`,
     { token },
   );
 }
@@ -99,7 +99,7 @@ export async function importProductsCsv(file: File): Promise<ImportJob> {
     throw new ApiError({
       status: response.status,
       code: "import_error",
-      message: body.detail || body.message || "Error al importar productos",
+      message: body.detail || body.message || "No se pudieron importar los productos",
     });
   }
 

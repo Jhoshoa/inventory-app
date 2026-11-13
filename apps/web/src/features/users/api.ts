@@ -13,6 +13,7 @@ export interface UserInvitationPreview {
   role: "owner" | "cashier";
   status: "pending" | "accepted" | "revoked" | "expired";
   expires_at: string;
+  invited_by_name?: string | null;
 }
 
 export async function getInvitationPreview(token: string): Promise<ApiResult<UserInvitationPreview>> {

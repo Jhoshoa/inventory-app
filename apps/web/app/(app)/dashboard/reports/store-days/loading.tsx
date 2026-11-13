@@ -1,5 +1,5 @@
-import { StoreDayReportsSkeleton } from "@/features/store-day/components/StoreDayReportsSkeleton";
+import { ReportsSkeleton } from "@/features/reports/components/ReportsSkeleton";
 
 export default function Loading() {
-  return <StoreDayReportsSkeleton />;
+  return <ReportsSkeleton />;
 }

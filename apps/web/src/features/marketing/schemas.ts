@@ -9,20 +9,20 @@ export function validateContactForm(values: ContactFormValues): Record<string, s
   if (!values.name.trim()) {
     errors.name = "Tu nombre es requerido";
   } else if (values.name.trim().length < 2) {
-    errors.name = "Ingresa un nombre valido";
+    errors.name = "Escribe un nombre válido";
   } else if (values.name.trim().length > 150) {
     errors.name = "El nombre no puede exceder 150 caracteres";
   }
 
   if (!values.phone.trim()) {
-    errors.phone = "Tu telefono es requerido para poder contactarte";
+    errors.phone = "Escribe tu teléfono para poder contactarte";
   } else {
     const phoneError = validateInternationalPhone(values.phone);
     if (phoneError) errors.phone = phoneError;
   }
 
   if (values.email.trim() && !EMAIL_RE.test(values.email.trim())) {
-    errors.email = "Ingresa un correo valido";
+    errors.email = "Escribe un correo válido";
   }
 
   if (values.storeName.length > 150) {

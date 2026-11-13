@@ -29,6 +29,58 @@
   --color-status-info: #0369a1;
   --color-status-info-bg: #eff6ff;
   --color-status-info-border: #bfdbfe;
+  --color-brand-50: #eff6ff;
+  --color-brand-100: #dbeafe;
+  --color-brand-500: #2563eb;
+  --color-brand-600: #1d4ed8;
+  --color-brand-700: #1e40af;
+  --color-brand-800: #1e3a8a;
+  /* Forma de botones, campos y tarjetas (el panel la cambia en .theme-app). */
+  --radius-control: 0.375rem;
+  --radius-card: 0.5rem;
+  --height-control: 2.5rem;
+}
+
+/* Panel y acceso: estilo A "Mostrador" (ver docs/rediseno-ui-opcion-a).
+   Solo dentro de .theme-app, asi el catalogo publico y la landing no cambian. */
+.theme-app {
+  --color-app-background: #f7f8fa;
+  --color-app-surface: #ffffff;
+  --color-app-surface-muted: #f9fafb;
+  --color-app-surface-raised: #ffffff;
+  --color-app-border: #e8eaef;
+  --color-app-border-strong: #d0d5dd;
+  --color-text-strong: #101828;
+  --color-text-body: #344054;
+  --color-text-muted: #475467;
+  --color-text-disabled: #98a2b3;
+  --color-text-inverse: #ffffff;
+  --color-focus-ring: #1f4fd8;
+  --color-status-success: #067647;
+  --color-status-success-bg: #ecfdf3;
+  --color-status-success-border: #abefc6;
+  --color-status-warning: #b54708;
+  --color-status-warning-bg: #fffaeb;
+  --color-status-warning-border: #fedf89;
+  --color-status-danger: #b42318;
+  --color-status-danger-hover: #912018;
+  --color-status-danger-bg: #fef3f2;
+  --color-status-danger-border: #fecdca;
+  --color-status-info: #1f3b99;
+  --color-status-info-bg: #eef4ff;
+  --color-status-info-border: #c7d7fe;
+  --color-brand-50: #eef4ff;
+  --color-brand-100: #dce6ff;
+  --color-brand-500: #3b6be8;
+  --color-brand-600: #2a59de;
+  --color-brand-700: #1f4fd8;
+  --color-brand-800: #163ba6;
+  --radius-control: 0.75rem;
+  --radius-card: 1rem;
+  --height-control: 2.75rem;
+  font-feature-settings: "tnum" 1;
+  background: var(--color-app-background);
+  color: var(--color-text-body);
 }
 
 * {
@@ -123,4 +175,20 @@ body {
 
 .marketing-details > summary::-webkit-details-marker {
   display: none;
+}
+
+/* Toque de 44 px (regla 3.7) sin cambiar el tamaño que se ve: chips de 34 px, enlaces de texto. */
+@layer utilities {
+  .tap-area {
+    position: relative;
+  }
+  .tap-area::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    height: max(100%, 44px);
+    transform: translateY(-50%);
+  }
 }

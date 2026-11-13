@@ -16,3 +16,21 @@ vi.mock("sonner", () => ({
 vi.mock("next/font/local", () => ({
   default: () => ({ className: "font-local", variable: "font-local", style: { fontFamily: "font-local" } }),
 }));
+
+// jsdom no trae matchMedia: por defecto "pantalla angosta" (los tests que lo necesitan lo reemplazan).
+if (typeof window !== "undefined" && !window.matchMedia) {
+  Object.defineProperty(window, "matchMedia", {
+    configurable: true,
+    writable: true,
+    value: (query: string) => ({
+      matches: false,
+      media: query,
+      onchange: null,
+      addEventListener: () => undefined,
+      removeEventListener: () => undefined,
+      addListener: () => undefined,
+      removeListener: () => undefined,
+      dispatchEvent: () => false,
+    }),
+  });
+}

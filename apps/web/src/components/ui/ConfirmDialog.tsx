@@ -15,6 +15,9 @@ interface ConfirmDialogProps {
   onConfirm: () => void | Promise<void>;
   children?: ReactNode;
   triggerLabel?: string;
+  /** Abierta desde afuera (p. ej. un menú o "Desactivar…" de otra ventana); sin botón propio. */
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
 export function ConfirmDialog({
@@ -27,8 +30,15 @@ export function ConfirmDialog({
   variant = "danger",
   onConfirm,
   children,
+  open: controlledOpen,
+  onOpenChange,
 }: ConfirmDialogProps) {
-  const [open, setOpen] = useState(false);
+  const [localOpen, setLocalOpen] = useState(false);
+  const open = controlledOpen ?? localOpen;
+  const setOpen = (next: boolean) => {
+    setLocalOpen(next);
+    onOpenChange?.(next);
+  };
   const [isPending, setIsPending] = useState(false);
 
   async function handleConfirm() {

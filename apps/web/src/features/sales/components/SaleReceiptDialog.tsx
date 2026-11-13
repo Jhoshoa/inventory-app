@@ -1,38 +1,46 @@
 "use client";
 
-import { useState } from "react";
-import { Printer, Receipt as ReceiptIcon } from "lucide-react";
+import { MessageCircle, Printer } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Dialog, DialogBody, DialogFooter, DialogTitle } from "@/components/ui/Dialog";
+import { saleReceiptText, whatsappHref } from "../list";
 import { SaleReceipt, type ReceiptStoreInfo } from "./SaleReceipt";
 import type { Sale } from "../types";
 
-export function SaleReceiptDialog({ sale, store }: { sale: Sale; store: ReceiptStoreInfo }) {
-  const [open, setOpen] = useState(false);
-
+/** Recibo (tablero P06): la vista del ticket con WhatsApp e Imprimir (página de 80 mm). */
+export function SaleReceiptDialog({
+  sale,
+  store,
+  today,
+  open,
+  onOpenChange,
+}: {
+  sale: Sale;
+  store: ReceiptStoreInfo;
+  today: string;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}) {
   return (
-    <>
-      <Button variant="secondary" onClick={() => setOpen(true)}>
-        <ReceiptIcon className="h-4 w-4" aria-hidden="true" />
-        Ver recibo
-      </Button>
-      <Dialog open={open} onOpenChange={setOpen} size="lg">
-        <DialogTitle close>Recibo de venta</DialogTitle>
-        <DialogBody>
-          <SaleReceipt sale={sale} store={store} />
-        </DialogBody>
-        <DialogFooter>
-          <Button variant="secondary" onClick={() => setOpen(false)}>
-            Cerrar
-          </Button>
-          <Button asChild>
-            <a href={`/dashboard/sales/${sale.id}/print`} target="_blank" rel="noopener noreferrer">
-              <Printer className="h-4 w-4" aria-hidden="true" />
-              Imprimir / Descargar PDF
-            </a>
-          </Button>
-        </DialogFooter>
-      </Dialog>
-    </>
+    <Dialog open={open} onOpenChange={onOpenChange} position="sheet" size="sm">
+      <DialogTitle close>Recibo</DialogTitle>
+      <DialogBody className="bg-app-surface-muted pb-4">
+        <SaleReceipt sale={sale} store={store} />
+      </DialogBody>
+      <DialogFooter>
+        <Button variant="secondary" className="flex-1" asChild>
+          <a href={whatsappHref(saleReceiptText(sale, store.name, today))} target="_blank" rel="noopener noreferrer">
+            <MessageCircle className="h-4 w-4" aria-hidden="true" />
+            WhatsApp
+          </a>
+        </Button>
+        <Button className="flex-1" asChild>
+          <a href={`/dashboard/sales/${sale.id}/print`} target="_blank" rel="noopener">
+            <Printer className="h-4 w-4" aria-hidden="true" />
+            Imprimir
+          </a>
+        </Button>
+      </DialogFooter>
+    </Dialog>
   );
 }

@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from datetime import date
 from uuid import UUID
 
 from src.domain.entities.product import Product
@@ -31,6 +32,7 @@ class IProductRepository(ABC):
         offset: int = 0,
         sort: str = "name",
         direction: str = "asc",
+        today: date | None = None,
     ) -> tuple[list[Product], int]: ...
 
     @abstractmethod
@@ -59,7 +61,7 @@ class IProductRepository(ABC):
     async def get_public_by_id(self, store_id: UUID, product_id: UUID) -> Product | None: ...
 
     @abstractmethod
-    async def qr_code_exists(self, qr_code: str, exclude_product_id: UUID | None = None) -> bool: ...
+    async def qr_code_exists(self, store_id: UUID, qr_code: str, exclude_product_id: UUID | None = None) -> bool: ...
 
     @abstractmethod
     async def sku_exists(self, store_id: UUID, sku: str, exclude_product_id: UUID | None = None) -> bool: ...
@@ -71,7 +73,7 @@ class IProductRepository(ABC):
     async def skus_exist(self, store_id: UUID, skus: list[str]) -> set[str]: ...
 
     @abstractmethod
-    async def qr_codes_exist(self, qr_codes: list[str]) -> set[str]: ...
+    async def qr_codes_exist(self, store_id: UUID, qr_codes: list[str]) -> set[str]: ...
 
     @abstractmethod
     async def names_exist(self, store_id: UUID, names: list[tuple[str, str]]) -> set[str]: ...

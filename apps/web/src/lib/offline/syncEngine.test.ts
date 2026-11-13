@@ -2,8 +2,10 @@ import "fake-indexeddb/auto";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { getOfflineDb } from "./db";
 import {
+  computeEffectivePrice,
   discardPendingSale,
   flushPendingSales,
+  isDiscountExpired,
   listConflictedSales,
   pullCatalog,
   queueSale,
@@ -126,6 +128,43 @@ describe("flushPendingSales", () => {
     expect(result.synced).toBe(1);
     const stored = await db.pendingSales.get(sale.id);
     expect(stored?.status).toBe("synced");
+  });
+
+  it("two syncs at the same time send once and the sale stays synced", async () => {
+    const db = getOfflineDb();
+    const sale = await queueSale({
+      items: [{ product_id: "product-1", product_name: "Arroz", quantity: 1, unit_price: "10.00" }],
+      paymentMethod: "efectivo",
+      customerName: null,
+      discountType: null,
+      discountValue: "0",
+      discountSourceOverride: null,
+      totalEstimate: "10.00",
+    });
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        results: [
+          {
+            client_change_id: sale.id,
+            entity: "sale",
+            operation: "create",
+            entity_id: sale.id,
+            status: "accepted",
+            server_version: 1,
+            server_updated_at: new Date().toISOString(),
+            error: null,
+          },
+        ],
+        server_time: new Date().toISOString(),
+      }),
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    const [first, second] = await Promise.all([flushPendingSales(), flushPendingSales()]);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(first).toEqual(second);
+    expect((await db.pendingSales.get(sale.id))?.status).toBe("synced");
   });
 
   it("marks conflicting sales for manual review without discarding them", async () => {
@@ -407,5 +446,82 @@ describe("pullCatalog", () => {
     await pullCatalog();
     const product = await db.products.get("product-10");
     expect(product).toBeUndefined();
+  });
+});
+
+describe("product discounts offline", () => {
+  const now = new Date("2026-11-11T12:00:00Z");
+
+  it("applies a discount until its end date", () => {
+    expect(computeEffectivePrice("10.00", "percentage", "10", "2026-11-12T00:00:00Z", now)).toBe("9.00");
+    expect(computeEffectivePrice("10.00", "fixed", "2.5", null, now)).toBe("7.50");
+    expect(computeEffectivePrice("10.00", "percentage", "10", "2026-11-11T12:00:00Z", now)).toBe("10.00");
+    expect(computeEffectivePrice("10.00", "percentage", "10", "2026-11-01T00:00:00Z", now)).toBe("10.00");
+    expect(computeEffectivePrice("10.00", "fixed", "15", null, now)).toBe("0.00");
+  });
+
+  it("knows when a discount expired", () => {
+    expect(isDiscountExpired(null, now)).toBe(false);
+    expect(isDiscountExpired(undefined, now)).toBe(false);
+    expect(isDiscountExpired("2026-11-11T11:59:59Z", now)).toBe(true);
+    expect(isDiscountExpired("2026-11-11T12:00:01Z", now)).toBe(false);
+    expect(isDiscountExpired("no-es-fecha", now)).toBe(false);
+  });
+
+  it("stores the discount end date from the server", async () => {
+    const db = getOfflineDb();
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          changes: [
+            {
+              entity: "product",
+              operation: "upsert",
+              entity_id: "product-20",
+              server_version: 1,
+              server_updated_at: "2026-11-11T10:00:00Z",
+              payload: {
+                id: "product-20",
+                name: "Yogur",
+                price: "10.00",
+                stock: 4,
+                unit: "unidad",
+                qr_code: null,
+                discount_type: "percentage",
+                discount_value: "10",
+                discount_ends_at: "2999-01-01T00:00:00Z",
+              },
+            },
+          ],
+          server_time: "2026-11-11T10:00:01Z",
+        }),
+      }),
+    );
+
+    await pullCatalog();
+
+    const product = await db.products.get("product-20");
+    expect(product?.discount_ends_at).toBe("2999-01-01T00:00:00Z");
+    expect(product?.effective_price).toBe("9.00");
+  });
+});
+
+describe("pullCatalog en paralelo", () => {
+  it("una sola descarga aunque la pidan el marco y Vender a la vez", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ changes: [], server_time: "2026-11-13T12:00:00Z" }), {
+        status: 200,
+        headers: { "content-type": "application/json" },
+      }),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+    try {
+      await Promise.all([pullCatalog(), pullCatalog(), pullCatalog()]);
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+    } finally {
+      vi.unstubAllGlobals();
+    }
   });
 });

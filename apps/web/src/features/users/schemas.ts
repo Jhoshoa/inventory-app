@@ -1,19 +1,19 @@
+import { passwordMeetsRules } from "@/features/auth/passwordRules";
 import type { AcceptInvitationFormValues, InviteCashierFormValues } from "./types";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const PASSWORD_RE = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]).{8,}$/;
 
 export function validateInviteCashierForm(values: InviteCashierFormValues): Record<string, string> {
   const errors: Record<string, string> = {};
 
   if (!values.email.trim()) {
-    errors.email = "El email es requerido";
+    errors.email = "Escribe el correo de la persona";
   } else if (!EMAIL_RE.test(values.email)) {
-    errors.email = "Email invalido";
+    errors.email = "Ese correo no es válido. Ej.: ana@correo.com";
   }
 
   if (values.role !== "owner" && values.role !== "cashier") {
-    errors.role = "Rol invalido";
+    errors.role = "Elige Cajero o Dueño";
   }
 
   return errors;
@@ -23,14 +23,11 @@ export function validateAcceptInvitationForm(values: AcceptInvitationFormValues)
   const errors: Record<string, string> = {};
 
   if (!values.full_name.trim()) {
-    errors.full_name = "Nombre completo es requerido";
+    errors.full_name = "Escribe tu nombre";
   }
 
-  if (!values.password) {
-    errors.password = "Contraseña es requerida";
-  } else if (!PASSWORD_RE.test(values.password)) {
-    errors.password =
-      "Minimo 8 caracteres, con mayuscula, minuscula, numero y caracter especial";
+  if (!passwordMeetsRules(values.password)) {
+    errors.password = "La contraseña todavía no cumple los requisitos";
   }
 
   return errors;

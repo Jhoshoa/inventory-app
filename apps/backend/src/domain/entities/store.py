@@ -36,6 +36,7 @@ class Store:
     allow_manual_discount: bool = False
     max_manual_discount_amount: Decimal = Decimal(0)
     allow_cashier_discount_override: bool = False
+    default_alert_days: int = 5
     storefront_enabled: bool = False
     storefront_slug: str | None = None
     storefront_tier: str = "none"

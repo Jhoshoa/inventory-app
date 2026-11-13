@@ -3,10 +3,10 @@ import { ShieldAlert } from "lucide-react";
 import { Button } from "./Button";
 
 export function ForbiddenState({
-  title = "Accion restringida",
-  description = "Esta accion requiere permisos de owner.",
+  title = "No tienes permiso",
+  description = "Solo el dueño de la tienda puede hacer esto.",
   actionHref = "/dashboard",
-  actionLabel = "Volver al dashboard",
+  actionLabel = "Volver a Inicio",
 }: {
   title?: string;
   description?: string;
@@ -14,7 +14,7 @@ export function ForbiddenState({
   actionLabel?: string;
 }) {
   return (
-    <section className="rounded-lg border border-status-warningBorder bg-status-warningBg p-6" role="status">
+    <section className="rounded-card border border-status-warningBorder bg-status-warningBg p-6" role="status">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
         <ShieldAlert className="h-6 w-6 text-status-warning" aria-hidden />
         <div className="min-w-0 flex-1">

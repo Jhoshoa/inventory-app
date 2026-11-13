@@ -77,6 +77,6 @@ describe("FeaturedProductsPicker", () => {
     );
 
     expect(screen.queryByLabelText("Buscar producto para destacar")).not.toBeInTheDocument();
-    expect(screen.getByText(/maximo de 10 productos/)).toBeInTheDocument();
+    expect(screen.getByText(/máximo de 10 productos/)).toBeInTheDocument();
   });
 });

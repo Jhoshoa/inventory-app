@@ -80,6 +80,8 @@ export async function listCashMovements(params: {
   from_date?: string;
   to_date?: string;
   type?: string;
+  /** Caja muestra también los anulados (tachados, con su razón). */
+  include_voided?: boolean;
   limit: number;
   offset: number;
 }): Promise<CashMovementListResult> {
@@ -95,6 +97,7 @@ export async function listCashMovements(params: {
   if (params.from_date) query.set("from_date", params.from_date);
   if (params.to_date) query.set("to_date", params.to_date);
   if (params.type && params.type !== "all") query.set("type", params.type);
+  if (params.include_voided) query.set("include_voided", "true");
   query.set("limit", params.limit.toString());
   query.set("offset", params.offset.toString());
   return apiRequest<CashMovementList>(`/cash-movements?${query.toString()}`, { token });

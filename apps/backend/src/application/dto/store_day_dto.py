@@ -95,6 +95,8 @@ class StoreDayClosingPreviewDTO(BaseModel):
 
 
 class StoreDayCloseReportDTO(StoreDayClosingPreviewDTO):
+    # Horario de la jornada en Reportes ("08:00–21:10"); al reabrir, la ultima apertura.
+    opened_at: datetime | None = None
     closed_at: datetime
     closed_by_user_id: UUID
     counted_cash_amount: Decimal | None = None

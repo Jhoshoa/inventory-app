@@ -17,10 +17,13 @@ export function PosCameraScanner({
   open,
   onOpenChange,
   onDetected,
+  onTypeCode,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onDetected: (code: string) => void;
+  /** "Escribir el código" (tablero P04): cierra y deja escribirlo a mano. */
+  onTypeCode?: () => void;
 }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const onDetectedRef = useRef(onDetected);
@@ -99,9 +102,9 @@ export function PosCameraScanner({
   }, [open]);
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange} size="md">
-      <DialogTitle close>Escanear codigo</DialogTitle>
-      <DialogDescription>Apunta la camara al codigo QR o de barras del producto.</DialogDescription>
+    <Dialog open={open} onOpenChange={onOpenChange} size="md" position="sheet">
+      <DialogTitle close>Escanear código</DialogTitle>
+      <DialogDescription>Apunta al código QR o de barras. Al leerlo se cierra solo.</DialogDescription>
       <DialogBody>
         <div className="relative aspect-square w-full overflow-hidden rounded-lg bg-black">
           <video
@@ -110,7 +113,7 @@ export function PosCameraScanner({
             autoPlay
             muted
             playsInline
-            aria-label="Vista de la camara"
+            aria-label="Vista de la cámara"
           />
           {status === "scanning" ? (
             <div
@@ -120,7 +123,7 @@ export function PosCameraScanner({
           ) : null}
           {status === "starting" ? (
             <p className="absolute inset-0 flex items-center justify-center text-sm font-medium text-white">
-              Iniciando camara...
+              Iniciando cámara…
             </p>
           ) : null}
         </div>
@@ -131,8 +134,14 @@ export function PosCameraScanner({
         ) : null}
       </DialogBody>
       <DialogFooter>
-        <Button variant="secondary" onClick={() => onOpenChange(false)}>
-          Cancelar
+        <Button
+          variant="secondary"
+          onClick={() => {
+            onOpenChange(false);
+            onTypeCode?.();
+          }}
+        >
+          Escribir el código
         </Button>
       </DialogFooter>
     </Dialog>
@@ -142,13 +151,13 @@ export function PosCameraScanner({
 function cameraErrorMessage(error: unknown) {
   const name = error instanceof Error ? error.name : "";
   if (name === "NotAllowedError" || name === "SecurityError") {
-    return "Permite el acceso a la camara en el navegador para escanear.";
+    return "Permite la cámara en tu navegador o escribe el código.";
   }
   if (name === "NotFoundError" || name === "OverconstrainedError") {
-    return "No se encontro una camara en este dispositivo.";
+    return "No se encontró una cámara en este dispositivo. Escribe el código.";
   }
   if (name === "NotReadableError") {
-    return "La camara esta siendo usada por otra aplicacion.";
+    return "Otra aplicación está usando la cámara. Ciérrala o escribe el código.";
   }
-  return "No se pudo iniciar la camara.";
+  return "No se pudo iniciar la cámara. Escribe el código.";
 }

@@ -1,4 +1,5 @@
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
+from decimal import Decimal
 from uuid import UUID, uuid4
 
 from sqlalchemy import select
@@ -429,3 +430,45 @@ async def test_sync_pull_does_not_leak_other_store_data(client, db_session):
         if change["entity"] == "product"
     }
     assert names == {"Cafe"}
+
+
+async def test_sync_pull_product_payload_includes_discount_fields(client, db_session):
+    store = await db_session.get(StoreModel, dependencies.DEV_STORE_ID)
+    store.allow_percentage_discount = True
+    store.max_percentage_discount = Decimal("50.00")
+    await db_session.commit()
+    ends_at = (datetime.now(UTC) + timedelta(days=3)).replace(microsecond=0)
+    created = await client.post(
+        "/api/v1/products",
+        json={
+            "name": "Yogur",
+            "price": "10.00",
+            "stock": 4,
+            "discount_type": "percentage",
+            "discount_value": "10",
+            "discount_ends_at": ends_at.isoformat(),
+        },
+    )
+    assert created.status_code == 201
+    plain = await client.post("/api/v1/products", json={"name": "Pan", "price": "0.50", "stock": 9})
+    assert plain.status_code == 201
+
+    pull_response = await client.post(
+        "/api/v1/sync/pull",
+        json={"device_id": "device-discount", "since": datetime(2020, 1, 1, tzinfo=UTC).isoformat()},
+    )
+
+    assert pull_response.status_code == 200
+    payloads = {
+        change["entity_id"]: change["payload"]
+        for change in pull_response.json()["changes"]
+        if change["entity"] == "product"
+    }
+    discounted = payloads[created.json()["id"]]
+    assert discounted["discount_type"] == "percentage"
+    assert float(discounted["discount_value"]) == 10
+    assert datetime.fromisoformat(discounted["discount_ends_at"]).replace(tzinfo=UTC) == ends_at.replace(tzinfo=UTC)
+    without_discount = payloads[plain.json()["id"]]
+    assert without_discount["discount_type"] is None
+    assert float(without_discount["discount_value"]) == 0
+    assert without_discount["discount_ends_at"] is None

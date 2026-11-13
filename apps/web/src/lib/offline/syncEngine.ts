@@ -1,6 +1,7 @@
 import type { ProductLocationSummary } from "@/features/store-locations/types";
 import { getDeviceId } from "./deviceId";
 import { getOfflineDb, LAST_PULLED_AT_KEY, type OfflineProduct, type PendingSale } from "./db";
+import { randomUuid } from "./uuid";
 
 interface SyncChangePayload {
   client_change_id: string;
@@ -43,7 +44,20 @@ interface SyncPullResponse {
 
 const EPOCH = "1970-01-01T00:00:00.000Z";
 
-export async function pullCatalog(): Promise<{ ok: boolean; updated: number }> {
+// Igual que el envío: una sola descarga a la vez en esta pestaña. El marco y Vender la
+// pedían juntos al abrir la página (y la descarga repetía lo mismo).
+let pullInFlight: Promise<{ ok: boolean; updated: number }> | null = null;
+
+export function pullCatalog(): Promise<{ ok: boolean; updated: number }> {
+  if (!pullInFlight) {
+    pullInFlight = pullCatalogOnce().finally(() => {
+      pullInFlight = null;
+    });
+  }
+  return pullInFlight;
+}
+
+async function pullCatalogOnce(): Promise<{ ok: boolean; updated: number }> {
   const db = getOfflineDb();
   const lastPulledRow = await db.meta.get(LAST_PULLED_AT_KEY);
   const since = lastPulledRow?.value ?? EPOCH;
@@ -80,6 +94,7 @@ export async function pullCatalog(): Promise<{ ok: boolean; updated: number }> {
         qr_code: string | null;
         discount_type?: "percentage" | "fixed" | null;
         discount_value?: string;
+        discount_ends_at?: string | null;
         locations?: unknown;
       };
       const record: OfflineProduct = {
@@ -91,10 +106,12 @@ export async function pullCatalog(): Promise<{ ok: boolean; updated: number }> {
         qr_code: payload.qr_code ?? null,
         discount_type: payload.discount_type ?? null,
         discount_value: payload.discount_value ?? "0",
+        discount_ends_at: payload.discount_ends_at ?? null,
         effective_price: computeEffectivePrice(
           payload.price,
           payload.discount_type ?? null,
           payload.discount_value ?? "0",
+          payload.discount_ends_at ?? null,
         ),
         locations: parseLocations(payload.locations),
         deleted: false,
@@ -119,14 +136,24 @@ export async function seedCatalogIfEmpty(): Promise<void> {
   await pullCatalog();
 }
 
-function computeEffectivePrice(
+/** El descuento de producto deja de valer al llegar su fecha (igual que en la API). */
+export function isDiscountExpired(discountEndsAt: string | null | undefined, now: Date = new Date()): boolean {
+  if (!discountEndsAt) return false;
+  const endsAt = new Date(discountEndsAt).getTime();
+  return Number.isFinite(endsAt) && endsAt <= now.getTime();
+}
+
+export function computeEffectivePrice(
   price: string,
   discountType: "percentage" | "fixed" | null,
   discountValue: string,
+  discountEndsAt: string | null = null,
+  now: Date = new Date(),
 ): string {
   const priceNum = Number(price);
   const valueNum = Number(discountValue);
   if (!discountType || Number.isNaN(priceNum) || Number.isNaN(valueNum)) return price;
+  if (isDiscountExpired(discountEndsAt, now)) return price;
   const discount = discountType === "percentage" ? (priceNum * valueNum) / 100 : valueNum;
   const effective = Math.max(0, priceNum - Math.min(discount, priceNum));
   return effective.toFixed(2);
@@ -145,7 +172,7 @@ export interface QueueSaleInput {
 export async function queueSale(input: QueueSaleInput): Promise<PendingSale> {
   const db = getOfflineDb();
   const sale: PendingSale = {
-    id: crypto.randomUUID(),
+    id: randomUuid(),
     items: input.items,
     payment_method: input.paymentMethod,
     customer_name: input.customerName,
@@ -173,7 +200,22 @@ export async function queueSale(input: QueueSaleInput): Promise<PendingSale> {
   return sale;
 }
 
-export async function flushPendingSales(): Promise<{ synced: number; conflicts: number }> {
+// Un solo envío a la vez en esta pestaña: el marco y Vender usan cada uno el hook de
+// conexión y los dos sincronizan al volver internet. En paralelo, uno marcaba la venta
+// como enviada y el otro la devolvía a "pendiente" (el servidor no la duplica, pero
+// quedaba "enviando 1").
+let flushInFlight: Promise<{ synced: number; conflicts: number }> | null = null;
+
+export function flushPendingSales(): Promise<{ synced: number; conflicts: number }> {
+  if (!flushInFlight) {
+    flushInFlight = flushPendingSalesOnce().finally(() => {
+      flushInFlight = null;
+    });
+  }
+  return flushInFlight;
+}
+
+async function flushPendingSalesOnce(): Promise<{ synced: number; conflicts: number }> {
   const db = getOfflineDb();
   const pending = await db.pendingSales.where("status").equals("pending").toArray();
   if (pending.length === 0) return { synced: 0, conflicts: 0 };

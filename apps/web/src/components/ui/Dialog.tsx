@@ -20,7 +20,7 @@ function cn(...classes: (string | undefined | false | null)[]) {
 /* ------------------------------------------------------------------ */
 
 type DialogSize = "sm" | "md" | "lg" | "xl" | "2xl" | "full";
-type DialogPosition = "center" | "left" | "right" | "top" | "bottom";
+type DialogPosition = "center" | "left" | "right" | "top" | "bottom" | "sheet";
 
 /* ------------------------------------------------------------------ */
 /*  Context                                                           */
@@ -35,6 +35,9 @@ interface DialogContextValue {
 }
 
 const DialogContext = createContext<DialogContextValue | null>(null);
+
+/** Ventanas abiertas, de abajo hacia arriba: solo la última responde a Escape. */
+const openDialogs: symbol[] = [];
 
 function useDialogContext() {
   const ctx = useContext(DialogContext);
@@ -59,20 +62,32 @@ const SIZE_CLASSES: Record<DialogSize, string> = {
   full: "max-w-full",
 };
 
+const SHEET_SIZE_CLASSES: Record<DialogSize, string> = {
+  sm: "sm:max-w-sm",
+  md: "sm:max-w-md",
+  lg: "sm:max-w-lg",
+  xl: "sm:max-w-xl",
+  "2xl": "sm:max-w-2xl",
+  full: "sm:max-w-full",
+};
+
 const OVERLAY_POSITION: Record<DialogPosition, string> = {
   center: "flex items-center justify-center p-4",
   left: "flex items-stretch justify-start p-4 pl-0",
   right: "flex items-stretch justify-end p-4 pr-0",
   top: "flex items-start justify-center p-4 pt-0",
   bottom: "flex items-end justify-center p-4 pb-0",
+  // Hoja desde abajo en el celular, ventana centrada desde 640 px (tableros P04 y P09).
+  sheet: "flex items-end justify-center sm:items-center sm:p-4",
 };
 
 const SURFACE_POSITION: Record<DialogPosition, string> = {
-  center: "rounded-lg",
+  center: "rounded-card",
   left: "h-full w-full max-w-sm rounded-r-lg",
   right: "h-full w-full max-w-sm rounded-l-lg",
   top: "w-full rounded-b-lg",
   bottom: "w-full rounded-t-lg",
+  sheet: "max-h-[92vh] w-full rounded-t-[24px] pb-[env(safe-area-inset-bottom)] sm:max-h-full sm:rounded-card sm:pb-0",
 };
 
 /* ------------------------------------------------------------------ */
@@ -114,24 +129,36 @@ export function Dialog({
 
   /* ── Escape key ────────────────────────────────────────────── */
 
+  // Con una ventana abierta encima de otra (p. ej. "+ Nuevo lugar" sobre "Dónde está"),
+  // Escape cierra solo la de arriba. El lugar en la pila se toma al abrir (no en cada render).
+  const onOpenChangeRef = useRef(onOpenChange);
+  onOpenChangeRef.current = onOpenChange;
+
   useEffect(() => {
     if (!open) return;
+    const token = Symbol("dialog");
+    openDialogs.push(token);
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
+      if (e.key === "Escape" && openDialogs[openDialogs.length - 1] === token) {
         e.preventDefault();
-        onOpenChange(false);
+        onOpenChangeRef.current(false);
       }
     };
     document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
-  }, [open, onOpenChange]);
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      openDialogs.splice(openDialogs.indexOf(token), 1);
+    };
+  }, [open]);
 
   /* ── Focus management ──────────────────────────────────────── */
 
   useEffect(() => {
     if (open) {
       previousFocusRef.current = document.activeElement as HTMLElement;
-      surfaceRef.current?.focus();
+      // Un campo con data-autofocus recibe el foco (p. ej. "Nombre" al crear); si no, la ventana.
+      const preferred = surfaceRef.current?.querySelector<HTMLElement>("[data-autofocus]");
+      (preferred ?? surfaceRef.current)?.focus();
     } else {
       previousFocusRef.current?.focus();
     }
@@ -191,6 +218,7 @@ export function Dialog({
             "relative flex max-h-full flex-col bg-app-surface outline-none",
             "border border-app-border shadow-floating",
             position === "center" ? SIZE_CLASSES[size] : "",
+            position === "sheet" ? SHEET_SIZE_CLASSES[size] : "",
             SURFACE_POSITION[position],
             className,
           )}
@@ -202,7 +230,8 @@ export function Dialog({
   );
 
   if (typeof document === "undefined") return null;
-  return createPortal(content, document.body);
+  // Dentro del panel se monta en .theme-app para usar los colores del estilo A.
+  return createPortal(content, document.querySelector(".theme-app") ?? document.body);
 }
 
 /* ------------------------------------------------------------------ */

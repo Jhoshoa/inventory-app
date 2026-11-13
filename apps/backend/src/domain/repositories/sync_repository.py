@@ -6,7 +6,9 @@ from uuid import UUID
 
 class ISyncRepository(ABC):
     @abstractmethod
-    async def get_updates_since(self, store_id: UUID, since: datetime) -> list[Any]: ...
+    async def get_updates_since(
+        self, store_id: UUID, since: datetime, *, include_cost: bool = True
+    ) -> list[Any]: ...
 
     @abstractmethod
     async def push_changes(

@@ -55,6 +55,7 @@ async def update_store(
             allow_manual_discount=dto.allow_manual_discount,
             max_manual_discount_amount=dto.max_manual_discount_amount,
             allow_cashier_discount_override=dto.allow_cashier_discount_override,
+            default_alert_days=dto.default_alert_days,
             storefront_enabled=dto.storefront_enabled,
             storefront_slug=dto.storefront_slug,
             storefront_color_primary=dto.storefront_color_primary,

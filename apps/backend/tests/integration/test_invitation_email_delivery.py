@@ -43,3 +43,24 @@ async def test_if_the_email_cannot_be_sent_the_owner_gets_a_clear_error_and_noth
     # No quedo una invitacion pendiente que bloquee reintentar con el mismo correo.
     listing = await client.get("/api/v1/user-invitations")
     assert [i["email"] for i in listing.json()["items"]] == []
+
+
+async def test_invitation_preview_says_who_invited(client, db_session):
+    from src.infrastructure.database.models import UserModel
+
+    owner = await db_session.get(UserModel, dependencies.DEV_USER_ID)
+    owner.full_name = "Rosa Quispe"
+    await db_session.commit()
+    sender = _RecordingSender()
+    app.dependency_overrides[dependencies.get_email_sender] = lambda: sender
+    try:
+        await client.post("/api/v1/user-invitations", json={"email": "ana@tienda.com"})
+    finally:
+        app.dependency_overrides.pop(dependencies.get_email_sender, None)
+    token = sender.sent[0]["url"].rsplit("/invite/", 1)[1]
+
+    preview = await client.get(f"/api/v1/user-invitations/preview/{token}")
+
+    assert preview.status_code == 200, preview.text
+    assert preview.json()["invited_by_name"] == "Rosa Quispe"
+    assert preview.json()["role"] == "cashier"

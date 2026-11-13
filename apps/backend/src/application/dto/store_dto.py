@@ -4,6 +4,8 @@ from uuid import UUID
 
 from pydantic import BaseModel, Field, field_validator
 
+from src.domain.entities.product_batch import DEFAULT_ALERT_DAYS, MAX_ALERT_DAYS
+
 from src.application.dto.storefront_settings_dto import StorefrontSettingsDTO
 from src.domain.value_objects.phone import normalize_phone
 
@@ -20,6 +22,8 @@ class StoreUpdateDTO(BaseModel):
     allow_manual_discount: bool | None = None
     max_manual_discount_amount: Decimal | None = Field(default=None, ge=0)
     allow_cashier_discount_override: bool | None = None
+    # Aviso de vencimiento por defecto para los lotes nuevos.
+    default_alert_days: int | None = Field(default=None, ge=0, le=MAX_ALERT_DAYS)
     storefront_enabled: bool | None = None
     storefront_slug: str | None = Field(default=None, min_length=3, max_length=60)
     storefront_color_primary: str | None = None
@@ -68,11 +72,14 @@ class StoreResponseDTO(BaseModel):
     address: str | None = None
     phone: str | None = None
     is_active: bool
+    # Solo lectura en Configuracion: cambiarla moveria los dias de venta y cierres.
+    timezone: str = "America/La_Paz"
     allow_percentage_discount: bool = False
     max_percentage_discount: Decimal = Decimal(0)
     allow_manual_discount: bool = False
     max_manual_discount_amount: Decimal = Decimal(0)
     allow_cashier_discount_override: bool = False
+    default_alert_days: int = DEFAULT_ALERT_DAYS
     storefront_enabled: bool = False
     storefront_slug: str | None = None
     storefront_tier: str = "none"

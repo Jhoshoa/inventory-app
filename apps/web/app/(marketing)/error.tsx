@@ -15,7 +15,7 @@ export default function MarketingError({
   return (
     <div className="mx-auto flex min-h-[60vh] max-w-3xl items-center px-4 py-10">
       <ErrorState
-        title="No se pudo cargar esta pagina"
+        title="No se pudo cargar esta página"
         description="Ocurrio un error inesperado. Intenta nuevamente en unos segundos."
         retryLabel="Reintentar"
         onRetry={reset}

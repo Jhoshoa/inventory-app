@@ -173,7 +173,7 @@ export default async function StorefrontProductPage({
             {offerUntil ? <p className="mt-1 font-receipt text-[13px] font-bold uppercase">{offerUntil}</p> : null}
           </div>
           <p className="font-receipt text-[13px] font-bold">
-            {product.available ? (product.low_stock ? "DISPONIBLE · ULTIMAS UNIDADES" : "DISPONIBLE") : "AGOTADO"}
+            {product.available ? (product.low_stock ? "DISPONIBLE · ÚLTIMAS UNIDADES" : "DISPONIBLE") : "AGOTADO"}
           </p>
           <div className="md:max-w-sm">
             <CardBoletaButton product={product} size="large" />
@@ -206,7 +206,7 @@ export default async function StorefrontProductPage({
 
       {relatedItems.length > 0 ? (
         <section className="mt-10 space-y-4">
-          <h2 className="font-display text-2xl uppercase">Tambien te puede interesar</h2>
+          <h2 className="font-display text-2xl uppercase">También te puede interesar</h2>
           <ul className="grid grid-cols-2 gap-x-3 gap-y-5 sm:grid-cols-3 sm:gap-x-5 lg:grid-cols-4">
             {relatedItems.map((item) => (
               <li key={item.id}>

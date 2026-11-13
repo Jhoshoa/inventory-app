@@ -8,7 +8,7 @@ import { BRAND, whatsappHref } from "@/lib/brand";
 
 export const metadata: Metadata = {
   title: "Precios",
-  description: "Conoce que incluye el plan y solicita una cotizacion personalizada segun el tamano de tu negocio.",
+  description: "Conoce qué incluye el plan y pide una cotización según el tamaño de tu negocio.",
   alternates: { canonical: "/precios" },
 };
 
@@ -19,8 +19,8 @@ const INCLUDED = [
   "Cierre de caja diario",
   "Etiquetas y codigos QR para productos",
   "Importacion de productos por CSV",
-  "Roles de dueno y cajero",
-  `${TRIAL_DAYS} dias de prueba gratis, sin tarjeta de credito`,
+  "Roles de dueño y cajero",
+  `${TRIAL_DAYS} días de prueba gratis, sin tarjeta de crédito`,
 ];
 
 export default function PreciosPage() {
@@ -35,7 +35,7 @@ export default function PreciosPage() {
       <div className="mx-auto mt-12 max-w-md rounded-xl border border-app-borderStrong bg-app-surface p-8 shadow-floating">
         <p className="text-sm font-semibold uppercase tracking-wide text-brand-700">Plan Negocio</p>
         <p className="mt-2 text-3xl font-bold text-text-strong">Desde una cotizacion personalizada</p>
-        <p className="mt-1 text-sm text-text-muted">Precio segun numero de usuarios y sucursales.</p>
+        <p className="mt-1 text-sm text-mkt-muted">Precio según número de usuarios y sucursales.</p>
 
         <ul className="mt-6 space-y-3">
           {INCLUDED.map((item) => (
@@ -58,8 +58,8 @@ export default function PreciosPage() {
         </div>
       </div>
 
-      <p className="mx-auto mt-10 max-w-lg text-center text-sm text-text-muted">
-        No pedimos tarjeta de credito para la prueba gratuita. Puedes cancelar en cualquier momento durante el periodo de prueba.
+      <p className="mx-auto mt-10 max-w-lg text-center text-sm text-mkt-muted">
+        No pedimos tarjeta de crédito para la prueba gratuita. Puedes cancelar en cualquier momento durante el periodo de prueba.
       </p>
     </div>
   );

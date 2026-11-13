@@ -4,6 +4,11 @@ from decimal import Decimal
 from uuid import UUID
 
 from src.application.exceptions import ApplicationError, ConflictError, NotFoundError
+from src.application.use_cases.products.code_rules import (
+    free_product_code,
+    normalize_product_code,
+    product_code_error,
+)
 from src.application.use_cases.products.name_normalizer import normalize_product_name
 from src.application.use_cases.sales.discount_engine import (
     validate_discount_against_policy,
@@ -80,17 +85,38 @@ class UpdateProductUseCase:
             product.min_stock = input.min_stock
 
         if input.sku is not None:
-            if await self._repo.sku_exists(input.store_id, input.sku, exclude_product_id=product.id):
-                raise ConflictError("El SKU ya esta en uso por otro producto")
-            product.sku = input.sku
+            # El formato se revisa solo si cambia: un SKU viejo que no lo cumple no impide editar.
+            unchanged_sku = input.sku.strip() == (product.sku or "")
+            sku = product.sku if unchanged_sku else normalize_product_code(input.sku)
+            if not unchanged_sku:
+                message = product_code_error(sku)
+                if message:
+                    raise ApplicationError(f"SKU: {message}", {"field": "sku"})
+                if sku and await self._repo.sku_exists(input.store_id, sku, exclude_product_id=product.id):
+                    raise ConflictError("El SKU ya esta en uso por otro producto")
+            product.sku = sku
         if input.cost_price is not None:
             product.cost_price = input.cost_price
         if input.photo_url is not None:
             product.photo_url = input.photo_url
         if input.qr_code is not None:
-            if await self._repo.qr_code_exists(input.qr_code, exclude_product_id=product.id):
-                raise ConflictError("El codigo escaneable ya esta en uso por otro producto")
-            product.qr_code = input.qr_code
+            # Igual que el SKU: el codigo que ya tenia (aunque sea de antes de la regla) se deja.
+            unchanged_code = bool(product.qr_code) and input.qr_code.strip() == product.qr_code
+            if not unchanged_code:
+                qr_code = normalize_product_code(input.qr_code)
+                if qr_code is None:
+                    # Vaciarlo crea uno automatico, como al crear (un producto siempre se puede escanear).
+                    qr_code = await free_product_code(
+                        product.sku,
+                        lambda code: self._repo.qr_code_exists(input.store_id, code, exclude_product_id=product.id),
+                    )
+                elif qr_code != product.qr_code:
+                    message = product_code_error(qr_code)
+                    if message:
+                        raise ApplicationError(f"Codigo para escanear: {message}", {"field": "qr_code"})
+                    if await self._repo.qr_code_exists(input.store_id, qr_code, exclude_product_id=product.id):
+                        raise ConflictError("El codigo escaneable ya esta en uso por otro producto")
+                product.qr_code = qr_code
 
         if input.remove_discount:
             product.discount_type = None

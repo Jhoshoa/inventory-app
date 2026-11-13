@@ -1,3 +1,4 @@
+from datetime import UTC, datetime
 from uuid import uuid4
 
 from sqlalchemy import select
@@ -309,3 +310,34 @@ async def test_cannot_modify_user_from_another_store(client, db_session):
     response = await client.patch(f"/api/v1/users/{other_user_id}/role", json={"role": "owner"})
 
     assert response.status_code == 404
+
+
+async def test_users_list_includes_last_login_at(client, db_session):
+    logged_at = datetime(2026, 11, 10, 15, 30, tzinfo=UTC)
+    db_session.add(
+        UserModel(
+            id=uuid4(),
+            email="luis@example.com",
+            store_id=dependencies.DEV_STORE_ID,
+            role="cashier",
+            is_active=True,
+            last_login_at=logged_at,
+        )
+    )
+    db_session.add(
+        UserModel(
+            id=uuid4(),
+            email="nunca@example.com",
+            store_id=dependencies.DEV_STORE_ID,
+            role="cashier",
+            is_active=True,
+        )
+    )
+    await db_session.commit()
+
+    response = await client.get("/api/v1/users")
+
+    assert response.status_code == 200
+    by_email = {user["email"]: user for user in response.json()["items"]}
+    assert datetime.fromisoformat(by_email["luis@example.com"]["last_login_at"]).replace(tzinfo=UTC) == logged_at
+    assert by_email["nunca@example.com"]["last_login_at"] is None

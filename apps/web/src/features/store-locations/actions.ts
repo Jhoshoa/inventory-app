@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { apiRequest } from "@/lib/api/client";
 import { getAuthToken } from "@/lib/auth/session";
-import { formDataToStoreLocationValues, storeLocationPayload, validateStoreLocation } from "./schemas";
+import { formDataToStoreLocationValues, locationConflictField, storeLocationPayload, validateStoreLocation } from "./schemas";
 import type { ProductLocation, ProductLocationKind, StoreLocation, StoreLocationActionState } from "./types";
 
 export async function saveStoreLocationAction(
@@ -21,19 +21,23 @@ export async function saveStoreLocationAction(
     token: token ?? undefined,
     body: storeLocationPayload(values),
   });
-  if (!result.ok) return { ok: false, message: result.error.message, fieldErrors: {} };
+  if (!result.ok) {
+    const conflict = result.error.status === 409 ? locationConflictField(result.error.message) : {};
+    if (Object.keys(conflict).length > 0) return { ok: false, fieldErrors: conflict };
+    return { ok: false, message: result.error.message, fieldErrors: {} };
+  }
 
   revalidateLocationPaths();
   return {
     ok: true,
-    message: locationId ? "Ubicacion actualizada" : "Ubicacion creada",
+    message: locationId ? "Lugar guardado" : "Lugar agregado",
     location: result.data,
     fieldErrors: {},
   };
 }
 
 export async function deleteStoreLocationAction(locationId: string): Promise<{ ok: boolean; message: string }> {
-  if (!locationId) return { ok: false, message: "Ubicacion invalida" };
+  if (!locationId) return { ok: false, message: "Lugar inválido" };
   const token = await getAuthToken();
   const result = await apiRequest<void>(`/store-locations/${locationId}`, {
     method: "DELETE",
@@ -41,14 +45,14 @@ export async function deleteStoreLocationAction(locationId: string): Promise<{ o
   });
   if (!result.ok) return { ok: false, message: result.error.message };
   revalidateLocationPaths();
-  return { ok: true, message: "Ubicacion eliminada" };
+  return { ok: true, message: "Lugar eliminado" };
 }
 
 export async function setProductLocationsAction(
   productId: string,
   items: { location_id: string; kind: ProductLocationKind }[],
 ): Promise<{ ok: boolean; message: string; locations?: ProductLocation[] }> {
-  if (!productId) return { ok: false, message: "Producto invalido" };
+  if (!productId) return { ok: false, message: "Ese producto ya no existe" };
   const token = await getAuthToken();
   const result = await apiRequest<ProductLocation[]>(`/products/${productId}/locations`, {
     method: "PUT",
@@ -57,12 +61,12 @@ export async function setProductLocationsAction(
   });
   if (!result.ok) return { ok: false, message: result.error.message };
   revalidatePath(`/dashboard/products/${productId}`);
-  revalidatePath("/dashboard/settings");
+  revalidatePath("/dashboard/products/lugares");
   return { ok: true, message: "Ubicaciones guardadas", locations: result.data };
 }
 
 function revalidateLocationPaths() {
-  revalidatePath("/dashboard/settings");
+  // Pestaña Lugares en la tienda, lista y detalle de productos (Dónde está).
   revalidatePath("/dashboard/products", "layout");
 }
 

@@ -14,6 +14,7 @@ class StockMovementResponseDTO(BaseModel):
     reason: str | None = None
     device_id: str | None = None
     created_at: datetime
+    product_name: str | None = None
 
     model_config = {"from_attributes": True}
 

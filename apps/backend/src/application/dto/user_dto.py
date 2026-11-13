@@ -1,3 +1,4 @@
+from datetime import datetime
 from enum import StrEnum
 from uuid import UUID
 
@@ -16,6 +17,8 @@ class UserResponseDTO(BaseModel):
     full_name: str | None = None
     role: str
     is_active: bool
+    # Para "Último ingreso" en Usuarios y permisos.
+    last_login_at: datetime | None = None
 
     model_config = {"from_attributes": True}
 

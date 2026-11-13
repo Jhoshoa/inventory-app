@@ -52,6 +52,16 @@
         "title": "AuthResponseDTO",
         "type": "object"
       },
+      "BatchStatus": {
+        "enum": [
+          "ok",
+          "expiring",
+          "expired",
+          "depleted"
+        ],
+        "title": "BatchStatus",
+        "type": "string"
+      },
       "BillingHistoryEntryResponse": {
         "properties": {
           "changed_by_email": {
@@ -210,6 +220,20 @@
         "title": "Body_import_products_csv_api_v1_products_import_post",
         "type": "object"
       },
+      "Body_upload_payment_qr_api_v1_store_payment_qr_post": {
+        "properties": {
+          "file": {
+            "contentMediaType": "application/octet-stream",
+            "title": "File",
+            "type": "string"
+          }
+        },
+        "required": [
+          "file"
+        ],
+        "title": "Body_upload_payment_qr_api_v1_store_payment_qr_post",
+        "type": "object"
+      },
       "Body_upload_product_photo_api_v1_products__product_id__photo_post": {
         "properties": {
           "file": {
@@ -233,6 +257,34 @@
           "file"
         ],
         "title": "Body_upload_product_photo_api_v1_products__product_id__photo_post",
+        "type": "object"
+      },
+      "Body_upload_storefront_banner_api_v1_store_storefront_banner_post": {
+        "properties": {
+          "file": {
+            "contentMediaType": "application/octet-stream",
+            "title": "File",
+            "type": "string"
+          }
+        },
+        "required": [
+          "file"
+        ],
+        "title": "Body_upload_storefront_banner_api_v1_store_storefront_banner_post",
+        "type": "object"
+      },
+      "Body_upload_storefront_logo_api_v1_store_storefront_logo_post": {
+        "properties": {
+          "file": {
+            "contentMediaType": "application/octet-stream",
+            "title": "File",
+            "type": "string"
+          }
+        },
+        "required": [
+          "file"
+        ],
+        "title": "Body_upload_storefront_logo_api_v1_store_storefront_logo_post",
         "type": "object"
       },
       "CashMovementListResponseDTO": {
@@ -396,6 +448,17 @@
         "title": "CashMovementResponseDTO",
         "type": "object"
       },
+      "CashMovementType": {
+        "enum": [
+          "cash_in",
+          "cash_out",
+          "expense",
+          "deposit",
+          "withdrawal"
+        ],
+        "title": "CashMovementType",
+        "type": "string"
+      },
       "CheckoutResponse": {
         "properties": {
           "billing_email": {
@@ -463,9 +526,7 @@
             "title": "Amount"
           },
           "movement_type": {
-            "maxLength": 30,
-            "title": "Movement Type",
-            "type": "string"
+            "$ref": "#/components/schemas/CashMovementType"
           },
           "note": {
             "anyOf": [
@@ -511,6 +572,19 @@
       },
       "CreateProductDTO": {
         "properties": {
+          "alert_days": {
+            "anyOf": [
+              {
+                "maximum": 365.0,
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Alert Days"
+          },
           "category": {
             "anyOf": [
               {
@@ -550,6 +624,18 @@
             ],
             "title": "Cost Price"
           },
+          "discount_ends_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Discount Ends At"
+          },
           "discount_type": {
             "anyOf": [
               {
@@ -573,6 +659,18 @@
             ],
             "default": "0",
             "title": "Discount Value"
+          },
+          "expires_on": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expires On"
           },
           "extra_data": {
             "additionalProperties": true,
@@ -740,6 +838,100 @@
         "title": "CreateSaleDTO",
         "type": "object"
       },
+      "CreateStorefrontOrderDTO": {
+        "description": "Boleta del catalogo: varios productos en un solo pedido. Solo viajan\nids y cantidades; nombres y precios los pone el backend.",
+        "properties": {
+          "customer_name": {
+            "maxLength": 150,
+            "minLength": 2,
+            "title": "Customer Name",
+            "type": "string"
+          },
+          "customer_phone": {
+            "maxLength": 30,
+            "minLength": 7,
+            "title": "Customer Phone",
+            "type": "string"
+          },
+          "delivery_method": {
+            "anyOf": [
+              {
+                "enum": [
+                  "pickup",
+                  "delivery"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Delivery Method"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/StorefrontOrderLineInputDTO"
+            },
+            "maxItems": 30,
+            "minItems": 1,
+            "title": "Items",
+            "type": "array"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "maxLength": 500,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          }
+        },
+        "required": [
+          "customer_name",
+          "customer_phone",
+          "items"
+        ],
+        "title": "CreateStorefrontOrderDTO",
+        "type": "object"
+      },
+      "CreateStorefrontRequestDTO": {
+        "properties": {
+          "customer_name": {
+            "maxLength": 150,
+            "minLength": 2,
+            "title": "Customer Name",
+            "type": "string"
+          },
+          "customer_phone": {
+            "maxLength": 30,
+            "minLength": 7,
+            "title": "Customer Phone",
+            "type": "string"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "maxLength": 500,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          }
+        },
+        "required": [
+          "customer_name",
+          "customer_phone"
+        ],
+        "title": "CreateStorefrontRequestDTO",
+        "type": "object"
+      },
       "CreateUserInvitationDTO": {
         "properties": {
           "email": {
@@ -844,6 +1036,24 @@
               "$ref": "#/components/schemas/ExchangeRateResponseDTO"
             },
             "title": "Exchange Rates",
+            "type": "array"
+          },
+          "expired_batches_count": {
+            "default": 0,
+            "title": "Expired Batches Count",
+            "type": "integer"
+          },
+          "expiring_batches_count": {
+            "default": 0,
+            "title": "Expiring Batches Count",
+            "type": "integer"
+          },
+          "expiry_alerts": {
+            "default": [],
+            "items": {
+              "$ref": "#/components/schemas/ProductBatchResponseDTO"
+            },
+            "title": "Expiry Alerts",
             "type": "array"
           },
           "first_business_date": {
@@ -1043,6 +1253,20 @@
           "sell_price"
         ],
         "title": "ExchangeRateUpsertDTO",
+        "type": "object"
+      },
+      "ForgotPasswordDTO": {
+        "properties": {
+          "email": {
+            "maxLength": 255,
+            "title": "Email",
+            "type": "string"
+          }
+        },
+        "required": [
+          "email"
+        ],
+        "title": "ForgotPasswordDTO",
         "type": "object"
       },
       "HTTPValidationError": {
@@ -1272,6 +1496,19 @@
         "title": "LoginDTO",
         "type": "object"
       },
+      "MessageResponseDTO": {
+        "properties": {
+          "message": {
+            "title": "Message",
+            "type": "string"
+          }
+        },
+        "required": [
+          "message"
+        ],
+        "title": "MessageResponseDTO",
+        "type": "object"
+      },
       "OAuthCallbackDTO": {
         "properties": {
           "code": {
@@ -1305,6 +1542,111 @@
         ],
         "title": "PaymentMethodDTO",
         "type": "string"
+      },
+      "ProductBatchListResponseDTO": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ProductBatchResponseDTO"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "today": {
+            "format": "date",
+            "title": "Today",
+            "type": "string"
+          },
+          "untracked_quantity": {
+            "title": "Untracked Quantity",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "items",
+          "untracked_quantity",
+          "today"
+        ],
+        "title": "ProductBatchListResponseDTO",
+        "type": "object"
+      },
+      "ProductBatchResponseDTO": {
+        "properties": {
+          "alert_days": {
+            "title": "Alert Days",
+            "type": "integer"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "days_left": {
+            "title": "Days Left",
+            "type": "integer"
+          },
+          "expires_on": {
+            "format": "date",
+            "title": "Expires On",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "product_id": {
+            "format": "uuid",
+            "title": "Product Id",
+            "type": "string"
+          },
+          "product_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Product Name"
+          },
+          "product_unit": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Product Unit"
+          },
+          "quantity_initial": {
+            "title": "Quantity Initial",
+            "type": "integer"
+          },
+          "quantity_remaining": {
+            "title": "Quantity Remaining",
+            "type": "integer"
+          },
+          "status": {
+            "$ref": "#/components/schemas/BatchStatus"
+          }
+        },
+        "required": [
+          "id",
+          "product_id",
+          "expires_on",
+          "alert_days",
+          "quantity_initial",
+          "quantity_remaining",
+          "created_at",
+          "days_left",
+          "status"
+        ],
+        "title": "ProductBatchResponseDTO",
+        "type": "object"
       },
       "ProductCategoryListResponseDTO": {
         "properties": {
@@ -1389,6 +1731,18 @@
       },
       "ProductCompactResponseDTO": {
         "properties": {
+          "discount_ends_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Discount Ends At"
+          },
           "discount_type": {
             "anyOf": [
               {
@@ -1416,6 +1770,13 @@
             "format": "uuid",
             "title": "Id",
             "type": "string"
+          },
+          "locations": {
+            "items": {
+              "$ref": "#/components/schemas/ProductLocationResponseDTO"
+            },
+            "title": "Locations",
+            "type": "array"
           },
           "name": {
             "title": "Name",
@@ -1497,6 +1858,82 @@
         "title": "ProductListResponseDTO",
         "type": "object"
       },
+      "ProductLocationItemDTO": {
+        "properties": {
+          "kind": {
+            "$ref": "#/components/schemas/ProductLocationKind",
+            "default": "display"
+          },
+          "location_id": {
+            "format": "uuid",
+            "title": "Location Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "location_id"
+        ],
+        "title": "ProductLocationItemDTO",
+        "type": "object"
+      },
+      "ProductLocationKind": {
+        "enum": [
+          "display",
+          "storage"
+        ],
+        "title": "ProductLocationKind",
+        "type": "string"
+      },
+      "ProductLocationResponseDTO": {
+        "properties": {
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/ProductLocationKind"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "level": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Level"
+          },
+          "shelf": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Shelf"
+          },
+          "zone": {
+            "title": "Zone",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "label",
+          "zone",
+          "kind"
+        ],
+        "title": "ProductLocationResponseDTO",
+        "type": "object"
+      },
       "ProductResponseDTO": {
         "properties": {
           "category": {
@@ -1534,6 +1971,18 @@
             ],
             "title": "Cost Price"
           },
+          "discount_ends_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Discount Ends At"
+          },
           "discount_type": {
             "anyOf": [
               {
@@ -1566,6 +2015,13 @@
             "title": "Is Active",
             "type": "boolean"
           },
+          "locations": {
+            "items": {
+              "$ref": "#/components/schemas/ProductLocationResponseDTO"
+            },
+            "title": "Locations",
+            "type": "array"
+          },
           "min_stock": {
             "title": "Min Stock",
             "type": "integer"
@@ -1573,6 +2029,18 @@
           "name": {
             "title": "Name",
             "type": "string"
+          },
+          "next_expiry": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Expiry"
           },
           "photo_url": {
             "anyOf": [
@@ -1657,10 +2125,314 @@
           "all",
           "available",
           "low",
-          "out"
+          "out",
+          "expiring"
         ],
         "title": "ProductStockFilter",
         "type": "string"
+      },
+      "PublicStorefrontCategoryDTO": {
+        "properties": {
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "product_count": {
+            "title": "Product Count",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "product_count"
+        ],
+        "title": "PublicStorefrontCategoryDTO",
+        "type": "object"
+      },
+      "PublicStorefrontDTO": {
+        "description": "Datos publicos de una tienda para su catalogo (Nivel 1/2).\n\nNunca incluye datos internos (billing, telefono de contacto interno,\ndireccion exacta) \u2014 solo lo que un cliente final necesita ver.",
+        "properties": {
+          "banner_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Banner Url"
+          },
+          "color_primary": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Color Primary"
+          },
+          "color_secondary": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Color Secondary"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "logo_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Logo Url"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "payment_instructions": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Payment Instructions"
+          },
+          "payment_qr_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Payment Qr Url"
+          },
+          "settings": {
+            "$ref": "#/components/schemas/StorefrontSettingsDTO"
+          },
+          "tier": {
+            "title": "Tier",
+            "type": "string"
+          },
+          "timezone": {
+            "default": "America/La_Paz",
+            "title": "Timezone",
+            "type": "string"
+          },
+          "whatsapp": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Whatsapp"
+          }
+        },
+        "required": [
+          "name",
+          "tier"
+        ],
+        "title": "PublicStorefrontDTO",
+        "type": "object"
+      },
+      "PublicStorefrontFeaturedDTO": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/PublicStorefrontProductDTO"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "source": {
+            "title": "Source",
+            "type": "string"
+          }
+        },
+        "required": [
+          "items",
+          "source"
+        ],
+        "title": "PublicStorefrontFeaturedDTO",
+        "type": "object"
+      },
+      "PublicStorefrontProductDTO": {
+        "description": "Producto expuesto publicamente: nunca incluye costo, SKU interno ni\nstock exacto \u2014 solo disponibilidad, para no revelar inventario a la\ncompetencia (ver docs/mejoras/06-storefront-publico-por-tienda.md).",
+        "properties": {
+          "available": {
+            "title": "Available",
+            "type": "boolean"
+          },
+          "category": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Category"
+          },
+          "category_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Category Id"
+          },
+          "discount_ends_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Discount Ends At"
+          },
+          "discount_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Discount Type"
+          },
+          "discount_value": {
+            "default": "0",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Discount Value",
+            "type": "string"
+          },
+          "effective_price": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "readOnly": true,
+            "title": "Effective Price",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "low_stock": {
+            "title": "Low Stock",
+            "type": "boolean"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "photo_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Photo Url"
+          },
+          "price": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Price",
+            "type": "string"
+          },
+          "unit": {
+            "title": "Unit",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "price",
+          "unit",
+          "photo_url",
+          "available",
+          "low_stock",
+          "effective_price"
+        ],
+        "title": "PublicStorefrontProductDTO",
+        "type": "object"
+      },
+      "PublicStorefrontProductListDTO": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/PublicStorefrontProductDTO"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "limit": {
+            "title": "Limit",
+            "type": "integer"
+          },
+          "offset": {
+            "title": "Offset",
+            "type": "integer"
+          },
+          "total": {
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "limit",
+          "offset"
+        ],
+        "title": "PublicStorefrontProductListDTO",
+        "type": "object"
       },
       "RefreshTokenDTO": {
         "properties": {
@@ -1707,6 +2479,28 @@
           "store_name"
         ],
         "title": "RegisterDTO",
+        "type": "object"
+      },
+      "ResetPasswordDTO": {
+        "properties": {
+          "access_token": {
+            "maxLength": 4096,
+            "minLength": 20,
+            "title": "Access Token",
+            "type": "string"
+          },
+          "password": {
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "Password",
+            "type": "string"
+          }
+        },
+        "required": [
+          "access_token",
+          "password"
+        ],
+        "title": "ResetPasswordDTO",
         "type": "object"
       },
       "RowErrorDTO": {
@@ -1879,6 +2673,17 @@
             "title": "Created At",
             "type": "string"
           },
+          "created_by_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created By Name"
+          },
           "created_by_user_id": {
             "anyOf": [
               {
@@ -1890,6 +2695,28 @@
               }
             ],
             "title": "Created By User Id"
+          },
+          "customer_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Customer Name"
+          },
+          "device_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Device Id"
           },
           "discount_amount": {
             "default": "0",
@@ -1966,6 +2793,29 @@
               }
             ],
             "title": "Voided At"
+          },
+          "voided_by_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Voided By Name"
+          },
+          "voided_by_user_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Voided By User Id"
           }
         },
         "required": [
@@ -2084,6 +2934,20 @@
         "title": "SalesReportDTO",
         "type": "object"
       },
+      "SetProductLocationsDTO": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ProductLocationItemDTO"
+            },
+            "maxItems": 6,
+            "title": "Items",
+            "type": "array"
+          }
+        },
+        "title": "SetProductLocationsDTO",
+        "type": "object"
+      },
       "SortDirection": {
         "enum": [
           "asc",
@@ -2094,8 +2958,47 @@
       },
       "StockAdjustmentDTO": {
         "properties": {
+          "alert_days": {
+            "anyOf": [
+              {
+                "maximum": 365.0,
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Alert Days"
+          },
+          "batch_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Batch Id"
+          },
+          "expires_on": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expires On"
+          },
           "quantity": {
             "description": "Positive to add stock, negative to subtract stock",
+            "maximum": 1000000.0,
+            "minimum": -1000000.0,
             "title": "Quantity",
             "type": "integer"
           },
@@ -2180,6 +3083,17 @@
             "format": "uuid",
             "title": "Product Id",
             "type": "string"
+          },
+          "product_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Product Name"
           },
           "quantity_delta": {
             "title": "Quantity Delta",
@@ -2422,6 +3336,18 @@
           "items_count": {
             "title": "Items Count",
             "type": "integer"
+          },
+          "opened_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Opened At"
           },
           "opening_cash_amount": {
             "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
@@ -3013,6 +3939,112 @@
         "title": "StoreDayResponseDTO",
         "type": "object"
       },
+      "StoreLocationInputDTO": {
+        "properties": {
+          "level": {
+            "anyOf": [
+              {
+                "maxLength": 30,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Level"
+          },
+          "shelf": {
+            "anyOf": [
+              {
+                "maxLength": 50,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Shelf"
+          },
+          "zone": {
+            "maxLength": 50,
+            "minLength": 1,
+            "title": "Zone",
+            "type": "string"
+          }
+        },
+        "required": [
+          "zone"
+        ],
+        "title": "StoreLocationInputDTO",
+        "type": "object"
+      },
+      "StoreLocationListResponseDTO": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/StoreLocationResponseDTO"
+            },
+            "title": "Items",
+            "type": "array"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "title": "StoreLocationListResponseDTO",
+        "type": "object"
+      },
+      "StoreLocationResponseDTO": {
+        "properties": {
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "level": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Level"
+          },
+          "product_count": {
+            "default": 0,
+            "title": "Product Count",
+            "type": "integer"
+          },
+          "shelf": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Shelf"
+          },
+          "zone": {
+            "title": "Zone",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "zone",
+          "label"
+        ],
+        "title": "StoreLocationResponseDTO",
+        "type": "object"
+      },
       "StoreResponseDTO": {
         "properties": {
           "address": {
@@ -3040,6 +4072,11 @@
             "default": false,
             "title": "Allow Percentage Discount",
             "type": "boolean"
+          },
+          "default_alert_days": {
+            "default": 5,
+            "title": "Default Alert Days",
+            "type": "integer"
           },
           "id": {
             "format": "uuid",
@@ -3076,6 +4113,123 @@
               }
             ],
             "title": "Phone"
+          },
+          "storefront_banner_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Storefront Banner Url"
+          },
+          "storefront_color_primary": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Storefront Color Primary"
+          },
+          "storefront_color_secondary": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Storefront Color Secondary"
+          },
+          "storefront_description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Storefront Description"
+          },
+          "storefront_enabled": {
+            "default": false,
+            "title": "Storefront Enabled",
+            "type": "boolean"
+          },
+          "storefront_logo_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Storefront Logo Url"
+          },
+          "storefront_payment_instructions": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Storefront Payment Instructions"
+          },
+          "storefront_payment_qr_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Storefront Payment Qr Url"
+          },
+          "storefront_settings": {
+            "$ref": "#/components/schemas/StorefrontSettingsDTO"
+          },
+          "storefront_slug": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Storefront Slug"
+          },
+          "storefront_tier": {
+            "default": "none",
+            "title": "Storefront Tier",
+            "type": "string"
+          },
+          "storefront_whatsapp": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Storefront Whatsapp"
+          },
+          "timezone": {
+            "default": "America/La_Paz",
+            "title": "Timezone",
+            "type": "string"
           }
         },
         "required": [
@@ -3133,6 +4287,19 @@
             ],
             "title": "Allow Percentage Discount"
           },
+          "default_alert_days": {
+            "anyOf": [
+              {
+                "maximum": 365.0,
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Default Alert Days"
+          },
           "max_manual_discount_amount": {
             "anyOf": [
               {
@@ -3182,7 +4349,7 @@
           "phone": {
             "anyOf": [
               {
-                "maxLength": 20,
+                "maxLength": 30,
                 "type": "string"
               },
               {
@@ -3190,9 +4357,558 @@
               }
             ],
             "title": "Phone"
+          },
+          "storefront_color_primary": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Storefront Color Primary"
+          },
+          "storefront_color_secondary": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Storefront Color Secondary"
+          },
+          "storefront_description": {
+            "anyOf": [
+              {
+                "maxLength": 280,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Storefront Description"
+          },
+          "storefront_enabled": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Storefront Enabled"
+          },
+          "storefront_payment_instructions": {
+            "anyOf": [
+              {
+                "maxLength": 280,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Storefront Payment Instructions"
+          },
+          "storefront_settings": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/StorefrontSettingsDTO"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "storefront_slug": {
+            "anyOf": [
+              {
+                "maxLength": 60,
+                "minLength": 3,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Storefront Slug"
+          },
+          "storefront_whatsapp": {
+            "anyOf": [
+              {
+                "maxLength": 30,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Storefront Whatsapp"
           }
         },
         "title": "StoreUpdateDTO",
+        "type": "object"
+      },
+      "StorefrontDayHoursDTO": {
+        "properties": {
+          "closes_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Closes At"
+          },
+          "is_open": {
+            "default": false,
+            "title": "Is Open",
+            "type": "boolean"
+          },
+          "opens_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Opens At"
+          }
+        },
+        "title": "StorefrontDayHoursDTO",
+        "type": "object"
+      },
+      "StorefrontOrderLineInputDTO": {
+        "properties": {
+          "product_id": {
+            "format": "uuid",
+            "title": "Product Id",
+            "type": "string"
+          },
+          "quantity": {
+            "maximum": 999.0,
+            "minimum": 1.0,
+            "title": "Quantity",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "product_id",
+          "quantity"
+        ],
+        "title": "StorefrontOrderLineInputDTO",
+        "type": "object"
+      },
+      "StorefrontOrderResponseDTO": {
+        "description": "Lo que ve el cliente al enviar su boleta: el detalle con precios reales.",
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "delivery_method": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Delivery Method"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/StorefrontRequestItemDTO"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "total": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Total",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "items",
+          "total",
+          "delivery_method",
+          "created_at"
+        ],
+        "title": "StorefrontOrderResponseDTO",
+        "type": "object"
+      },
+      "StorefrontRequestItemDTO": {
+        "properties": {
+          "line_total": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Line Total",
+            "type": "string"
+          },
+          "product_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Product Id"
+          },
+          "product_name": {
+            "title": "Product Name",
+            "type": "string"
+          },
+          "quantity": {
+            "title": "Quantity",
+            "type": "integer"
+          },
+          "unit": {
+            "title": "Unit",
+            "type": "string"
+          },
+          "unit_price": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Unit Price",
+            "type": "string"
+          }
+        },
+        "required": [
+          "product_id",
+          "product_name",
+          "unit",
+          "quantity",
+          "unit_price",
+          "line_total"
+        ],
+        "title": "StorefrontRequestItemDTO",
+        "type": "object"
+      },
+      "StorefrontRequestListResponseDTO": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/StorefrontRequestResponseDTO"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "limit": {
+            "title": "Limit",
+            "type": "integer"
+          },
+          "offset": {
+            "title": "Offset",
+            "type": "integer"
+          },
+          "pending_count": {
+            "title": "Pending Count",
+            "type": "integer"
+          },
+          "status_counts": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "title": "Status Counts",
+            "type": "object"
+          },
+          "total": {
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "pending_count",
+          "limit",
+          "offset"
+        ],
+        "title": "StorefrontRequestListResponseDTO",
+        "type": "object"
+      },
+      "StorefrontRequestResponseDTO": {
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "customer_name": {
+            "title": "Customer Name",
+            "type": "string"
+          },
+          "customer_phone": {
+            "title": "Customer Phone",
+            "type": "string"
+          },
+          "delivery_method": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Delivery Method"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/StorefrontRequestItemDTO"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          },
+          "payment_confirmed": {
+            "title": "Payment Confirmed",
+            "type": "boolean"
+          },
+          "product_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Product Id"
+          },
+          "product_name": {
+            "title": "Product Name",
+            "type": "string"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "total": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Total"
+          }
+        },
+        "required": [
+          "id",
+          "product_id",
+          "product_name",
+          "customer_name",
+          "customer_phone",
+          "note",
+          "status",
+          "payment_confirmed",
+          "created_at"
+        ],
+        "title": "StorefrontRequestResponseDTO",
+        "type": "object"
+      },
+      "StorefrontSettingsDTO": {
+        "description": "Ajustes del catalogo publico que no necesitan columna propia.\n\nTodo lo de aca es publico por naturaleza (el dueno lo escribe para que lo\nvean sus clientes), asi que el catalogo lo expone tal cual.",
+        "properties": {
+          "address": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Address"
+          },
+          "announcement_enabled": {
+            "default": false,
+            "title": "Announcement Enabled",
+            "type": "boolean"
+          },
+          "announcement_text": {
+            "anyOf": [
+              {
+                "maxLength": 140,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Announcement Text"
+          },
+          "default_sort": {
+            "default": "name",
+            "enum": [
+              "name",
+              "price_asc",
+              "price_desc",
+              "popular"
+            ],
+            "title": "Default Sort",
+            "type": "string"
+          },
+          "delivery_enabled": {
+            "default": false,
+            "title": "Delivery Enabled",
+            "type": "boolean"
+          },
+          "facebook": {
+            "anyOf": [
+              {
+                "maxLength": 120,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Facebook"
+          },
+          "featured_product_ids": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "title": "Featured Product Ids",
+            "type": "array"
+          },
+          "hide_out_of_stock": {
+            "default": false,
+            "title": "Hide Out Of Stock",
+            "type": "boolean"
+          },
+          "hours": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/StorefrontDayHoursDTO"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Hours"
+          },
+          "instagram": {
+            "anyOf": [
+              {
+                "maxLength": 120,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Instagram"
+          },
+          "maps_url": {
+            "anyOf": [
+              {
+                "maxLength": 300,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Maps Url"
+          },
+          "pickup_enabled": {
+            "default": true,
+            "title": "Pickup Enabled",
+            "type": "boolean"
+          },
+          "show_contact": {
+            "default": true,
+            "title": "Show Contact",
+            "type": "boolean"
+          },
+          "show_featured": {
+            "default": true,
+            "title": "Show Featured",
+            "type": "boolean"
+          },
+          "show_payment": {
+            "default": true,
+            "title": "Show Payment",
+            "type": "boolean"
+          },
+          "stock_display": {
+            "default": "all",
+            "enum": [
+              "all",
+              "out_of_stock"
+            ],
+            "title": "Stock Display",
+            "type": "string"
+          },
+          "template": {
+            "default": "vitrina",
+            "enum": [
+              "vitrina",
+              "lista"
+            ],
+            "title": "Template",
+            "type": "string"
+          },
+          "tiktok": {
+            "anyOf": [
+              {
+                "maxLength": 120,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tiktok"
+          }
+        },
+        "title": "StorefrontSettingsDTO",
         "type": "object"
       },
       "SyncChangeDTO": {
@@ -3557,12 +5273,20 @@
             "title": "Next Billing Date"
           },
           "reason": {
+            "maxLength": 500,
+            "minLength": 3,
             "title": "Reason",
             "type": "string"
           },
           "subscription_status": {
             "anyOf": [
               {
+                "enum": [
+                  "trial",
+                  "active",
+                  "past_due",
+                  "expired"
+                ],
                 "type": "string"
               },
               {
@@ -3635,6 +5359,11 @@
             ],
             "title": "Category Id"
           },
+          "clear_discount_ends_at": {
+            "default": false,
+            "title": "Clear Discount Ends At",
+            "type": "boolean"
+          },
           "cost_price": {
             "anyOf": [
               {
@@ -3650,6 +5379,18 @@
               }
             ],
             "title": "Cost Price"
+          },
+          "discount_ends_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Discount Ends At"
           },
           "discount_type": {
             "anyOf": [
@@ -3785,6 +5526,37 @@
           }
         },
         "title": "UpdateProductDTO",
+        "type": "object"
+      },
+      "UpdateStorefrontRequestPaymentDTO": {
+        "properties": {
+          "payment_confirmed": {
+            "title": "Payment Confirmed",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "payment_confirmed"
+        ],
+        "title": "UpdateStorefrontRequestPaymentDTO",
+        "type": "object"
+      },
+      "UpdateStorefrontRequestStatusDTO": {
+        "properties": {
+          "status": {
+            "enum": [
+              "contacted",
+              "closed",
+              "pending"
+            ],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "status"
+        ],
+        "title": "UpdateStorefrontRequestStatusDTO",
         "type": "object"
       },
       "UpdateUserRoleDTO": {
@@ -3976,6 +5748,17 @@
             "format": "date-time",
             "title": "Expires At",
             "type": "string"
+          },
+          "invited_by_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Invited By Name"
           },
           "role": {
             "title": "Role",
@@ -4169,6 +5952,18 @@
             "title": "Is Active",
             "type": "boolean"
           },
+          "last_login_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Login At"
+          },
           "role": {
             "title": "Role",
             "type": "string"
@@ -4360,6 +6155,52 @@
         ]
       }
     },
+    "/api/v1/auth/forgot-password": {
+      "post": {
+        "operationId": "forgot_password_api_v1_auth_forgot_password_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ForgotPasswordDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponseDTO"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "summary": "Forgot Password",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
     "/api/v1/auth/login": {
       "post": {
         "operationId": "login_api_v1_auth_login_post",
@@ -4401,6 +6242,26 @@
           }
         ],
         "summary": "Login",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/auth/logout": {
+      "post": {
+        "description": "Revoca en Supabase la sesion (solo la de este dispositivo) del access token.\n\nEs best-effort: el frontend borra sus cookies pase lo que pase, asi que un\ntoken ya vencido o un Supabase caido no deben impedir cerrar sesion.",
+        "operationId": "logout_api_v1_auth_logout_post",
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "summary": "Logout",
         "tags": [
           "auth"
         ]
@@ -4592,6 +6453,52 @@
         ]
       }
     },
+    "/api/v1/auth/reset-password": {
+      "post": {
+        "operationId": "reset_password_api_v1_auth_reset_password_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResetPasswordDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponseDTO"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "summary": "Reset Password",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
     "/api/v1/auth/trial-status": {
       "get": {
         "operationId": "trial_status_api_v1_auth_trial_status_get",
@@ -4708,6 +6615,8 @@
             "required": false,
             "schema": {
               "default": 20,
+              "maximum": 100,
+              "minimum": 1,
               "title": "Limit",
               "type": "integer"
             }
@@ -4718,6 +6627,7 @@
             "required": false,
             "schema": {
               "default": 0,
+              "minimum": 0,
               "title": "Offset",
               "type": "integer"
             }
@@ -6379,6 +8289,116 @@
         ]
       }
     },
+    "/api/v1/products/{product_id}/batches": {
+      "get": {
+        "operationId": "list_product_batches_api_v1_products__product_id__batches_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "product_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Product Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductBatchListResponseDTO"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "List Product Batches",
+        "tags": [
+          "products"
+        ]
+      }
+    },
+    "/api/v1/products/{product_id}/locations": {
+      "put": {
+        "operationId": "set_product_locations_api_v1_products__product_id__locations_put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "product_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Product Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetProductLocationsDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ProductLocationResponseDTO"
+                  },
+                  "title": "Response Set Product Locations Api V1 Products  Product Id  Locations Put",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Set Product Locations",
+        "tags": [
+          "products"
+        ]
+      }
+    },
     "/api/v1/products/{product_id}/photo": {
       "delete": {
         "operationId": "delete_product_photo_api_v1_products__product_id__photo_delete",
@@ -6648,6 +8668,427 @@
           }
         },
         "summary": "Create Lead",
+        "tags": [
+          "public"
+        ]
+      }
+    },
+    "/api/v1/public/storefront/{slug}": {
+      "get": {
+        "operationId": "get_storefront_api_v1_public_storefront__slug__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "slug",
+            "required": true,
+            "schema": {
+              "title": "Slug",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicStorefrontDTO"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Storefront",
+        "tags": [
+          "public"
+        ]
+      }
+    },
+    "/api/v1/public/storefront/{slug}/categories": {
+      "get": {
+        "operationId": "list_storefront_categories_api_v1_public_storefront__slug__categories_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "slug",
+            "required": true,
+            "schema": {
+              "title": "Slug",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/PublicStorefrontCategoryDTO"
+                  },
+                  "title": "Response List Storefront Categories Api V1 Public Storefront  Slug  Categories Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Storefront Categories",
+        "tags": [
+          "public"
+        ]
+      }
+    },
+    "/api/v1/public/storefront/{slug}/featured": {
+      "get": {
+        "operationId": "list_storefront_featured_api_v1_public_storefront__slug__featured_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "slug",
+            "required": true,
+            "schema": {
+              "title": "Slug",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicStorefrontFeaturedDTO"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Storefront Featured",
+        "tags": [
+          "public"
+        ]
+      }
+    },
+    "/api/v1/public/storefront/{slug}/orders": {
+      "post": {
+        "operationId": "create_storefront_order_api_v1_public_storefront__slug__orders_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "slug",
+            "required": true,
+            "schema": {
+              "title": "Slug",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateStorefrontOrderDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StorefrontOrderResponseDTO"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Storefront Order",
+        "tags": [
+          "public"
+        ]
+      }
+    },
+    "/api/v1/public/storefront/{slug}/products": {
+      "get": {
+        "operationId": "list_storefront_products_api_v1_public_storefront__slug__products_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "slug",
+            "required": true,
+            "schema": {
+              "title": "Slug",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "q",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 100,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Q"
+            }
+          },
+          {
+            "in": "query",
+            "name": "category_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Category Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "on_sale",
+            "required": false,
+            "schema": {
+              "default": false,
+              "title": "On Sale",
+              "type": "boolean"
+            }
+          },
+          {
+            "in": "query",
+            "name": "sort",
+            "required": false,
+            "schema": {
+              "default": "name",
+              "enum": [
+                "name",
+                "price_asc",
+                "price_desc",
+                "popular"
+              ],
+              "title": "Sort",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 24,
+              "maximum": 200,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "minimum": 0,
+              "title": "Offset",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicStorefrontProductListDTO"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Storefront Products",
+        "tags": [
+          "public"
+        ]
+      }
+    },
+    "/api/v1/public/storefront/{slug}/products/{product_id}": {
+      "get": {
+        "operationId": "get_storefront_product_api_v1_public_storefront__slug__products__product_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "slug",
+            "required": true,
+            "schema": {
+              "title": "Slug",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "product_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Product Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicStorefrontProductDTO"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Storefront Product",
+        "tags": [
+          "public"
+        ]
+      }
+    },
+    "/api/v1/public/storefront/{slug}/products/{product_id}/requests": {
+      "post": {
+        "operationId": "create_storefront_request_api_v1_public_storefront__slug__products__product_id__requests_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "slug",
+            "required": true,
+            "schema": {
+              "title": "Slug",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "product_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Product Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateStorefrontRequestDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StorefrontRequestResponseDTO"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Storefront Request",
         "tags": [
           "public"
         ]
@@ -7613,6 +10054,581 @@
         "summary": "Get Close Report",
         "tags": [
           "store-day"
+        ]
+      }
+    },
+    "/api/v1/store-locations": {
+      "get": {
+        "operationId": "list_store_locations_api_v1_store_locations_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StoreLocationListResponseDTO"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "List Store Locations",
+        "tags": [
+          "store-locations"
+        ]
+      },
+      "post": {
+        "operationId": "create_store_location_api_v1_store_locations_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StoreLocationInputDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StoreLocationResponseDTO"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Create Store Location",
+        "tags": [
+          "store-locations"
+        ]
+      }
+    },
+    "/api/v1/store-locations/{location_id}": {
+      "delete": {
+        "operationId": "delete_store_location_api_v1_store_locations__location_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "location_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Location Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Delete Store Location",
+        "tags": [
+          "store-locations"
+        ]
+      },
+      "patch": {
+        "operationId": "update_store_location_api_v1_store_locations__location_id__patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "location_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Location Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StoreLocationInputDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StoreLocationResponseDTO"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Update Store Location",
+        "tags": [
+          "store-locations"
+        ]
+      }
+    },
+    "/api/v1/store/payment-qr": {
+      "delete": {
+        "operationId": "delete_payment_qr_api_v1_store_payment_qr_delete",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StoreResponseDTO"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Delete Payment Qr",
+        "tags": [
+          "store"
+        ]
+      },
+      "post": {
+        "operationId": "upload_payment_qr_api_v1_store_payment_qr_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_upload_payment_qr_api_v1_store_payment_qr_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StoreResponseDTO"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Upload Payment Qr",
+        "tags": [
+          "store"
+        ]
+      }
+    },
+    "/api/v1/store/storefront-banner": {
+      "delete": {
+        "operationId": "delete_storefront_banner_api_v1_store_storefront_banner_delete",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StoreResponseDTO"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Delete Storefront Banner",
+        "tags": [
+          "store"
+        ]
+      },
+      "post": {
+        "operationId": "upload_storefront_banner_api_v1_store_storefront_banner_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_upload_storefront_banner_api_v1_store_storefront_banner_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StoreResponseDTO"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Upload Storefront Banner",
+        "tags": [
+          "store"
+        ]
+      }
+    },
+    "/api/v1/store/storefront-logo": {
+      "delete": {
+        "operationId": "delete_storefront_logo_api_v1_store_storefront_logo_delete",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StoreResponseDTO"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Delete Storefront Logo",
+        "tags": [
+          "store"
+        ]
+      },
+      "post": {
+        "operationId": "upload_storefront_logo_api_v1_store_storefront_logo_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_upload_storefront_logo_api_v1_store_storefront_logo_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StoreResponseDTO"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Upload Storefront Logo",
+        "tags": [
+          "store"
+        ]
+      }
+    },
+    "/api/v1/storefront-requests": {
+      "get": {
+        "operationId": "list_storefront_requests_api_v1_storefront_requests_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "maximum": 100,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "minimum": 0,
+              "title": "Offset",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "pending",
+                    "contacted",
+                    "closed"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StorefrontRequestListResponseDTO"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "List Storefront Requests",
+        "tags": [
+          "storefront-requests"
+        ]
+      }
+    },
+    "/api/v1/storefront-requests/{request_id}/payment": {
+      "patch": {
+        "operationId": "update_storefront_request_payment_api_v1_storefront_requests__request_id__payment_patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "request_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Request Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateStorefrontRequestPaymentDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StorefrontRequestResponseDTO"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Update Storefront Request Payment",
+        "tags": [
+          "storefront-requests"
+        ]
+      }
+    },
+    "/api/v1/storefront-requests/{request_id}/status": {
+      "patch": {
+        "operationId": "update_storefront_request_status_api_v1_storefront_requests__request_id__status_patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "request_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Request Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateStorefrontRequestStatusDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StorefrontRequestResponseDTO"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Update Storefront Request Status",
+        "tags": [
+          "storefront-requests"
         ]
       }
     },

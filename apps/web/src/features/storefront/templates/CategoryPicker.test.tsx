@@ -44,8 +44,8 @@ describe("CategoryPicker", () => {
   it("shows up to 4 categories as wrapping chips, with no list button", () => {
     renderPicker(options(4));
 
-    expect(screen.queryByRole("button", { name: /Categoria:/ })).not.toBeInTheDocument();
-    const nav = screen.getByRole("navigation", { name: "Categorias" });
+    expect(screen.queryByRole("button", { name: /Categoría:/ })).not.toBeInTheDocument();
+    const nav = screen.getByRole("navigation", { name: "Categorías" });
     expect(nav.className).toContain("flex-wrap");
     expect(nav.className).not.toContain("overflow-x-auto");
     expect(within(nav).getAllByRole("link")).toHaveLength(5);
@@ -55,9 +55,9 @@ describe("CategoryPicker", () => {
     const user = userEvent.setup();
     renderPicker(options(6, 2));
 
-    const trigger = screen.getByRole("button", { name: /Categoria: Lacteos/ });
+    const trigger = screen.getByRole("button", { name: /Categoría: Lacteos/ });
     expect(trigger.className).toContain("sm:hidden");
-    expect(screen.getByRole("navigation", { name: "Categorias" }).className).toContain("hidden sm:flex");
+    expect(screen.getByRole("navigation", { name: "Categorías" }).className).toContain("hidden sm:flex");
 
     await user.click(trigger);
     const sheet = screen.getByRole("dialog");
@@ -72,7 +72,7 @@ describe("CategoryPicker", () => {
     renderPicker(options(12));
 
     expect(screen.getByRole("button", { name: "+5 mas" })).toBeInTheDocument();
-    const hiddenOnDesktop = within(screen.getByRole("navigation", { name: "Categorias" }))
+    const hiddenOnDesktop = within(screen.getByRole("navigation", { name: "Categorías" }))
       .getAllByRole("link")
       .filter((link) => link.className.includes("sm:hidden"));
     expect(hiddenOnDesktop).toHaveLength(5);
@@ -89,9 +89,9 @@ describe("CategoryPicker", () => {
     const user = userEvent.setup();
     renderPicker(options(12));
 
-    await user.click(screen.getByRole("button", { name: /Categoria: Categorias/ }));
+    await user.click(screen.getByRole("button", { name: /Categoría: Categorías/ }));
     const sheet = screen.getByRole("dialog");
-    await user.type(within(sheet).getByLabelText("Buscar categoria"), "car");
+    await user.type(within(sheet).getByLabelText("Buscar categoría"), "car");
 
     const links = within(sheet).getAllByRole("link");
     expect(links.map((link) => link.textContent)).toEqual(["Carnes7"]);

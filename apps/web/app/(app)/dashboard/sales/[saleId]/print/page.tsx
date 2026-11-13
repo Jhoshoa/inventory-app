@@ -1,9 +1,12 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { DataFetchError } from "@/components/ui/DataFetchError";
 import { getSale } from "@/features/sales/api";
 import { SalePrintView } from "@/features/sales/components/SalePrintView";
 import { getStore } from "@/features/settings/api";
 import { requireSession } from "@/lib/auth/session";
+
+export const metadata: Metadata = { title: "Recibo" };
 
 export default async function SalePrintPage({
   params,
@@ -30,6 +33,7 @@ export default async function SalePrintPage({
         name: store.name,
         address: store.address,
         phone: store.phone,
+        logoUrl: store.storefront_logo_url,
       }}
     />
   );

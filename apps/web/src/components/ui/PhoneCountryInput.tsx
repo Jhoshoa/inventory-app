@@ -48,7 +48,7 @@ export function PhoneCountryInput({
       {/* Select trae w-full: el ancho fijo va en el contenedor. */}
       <div className="w-32 shrink-0">
         <Select
-          aria-label="Codigo de pais"
+          aria-label="Código de país"
           value={country}
           onChange={(event) => {
             const next = event.target.value;

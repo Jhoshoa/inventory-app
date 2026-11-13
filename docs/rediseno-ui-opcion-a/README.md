@@ -19,7 +19,7 @@ En este documento cada dato lleva su origen:
 
 ## 1. Navegación y nombres
 
-Las rutas no cambian: los enlaces guardados, la PWA instalada (`start_url: /dashboard`) y los tests de rutas siguen funcionando. Solo cambian los textos y el orden. Rutas nuevas: `/dashboard/caja`, `/dashboard/products/categorias` y `/dashboard/products/lugares`.
+Las rutas no cambian: los enlaces guardados, la PWA instalada (`start_url: /dashboard`) y los tests de rutas siguen funcionando. Solo cambian los textos y el orden. Rutas nuevas: `/dashboard/caja`, `/dashboard/mas` (pantalla Más del celular), `/dashboard/products/categorias` y `/dashboard/products/lugares`.
 
 | Hoy | Nuevo | Ruta | Por qué |
 |---|---|---|---|
@@ -216,16 +216,16 @@ Se aplican en la web antes de enviar y la API las vuelve a validar. Los errores 
 
 ## Cambios de backend
 
-Todos agregan campos o parámetros opcionales: no rompen la web actual ni la app móvil. Cada uno con tests en `tests/integration/`.
+Todos agregan campos o parámetros opcionales: no rompen la web actual ni la app móvil. Cada uno con tests en `tests/integration/`. **Estado: hechos los siete (Fase 0, rama `feat/ui-redesign-option-a`).**
 
 | Id | Cambio | Para | Migración | Tamaño |
 |---|---|---|---|---|
 | **B1** | Agregar `discount_type`, `discount_value` y `discount_ends_at` al payload de productos de `POST /sync/pull`. `syncEngine` ya los lee, pero llegan vacíos. | Precio correcto sin conexión | No | ½ h |
-| **B2** | `GET /products` y `/products/pos`: filtro `stock=expiring` (lotes con unidades y `alert_on ≤ hoy`) y campo `next_expiry`. | Chip "Por vencer", columna "Vence" | No | ½ día |
+| **B2** | `GET /products`: filtro `stock=expiring` (lotes con unidades y `alert_on ≤ hoy`) y campo `next_expiry`. | Chip "Por vencer", columna "Vence" | No | ½ día |
 | **B3** | `last_login_at` en `UserResponseDTO`. | "Último ingreso" | No | 15 min |
 | **B4** *(opcional)* | `stores.default_alert_days` (0–365, 5 por defecto) en `PATCH /store`, usado como aviso inicial en producto, ajuste y CSV. | Productos › ⋯ › Aviso de vencimiento | **Sí (040)** | ½ día |
 | **B5** *(opcional)* | No enviar `cost_price` a cajeros en las respuestas de productos. | Ocultar el costo de verdad | No | 1 h |
-| **B6** *(opcional)* | `created_by_name` y `voided_by_name` en `SaleResponseDTO`. | Quién vendió / anuló | No | 1 h |
+| **B6** *(opcional)* | `created_by_name` y `voided_by_name` en `SaleResponseDTO`; la venta guarda quién la anuló (`voided_by_user_id`). | Quién vendió / anuló | **Sí (041)** | 2 h |
 | **B7** *(recomendado)* | `GET /storefront-requests?status=` y conteo por estado. | Pestañas de Pedidos con muchos pedidos | No | 1 h |
 
 Si no se hacen los opcionales, la pantalla se muestra sin ese dato (sin "Aviso de vencimiento" en Productos, sin nombre de cajero). Nada se rompe.

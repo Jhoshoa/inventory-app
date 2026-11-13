@@ -1,109 +1,78 @@
-import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
-import { PageHeader } from "@/components/layout/PageHeader";
-import { PageSection } from "@/components/layout/PageSection";
+import type { Metadata } from "next";
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { ChevronLeft } from "lucide-react";
+import { DataFetchError } from "@/components/ui/DataFetchError";
 import { ForbiddenState } from "@/components/ui/ForbiddenState";
-import {
-  Table,
-  TableCell,
-  TableEmptyRow,
-  TableHeaderCell,
-} from "@/components/ui/Table";
-import { StoreDayCloseReportView } from "@/features/store-day/components/StoreDayCloseReportView";
+import { closingDay, closingHours } from "@/features/reports/closings";
+import { CashMovementList } from "@/features/reports/components/CashMovementList";
+import { ClosingBreakdown } from "@/features/reports/components/ClosingBreakdown";
+import { businessDateKey } from "@/features/sales/list";
 import { getCloseReport, listCashMovements } from "@/features/store-day/api";
-import type { CashMovement } from "@/features/store-day/types";
+import { listUsers } from "@/features/users/api";
 import { canViewStoreDayReports } from "@/lib/auth/permissions";
 import { requireSession } from "@/lib/auth/session";
 import { formatCurrency } from "@/lib/format/currency";
 
-export default async function StoreDayCloseReportPage({
-  params,
-}: {
-  params: Promise<{ businessDayId: string }>;
-}) {
+export const metadata: Metadata = { title: "Cierre de caja" };
+
+// Página de un cierre (tablero P08 · "Ver página del cierre"): las cuentas y el libro de caja del día.
+export default async function StoreDayCloseReportPage({ params }: { params: Promise<{ businessDayId: string }> }) {
   const session = await requireSession();
   if (!canViewStoreDayReports(session.role)) {
-    return <ForbiddenState description="Reporte de cierre requiere permisos de owner." />;
+    return <ForbiddenState description="Solo el dueño de la tienda puede ver el resumen del cierre." />;
   }
 
   const { businessDayId } = await params;
-  const [report, cashMovements] = await Promise.all([
+  const [report, movements, users] = await Promise.all([
     getCloseReport(businessDayId),
-    listCashMovements({ business_day_id: businessDayId, limit: 100, offset: 0 }),
+    listCashMovements({ business_day_id: businessDayId, include_voided: true, limit: 100, offset: 0 }),
+    listUsers(100, 0),
   ]);
+  if (!report.ok && (report.error.status === 404 || report.error.status === 422)) notFound();
+  const names = users.ok ? Object.fromEntries(users.data.items.map((user) => [user.id, user.full_name || user.email.split("@")[0]])) : {};
 
   return (
-    <PageSection className="space-y-6">
-      <PageHeader
-        breadcrumbs={
-          <Breadcrumbs
-            items={[
-              { label: "Dashboard", href: "/dashboard" },
-              { label: "Reportes", href: "/dashboard/reports" },
-              { label: "Cierres diarios", href: "/dashboard/reports/store-days" },
-              { label: "Reporte de cierre" },
-            ]}
-          />
-        }
-        title="Reporte de cierre"
-        description="Snapshot operativo de ventas y caja de la jornada."
-      />
+    <div className="mx-auto flex w-full max-w-2xl flex-col gap-3">
+      <header>
+        <Link
+          href="/dashboard/reports/store-days"
+          className="tap-area -ml-1 mb-1 inline-flex min-h-9 items-center gap-0.5 rounded-[10px] pr-2 text-[13px] font-semibold text-text-muted hover:text-text-strong"
+        >
+          <ChevronLeft className="h-4 w-4" aria-hidden="true" />
+          Cierres de caja
+        </Link>
+        <h1 className="text-[22px] font-extrabold tracking-tight text-text-strong sm:text-[26px]">
+          {report.ok ? `Cierre del ${closingDay(report.data.business_date, true)}` : "Cierre de caja"}
+        </h1>
+        {report.ok ? (
+          <p className="text-sm text-text-muted">
+            {closingHours(report.data)} · vendido {formatCurrency(report.data.sales_total)}
+          </p>
+        ) : null}
+      </header>
 
-      <StoreDayCloseReportView report={report} />
-      <CashMovementsSection movements={cashMovements.ok ? cashMovements.data.items : []} />
-    </PageSection>
-  );
-}
-
-function CashMovementsSection({ movements }: { movements: CashMovement[] }) {
-  return (
-    <section className="rounded-lg border border-app-border bg-app-surface p-4 shadow-panel">
-      <h2 className="text-base font-semibold text-text-strong">Libro de caja</h2>
-      <div className="mt-4 overflow-hidden rounded-lg border border-app-border">
-        <Table>
-          <thead>
-            <tr>
-              <TableHeaderCell>Fecha</TableHeaderCell>
-              <TableHeaderCell>Tipo</TableHeaderCell>
-              <TableHeaderCell>Monto</TableHeaderCell>
-              <TableHeaderCell>Nota</TableHeaderCell>
-            </tr>
-          </thead>
-          <tbody>
-            {movements.length === 0 ? (
-              <TableEmptyRow colSpan={4}>Sin movimientos de caja</TableEmptyRow>
+      {!report.ok ? (
+        <DataFetchError resource="el cierre" error={report.error.message} />
+      ) : (
+        <>
+          <section aria-label="Cuentas del cierre" className="rounded-card border border-app-border bg-app-surface p-4">
+            <ClosingBreakdown report={report.data} closedBy={names[report.data.closed_by_user_id] ?? null} />
+          </section>
+          <section aria-labelledby="closing-movements" className="flex flex-col gap-2">
+            <h2 id="closing-movements" className="text-[15px] font-bold text-text-strong">
+              Movimientos de caja del día
+            </h2>
+            {!movements.ok ? (
+              <DataFetchError resource="los movimientos de caja" error={movements.error.message} />
+            ) : movements.data.items.length === 0 ? (
+              <p className="text-sm text-text-muted">Ese día no hubo entradas ni salidas de caja.</p>
             ) : (
-              movements.map((movement) => (
-                <tr key={movement.id} className="border-t border-app-border">
-                  <TableCell>{formatDateTime(movement.occurred_at)}</TableCell>
-                  <TableCell>{cashMovementLabel(movement.movement_type)}</TableCell>
-                  <TableCell className={movement.direction === "in" ? "text-status-success" : "text-status-danger"}>
-                    {movement.direction === "in" ? "+" : "-"}{formatCurrency(movement.amount)}
-                  </TableCell>
-                  <TableCell>{movement.note ?? "Sin nota"}</TableCell>
-                </tr>
-              ))
+              <CashMovementList movements={movements.data.items} names={names} today={businessDateKey()} showDay={false} />
             )}
-          </tbody>
-        </Table>
-      </div>
-    </section>
+          </section>
+        </>
+      )}
+    </div>
   );
-}
-
-function cashMovementLabel(type: string) {
-  const labels: Record<string, string> = {
-    cash_in: "Entrada",
-    cash_out: "Salida",
-    expense: "Gasto",
-    deposit: "Deposito",
-    withdrawal: "Retiro",
-  };
-  return labels[type] ?? type;
-}
-
-function formatDateTime(value: string) {
-  return new Intl.DateTimeFormat("es-BO", {
-    dateStyle: "short",
-    timeStyle: "short",
-  }).format(new Date(value));
 }

@@ -43,7 +43,9 @@ export function StorefrontSortSelect({
   return (
     <label className={className}>
       <span className="hidden sm:inline">Ordenar</span>
+      {/* En el celular "Ordenar" no se ve: el nombre va en la lista misma. */}
       <select
+        aria-label="Ordenar"
         value={sort}
         onChange={(e) => handleChange(e.target.value)}
         className={selectClassName}

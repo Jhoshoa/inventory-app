@@ -1,5 +1,5 @@
 import type { ProductLocationSummary } from "@/features/store-locations/types";
-import type { SaleActionState } from "@/features/sales/types";
+import type { Sale, SaleActionState } from "@/features/sales/types";
 
 export interface PosProduct {
   id: string;
@@ -38,7 +38,9 @@ export type PosCartAction =
   | { type: "setQuantity"; productId: string; quantity: number }
   | { type: "syncProducts"; products: PosProduct[] }
   | { type: "remove"; productId: string }
-  | { type: "clear" };
+  | { type: "clear" }
+  /** "Deshacer" el último agregado: vuelve la venta a como estaba. */
+  | { type: "restore"; items: CartItem[] };
 
 export interface StockConflict {
   product_id: string;
@@ -50,4 +52,6 @@ export interface StockConflict {
 export type CheckoutActionState = SaleActionState & {
   stockConflicts?: StockConflict[];
   refreshedProducts?: PosProduct[];
+  /** La venta creada (para "Venta registrada"). */
+  sale?: Sale;
 };

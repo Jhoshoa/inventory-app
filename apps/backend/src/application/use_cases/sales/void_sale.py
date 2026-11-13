@@ -12,6 +12,7 @@ class VoidSaleInput:
     store_id: UUID
     sale_id: UUID
     reason: str
+    user_id: UUID | None = None
 
 
 class VoidSaleUseCase:
@@ -36,7 +37,7 @@ class VoidSaleUseCase:
             ],
         )
 
-        voided = await self._sale_repo.mark_voided(input.store_id, input.sale_id, input.reason)
+        voided = await self._sale_repo.mark_voided(input.store_id, input.sale_id, input.reason, input.user_id)
         if not voided:
             raise NotFoundError("Venta no encontrada")
         return voided

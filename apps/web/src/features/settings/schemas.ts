@@ -11,11 +11,11 @@ export function validateStoreForm(values: StoreFormValues): Record<string, strin
   if (!values.name.trim()) {
     errors.name = "El nombre de la tienda es requerido";
   } else if (values.name.trim().length > 100) {
-    errors.name = "El nombre no puede exceder 100 caracteres";
+    errors.name = "El nombre no puede pasar de 100 caracteres";
   }
 
   if (values.address && values.address.length > 255) {
-    errors.address = "La direccion no puede exceder 255 caracteres";
+    errors.address = "La dirección no puede pasar de 255 caracteres";
   }
 
   const phoneError = validateInternationalPhone(values.phone ?? "");
@@ -29,20 +29,20 @@ export function validateStorefrontForm(values: StorefrontFormValues): Record<str
 
   const slug = values.slug.trim();
   if (values.enabled && !slug) {
-    errors.slug = "Define un slug antes de activar el catalogo publico";
+    errors.slug = "Elige el link antes de encender el catálogo";
   } else if (slug && !SLUG_RE.test(slug)) {
-    errors.slug = "Solo minusculas, numeros y guiones, sin empezar ni terminar en guion (min. 3 caracteres)";
+    errors.slug = "Solo minúsculas, números y guiones, sin empezar ni terminar en guion (mín. 3 caracteres)";
   }
 
   if (values.colorPrimary && !HEX_COLOR_RE.test(values.colorPrimary)) {
-    errors.colorPrimary = "Ingresa un color hex valido, ej. #2563EB";
+    errors.colorPrimary = "Ingresa un color hex válido, ej. #2563EB.";
   }
   if (values.colorSecondary && !HEX_COLOR_RE.test(values.colorSecondary)) {
-    errors.colorSecondary = "Ingresa un color hex valido, ej. #2563EB";
+    errors.colorSecondary = "Ingresa un color hex válido, ej. #2563EB.";
   }
 
   if (values.description.length > 280) {
-    errors.description = "La descripcion no puede exceder 280 caracteres";
+    errors.description = "La descripción no puede pasar de 280 caracteres";
   }
 
   // Codigo de pais + numero: wa.me no abre el chat con un numero local.
@@ -50,7 +50,7 @@ export function validateStorefrontForm(values: StorefrontFormValues): Record<str
   if (whatsappError) errors.whatsapp = whatsappError;
 
   if (values.paymentInstructions.length > 280) {
-    errors.paymentInstructions = "Las instrucciones no pueden exceder 280 caracteres";
+    errors.paymentInstructions = "Las instrucciones no pueden pasar de 280 caracteres";
   }
 
   return { ...errors, ...validateStorefrontSettings(values.settings) };
@@ -64,13 +64,13 @@ export function validateStorefrontSettings(settings: StorefrontSettings): Record
 
   const announcement = settings.announcement_text ?? "";
   if (settings.announcement_enabled && !announcement) {
-    errors.announcementText = "Escribe el texto de la cinta de anuncio o desactivala";
+    errors.announcementText = "Escribe el texto del anuncio o apágalo";
   } else if (announcement.length > 140) {
-    errors.announcementText = "El anuncio no puede exceder 140 caracteres";
+    errors.announcementText = "El anuncio no puede pasar de 140 caracteres";
   }
 
   if ((settings.address ?? "").length > 200) {
-    errors.address = "La direccion no puede exceder 200 caracteres";
+    errors.address = "La dirección no puede pasar de 200 caracteres";
   }
   if (settings.maps_url && !MAPS_URL_RE.test(settings.maps_url)) {
     errors.mapsUrl = "Pega el link que te da Google Maps al tocar Compartir";
@@ -95,18 +95,19 @@ export function validateStorefrontSettings(settings: StorefrontSettings): Record
 export function validateDiscountPolicyForm(values: DiscountPolicyFormValues): Record<string, string> {
   const errors: Record<string, string> = {};
 
-  const maxPercentage = Number(values.maxPercentageDiscount);
+  // Se escribe como en Bolivia ("12,50"); también se acepta punto.
+  const maxPercentage = Number(values.maxPercentageDiscount.replace(",", "."));
   if (values.maxPercentageDiscount.trim() && (Number.isNaN(maxPercentage) || maxPercentage < 0 || maxPercentage > 100)) {
-    errors.maxPercentageDiscount = "Ingresa un porcentaje entre 0 y 100";
+    errors.maxPercentageDiscount = "Escribe un porcentaje entre 0 y 100";
   } else if (values.allowPercentageDiscount && (!maxPercentage || maxPercentage <= 0)) {
-    errors.maxPercentageDiscount = "Define un porcentaje maximo mayor a 0 para habilitar esta opcion";
+    errors.maxPercentageDiscount = "Define un máximo mayor a 0 para habilitar esta opción.";
   }
 
-  const maxAmount = Number(values.maxManualDiscountAmount);
+  const maxAmount = Number(values.maxManualDiscountAmount.replace(",", "."));
   if (values.maxManualDiscountAmount.trim() && (Number.isNaN(maxAmount) || maxAmount < 0)) {
-    errors.maxManualDiscountAmount = "Ingresa un monto valido";
+    errors.maxManualDiscountAmount = "Escribe el monto como 5,00";
   } else if (values.allowManualDiscount && (!maxAmount || maxAmount <= 0)) {
-    errors.maxManualDiscountAmount = "Define un monto maximo mayor a 0 para habilitar esta opcion";
+    errors.maxManualDiscountAmount = "Define un monto máximo mayor a 0 para habilitar esta opción.";
   }
 
   return errors;

@@ -2,6 +2,7 @@ from datetime import datetime, timezone
 from uuid import UUID, uuid4
 
 from pydantic import ValidationError
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
@@ -45,7 +46,9 @@ class SyncRepository(ISyncRepository):
     def __init__(self, session: AsyncSession):
         self._session = session
 
-    async def get_updates_since(self, store_id: UUID, since: datetime) -> list[SyncPullChangeDTO]:
+    async def get_updates_since(
+        self, store_id: UUID, since: datetime, *, include_cost: bool = True
+    ) -> list[SyncPullChangeDTO]:
         changes: list[SyncPullChangeDTO] = []
 
         product_result = await self._session.execute(
@@ -76,9 +79,15 @@ class SyncRepository(ISyncRepository):
                         "min_stock": product.min_stock,
                         "unit": product.unit,
                         "sku": product.sku,
-                        "cost_price": str(product.cost_price) if product.cost_price is not None else None,
+                        "cost_price": (
+                            str(product.cost_price) if include_cost and product.cost_price is not None else None
+                        ),
                         "photo_url": product.photo_url,
                         "qr_code": product.qr_code,
+                        # El POS sin conexion calcula el precio con descuento.
+                        "discount_type": product.discount_type,
+                        "discount_value": str(product.discount_value or 0),
+                        "discount_ends_at": product.discount_ends_at,
                         "deleted_at": product.deleted_at,
                         "locations": [
                             {"label": link.location.label, "kind": link.kind.value}
@@ -200,7 +209,18 @@ class SyncRepository(ISyncRepository):
             )
         try:
             if change.entity == SyncEntity.PRODUCT and change.operation == SyncOperation.UPSERT:
-                version, updated_at = await self._apply_product_upsert(store_id, change)
+                # En un SAVEPOINT: si el nombre, SKU o codigo ya lo usa otro producto de la
+                # tienda, ese cambio queda en conflicto y el resto del envio sigue.
+                try:
+                    async with self._session.begin_nested():
+                        version, updated_at = await self._apply_product_upsert(store_id, change)
+                except IntegrityError:
+                    return self._error_result(
+                        change,
+                        SyncResultStatus.CONFLICT,
+                        "conflict",
+                        "El nombre, SKU o codigo ya lo usa otro producto de la tienda",
+                    )
                 return self._result(change, SyncResultStatus.ACCEPTED, version, updated_at)
             if change.entity == SyncEntity.PRODUCT and change.operation == SyncOperation.DELETE:
                 version, updated_at = await self._apply_product_delete(store_id, change)

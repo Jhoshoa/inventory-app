@@ -1,451 +1,289 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
-import {
-  AlertCircle,
-  CheckCircle2,
-  FileSpreadsheet,
-  Loader2,
-  Upload,
-  X,
-} from "lucide-react";
-import { Alert } from "@/components/ui/Alert";
+import { useEffect, useRef, useState } from "react";
+import { AlertCircle, FileSpreadsheet, Loader2, Upload, X } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/Button";
-import {
-  Dialog,
-  DialogTitle,
-  DialogBody,
-} from "@/components/ui/Dialog";
+import { Dialog, DialogBody, DialogFooter, DialogTitle } from "@/components/ui/Dialog";
 import { importProductsCsv } from "../import-client";
-import type { ImportJob, RowError } from "../types";
+import {
+  checkImportFile,
+  countCsvRows,
+  downloadText,
+  IMPORT_MAX_ROWS,
+  importErrorsCsv,
+  importTemplateCsv,
+  readFileText,
+  spreadsheetRow,
+} from "../import-template";
+import type { ImportJob } from "../types";
 
-type DialogState =
-  | { phase: "idle" }
-  | { phase: "uploading" }
-  | { phase: "validating" }
-  | { phase: "inserting" }
-  | { phase: "completed"; job: ImportJob }
-  | { phase: "error"; message: string };
+/** Si en este tiempo no hay respuesta, aparece "Reintentar" (tablero P05). */
+const SLOW_IMPORT_MS = 60_000;
 
-interface Props {
+type Phase =
+  | { name: "choose" }
+  | { name: "working" }
+  | { name: "rejected"; job: ImportJob }
+  | { name: "failed"; message: string };
+
+/**
+ * Importar productos desde CSV (tablero P05): elegir archivo → validando → resultado.
+ * Todo o nada: si una fila falla no se crea ninguno y se listan fila, campo y motivo.
+ */
+export function ProductCsvImportDialog({
+  open,
+  onClose,
+  onSuccess,
+}: {
   open: boolean;
   onClose: () => void;
-  onSuccess: () => void;
-}
-
-export function ProductCsvImportDialog({ open, onClose, onSuccess }: Props) {
+  /** Se llama con la cantidad importada (la ventana ya avisó "Se importaron N productos"). */
+  onSuccess: (count: number) => void;
+}) {
   const inputRef = useRef<HTMLInputElement>(null);
-  const [dragOver, setDragOver] = useState(false);
+  const abortRef = useRef<AbortController | null>(null);
   const [file, setFile] = useState<File | null>(null);
+  const [rows, setRows] = useState<number | null>(null);
   const [fileError, setFileError] = useState<string | null>(null);
-  const [state, setState] = useState<DialogState>({ phase: "idle" });
+  const [dragOver, setDragOver] = useState(false);
+  const [phase, setPhase] = useState<Phase>({ name: "choose" });
+  const [slow, setSlow] = useState(false);
 
-  const handleFile = useCallback((f: File) => {
-    if (!f.name.toLowerCase().endsWith(".csv")) {
+  useEffect(() => {
+    if (phase.name !== "working") return;
+    setSlow(false);
+    const timer = window.setTimeout(() => setSlow(true), SLOW_IMPORT_MS);
+    return () => window.clearTimeout(timer);
+  }, [phase]);
+
+  useEffect(() => () => abortRef.current?.abort(), []);
+
+  async function choose(next: File) {
+    const problem = checkImportFile(next);
+    setFile(problem ? null : next);
+    setRows(null);
+    setFileError(problem);
+    setPhase({ name: "choose" });
+    if (problem) return;
+    let count: number;
+    try {
+      count = countCsvRows(await readFileText(next));
+    } catch {
       setFile(null);
-      setFileError("Selecciona un archivo con extension .csv");
-      setState({ phase: "idle" });
+      setFileError("No se pudo leer el archivo. Prueba de nuevo o guárdalo otra vez como CSV.");
       return;
     }
-    setFile(f);
-    setFileError(null);
-    setState({ phase: "idle" });
-  }, []);
+    setRows(count);
+    if (count === 0) setFileError("El archivo no tiene filas con productos.");
+    else if (count > IMPORT_MAX_ROWS) setFileError(`El archivo tiene ${count.toLocaleString("es-BO")} filas: el máximo es 5.000.`);
+  }
 
-  const handleDrop = useCallback(
-    (e: React.DragEvent) => {
-      e.preventDefault();
-      setDragOver(false);
-      const f = e.dataTransfer.files[0];
-      if (f) handleFile(f);
-    },
-    [handleFile],
-  );
-
-  const handleInputChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      const f = e.target.files?.[0];
-      if (f) handleFile(f);
-    },
-    [handleFile],
-  );
-
-  const handleSubmit = useCallback(async () => {
-    if (!file) return;
-
-    setState({ phase: "uploading" });
-
+  async function start() {
+    if (!file || fileError) return;
+    abortRef.current?.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
+    setPhase({ name: "working" });
     try {
-      const job = await importProductsCsv(file);
-
-      if (job.status === "completed") {
-        setState({ phase: "completed", job });
-        if (job.imported_count > 0 && job.error_count === 0) {
-          onSuccess();
-        }
+      const job = await importProductsCsv(file, controller.signal);
+      if (controller.signal.aborted) return;
+      if (job.status === "completed" && job.error_count === 0 && job.imported_count > 0) {
+        toast.success(job.imported_count === 1 ? "Se importó 1 producto" : `Se importaron ${job.imported_count} productos`);
+        reset();
+        onSuccess(job.imported_count);
+      } else if (job.status === "completed") {
+        setPhase({ name: "rejected", job });
       } else {
-        setState({
-          phase: "error",
-          message: "La importacion no se completo en el tiempo esperado.",
-        });
+        setPhase({ name: "failed", message: "La importación no terminó a tiempo. Intenta de nuevo." });
       }
     } catch (error) {
-      const message =
-        error instanceof Error ? error.message : "Error inesperado al importar.";
-      setState({ phase: "error", message });
+      if (controller.signal.aborted) return;
+      setPhase({
+        name: "failed",
+        message: error instanceof Error ? error.message : "No se pudo importar. Revisa tu conexión e intenta de nuevo.",
+      });
     }
-  }, [file, onSuccess]);
+  }
 
   function reset() {
+    abortRef.current?.abort();
     setFile(null);
+    setRows(null);
     setFileError(null);
-    setState({ phase: "idle" });
+    setPhase({ name: "choose" });
     if (inputRef.current) inputRef.current.value = "";
   }
 
-  function handleClose() {
+  function close() {
     reset();
     onClose();
   }
 
+  const working = phase.name === "working";
+
   return (
-    <Dialog open={open} onOpenChange={(v) => !v && handleClose()} size="lg">
-      <DialogTitle close>Importar productos desde CSV</DialogTitle>
-      <DialogBody>
-        {state.phase === "completed" && state.job.error_count > 0 ? (
-          <ErrorResult
-            job={state.job}
-            filename={state.job.filename}
-            onClose={handleClose}
-          />
-        ) : state.phase === "completed" && state.job.imported_count > 0 ? (
-          <SuccessResult
-            count={state.job.imported_count}
-            onClose={handleClose}
-          />
-        ) : state.phase === "error" ? (
-          <ErrorState
-            message={state.message}
-            onRetry={handleSubmit}
-            onClose={handleClose}
-          />
-        ) : state.phase === "uploading" ||
-          state.phase === "validating" ||
-          state.phase === "inserting" ? (
-          <ProcessingResult
-            phase={state.phase}
-            filename={file?.name ?? ""}
-            onCancel={handleClose}
-          />
-        ) : (
-          <IdleForm
-            file={file}
-            fileError={fileError}
-            dragOver={dragOver}
-            onDragOver={(e) => {
-              e.preventDefault();
-              setDragOver(true);
-            }}
-            onDragLeave={() => setDragOver(false)}
-            onDrop={handleDrop}
-            onFileClick={() => inputRef.current?.click()}
-            onFileChange={handleInputChange}
-            onClear={() => {
-              setFile(null);
-              setFileError(null);
-              if (inputRef.current) inputRef.current.value = "";
-            }}
-            onSubmit={handleSubmit}
-            onClose={handleClose}
-            inputRef={inputRef}
-          />
-        )}
-      </DialogBody>
+    <Dialog open={open} onOpenChange={(next) => !next && !working && close()} position="sheet" size="lg">
+      <DialogTitle close={!working}>Importar productos desde CSV</DialogTitle>
+
+      {phase.name === "working" ? (
+        <DialogBody className="!pb-5">
+          <div className="flex flex-col items-center py-6 text-center" role="status">
+            <Loader2 className="h-10 w-10 animate-spin text-brand-700" aria-hidden="true" />
+            <p className="mt-4 text-lg font-bold text-text-strong">Validando filas…</p>
+            <p className="mt-1 text-sm text-text-muted">
+              {file?.name}
+              {rows !== null ? ` · ${rows.toLocaleString("es-BO")} ${rows === 1 ? "fila" : "filas"}` : ""}
+            </p>
+            <p className="mt-3 max-w-sm text-xs text-text-muted">No cierres esta ventana. Si nada cambia en 1 minuto, aparece &quot;Reintentar&quot;.</p>
+            {slow ? (
+              <Button className="mt-4" variant="secondary" onClick={() => void start()}>
+                Reintentar
+              </Button>
+            ) : null}
+          </div>
+        </DialogBody>
+      ) : phase.name === "rejected" ? (
+        <>
+          <DialogBody className="space-y-3">
+            <div className="flex items-start gap-3" role="alert">
+              <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-status-danger" aria-hidden="true" />
+              <div>
+                <p className="font-bold text-text-strong">No se importó ningún producto</p>
+                <p className="text-sm text-text-muted">
+                  Hay {phase.job.error_count === 1 ? "1 error" : `${phase.job.error_count} errores`}. Corrígelos y vuelve a subir el
+                  archivo: se importa todo o nada.
+                </p>
+              </div>
+            </div>
+            <p className="text-xs text-text-muted">La fila es la de la planilla (la 1 son los títulos).</p>
+            <div className="max-h-64 overflow-y-auto rounded-control border border-app-border">
+              <table className="w-full text-left text-sm">
+                <thead className="sticky top-0 bg-app-surface-muted text-xs font-semibold text-text-muted">
+                  <tr>
+                    <th scope="col" className="px-3 py-2">Fila</th>
+                    <th scope="col" className="px-3 py-2">Campo</th>
+                    <th scope="col" className="px-3 py-2">Qué pasa</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {phase.job.errors.map((error, index) => (
+                    <tr key={`${error.row}-${error.field}-${index}`} className="border-t border-app-border">
+                      <td className="px-3 py-2 tabular-nums text-text-muted">{spreadsheetRow(error.row) ?? "Archivo"}</td>
+                      <td className="px-3 py-2 font-mono text-text-strong">{error.field}</td>
+                      <td className="px-3 py-2 text-text-body">{error.message}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </DialogBody>
+          <DialogFooter align="between" className="flex-wrap">
+            <Button
+              variant="ghost"
+              onClick={() =>
+                downloadText(importErrorsCsv(phase.job.errors), `errores-${phase.job.filename.replace(/\.csv$/i, "") || "importacion"}.csv`)
+              }
+            >
+              Descargar errores
+            </Button>
+            <Button onClick={reset}>Subir otro archivo</Button>
+          </DialogFooter>
+        </>
+      ) : (
+        <>
+          <DialogBody className="space-y-3">
+            {phase.name === "failed" ? (
+              <p role="alert" className="rounded-control border border-status-dangerBorder bg-status-dangerBg px-3 py-2 text-sm text-status-danger">
+                {phase.message}
+              </p>
+            ) : null}
+            <div
+              onDragOver={(event) => {
+                event.preventDefault();
+                setDragOver(true);
+              }}
+              onDragLeave={() => setDragOver(false)}
+              onDrop={(event) => {
+                event.preventDefault();
+                setDragOver(false);
+                const dropped = event.dataTransfer.files[0];
+                if (dropped) void choose(dropped);
+              }}
+              className={`flex flex-col items-center gap-2 rounded-card border-2 border-dashed px-4 py-6 text-center ${
+                dragOver ? "border-brand-700 bg-brand-50" : "border-app-borderStrong"
+              }`}
+            >
+              <Upload className="h-7 w-7 text-text-muted" aria-hidden="true" />
+              <p className="text-sm font-bold text-text-strong">Arrastra tu archivo aquí</p>
+              <p className="text-xs text-text-muted">o</p>
+              <Button variant="secondary" onClick={() => inputRef.current?.click()}>
+                Elegir archivo
+              </Button>
+              <p className="text-xs text-text-muted">.csv · hasta 5 MB · hasta 5.000 filas</p>
+              <input
+                ref={inputRef}
+                type="file"
+                accept=".csv,text/csv"
+                className="hidden"
+                aria-label="Archivo CSV"
+                onChange={(event) => {
+                  const chosen = event.target.files?.[0];
+                  if (chosen) void choose(chosen);
+                }}
+              />
+            </div>
+
+            {fileError ? (
+              <p role="alert" className="text-sm text-status-danger">
+                {fileError}
+              </p>
+            ) : null}
+            {file ? (
+              <div className="flex items-center justify-between gap-2 rounded-control border border-app-border bg-app-surface-muted px-3 py-2">
+                <span className="flex min-w-0 items-center gap-2 text-sm">
+                  <FileSpreadsheet className="h-4 w-4 shrink-0 text-text-muted" aria-hidden="true" />
+                  <span className="truncate font-semibold text-text-strong">{file.name}</span>
+                  <span className="shrink-0 text-xs text-text-muted">
+                    {rows === null ? "" : `${rows.toLocaleString("es-BO")} ${rows === 1 ? "fila" : "filas"} · `}
+                    {Math.max(1, Math.round(file.size / 1024))} KB
+                  </span>
+                </span>
+                <button
+                  type="button"
+                  aria-label="Quitar archivo"
+                  onClick={reset}
+                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-control text-text-muted hover:bg-app-surface"
+                >
+                  <X className="h-4 w-4" aria-hidden="true" />
+                </button>
+              </div>
+            ) : null}
+
+            <p className="text-xs text-text-muted">
+              Columnas: <code className="font-mono">name, price, stock</code> (obligatorias) y opcionales{" "}
+              <code className="font-mono">category</code> o <code className="font-mono">category_id</code>,{" "}
+              <code className="font-mono">sku, unit, min_stock, cost_price, qr_code, photo_url, vence, aviso_dias</code>. Precio con
+              punto (7.50). <code className="font-mono">vence</code> como 31/12/2026; <code className="font-mono">aviso_dias</code> vacío
+              usa el aviso de la tienda. <code className="font-mono">sku</code> y{" "}
+              <code className="font-mono">qr_code</code>: letras A-Z, números y guion; vacíos se crean solos.
+            </p>
+          </DialogBody>
+          <DialogFooter align="between" className="flex-wrap">
+            <Button variant="ghost" onClick={() => downloadText(importTemplateCsv(), "plantilla-productos.csv")}>
+              Descargar plantilla
+            </Button>
+            <div className="flex gap-2">
+              <Button variant="secondary" onClick={close}>
+                Cancelar
+              </Button>
+              <Button onClick={() => void start()} disabled={!file || Boolean(fileError) || rows === null}>
+                {phase.name === "failed" ? "Reintentar" : "Importar"}
+              </Button>
+            </div>
+          </DialogFooter>
+        </>
+      )}
     </Dialog>
   );
-}
-
-function IdleForm({
-  file,
-  fileError,
-  dragOver,
-  onDragOver,
-  onDragLeave,
-  onDrop,
-  onFileClick,
-  onFileChange,
-  onClear,
-  onSubmit,
-  onClose,
-  inputRef,
-}: {
-  file: File | null;
-  fileError: string | null;
-  dragOver: boolean;
-  onDragOver: (e: React.DragEvent) => void;
-  onDragLeave: (e: React.DragEvent) => void;
-  onDrop: (e: React.DragEvent) => void;
-  onFileClick: () => void;
-  onFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  onClear: () => void;
-  onSubmit: () => void;
-  onClose: () => void;
-  inputRef: React.RefObject<HTMLInputElement | null>;
-}) {
-  return (
-    <>
-      <p className="mt-1 text-sm text-text-muted">
-        Sube un archivo CSV con los productos a importar.
-      </p>
-      <p className="mt-1 text-xs text-text-muted">
-        Columnas opcionales para productos que vencen: <code>vence</code> (2026-12-31 o 31/12/2026) y{" "}
-        <code>aviso_dias</code> (cuantos dias antes avisar; 5 si se deja vacio).
-      </p>
-
-      <div
-        className={`mt-4 cursor-pointer rounded-lg border-2 border-dashed p-8 text-center transition-colors ${
-          dragOver
-            ? "border-brand-700 bg-brand-50"
-            : "border-app-borderStrong hover:border-brand-700"
-        }`}
-        onDragOver={onDragOver}
-        onDragLeave={onDragLeave}
-        onDrop={onDrop}
-        onClick={onFileClick}
-        role="button"
-        tabIndex={0}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" || e.key === " ") onFileClick();
-        }}
-      >
-        <Upload className="mx-auto h-8 w-8 text-text-disabled" />
-        <p className="mt-2 text-sm font-medium text-text-strong">
-          Arrastra tu archivo CSV aqui
-        </p>
-        <p className="mt-1 text-xs text-text-muted">
-          o haz clic para seleccionar archivo
-        </p>
-        <input
-          ref={inputRef}
-          type="file"
-          accept=".csv"
-          className="hidden"
-          onChange={onFileChange}
-        />
-      </div>
-
-      {fileError ? (
-        <div className="mt-3">
-          <Alert variant="error">{fileError}</Alert>
-        </div>
-      ) : null}
-
-      {file ? (
-        <div className="mt-3 flex items-center justify-between rounded-md border border-app-border bg-app-surface-muted px-3 py-2">
-          <div className="flex items-center gap-2 truncate">
-            <FileSpreadsheet className="h-4 w-4 shrink-0 text-text-muted" />
-            <span className="truncate text-sm text-text-strong">
-              {file.name}
-            </span>
-            <span className="shrink-0 text-xs text-text-muted">
-              ({(file.size / 1024).toFixed(0)} KB)
-            </span>
-          </div>
-          <button
-            type="button"
-            onClick={onClear}
-            className="ml-2 shrink-0 rounded p-1 text-text-muted hover:bg-app-surface hover:text-text-strong"
-            aria-label="Quitar archivo"
-          >
-            <X className="h-4 w-4" />
-          </button>
-        </div>
-      ) : null}
-
-      <div className="mt-6 flex items-center justify-between">
-        <a
-          href="/api/v1/exports/products.csv"
-          className="text-sm text-brand-700 underline underline-offset-2 hover:text-brand-800"
-          target="_blank"
-          rel="noreferrer"
-        >
-          Descargar plantilla CSV
-        </a>
-        <div className="flex items-center gap-2">
-          <Button variant="secondary" onClick={onClose}>
-            Cancelar
-          </Button>
-          <Button onClick={onSubmit} disabled={!file}>
-            Subir
-          </Button>
-        </div>
-      </div>
-    </>
-  );
-}
-
-function ErrorState({
-  message,
-  onRetry,
-  onClose,
-}: {
-  message: string;
-  onRetry: () => void;
-  onClose: () => void;
-}) {
-  return (
-    <>
-      <div className="mt-2">
-        <Alert variant="error">{message}</Alert>
-      </div>
-      <div className="mt-6 flex items-center justify-end gap-2">
-        <Button variant="secondary" onClick={onClose}>
-          Cerrar
-        </Button>
-        <Button onClick={onRetry}>Reintentar</Button>
-      </div>
-    </>
-  );
-}
-
-function ProcessingResult({
-  phase,
-  filename,
-  onCancel,
-}: {
-  phase: "uploading" | "validating" | "inserting";
-  filename: string;
-  onCancel: () => void;
-}) {
-  const labels: Record<string, string> = {
-    uploading: "Subiendo archivo...",
-    validating: "Validando filas...",
-    inserting: "Importando productos...",
-  };
-
-  return (
-    <>
-      <div className="flex flex-col items-center py-6 text-center">
-        <Loader2 className="h-10 w-10 animate-spin text-brand-700" />
-        <h2 className="mt-4 text-lg font-semibold text-text-strong">
-          Importando productos...
-        </h2>
-        <p className="mt-2 text-sm text-text-muted">{labels[phase]}</p>
-        <p className="mt-1 text-xs text-text-muted">{filename}</p>
-      </div>
-      <div className="mt-4 flex justify-center">
-        <Button variant="secondary" onClick={onCancel}>
-          Cancelar
-        </Button>
-      </div>
-    </>
-  );
-}
-
-function SuccessResult({
-  count,
-  onClose,
-}: {
-  count: number;
-  onClose: () => void;
-}) {
-  return (
-    <>
-      <div className="flex flex-col items-center py-6 text-center">
-        <CheckCircle2 className="h-10 w-10 text-status-success" />
-        <h2 className="mt-4 text-lg font-semibold text-text-strong">
-          Importacion completada
-        </h2>
-        <p className="mt-2 text-sm text-text-muted">
-          {count}{" "}
-          {count === 1 ? "producto importado" : "productos importados"}
-        </p>
-      </div>
-      <div className="mt-4 flex justify-center">
-        <Button onClick={onClose}>Cerrar</Button>
-      </div>
-    </>
-  );
-}
-
-function ErrorResult({
-  job,
-  filename,
-  onClose,
-}: {
-  job: ImportJob;
-  filename: string;
-  onClose: () => void;
-}) {
-  return (
-    <>
-      <div className="flex items-start gap-3">
-        <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-status-danger" />
-        <div>
-          <p className="text-sm text-text-muted">
-            Se encontraron {job.error_count}{" "}
-            {job.error_count === 1 ? "error" : "errores"}. Ningun producto fue
-            importado.
-          </p>
-          <p className="text-xs text-text-muted">
-            Corrige el archivo e intenta de nuevo.
-          </p>
-        </div>
-      </div>
-
-      <div className="mt-4 max-h-56 overflow-y-auto rounded-md border border-app-border">
-        <table className="w-full text-left text-sm">
-          <thead>
-            <tr className="border-b border-app-border bg-app-surface-muted text-xs uppercase text-text-muted">
-              <th className="px-3 py-2 font-medium">Fila</th>
-              <th className="px-3 py-2 font-medium">Campo</th>
-              <th className="px-3 py-2 font-medium">Mensaje</th>
-            </tr>
-          </thead>
-          <tbody>
-            {job.errors.map((err: RowError, i: number) => (
-              <tr key={i} className="border-b border-app-border last:border-0">
-                <td className="px-3 py-2 text-text-muted">{err.row}</td>
-                <td className="px-3 py-2 font-medium text-text-strong">
-                  {err.field}
-                </td>
-                <td className="px-3 py-2 text-text-body">{err.message}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      <div className="mt-4 flex items-center justify-between">
-        <button
-          type="button"
-          onClick={() => downloadErrors(job.errors, filename)}
-          className="text-sm text-brand-700 underline underline-offset-2 hover:text-brand-800"
-        >
-          Descargar errores
-        </button>
-        <Button onClick={onClose}>Cerrar</Button>
-      </div>
-    </>
-  );
-}
-
-function downloadErrors(errors: RowError[], originalFilename: string) {
-  const headers = ["row", "field", "message"];
-  const csvContent = [
-    headers.join(","),
-    ...errors.map((e) =>
-      [e.row, e.field, `"${e.message.replace(/"/g, '""')}"`].join(","),
-    ),
-  ].join("\n");
-
-  const blob = new Blob(["\ufeff" + csvContent], {
-    type: "text/csv;charset=utf-8;",
-  });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = `errores-${originalFilename.replace(/\.csv$/i, "")}.csv`;
-  a.click();
-  URL.revokeObjectURL(url);
 }

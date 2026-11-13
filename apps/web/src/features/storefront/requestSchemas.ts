@@ -8,14 +8,14 @@ export function validateStorefrontRequestForm(values: StorefrontRequestFormValue
   if (!name) {
     errors.customerName = "Tu nombre es requerido";
   } else if (name.length < 2) {
-    errors.customerName = "Ingresa un nombre valido";
+    errors.customerName = "Escribe un nombre válido";
   } else if (name.length > 150) {
     errors.customerName = "El nombre no puede exceder 150 caracteres";
   }
 
   const phone = values.customerPhone.trim();
   if (!phone) {
-    errors.customerPhone = "Tu telefono es requerido para que te contacten";
+    errors.customerPhone = "Escribe tu teléfono para que te contacten";
   } else {
     const phoneError = validateInternationalPhone(phone);
     if (phoneError) errors.customerPhone = phoneError;

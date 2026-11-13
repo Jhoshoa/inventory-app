@@ -113,7 +113,7 @@ async def test_sales_report_by_range_groups_and_top_products(client):
     assert data["top_products"][0]["quantity"] == 3
 
 
-async def test_sales_report_rejects_range_starting_before_first_business_date(client):
+async def test_sales_report_clamps_range_starting_before_first_business_date(client):
     product = await client.post("/api/v1/products", json={"name": "Arroz", "price": "12.50", "stock": 20})
     opened_day = await _open_store_day(client)
     opened_date = opened_day["first_business_date"]
@@ -123,10 +123,15 @@ async def test_sales_report_rejects_range_starting_before_first_business_date(cl
         json={"items": [{"product_id": product.json()["id"], "quantity": 2}], "payment_method": "efectivo"},
     )
 
-    month_start = opened_date[:8] + "01"
-    response = await client.get(f"/api/v1/reports/sales?from_date={month_start}&to_date={opened_date}")
+    week_before = (datetime.fromisoformat(opened_date) - timedelta(days=6)).date().isoformat()
+    response = await client.get(f"/api/v1/reports/sales?from_date={week_before}&to_date={opened_date}")
 
-    assert response.status_code == 400
+    # E14: se recorta al primer dia (antes respondia 400 y una tienda nueva no veia reportes).
+    assert response.status_code == 200
+    data = response.json()
+    assert data["from_date"] == opened_date
+    assert data["to_date"] == opened_date
+    assert data["sales_count"] == 1
 
 
 async def test_sales_report_filters_by_calendar_created_date(client, db_session):

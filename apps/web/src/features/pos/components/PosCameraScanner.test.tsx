@@ -44,7 +44,7 @@ describe("PosCameraScanner", () => {
     render(<PosCameraScanner open onOpenChange={vi.fn()} onDetected={vi.fn()} />);
 
     expect(
-      await screen.findByText("Permite el acceso a la camara en el navegador para escanear."),
+      await screen.findByText("Permite la cámara en tu navegador o escribe el código."),
     ).toBeInTheDocument();
   });
 

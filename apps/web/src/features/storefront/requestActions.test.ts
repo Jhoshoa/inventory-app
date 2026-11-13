@@ -45,7 +45,7 @@ describe("createStorefrontOrderAction", () => {
       ok: false,
       error: {
         status: 409,
-        message: "Algunos productos de tu boleta ya no estan disponibles.",
+        message: "Algunos productos de tu pedido ya no están disponibles.",
         details: { error: "conflict", unavailable_product_ids: ["p-2"] },
       },
     });

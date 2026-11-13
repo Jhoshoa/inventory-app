@@ -43,7 +43,7 @@ export async function updateStoreAction(
   }
 
   const token = await getAuthToken();
-  if (!token) return { ok: false, message: "Sesion no valida", fieldErrors: {} };
+  if (!token) return { ok: false, message: "Tu sesión terminó. Vuelve a entrar.", fieldErrors: {} };
 
   // address/phone se envian siempre (incluso vacios) para permitir borrarlos;
   // omitir la clave cuando estan vacios impediria limpiar un valor ya guardado,
@@ -82,8 +82,8 @@ export async function updateStoreAction(
     }
   }
 
-  revalidatePath("/dashboard/settings");
-  return { ok: true, message: "Tienda actualizada correctamente", fieldErrors: {} };
+  revalidatePath("/dashboard/settings", "layout");
+  return { ok: true, message: "Guardado", fieldErrors: {} };
 }
 
 export async function updateDiscountPolicyAction(
@@ -104,16 +104,16 @@ export async function updateDiscountPolicyAction(
   }
 
   const token = await getAuthToken();
-  if (!token) return { ok: false, message: "Sesion no valida", fieldErrors: {} };
+  if (!token) return { ok: false, message: "Tu sesión terminó. Vuelve a entrar.", fieldErrors: {} };
 
   const result = await apiRequest<StoreResponse>("/store", {
     method: "PATCH",
     token,
     body: {
       allow_percentage_discount: values.allowPercentageDiscount,
-      max_percentage_discount: values.maxPercentageDiscount || "0",
+      max_percentage_discount: values.maxPercentageDiscount.replace(",", ".") || "0",
       allow_manual_discount: values.allowManualDiscount,
-      max_manual_discount_amount: values.maxManualDiscountAmount || "0",
+      max_manual_discount_amount: values.maxManualDiscountAmount.replace(",", ".") || "0",
       allow_cashier_discount_override: values.allowCashierDiscountOverride,
     },
   });
@@ -122,9 +122,9 @@ export async function updateDiscountPolicyAction(
     return { ok: false, message: result.error.message, fieldErrors: {} };
   }
 
-  revalidatePath("/dashboard/settings");
+  revalidatePath("/dashboard/settings", "layout");
   revalidatePath("/dashboard/pos");
-  return { ok: true, message: "Politica de descuentos actualizada", fieldErrors: {} };
+  return { ok: true, message: "Guardado", fieldErrors: {} };
 }
 
 export async function updateStorefrontAction(
@@ -148,7 +148,7 @@ export async function updateStorefrontAction(
   }
 
   const token = await getAuthToken();
-  if (!token) return { ok: false, message: "Sesion no valida", fieldErrors: {} };
+  if (!token) return { ok: false, message: "Tu sesión terminó. Vuelve a entrar.", fieldErrors: {} };
 
   const result = await apiRequest<StoreResponse>("/store", {
     method: "PATCH",
@@ -176,12 +176,12 @@ export async function updateStorefrontAction(
     return { ok: false, message: result.error.message, fieldErrors: {} };
   }
 
-  revalidatePath("/dashboard/settings");
+  revalidatePath("/dashboard/settings", "layout");
   // El catalogo publico se cachea 5 min (ISR): el dueno tiene que ver su cambio ya.
   if (result.data.storefront_slug) {
     revalidateTag(storefrontCacheTag(result.data.storefront_slug));
   }
-  return { ok: true, message: "Catalogo publico actualizado", fieldErrors: {} };
+  return { ok: true, message: "Catálogo público actualizado", fieldErrors: {} };
 }
 
 function text(formData: FormData, name: string): string | null {
@@ -265,7 +265,7 @@ interface CheckoutResponse {
 
 export async function requestCheckoutAction(): Promise<CheckoutState> {
   const token = await getAuthToken();
-  if (!token) return { ok: false, message: "Sesion no valida" };
+  if (!token) return { ok: false, message: "Tu sesión terminó. Vuelve a entrar." };
 
   const result = await apiRequest<CheckoutResponse>("/billing/checkout", {
     method: "POST",

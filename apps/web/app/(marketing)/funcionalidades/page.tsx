@@ -17,7 +17,7 @@ export default function FuncionalidadesPage() {
     <div className="mx-auto max-w-5xl px-4 py-16 sm:px-6 lg:px-8">
       <SectionHeading
         eyebrow="Funcionalidades"
-        title="Un modulo para cada parte de tu operacion"
+        title="Un módulo para cada parte de tu negocio"
         description="Todo conectado: cuando vendes, tu stock se actualiza solo. Cuando cierras caja, tus reportes ya estan listos."
       />
 

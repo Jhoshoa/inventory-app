@@ -1,5 +1,6 @@
-"use client";
-
+// Sin "use client": así una página del servidor puede usar <Button asChild><Link/></Button>.
+// Siendo componente de cliente, el hijo llegaba como referencia del servidor y
+// Children.only fallaba (Reportes se caía con "React.Children.only expected...").
 import type { ButtonHTMLAttributes } from "react";
 import { Children, cloneElement, isValidElement } from "react";
 
@@ -28,8 +29,8 @@ export function Button({
   ...props
 }: ButtonProps) {
   const shapeClasses =
-    variant === "icon" ? "h-9 w-9 px-0" : "h-10 px-4";
-  const classes = `inline-flex items-center justify-center gap-2 rounded-md text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-focus focus:ring-offset-2 focus:ring-offset-app-background disabled:cursor-not-allowed ${shapeClasses} ${variants[variant]} ${className}`;
+    variant === "icon" ? "h-control w-[var(--height-control)] px-0" : "h-control px-4";
+  const classes = `inline-flex items-center justify-center gap-2 rounded-control text-sm font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-focus focus:ring-offset-2 focus:ring-offset-app-background disabled:cursor-not-allowed ${shapeClasses} ${variants[variant]} ${className}`;
 
   if (asChild) {
     const child = Children.only(children);

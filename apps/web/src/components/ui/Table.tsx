@@ -23,7 +23,7 @@ export function Table({
       : "";
 
   return (
-    <div className={`min-w-0 overflow-hidden rounded-lg border border-app-border bg-app-surface shadow-panel ${mobileClasses} ${wrapperClassName}`}>
+    <div className={`min-w-0 overflow-hidden rounded-card border border-app-border bg-app-surface shadow-panel ${mobileClasses} ${wrapperClassName}`}>
       <div className="w-full overflow-x-auto">
         <table className={`min-w-full border-separate border-spacing-0 text-left text-text-body ${densityClasses} ${className}`} {...props} />
       </div>

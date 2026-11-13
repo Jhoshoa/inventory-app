@@ -8,11 +8,11 @@ export function formatExpiryDate(isoDate: string) {
 
 export function daysLeftLabel(batch: Pick<ProductBatch, "days_left">) {
   const days = batch.days_left;
-  if (days < -1) return `Vencio hace ${-days} dias`;
+  if (days < -1) return `Venció hace ${-days} días`;
   if (days === -1) return "Vencio ayer";
   if (days === 0) return "Vence hoy";
   if (days === 1) return "Vence manana";
-  return `Vence en ${days} dias`;
+  return `Vence en ${days} días`;
 }
 
 export const BATCH_STATUS_LABEL: Record<ProductBatch["status"], string> = {

@@ -135,6 +135,8 @@ async def test_stock_movements_filters_by_type_and_range(client):
     assert response.status_code == 200
     assert response.json()["total"] == 1
     assert response.json()["items"][0]["movement_type"] == "sale_void"
+    # Reportes muestra el nombre del producto (sin otra llamada).
+    assert response.json()["items"][0]["product_name"] == "Arroz"
 
 
 async def test_list_sales_filters_by_calendar_created_date_range(client, db_session):

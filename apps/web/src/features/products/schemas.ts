@@ -1,3 +1,4 @@
+import { formatCurrency, parseMoney } from "@/lib/format/currency";
 import type {
   ProductDiscountType,
   ProductFormValues,
@@ -7,7 +8,7 @@ import type {
   SortDirection,
 } from "./types";
 
-const stockFilters = new Set<ProductStockFilter>(["all", "available", "low", "out"]);
+const stockFilters = new Set<ProductStockFilter>(["all", "available", "low", "out", "expiring"]);
 const sortFields = new Set<ProductSortField>(["name", "stock", "updated_at", "price"]);
 const sortDirections = new Set<SortDirection>(["asc", "desc"]);
 
@@ -51,63 +52,129 @@ export function buildProductQueryString(params: ProductSearchParams) {
   return query.toString();
 }
 
-export function validateProductForm(values: ProductFormValues, mode: "create" | "edit") {
+/** Límites de descuento de la tienda (Configuración › Precios y descuentos). La API los vuelve a revisar. */
+export interface DiscountPolicy {
+  percentage: { allowed: boolean; max: number };
+  fixed: { allowed: boolean; max: number };
+}
+
+export const PRODUCT_LIMITS = { name: 100, unit: 20, sku: 50, qr_code: 50 } as const;
+
+/** Código para escanear y SKU: letras A-Z, números y guion (la API los guarda en mayúsculas). */
+const PRODUCT_CODE = /^[A-Z0-9-]+$/;
+export const PRODUCT_CODE_MESSAGE = "Usa solo letras A-Z, números y guion";
+
+/** Como lo guarda la API: sin espacios alrededor y en mayúsculas. */
+export function normalizeProductCode(value: string) {
+  return value.trim().toUpperCase();
+}
+
+export function productCodeError(value: string, max: number) {
+  const code = normalizeProductCode(value);
+  if (!code) return undefined;
+  if (code.length > max) return `Máximo ${max} caracteres`;
+  return PRODUCT_CODE.test(code) ? undefined : PRODUCT_CODE_MESSAGE;
+}
+
+/** Número de un monto escrito con coma o punto ("18,50"); null si no es un monto válido. */
+export function moneyNumber(text: string) {
+  const parsed = parseMoney(text);
+  return parsed.ok ? Number(parsed.value) : null;
+}
+
+export function validateProductForm(
+  values: ProductFormValues,
+  mode: "create" | "edit",
+  policy?: DiscountPolicy | null,
+) {
   const errors: Partial<Record<keyof ProductFormValues, string>> = {};
 
-  if (!values.name.trim()) errors.name = "Nombre es requerido";
-  if (values.name.trim().length > 100) errors.name = "Nombre debe tener maximo 100 caracteres";
+  if (!values.name.trim()) errors.name = "Escribe el nombre del producto";
+  else if (values.name.trim().length > PRODUCT_LIMITS.name) errors.name = `Máximo ${PRODUCT_LIMITS.name} caracteres`;
 
-  const price = Number(values.price);
-  if (!values.price) errors.price = "Precio es requerido";
-  else if (!Number.isFinite(price) || price <= 0) errors.price = "Precio debe ser mayor a 0";
+  const price = moneyNumber(values.price);
+  if (!values.price.trim()) errors.price = "Escribe el precio de venta";
+  else if (price === null) errors.price = "Escribe el precio como 18,50";
+  else if (price <= 0) errors.price = "El precio tiene que ser mayor a 0";
 
-  const stock = Number(values.stock);
-  if (mode === "create" && values.stock === "") errors.stock = "Stock inicial es requerido";
-  else if (values.stock !== "" && (!Number.isInteger(stock) || stock < 0)) {
-    errors.stock = "Stock debe ser un entero mayor o igual a 0";
+  if (values.cost_price.trim() && moneyNumber(values.cost_price) === null) {
+    errors.cost_price = "Escribe el costo como 12,00";
   }
 
-  const minStock = Number(values.min_stock);
-  if (values.min_stock !== "" && (!Number.isInteger(minStock) || minStock < 0)) {
-    errors.min_stock = "Stock minimo debe ser un entero mayor o igual a 0";
+  if (mode === "create") {
+    if (values.stock.trim() === "") errors.stock = "Escribe cuántas unidades tienes (puede ser 0)";
+    else if (!isWholeNumber(values.stock)) errors.stock = "Un número entero, 0 o más";
   }
 
-  const costPrice = Number(values.cost_price);
-  if (values.cost_price !== "" && (!Number.isFinite(costPrice) || costPrice < 0)) {
-    errors.cost_price = "Costo debe ser mayor o igual a 0";
+  if (values.min_stock.trim() !== "" && !isWholeNumber(values.min_stock)) {
+    errors.min_stock = "Un número entero, 0 o más";
   }
 
-  if (values.sku && values.sku.length > 50) errors.sku = "SKU debe tener maximo 50 caracteres";
+  if (values.unit.trim().length > PRODUCT_LIMITS.unit) errors.unit = `Máximo ${PRODUCT_LIMITS.unit} caracteres`;
+  // Al editar solo se mira el largo: un código de antes de la regla se puede dejar como
+  // está, y si se cambia la API revisa el formato.
+  if (mode === "create") {
+    const skuError = productCodeError(values.sku, PRODUCT_LIMITS.sku);
+    const codeError = productCodeError(values.qr_code, PRODUCT_LIMITS.qr_code);
+    if (skuError) errors.sku = skuError;
+    if (codeError) errors.qr_code = codeError;
+  } else {
+    if (values.sku.trim().length > PRODUCT_LIMITS.sku) errors.sku = `Máximo ${PRODUCT_LIMITS.sku} caracteres`;
+    if (values.qr_code.trim().length > 100) errors.qr_code = "Máximo 100 caracteres";
+  }
 
   if (values.discount_type) {
-    const discountValue = Number(values.discount_value);
-    if (values.discount_value === "" || !Number.isFinite(discountValue) || discountValue < 0) {
-      errors.discount_value = "Ingresa un valor de descuento valido";
-    } else if (values.discount_type === "percentage" && discountValue > 100) {
+    const discount = moneyNumber(values.discount_value);
+    const rule = policy?.[values.discount_type];
+    if (discount === null) {
+      errors.discount_value =
+        values.discount_type === "percentage" ? "Escribe el porcentaje, por ejemplo 10" : "Escribe la rebaja como 2,50";
+    } else if (discount <= 0) {
+      errors.discount_value = "Tiene que ser mayor a 0";
+    } else if (rule && !rule.allowed) {
+      errors.discount_value =
+        values.discount_type === "percentage"
+          ? "La tienda no permite descuentos por porcentaje"
+          : "La tienda no permite rebajas en Bs";
+    } else if (values.discount_type === "percentage" && discount > 100) {
       errors.discount_value = "El porcentaje no puede superar 100";
-    } else if (values.discount_type === "fixed" && price > 0 && discountValue > price) {
-      errors.discount_value = "La rebaja no puede ser mayor al precio de venta";
+    } else if (values.discount_type === "percentage" && rule && discount > rule.max) {
+      errors.discount_value = `El máximo de la tienda es ${formatPercent(rule.max)}%`;
+    } else if (values.discount_type === "fixed" && price !== null && price > 0 && discount >= price) {
+      errors.discount_value = "La rebaja tiene que ser menor al precio de venta";
+    } else if (values.discount_type === "fixed" && rule && discount > rule.max) {
+      errors.discount_value = `El máximo de la tienda es ${formatCurrency(rule.max)}`;
     }
 
     if (values.discount_ends_at) {
       const endsAt = new Date(`${values.discount_ends_at}T23:59:59`);
       if (Number.isNaN(endsAt.getTime()) || endsAt.getTime() <= Date.now()) {
-        errors.discount_ends_at = "La fecha de vencimiento debe ser futura";
+        errors.discount_ends_at = "Elige una fecha desde hoy en adelante";
       }
     }
   } else if (values.discount_ends_at) {
-    errors.discount_ends_at = "No se puede fijar una fecha de vencimiento sin un descuento";
+    errors.discount_ends_at = "La fecha solo va con un descuento";
   }
 
   if (mode === "create" && values.expires_on) {
     Object.assign(errors, validateBatchFields(values.expires_on, values.alert_days));
-    if (!errors.stock && !(stock > 0)) errors.expires_on = "Para indicar vencimiento el stock inicial debe ser mayor a 0";
+    if (!errors.stock && !(Number(values.stock) > 0)) {
+      errors.expires_on = "Para poner vencimiento, el stock inicial tiene que ser mayor a 0";
+    }
   }
 
   return errors;
 }
 
-/** Igual que el backend: aviso entre 0 y 365 dias (5 si se deja vacio). */
+function isWholeNumber(text: string) {
+  return /^\d+$/.test(text.trim()) && Number.isSafeInteger(Number(text.trim()));
+}
+
+function formatPercent(value: number) {
+  return Number.isInteger(value) ? String(value) : String(value).replace(".", ",");
+}
+
+/** Igual que el backend: aviso entre 0 y 365 días. Vacío usa el aviso de la tienda (5 si nunca se cambió). */
 export const DEFAULT_ALERT_DAYS = 5;
 export const MAX_ALERT_DAYS = 365;
 
@@ -116,25 +183,45 @@ export function validateBatchFields(expiresOn: string, alertDays: string) {
   const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(expiresOn);
   const parsed = match ? new Date(`${expiresOn}T12:00:00`) : null;
   if (!match || !parsed || Number.isNaN(parsed.getTime()) || parsed.toISOString().slice(0, 10) !== expiresOn) {
-    errors.expires_on = "Ingresa una fecha valida";
+    errors.expires_on = "Elige una fecha válida";
   } else if (Number(match[1]) < 2000 || Number(match[1]) > 2100) {
-    errors.expires_on = "Revisa el anio de la fecha de vencimiento";
+    errors.expires_on = "Revisa el año de la fecha de vencimiento";
   }
   if (alertDays !== "") {
     const days = Number(alertDays);
     if (!Number.isInteger(days) || days < 0 || days > MAX_ALERT_DAYS) {
-      errors.alert_days = `El aviso debe ser un entero entre 0 y ${MAX_ALERT_DAYS} dias`;
+      errors.alert_days = `Un número entero de 0 a ${MAX_ALERT_DAYS}`;
     }
   }
   return errors;
 }
 
-export function alertDaysOrDefault(alertDays: string) {
-  return alertDays === "" ? DEFAULT_ALERT_DAYS : Number(alertDays);
+/** Vacío va como null: la API usa el "Aviso de vencimiento" de la tienda (E11). */
+export function alertDaysOrStoreDefault(alertDays: string) {
+  return alertDays === "" ? null : Number(alertDays);
+}
+
+/** Aviso de vencimiento de la tienda: entero de 0 a 365, obligatorio. */
+export function validateDefaultAlertDays(value: string) {
+  const text = value.trim();
+  if (!text) return "Escribe cuántos días antes avisar";
+  const days = Number(text);
+  if (!/^\d+$/.test(text) || !Number.isInteger(days) || days > MAX_ALERT_DAYS) {
+    return `Un número entero de 0 a ${MAX_ALERT_DAYS}`;
+  }
+  return null;
 }
 
 export const STOCK_ADJUSTMENT_MAX = 1_000_000;
 
+/** Razones rápidas al descontar (tablero P04): solo llenan el texto, se pueden editar. */
+export const QUICK_DEDUCTION_REASONS = ["Vencido", "Roto o dañado", "Conteo físico", "Consumo propio"] as const;
+export const STOCK_REASON_MAX = 120;
+
+/**
+ * Ajuste de stock. `quantity` lleva el signo (la ventana tiene Agregar / Descontar y
+ * la web pone el signo); la API recibe lo mismo.
+ */
 export function validateStockAdjustment(
   quantity: string,
   reason: string,
@@ -143,35 +230,36 @@ export function validateStockAdjustment(
 ) {
   const errors: { quantity?: string; reason?: string; expires_on?: string; alert_days?: string; batch_id?: string } = {};
   const parsed = Number(quantity);
+  const limit = STOCK_ADJUSTMENT_MAX.toLocaleString("es-BO");
 
-  if (!quantity) {
-    errors.quantity = "Cantidad es requerida";
-  } else if (!Number.isInteger(parsed) || parsed === 0) {
-    errors.quantity = "Cantidad debe ser un entero distinto de 0";
+  if (!quantity || quantity === "-") {
+    errors.quantity = "Escribe la cantidad";
+  } else if (!/^-?\d+$/.test(quantity) || parsed === 0) {
+    errors.quantity = `Un número entero de 1 a ${limit}`;
   } else if (Math.abs(parsed) > STOCK_ADJUSTMENT_MAX) {
-    errors.quantity = `La cantidad no puede superar ${STOCK_ADJUSTMENT_MAX.toLocaleString("es-BO")} unidades`;
+    errors.quantity = `Un número entero de 1 a ${limit}`;
   } else if (parsed < 0 && typeof currentStock === "number" && Math.abs(parsed) > currentStock) {
-    errors.quantity = `Stock insuficiente: disponible ${currentStock}`;
+    errors.quantity = `Stock insuficiente: hay ${currentStock}`;
   }
 
   if (parsed < 0 && !reason.trim()) {
-    errors.reason = "La razon es requerida para descontar stock";
+    errors.reason = "Escribe la razón (por ejemplo: Roto o dañado)";
   }
 
-  if (reason.length > 120) errors.reason = "La razon debe tener maximo 120 caracteres";
+  if (reason.length > STOCK_REASON_MAX) errors.reason = `Máximo ${STOCK_REASON_MAX} caracteres`;
 
   if (batch.expiresOn) {
-    if (parsed < 0) errors.expires_on = "La fecha de vencimiento solo se indica al agregar stock";
+    if (parsed < 0) errors.expires_on = "La fecha de vencimiento va solo al agregar";
     else Object.assign(errors, validateBatchFields(batch.expiresOn, batch.alertDays ?? ""));
   }
   if (batch.batchId) {
-    if (parsed > 0) errors.batch_id = "El lote solo se elige al descontar stock";
+    if (parsed > 0) errors.batch_id = "El lote se elige solo al descontar";
     else if (
       !errors.quantity &&
       typeof batch.batchAvailable === "number" &&
       Math.abs(parsed) > batch.batchAvailable
     ) {
-      errors.quantity = `Ese lote solo tiene ${batch.batchAvailable} unidades`;
+      errors.quantity = `Ese lote solo tiene ${batch.batchAvailable} ${batch.batchAvailable === 1 ? "unidad" : "unidades"}.`;
     }
   }
 
@@ -218,22 +306,30 @@ export function productToFormValues(product?: {
 }): ProductFormValues {
   return {
     name: product?.name ?? "",
-    price: product?.price ?? "",
+    price: moneyText(product?.price),
     stock: product ? product.stock.toString() : "0",
     category_id: product?.category_id ?? "",
     category: product?.category ?? "",
     min_stock: product ? product.min_stock.toString() : "1",
     unit: product?.unit ?? "unidad",
     sku: product?.sku ?? "",
-    cost_price: product?.cost_price ?? "",
+    cost_price: moneyText(product?.cost_price),
     qr_code: product?.qr_code ?? "",
     photo_url: product?.photo_url ?? "",
     discount_type: product?.discount_type ?? "",
-    discount_value: product?.discount_value ?? "",
+    discount_value: product?.discount_type ? moneyText(product.discount_value) : "",
     discount_ends_at: product?.discount_ends_at ? product.discount_ends_at.slice(0, 10) : "",
     expires_on: "",
     alert_days: "",
   };
+}
+
+/** "7.50" de la API como se escribe en Bolivia: "7,50" (y "10.00" → "10"). */
+function moneyText(value: string | null | undefined) {
+  if (!value) return "";
+  const [integer, decimals = ""] = value.split(".");
+  const cents = decimals.replace(/0+$/, "");
+  return cents ? `${integer},${decimals.padEnd(2, "0").slice(0, 2)}` : integer;
 }
 
 function firstValue(value: string | string[] | undefined) {

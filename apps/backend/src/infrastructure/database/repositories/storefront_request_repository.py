@@ -63,23 +63,32 @@ class StorefrontRequestRepository(IStorefrontRequestRepository):
         return (await self._with_items([model]))[0] if model else None
 
     async def list_by_store(
-        self, store_id: UUID, *, limit: int = 50, offset: int = 0
+        self, store_id: UUID, *, limit: int = 50, offset: int = 0, status: str | None = None
     ) -> tuple[list[StorefrontRequest], int]:
+        filters = [StorefrontRequestModel.store_id == store_id]
+        if status is not None:
+            filters.append(StorefrontRequestModel.status == status)
         total_result = await self._session.execute(
-            select(func.count())
-            .select_from(StorefrontRequestModel)
-            .where(StorefrontRequestModel.store_id == store_id)
+            select(func.count()).select_from(StorefrontRequestModel).where(*filters)
         )
         total = int(total_result.scalar_one())
 
         result = await self._session.execute(
             select(StorefrontRequestModel)
-            .where(StorefrontRequestModel.store_id == store_id)
+            .where(*filters)
             .order_by(StorefrontRequestModel.created_at.desc())
             .limit(limit)
             .offset(offset)
         )
         return await self._with_items(list(result.scalars().all())), total
+
+    async def count_by_status(self, store_id: UUID) -> dict[str, int]:
+        result = await self._session.execute(
+            select(StorefrontRequestModel.status, func.count())
+            .where(StorefrontRequestModel.store_id == store_id)
+            .group_by(StorefrontRequestModel.status)
+        )
+        return {status: int(count) for status, count in result.all()}
 
     async def count_pending(self, store_id: UUID) -> int:
         result = await self._session.execute(

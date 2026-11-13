@@ -19,7 +19,7 @@ describe("QrPreviewDialog", () => {
 
     render(<QrPreviewDialog open code="QR-1" onClose={vi.fn()} />);
 
-    expect(screen.getByText("Generando QR...")).toBeInTheDocument();
+    expect(screen.getByText("Generando QR…")).toBeInTheDocument();
   });
 
   it("renders the generated QR image once ready", async () => {
@@ -28,7 +28,7 @@ describe("QrPreviewDialog", () => {
     render(<QrPreviewDialog open code="QR-1" onClose={vi.fn()} />);
 
     await waitFor(() => expect(screen.getByRole("img")).toBeInTheDocument());
-    expect(screen.getByRole("button", { name: /descargar svg/i })).toBeEnabled();
+    expect(screen.getByRole("button", { name: "Descargar" })).toBeEnabled();
   });
 
   it("shows an error message when generation fails", async () => {
@@ -51,5 +51,12 @@ describe("QrPreviewDialog", () => {
     await userEvent.setup().click(closeButtons[closeButtons.length - 1]);
 
     expect(onClose).toHaveBeenCalled();
+  });
+
+  it("links to Etiquetas with this product chosen", async () => {
+    vi.mocked(generateQrSvg).mockResolvedValue("<svg>fake</svg>");
+    render(<QrPreviewDialog open code="QR-LAC000004" productName="Yogur Frutilla" productId="p-1" onClose={vi.fn()} />);
+    expect(screen.getByText("QR-LAC000004 · Yogur Frutilla")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Imprimir etiqueta/ })).toHaveAttribute("href", "/dashboard/products/labels?producto=p-1");
   });
 });

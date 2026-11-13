@@ -6,7 +6,7 @@ export async function POST(request: Request) {
   const payload = await request.json().catch(() => null);
   const email = typeof payload?.email === "string" ? payload.email.trim() : "";
   if (!email) {
-    return NextResponse.json({ message: "Correo electronico requerido" }, { status: 400 });
+    return NextResponse.json({ message: "Escribe tu correo" }, { status: 400 });
   }
 
   const result = await apiRequest<{ message: string }>("/auth/forgot-password", {

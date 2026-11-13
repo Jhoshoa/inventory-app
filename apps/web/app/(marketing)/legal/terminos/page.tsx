@@ -11,7 +11,7 @@ export default function TerminosPage() {
   return (
     <div className="mx-auto max-w-3xl px-4 py-16 sm:px-6 lg:px-8">
       <h1 className="text-3xl font-bold text-text-strong">Terminos de servicio</h1>
-      <p className="mt-2 text-sm text-text-muted">Ultima actualizacion: {new Date().toLocaleDateString("es-BO")}</p>
+      <p className="mt-2 text-sm text-mkt-muted">Última actualización: {new Date().toLocaleDateString("es-BO")}</p>
 
       <div className="prose-none mt-8 space-y-6 text-text-body">
         <section>
@@ -23,10 +23,10 @@ export default function TerminosPage() {
         </section>
 
         <section>
-          <h2 className="text-xl font-semibold text-text-strong">2. Descripcion del servicio</h2>
+          <h2 className="text-xl font-semibold text-text-strong">2. Descripción del servicio</h2>
           <p className="mt-2">
-            {BRAND.name} es una plataforma de gestion de inventario, punto de venta y reportes para negocios,
-            ofrecida bajo un modelo de suscripcion con un periodo de prueba gratuito.
+            {BRAND.name} es una plataforma de gestión de inventario, punto de venta y reportes para negocios,
+            ofrecida bajo un modelo de suscripción con un periodo de prueba gratuito.
           </p>
         </section>
 
@@ -34,15 +34,15 @@ export default function TerminosPage() {
           <h2 className="text-xl font-semibold text-text-strong">3. Cuenta y responsabilidad del usuario</h2>
           <p className="mt-2">
             Eres responsable de mantener la confidencialidad de tus credenciales de acceso y de toda la actividad
-            que ocurra en tu cuenta. Debes proporcionar informacion veraz al registrarte.
+            que ocurra en tu cuenta. Debes proporcionar información veraz al registrarte.
           </p>
         </section>
 
         <section>
-          <h2 className="text-xl font-semibold text-text-strong">4. Periodo de prueba y suscripcion</h2>
+          <h2 className="text-xl font-semibold text-text-strong">4. Periodo de prueba y suscripción</h2>
           <p className="mt-2">
             Ofrecemos un periodo de prueba gratuito. Al finalizar, para continuar usando la plataforma se requiere
-            una suscripcion activa segun el plan contratado. Los detalles de precio se acuerdan directamente contigo.
+            una suscripción activa según el plan contratado. Los detalles de precio se acuerdan directamente contigo.
           </p>
         </section>
 
@@ -65,8 +65,8 @@ export default function TerminosPage() {
         <section>
           <h2 className="text-xl font-semibold text-text-strong">7. Cancelacion</h2>
           <p className="mt-2">
-            Puedes cancelar tu suscripcion en cualquier momento. Al cancelar, mantendremos tus datos disponibles
-            por un periodo razonable antes de proceder a su archivado o eliminacion.
+            Puedes cancelar tu suscripción en cualquier momento. Al cancelar, mantendremos tus datos disponibles
+            por un periodo razonable antes de proceder a su archivado o eliminación.
           </p>
         </section>
 

@@ -5,9 +5,12 @@ import { revalidateStorefrontCatalog } from "@/features/storefront/revalidate";
 import { redirect } from "next/navigation";
 import { apiRequest } from "@/lib/api/client";
 import { getAuthToken } from "@/lib/auth/session";
+import { parseMoney } from "@/lib/format/currency";
+import { productApiFieldErrors } from "./form";
 import {
-  alertDaysOrDefault,
+  alertDaysOrStoreDefault,
   formDataToProductValues,
+  validateDefaultAlertDays,
   validateProductForm,
   validateStockAdjustment,
 } from "./schemas";
@@ -31,12 +34,21 @@ export async function createProductAction(
   });
 
   if (!result.ok) {
-    return {
-      ok: false,
-      message: result.error.message,
-      values,
-      fieldErrors: {},
-    };
+    const apiFieldErrors = productApiFieldErrors(result.error.status, result.error.message);
+    if (Object.keys(apiFieldErrors).length > 0) return { ok: false, fieldErrors: apiFieldErrors, values };
+    return { ok: false, message: result.error.message, values, fieldErrors: {} };
+  }
+
+  // "Dónde está" elegido en el formulario: se guarda justo después de crear (tablero P02).
+  const locations = locationItems(formData);
+  let locationsFailed = false;
+  if (locations.length > 0) {
+    const saved = await apiRequest(`/products/${result.data.id}/locations`, {
+      method: "PUT",
+      token: token ?? undefined,
+      body: { items: locations },
+    });
+    locationsFailed = !saved.ok;
   }
 
   let photoUploadFailed = false;
@@ -70,7 +82,10 @@ export async function createProductAction(
   await revalidateStorefrontCatalog();
   revalidatePath("/dashboard/products");
   revalidatePath(`/dashboard/products/${result.data.id}`);
-  redirect(`/dashboard/products/${result.data.id}${photoUploadFailed ? "?photo_error=1" : ""}`);
+  const notice = new URLSearchParams({ creado: "1" });
+  if (photoUploadFailed) notice.set("photo_error", "1");
+  if (locationsFailed) notice.set("lugares_error", "1");
+  redirect(`/dashboard/products/${result.data.id}?${notice.toString()}`);
 }
 
 export async function updateProductAction(
@@ -81,7 +96,7 @@ export async function updateProductAction(
   const values = formDataToProductValues(formData);
   const fieldErrors = validateProductForm(values, "edit");
   if (!productId) {
-    return { ok: false, message: "Producto invalido", fieldErrors: {}, values };
+    return { ok: false, message: "Ese producto ya no existe", fieldErrors: {}, values };
   }
   if (Object.keys(fieldErrors).length > 0) {
     return { ok: false, fieldErrors, values };
@@ -95,13 +110,15 @@ export async function updateProductAction(
   });
 
   if (!result.ok) {
+    const apiFieldErrors = productApiFieldErrors(result.error.status, result.error.message);
+    if (Object.keys(apiFieldErrors).length > 0) return { ok: false, fieldErrors: apiFieldErrors, values };
     return { ok: false, message: result.error.message, fieldErrors: {}, values };
   }
 
   await revalidateStorefrontCatalog();
   revalidatePath("/dashboard/products");
   revalidatePath(`/dashboard/products/${productId}`);
-  redirect(`/dashboard/products/${productId}`);
+  redirect(`/dashboard/products/${productId}?guardado=1`);
 }
 
 export async function adjustStockAction(
@@ -124,7 +141,7 @@ export async function adjustStockAction(
     batchAvailable: batchAvailableRaw ? Number(batchAvailableRaw) : undefined,
   });
 
-  if (!productId) return { ok: false, message: "Producto invalido", fieldErrors: {} };
+  if (!productId) return { ok: false, message: "Ese producto ya no existe", fieldErrors: {} };
   if (Object.keys(fieldErrors).length > 0) return { ok: false, fieldErrors };
 
   const token = await getAuthToken();
@@ -134,7 +151,7 @@ export async function adjustStockAction(
     body: {
       quantity: Number(quantity),
       reason: reason || null,
-      ...(expiresOn ? { expires_on: expiresOn, alert_days: alertDaysOrDefault(alertDays) } : {}),
+      ...(expiresOn ? { expires_on: expiresOn, alert_days: alertDaysOrStoreDefault(alertDays) } : {}),
       ...(batchId ? { batch_id: batchId } : {}),
     },
   });
@@ -154,7 +171,7 @@ export async function deleteProductAction(
   const productId = stringValue(formData, "product_id");
   const confirm = stringValue(formData, "confirm");
 
-  if (!productId) return { ok: false, message: "Producto invalido", fieldErrors: {} };
+  if (!productId) return { ok: false, message: "Ese producto ya no existe", fieldErrors: {} };
   if (confirm !== "ELIMINAR") {
     return {
       ok: false,
@@ -178,21 +195,21 @@ export async function deleteProductAction(
 function createPayload(values: ReturnType<typeof formDataToProductValues>) {
   return {
     name: values.name,
-    price: values.price,
+    price: money(values.price),
     stock: Number(values.stock),
     category_id: nullable(values.category_id),
     category: nullable(values.category),
     min_stock: values.min_stock ? Number(values.min_stock) : 1,
     unit: values.unit || "unidad",
     sku: nullable(values.sku),
-    cost_price: values.cost_price ? values.cost_price : null,
+    cost_price: values.cost_price ? money(values.cost_price) : null,
     photo_url: null,
     qr_code: nullable(values.qr_code),
     discount_type: values.discount_type || null,
-    discount_value: values.discount_type ? values.discount_value || "0" : "0",
+    discount_value: values.discount_type ? money(values.discount_value) || "0" : "0",
     discount_ends_at: values.discount_type ? discountEndsAtIso(values.discount_ends_at) : null,
     ...(values.expires_on
-      ? { expires_on: values.expires_on, alert_days: alertDaysOrDefault(values.alert_days) }
+      ? { expires_on: values.expires_on, alert_days: alertDaysOrStoreDefault(values.alert_days) }
       : {}),
   };
 }
@@ -200,17 +217,17 @@ function createPayload(values: ReturnType<typeof formDataToProductValues>) {
 function updatePayload(values: ReturnType<typeof formDataToProductValues>) {
   return {
     name: values.name,
-    price: values.price,
+    price: money(values.price),
     category_id: nullable(values.category_id),
     category: nullable(values.category),
     min_stock: values.min_stock ? Number(values.min_stock) : 1,
     unit: values.unit || "unidad",
     sku: nullable(values.sku),
-    cost_price: values.cost_price ? values.cost_price : null,
+    cost_price: values.cost_price ? money(values.cost_price) : null,
     photo_url: null,
     qr_code: nullable(values.qr_code),
     discount_type: values.discount_type || null,
-    discount_value: values.discount_type ? values.discount_value || "0" : null,
+    discount_value: values.discount_type ? money(values.discount_value) || "0" : null,
     remove_discount: !values.discount_type,
     discount_ends_at: values.discount_type ? discountEndsAtIso(values.discount_ends_at) : null,
   };
@@ -218,6 +235,30 @@ function updatePayload(values: ReturnType<typeof formDataToProductValues>) {
 
 function discountEndsAtIso(dateOnly: string): string | null {
   return dateOnly ? `${dateOnly}T23:59:59.999Z` : null;
+}
+
+/** "18,50" → "18.50" para la API (ya validado). */
+function money(value: string) {
+  const parsed = parseMoney(value);
+  return parsed.ok ? parsed.value : value;
+}
+
+/** `locations` del formulario: JSON [{ location_id, kind }] (hasta 6, lo revisa la API). */
+function locationItems(formData: FormData): { location_id: string; kind: "display" | "storage" }[] {
+  const raw = stringValue(formData, "locations");
+  if (!raw) return [];
+  try {
+    const parsed = JSON.parse(raw) as unknown;
+    if (!Array.isArray(parsed)) return [];
+    return parsed
+      .filter(
+        (item): item is { location_id: string; kind: "display" | "storage" } =>
+          typeof item?.location_id === "string" && (item.kind === "display" || item.kind === "storage"),
+      )
+      .slice(0, 6);
+  } catch {
+    return [];
+  }
 }
 
 function nullable(value: string) {
@@ -236,4 +277,24 @@ function findPhotoFile(formData: FormData): File | null {
     }
   }
   return null;
+}
+
+/** Aviso de vencimiento de la tienda (tablero P01B, backend B4): se usa al cargar un lote sin otro número. */
+export async function updateDefaultAlertDaysAction(
+  value: string,
+): Promise<{ ok: boolean; message?: string; fieldError?: string; days?: number }> {
+  const fieldError = validateDefaultAlertDays(value);
+  if (fieldError) return { ok: false, fieldError };
+
+  const token = await getAuthToken();
+  const result = await apiRequest<{ default_alert_days: number }>("/store", {
+    method: "PATCH",
+    token: token ?? undefined,
+    body: { default_alert_days: Number(value.trim()) },
+  });
+  if (!result.ok) return { ok: false, message: result.error.message };
+
+  revalidatePath("/dashboard/products", "layout");
+  revalidatePath("/dashboard");
+  return { ok: true, message: "Aviso de vencimiento guardado", days: result.data.default_alert_days };
 }

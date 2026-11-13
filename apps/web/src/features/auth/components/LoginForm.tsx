@@ -1,14 +1,15 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/Button";
 import { FieldError } from "@/components/ui/FieldError";
 import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
+import { EMAIL_PATTERN, authErrorMessage, destinationAfterLogin } from "../session";
+import { AuthDivider, AuthNotice, GoogleButton, PasswordField } from "./AuthParts";
 
 interface LoginFormState {
   email: string;
@@ -17,6 +18,10 @@ interface LoginFormState {
 
 type LoginFormErrors = Partial<Record<keyof LoginFormState | "form", string>>;
 
+/**
+ * Entrar (tablero P13): correo y contraseña o Google. Después: dueño → Inicio; cajero →
+ * Vender si la caja está abierta, si no Inicio.
+ */
 export function LoginForm({
   verified,
   sessionExpired,
@@ -28,156 +33,103 @@ export function LoginForm({
 }) {
   const router = useRouter();
   const [values, setValues] = useState<LoginFormState>({ email: "", password: "" });
-  const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState<LoginFormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const passwordRef = useRef<HTMLInputElement>(null);
+  const notice = passwordReset
+    ? "Contraseña actualizada. Entra con la nueva."
+    : verified
+      ? "Correo confirmado. Ya puedes entrar."
+      : sessionExpired
+        ? "Tu sesión terminó. Vuelve a entrar."
+        : null;
 
   useEffect(() => {
-    if (verified) {
-      toast.success("Email confirmado. Ahora puedes iniciar sesión.");
-    }
-    if (passwordReset) {
-      toast.success("Contraseña actualizada. Inicia sesión con la nueva.");
-    }
-    if (sessionExpired) {
-      toast("Tu sesión expiró. Inicia sesión nuevamente.");
-    }
-  }, [verified, passwordReset, sessionExpired]);
+    if (errors.form) document.getElementById("email")?.focus();
+  }, [errors.form]);
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (isSubmitting) return;
     const nextErrors = validateLogin(values);
     setErrors(nextErrors);
-
-    if (Object.keys(nextErrors).length > 0) return;
+    if (Object.keys(nextErrors).length > 0) {
+      document.getElementById(nextErrors.email ? "email" : "password")?.focus();
+      return;
+    }
 
     setIsSubmitting(true);
     try {
       const response = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify(values),
+        body: JSON.stringify({ email: values.email.trim(), password: values.password }),
       });
+      const body = (await response.json().catch(() => ({}))) as { message?: string; user?: { role?: string } };
 
       if (!response.ok) {
-        const body = await response.json().catch(() => ({}));
-        const message = body.message ?? "Credenciales invalidas o backend no disponible.";
-        setErrors({ form: message });
-        toast.error(message);
+        setErrors({ form: authErrorMessage(response.status, body.message, "No se pudo entrar. Intenta de nuevo.") });
         return;
       }
 
-      router.replace("/dashboard");
+      router.replace(await destinationAfterLogin(body.user?.role));
       router.refresh();
     } catch {
-      const message = "No se pudo conectar con el servidor.";
-      setErrors({ form: message });
-      toast.error(message);
+      setErrors({ form: "No se pudo conectar con el servidor. Revisa tu conexión." });
     } finally {
       setIsSubmitting(false);
     }
   }
 
   return (
-      <form className="space-y-4" onSubmit={onSubmit} noValidate>
-      <div className="space-y-2">
+    <form className="flex flex-col gap-4" onSubmit={onSubmit} noValidate>
+      {errors.form ? <AuthNotice tone="error">{errors.form}</AuthNotice> : notice ? <AuthNotice tone={sessionExpired ? "info" : "success"}>{notice}</AuthNotice> : null}
+      <div className="space-y-1.5">
         <Label htmlFor="email">Correo electrónico</Label>
         <Input
           id="email"
           name="email"
           type="email"
+          inputMode="email"
           autoComplete="email"
           maxLength={255}
           value={values.email}
           error={Boolean(errors.email)}
+          aria-describedby={errors.email ? "email-error" : undefined}
           onChange={(event) => setValues({ ...values, email: event.target.value })}
         />
-        <FieldError message={errors.email} />
+        <FieldError id="email-error" message={errors.email} />
       </div>
-      <div className="space-y-2">
+      <div className="space-y-1.5">
         <Label htmlFor="password">Contraseña</Label>
-        <div className="relative">
-          <Input
-            ref={passwordRef}
-            id="password"
-            name="password"
-            type={showPassword ? "text" : "password"}
-            autoComplete="current-password"
-            value={values.password}
-            error={Boolean(errors.password)}
-            onChange={(event) => setValues({ ...values, password: event.target.value })}
-            className="pr-10"
-          />
-          <button
-            type="button"
-            onClick={() => {
-              setShowPassword(!showPassword);
-              passwordRef.current?.focus();
-            }}
-            className="absolute right-2 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-strong"
-            aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
-          >
-            {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-          </button>
-        </div>
-        <FieldError message={errors.password} />
+        <PasswordField
+          id="password"
+          name="password"
+          autoComplete="current-password"
+          value={values.password}
+          error={Boolean(errors.password)}
+          aria-describedby={errors.password ? "password-error" : undefined}
+          onChange={(event) => setValues({ ...values, password: event.target.value })}
+        />
+        <FieldError id="password-error" message={errors.password} />
         <div className="text-right">
-          <Link
-            href="/forgot-password"
-            className="text-sm font-medium text-brand-700 underline underline-offset-4 hover:text-brand-800"
-          >
+          <Link href="/forgot-password" className="tap-area text-sm font-semibold text-brand-700 underline-offset-4 hover:underline">
             ¿Olvidaste tu contraseña?
           </Link>
         </div>
       </div>
-      <Button className="w-full" type="submit" disabled={isSubmitting}>
-        {isSubmitting ? "Ingresando..." : "Iniciar sesión"}
+      <Button className="!h-12 w-full text-base" type="submit" disabled={isSubmitting}>
+        {isSubmitting ? "Entrando…" : "Entrar"}
       </Button>
-      <div className="relative">
-        <div className="absolute inset-0 flex items-center">
-          <span className="w-full border-t" />
-        </div>
-        <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-app-surface px-2 text-text-muted">O continúa con</span>
-        </div>
-      </div>
-      <Button
-        type="button"
-        variant="secondary"
-        className="w-full"
-        onClick={async () => {
-          try {
-            const res = await fetch("/api/auth/oauth/google", { method: "POST" });
-            const { url } = await res.json();
-            if (url) window.location.href = url;
-          } catch {
-            const message = "No se pudo conectar con Google";
-            setErrors({ form: message });
-            toast.error(message);
-          }
-        }}
-      >
-        Continuar con Google
-      </Button>
+      <AuthDivider />
+      <GoogleButton label="Continuar con Google" onError={(message) => toast.error(message)} />
     </form>
   );
 }
 
 export function validateLogin(values: LoginFormState): LoginFormErrors {
   const errors: LoginFormErrors = {};
-
-  if (!values.email.trim()) {
-    errors.email = "Correo electrónico es requerido";
-  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.email)) {
-    errors.email = "Correo electrónico inválido";
-  }
-
-  if (!values.password) {
-    errors.password = "Contraseña es requerida";
-  } else if (values.password.length < 6) {
-    errors.password = "La contraseña debe tener al menos 6 caracteres";
-  }
-
+  if (!values.email.trim()) errors.email = "Escribe tu correo";
+  else if (!EMAIL_PATTERN.test(values.email.trim())) errors.email = "Ese correo no es válido. Ej.: rosa@correo.com";
+  if (!values.password) errors.password = "Escribe tu contraseña";
   return errors;
 }

@@ -12,7 +12,7 @@ export async function POST(request: Request) {
   });
 
   if (!res.ok) {
-    return NextResponse.json({ message: "Error al iniciar OAuth" }, { status: 500 });
+    return NextResponse.json({ message: "No se pudo entrar con Google. Intenta de nuevo." }, { status: 500 });
   }
 
   const data = await res.json();

@@ -11,6 +11,7 @@ class SyncPullInput:
     store_id: UUID
     device_id: str
     since: datetime
+    include_cost: bool = True
 
 
 class SyncPullUseCase:
@@ -18,4 +19,4 @@ class SyncPullUseCase:
         self._repo = repo
 
     async def execute(self, input: SyncPullInput) -> list[SyncPullChangeDTO]:
-        return await self._repo.get_updates_since(input.store_id, input.since)
+        return await self._repo.get_updates_since(input.store_id, input.since, include_cost=input.include_cost)

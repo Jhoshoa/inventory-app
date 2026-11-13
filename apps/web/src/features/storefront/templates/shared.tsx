@@ -103,7 +103,7 @@ export function MadeWithPill() {
       className="inline-flex items-center gap-2.5 rounded-full border-2 border-sf-ink bg-white px-3.5 py-2 text-sm font-semibold text-[#111111] hover:opacity-80"
     >
       <BrandMark size={24} />
-      Catalogo hecho con <strong>{BRAND.name}</strong>
+      Catálogo hecho con <strong>{BRAND.name}</strong>
     </a>
   );
 }

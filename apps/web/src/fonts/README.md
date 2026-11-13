@@ -1,4 +1,4 @@
-# Fuentes de la landing
+# Fuentes de la landing, el catálogo y el panel
 
 Se sirven desde el propio sitio con `next/font/local`. Antes se usaba
 `next/font/google`, que las descarga de Google Fonts **al construir**: desde el
@@ -13,3 +13,4 @@ Solo el subconjunto latin (incluye á, é, ñ, ¿, ¡). Origen: paquetes de
 | `archivo-latin-wght.woff2` | `@fontsource-variable/archivo` | 100–900 (variable) |
 | `archivo-black-latin-400.woff2` | `@fontsource/archivo-black` | 400 |
 | `jetbrains-mono-latin-wght.woff2` | `@fontsource-variable/jetbrains-mono` | 100–800 (variable) |
+| `inter-latin-wght.woff2` | `@fontsource-variable/inter` | 100–900 (variable) · panel y acceso |

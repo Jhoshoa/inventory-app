@@ -1,9 +1,11 @@
 import { describe, expect, it } from "vitest";
 import {
+  alertDaysOrStoreDefault,
   buildProductQueryString,
   parseProductSearchParams,
   productToFormValues,
   validateBatchFields,
+  validateDefaultAlertDays,
   validateProductForm,
   validateStockAdjustment,
 } from "./schemas";
@@ -90,22 +92,29 @@ describe("validateProductForm", () => {
         "create",
       ),
     ).toMatchObject({
-      name: "Nombre es requerido",
-      price: "Precio debe ser mayor a 0",
+      name: "Escribe el nombre del producto",
+      price: "El precio tiene que ser mayor a 0",
     });
   });
 });
 
 describe("validateStockAdjustment", () => {
+  it("says how much stock there is when deducting too much", () => {
+    expect(validateStockAdjustment("-12", "Conteo", 11).quantity).toBe("Stock insuficiente: hay 11");
+    expect(validateStockAdjustment("", "", 11).quantity).toBe("Escribe la cantidad");
+    expect(validateStockAdjustment("1.5", "", 11).quantity).toMatch(/entero/);
+    expect(validateStockAdjustment("-1", "x".repeat(121), 11).reason).toBe("Máximo 120 caracteres");
+  });
+
   it("rejects zero quantity", () => {
     expect(validateStockAdjustment("0", "")).toEqual({
-      quantity: "Cantidad debe ser un entero distinto de 0",
+      quantity: "Un número entero de 1 a 1.000.000",
     });
   });
 
   it("requires reason for negative adjustments", () => {
     expect(validateStockAdjustment("-2", "")).toEqual({
-      reason: "La razon es requerida para descontar stock",
+      reason: "Escribe la razón (por ejemplo: Roto o dañado)",
     });
   });
 });
@@ -113,9 +122,9 @@ describe("validateStockAdjustment", () => {
 describe("expiry fields", () => {
   it("validates the batch date and alert days", () => {
     expect(validateBatchFields("2026-12-31", "")).toEqual({});
-    expect(validateBatchFields("2026-02-30", "")).toEqual({ expires_on: "Ingresa una fecha valida" });
-    expect(validateBatchFields("2205-01-01", "")).toEqual({ expires_on: "Revisa el anio de la fecha de vencimiento" });
-    expect(validateBatchFields("2026-12-31", "366").alert_days).toMatch(/entre 0 y 365/);
+    expect(validateBatchFields("2026-02-30", "")).toEqual({ expires_on: "Elige una fecha válida" });
+    expect(validateBatchFields("2205-01-01", "")).toEqual({ expires_on: "Revisa el año de la fecha de vencimiento" });
+    expect(validateBatchFields("2026-12-31", "366").alert_days).toMatch(/0 a 365/);
     expect(validateBatchFields("2026-12-31", "1.5").alert_days).toBeDefined();
   });
 
@@ -123,7 +132,7 @@ describe("expiry fields", () => {
     expect(validateStockAdjustment("-1", "merma", 5, { expiresOn: "2026-12-31" }).expires_on).toBeDefined();
     expect(validateStockAdjustment("3", "", 5, { batchId: "b1" }).batch_id).toBeDefined();
     expect(validateStockAdjustment("-3", "vencido", 5, { batchId: "b1", batchAvailable: 2 }).quantity).toBe(
-      "Ese lote solo tiene 2 unidades",
+      "Ese lote solo tiene 2 unidades.",
     );
     expect(validateStockAdjustment("-2", "vencido", 5, { batchId: "b1", batchAvailable: 2 })).toEqual({});
   });
@@ -140,9 +149,9 @@ describe("expiry fields", () => {
 describe("expiry fields", () => {
   it("validates the batch date and alert days", () => {
     expect(validateBatchFields("2026-12-31", "")).toEqual({});
-    expect(validateBatchFields("2026-02-30", "")).toEqual({ expires_on: "Ingresa una fecha valida" });
-    expect(validateBatchFields("2205-01-01", "")).toEqual({ expires_on: "Revisa el anio de la fecha de vencimiento" });
-    expect(validateBatchFields("2026-12-31", "366").alert_days).toMatch(/entre 0 y 365/);
+    expect(validateBatchFields("2026-02-30", "")).toEqual({ expires_on: "Elige una fecha válida" });
+    expect(validateBatchFields("2205-01-01", "")).toEqual({ expires_on: "Revisa el año de la fecha de vencimiento" });
+    expect(validateBatchFields("2026-12-31", "366").alert_days).toMatch(/0 a 365/);
     expect(validateBatchFields("2026-12-31", "1.5").alert_days).toBeDefined();
   });
 
@@ -150,7 +159,7 @@ describe("expiry fields", () => {
     expect(validateStockAdjustment("-1", "merma", 5, { expiresOn: "2026-12-31" }).expires_on).toBeDefined();
     expect(validateStockAdjustment("3", "", 5, { batchId: "b1" }).batch_id).toBeDefined();
     expect(validateStockAdjustment("-3", "vencido", 5, { batchId: "b1", batchAvailable: 2 }).quantity).toBe(
-      "Ese lote solo tiene 2 unidades",
+      "Ese lote solo tiene 2 unidades.",
     );
     expect(validateStockAdjustment("-2", "vencido", 5, { batchId: "b1", batchAvailable: 2 })).toEqual({});
   });
@@ -161,5 +170,22 @@ describe("expiry fields", () => {
     expect(validateProductForm({ ...values, stock: "4" }, "create")).toEqual({});
     // Al editar no se usa: los lotes entran con "Ajustar stock".
     expect(validateProductForm({ ...values, stock: "0" }, "edit")).toEqual({});
+  });
+});
+
+describe("expiry alert days", () => {
+  it("an empty field leaves the store default to the API (E11)", () => {
+    expect(alertDaysOrStoreDefault("")).toBeNull();
+    expect(alertDaysOrStoreDefault("0")).toBe(0);
+    expect(alertDaysOrStoreDefault("12")).toBe(12);
+  });
+
+  it("the store default is a whole number from 0 to 365", () => {
+    expect(validateDefaultAlertDays("")).toMatch(/cuántos días/);
+    expect(validateDefaultAlertDays("0")).toBeNull();
+    expect(validateDefaultAlertDays(" 365 ")).toBeNull();
+    expect(validateDefaultAlertDays("366")).toMatch(/0 a 365/);
+    expect(validateDefaultAlertDays("2.5")).toMatch(/0 a 365/);
+    expect(validateDefaultAlertDays("-1")).toMatch(/0 a 365/);
   });
 });

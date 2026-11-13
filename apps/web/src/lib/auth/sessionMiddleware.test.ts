@@ -155,7 +155,7 @@ describe("refreshSessionIfNeeded", () => {
     );
 
     expect(response.status).toBe(401);
-    expect(await response.json()).toEqual({ message: "Sesion expirada" });
+    expect(await response.json()).toEqual({ message: "Sesión expirada" });
   });
 
   it("si el backend esta caido NO cierra la sesion: deja pasar la peticion con las cookies intactas", async () => {

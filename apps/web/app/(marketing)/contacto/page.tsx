@@ -46,7 +46,7 @@ export default function ContactoPage() {
             </div>
           </div>
 
-          <div className="rounded-lg border border-app-border bg-app-surface-muted p-5 text-sm text-text-muted">
+          <div className="rounded-lg border border-app-border bg-app-surface-muted p-5 text-sm text-mkt-muted">
             Horario de atencion: lunes a viernes, 9:00 a 18:00 (hora Bolivia).
           </div>
         </div>

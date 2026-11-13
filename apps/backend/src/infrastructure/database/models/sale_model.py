@@ -37,6 +37,7 @@ class SaleModel(Base):
     business_date = Column(Date)
     created_by_user_id = Column(GUID(), ForeignKey("users.id"))
     voided_at = Column(DateTime(timezone=True))
+    voided_by_user_id = Column(GUID(), ForeignKey("users.id"))
     void_reason = Column(String(200))
     synced = Column(Boolean, default=False)
     version = Column(Integer, default=1)

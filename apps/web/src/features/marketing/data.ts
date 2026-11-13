@@ -23,13 +23,13 @@ export const FEATURES: MarketingFeature[] = [
     icon: Boxes,
     title: "Control de inventario",
     description:
-      "Registra productos, categorias, stock minimo y ajustes de inventario en tiempo real, con alertas cuando un producto esta por agotarse.",
+      "Registra productos, categorías, stock mínimo y ajustes de inventario en tiempo real, con alertas cuando un producto está por agotarse.",
   },
   {
     icon: ShoppingCart,
     title: "Punto de venta (POS)",
     description:
-      "Registra ventas rapido desde el mostrador y descuenta el stock automaticamente, sin pasos manuales adicionales.",
+      "Registra ventas rápido desde el mostrador y descuenta el stock automáticamente, sin pasos manuales adicionales.",
   },
   {
     icon: Receipt,
@@ -46,17 +46,17 @@ export const FEATURES: MarketingFeature[] = [
   {
     icon: QrCode,
     title: "Etiquetas y codigos QR",
-    description: "Genera e imprime etiquetas con codigo QR por producto para agilizar el registro en el punto de venta.",
+    description: "Genera e imprime etiquetas con código QR por producto para agilizar el registro en el punto de venta.",
   },
   {
     icon: FileSpreadsheet,
     title: "Importacion masiva por CSV",
-    description: "Carga tu catalogo completo de productos desde una planilla en minutos, sin cargar uno por uno.",
+    description: "Carga tu catálogo completo de productos desde una planilla en minutos, sin cargar uno por uno.",
   },
   {
     icon: ShieldCheck,
     title: "Roles y permisos",
-    description: "Diferencia entre el rol de dueno y el de cajero, para que cada persona vea solo lo que necesita operar.",
+    description: "Diferencia entre el rol de dueño y el de cajero, para que cada persona vea solo lo que necesita operar.",
   },
   {
     icon: BadgeCheck,
@@ -78,7 +78,7 @@ export const SEGMENTS: MarketingSegment[] = [
   },
   {
     title: "Ferreterias",
-    description: "Maneja catalogos grandes y variados con categorias, SKU y stock minimo por producto.",
+    description: "Maneja catálogos grandes y variados con categorías, SKU y stock mínimo por producto.",
   },
   {
     title: "Almacenes y distribuidoras",

@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -16,39 +15,84 @@ import {
   type ProductLocationKind,
   type StoreLocation,
 } from "../types";
+import { LocationForm } from "./LocationForm";
 
-/** Con mas ubicaciones que esto, la lista trae un buscador. */
+/** Con más lugares que esto, la lista trae un buscador (tablero P04). */
 const FILTER_FROM = 8;
 
+/**
+ * "Dónde está" de un producto (tablero P04): hasta 6 lugares, el primero marcado
+ * queda como Exhibición. "+ Nuevo lugar" abre encima Zona / Estante / Nivel y vuelve
+ * con el lugar ya marcado. Guarda con PUT /products/{id}/locations.
+ */
 export function ProductLocationsDialog({
   productId,
   current,
   storeLocations,
+  open: controlledOpen,
+  onOpenChange,
+  trigger = true,
 }: {
   productId: string;
   current: ProductLocation[];
   storeLocations: StoreLocation[];
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  /** false: la abre otro control con `open`. */
+  trigger?: boolean;
 }) {
-  const [open, setOpen] = useState(false);
-  const [selected, setSelected] = useState<Map<string, ProductLocationKind>>(() => toSelection(current));
-  const [filter, setFilter] = useState("");
-  const [isSaving, setIsSaving] = useState(false);
-  const router = useRouter();
+  const [localOpen, setLocalOpen] = useState(false);
+  const open = controlledOpen ?? localOpen;
+  const setOpen = (next: boolean) => {
+    setLocalOpen(next);
+    onOpenChange?.(next);
+  };
 
-  const term = filter.trim().toLowerCase();
-  const shown = useMemo(
-    () => (term ? storeLocations.filter((location) => location.label.toLowerCase().includes(term)) : storeLocations),
-    [storeLocations, term],
+  return (
+    <>
+      {trigger ? (
+        <Button variant="secondary" className="!h-9 !px-3 text-[13px]" onClick={() => setOpen(true)}>
+          {current.length > 0 ? "Cambiar" : "Elegir lugares"}
+        </Button>
+      ) : null}
+      <Dialog open={open} onOpenChange={setOpen} position="sheet" size="lg">
+        {open ? (
+          <PlacesForm productId={productId} current={current} storeLocations={storeLocations} onDone={() => setOpen(false)} />
+        ) : null}
+      </Dialog>
+    </>
   );
+}
+
+function PlacesForm({
+  productId,
+  current,
+  storeLocations,
+  onDone,
+}: {
+  productId: string;
+  current: ProductLocation[];
+  storeLocations: StoreLocation[];
+  onDone: () => void;
+}) {
+  const router = useRouter();
+  const [locations, setLocations] = useState(storeLocations);
+  const [selected, setSelected] = useState<Map<string, ProductLocationKind>>(
+    () => new Map(current.map((location) => [location.id, location.kind])),
+  );
+  const [filter, setFilter] = useState("");
+  const [creating, setCreating] = useState(false);
+  const [saving, setSaving] = useState(false);
   const full = selected.size >= MAX_LOCATIONS_PER_PRODUCT;
 
-  function onOpenChange(next: boolean) {
-    setOpen(next);
-    if (next) {
-      setSelected(toSelection(current));
-      setFilter("");
-    }
-  }
+  const term = filter.trim().toLowerCase();
+  // Los marcados primero, para ver de un vistazo dónde está.
+  const shown = useMemo(() => {
+    const matching = term ? locations.filter((location) => location.label.toLowerCase().includes(term)) : locations;
+    return [...matching].sort((a, b) => Number(selected.has(b.id)) - Number(selected.has(a.id)));
+    // El orden se fija al abrir y al filtrar, no en cada clic (si no, la fila salta).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [locations, term]);
 
   function toggle(locationId: string) {
     setSelected((previous) => {
@@ -59,122 +103,143 @@ export function ProductLocationsDialog({
     });
   }
 
-  function setKind(locationId: string, kind: ProductLocationKind) {
-    setSelected((previous) => new Map(previous).set(locationId, kind));
-  }
-
-  async function onSave() {
-    if (isSaving) return;
-    setIsSaving(true);
+  async function save() {
+    if (saving) return;
+    setSaving(true);
     try {
       const result = await setProductLocationsAction(
         productId,
         [...selected].map(([location_id, kind]) => ({ location_id, kind })),
       );
       if (result.ok) {
-        toast.success(result.message);
-        setOpen(false);
+        toast.success('"Dónde está" guardado', { id: "places-saved" });
+        onDone();
         router.refresh();
       } else {
-        toast.error(result.message || "No se pudieron guardar las ubicaciones");
+        toast.error(result.message || 'No se pudo guardar "Dónde está"');
       }
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : "No se pudieron guardar las ubicaciones");
+    } catch {
+      toast.error("No se pudo guardar. Revisa tu conexión e intenta de nuevo.");
     } finally {
-      setIsSaving(false);
+      setSaving(false);
     }
   }
 
   return (
     <>
-      <Button variant="ghost" onClick={() => onOpenChange(true)}>
-        {current.length > 0 ? "Cambiar ubicacion" : "Asignar ubicacion"}
-      </Button>
-      <Dialog open={open} onOpenChange={onOpenChange} size="lg">
-        <DialogTitle close>Ubicacion en la tienda</DialogTitle>
-        <DialogBody>
-          {storeLocations.length === 0 ? (
-            <p className="text-sm text-text-muted">
-              Todavia no hay ubicaciones. Crealas en{" "}
-              <Link href="/dashboard/settings#ubicaciones" className="font-medium text-accent-primary underline">
-                Ajustes
-              </Link>{" "}
-              (por ejemplo: Pasillo 2 · Estante B · Nivel 3).
-            </p>
-          ) : (
-            <div className="space-y-3">
-              <p className="text-sm text-text-muted">
-                Marca donde esta el producto. Hasta {MAX_LOCATIONS_PER_PRODUCT} lugares; los cajeros lo ven en el POS.
-              </p>
-              {storeLocations.length > FILTER_FROM ? (
-                <Input
-                  type="search"
-                  aria-label="Buscar ubicacion"
-                  placeholder="Buscar ubicacion…"
-                  value={filter}
-                  onChange={(event) => setFilter(event.target.value)}
-                />
+      <DialogTitle close={!saving}>Dónde está</DialogTitle>
+      <DialogBody className="space-y-3">
+        {locations.length === 0 ? (
+          <div className="rounded-control border border-dashed border-app-borderStrong p-4 text-center">
+            <p className="font-semibold text-text-strong">Todavía no hay lugares</p>
+            <p className="mt-1 text-sm text-text-muted">Pasillo, estante, heladera, depósito…</p>
+          </div>
+        ) : (
+          <>
+            {locations.length > FILTER_FROM ? (
+              <Input
+                type="search"
+                aria-label="Buscar lugar"
+                placeholder="Buscar lugar…"
+                value={filter}
+                onChange={(event) => setFilter(event.target.value)}
+              />
+            ) : null}
+            <ul className="max-h-[50vh] divide-y divide-app-border overflow-y-auto rounded-control border border-app-border">
+              {shown.map((location) => {
+                const kind = selected.get(location.id);
+                const checked = kind !== undefined;
+                const checkboxId = `place-${location.id}`;
+                return (
+                  <li key={location.id} className="flex min-h-12 flex-wrap items-center gap-3 px-3 py-2">
+                    <input
+                      id={checkboxId}
+                      type="checkbox"
+                      className="h-5 w-5 accent-brand-700"
+                      checked={checked}
+                      disabled={!checked && full}
+                      onChange={() => toggle(location.id)}
+                    />
+                    <label htmlFor={checkboxId} className="min-w-0 flex-1 text-sm font-semibold text-text-strong">
+                      {location.label}
+                    </label>
+                    {checked ? (
+                      <Select
+                        aria-label={`Tipo de lugar para ${location.label}`}
+                        className="!h-9 !w-36"
+                        value={kind}
+                        onChange={(event) =>
+                          setSelected((previous) => new Map(previous).set(location.id, event.target.value as ProductLocationKind))
+                        }
+                      >
+                        {(Object.keys(LOCATION_KIND_LABEL) as ProductLocationKind[]).map((option) => (
+                          <option key={option} value={option}>
+                            {LOCATION_KIND_LABEL[option]}
+                          </option>
+                        ))}
+                      </Select>
+                    ) : null}
+                  </li>
+                );
+              })}
+              {shown.length === 0 ? (
+                <li className="px-3 py-4 text-center text-sm text-text-muted">Ningún lugar con ese nombre.</li>
               ) : null}
-              <ul className="max-h-[50vh] divide-y divide-app-border overflow-y-auto rounded-md border border-app-border">
-                {shown.map((location) => {
-                  const kind = selected.get(location.id);
-                  const checked = kind !== undefined;
-                  const checkboxId = `location-${location.id}`;
-                  return (
-                    <li key={location.id} className="flex flex-wrap items-center gap-3 px-3 py-2">
-                      <input
-                        id={checkboxId}
-                        type="checkbox"
-                        className="h-4 w-4 accent-brand-600"
-                        checked={checked}
-                        disabled={!checked && full}
-                        onChange={() => toggle(location.id)}
-                      />
-                      <label htmlFor={checkboxId} className="min-w-0 flex-1 text-sm text-text-strong">
-                        {location.label}
-                      </label>
-                      {checked ? (
-                        <Select
-                          aria-label={`Tipo de ubicacion para ${location.label}`}
-                          className="!h-9 !w-36"
-                          value={kind}
-                          onChange={(event) => setKind(location.id, event.target.value as ProductLocationKind)}
-                        >
-                          {(Object.keys(LOCATION_KIND_LABEL) as ProductLocationKind[]).map((option) => (
-                            <option key={option} value={option}>
-                              {LOCATION_KIND_LABEL[option]}
-                            </option>
-                          ))}
-                        </Select>
-                      ) : null}
-                    </li>
-                  );
-                })}
-                {shown.length === 0 ? (
-                  <li className="px-3 py-4 text-center text-sm text-text-muted">Ninguna ubicacion con ese nombre.</li>
-                ) : null}
-              </ul>
-              {full ? (
-                <p className="text-xs text-text-muted">Llegaste al maximo de {MAX_LOCATIONS_PER_PRODUCT} ubicaciones.</p>
-              ) : null}
-            </div>
-          )}
-        </DialogBody>
-        <DialogFooter>
-          <Button type="button" variant="secondary" onClick={() => setOpen(false)}>
-            Cerrar
-          </Button>
-          {storeLocations.length > 0 ? (
-            <Button type="button" onClick={() => void onSave()} disabled={isSaving}>
-              {isSaving ? "Guardando..." : "Guardar"}
-            </Button>
-          ) : null}
-        </DialogFooter>
+            </ul>
+          </>
+        )}
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <p className="text-xs text-text-muted">
+            {full ? `Llegaste al máximo de ${MAX_LOCATIONS_PER_PRODUCT} lugares.` : `Hasta ${MAX_LOCATIONS_PER_PRODUCT} lugares.`} Los cajeros los ven al vender.
+          </p>
+          <button
+            type="button"
+            className="text-sm font-bold text-brand-700 hover:underline disabled:text-text-disabled"
+            onClick={() => setCreating(true)}
+            disabled={full}
+          >
+            + Nuevo lugar
+          </button>
+        </div>
+      </DialogBody>
+      <DialogFooter>
+        <Button type="button" variant="secondary" onClick={onDone} disabled={saving}>
+          Cancelar
+        </Button>
+        <Button type="button" onClick={() => void save()} disabled={saving}>
+          {saving ? "Guardando…" : "Guardar"}
+        </Button>
+      </DialogFooter>
+
+      <Dialog open={creating} onOpenChange={setCreating} position="sheet" size="md">
+        {creating ? (
+          <>
+            <DialogTitle close>Nuevo lugar en la tienda</DialogTitle>
+            <DialogBody className="!pb-5">
+              <LocationForm
+                idPrefix="places-new"
+                autoFocus
+                showPreview
+                onSaved={(location) => {
+                  setLocations((previous) => [location, ...previous]);
+                  toggle(location.id);
+                  setCreating(false);
+                }}
+                actions={(pending) => (
+                  <div className="mt-1 flex justify-end gap-2">
+                    <Button type="button" variant="secondary" disabled={pending} onClick={() => setCreating(false)}>
+                      Cancelar
+                    </Button>
+                    <Button type="submit" disabled={pending}>
+                      {pending ? "Creando…" : "Crear y marcar"}
+                    </Button>
+                  </div>
+                )}
+              />
+            </DialogBody>
+          </>
+        ) : null}
       </Dialog>
     </>
   );
-}
-
-function toSelection(current: ProductLocation[]) {
-  return new Map(current.map((location) => [location.id, location.kind]));
 }

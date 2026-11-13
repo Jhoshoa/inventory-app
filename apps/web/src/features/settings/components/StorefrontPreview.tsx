@@ -82,7 +82,7 @@ export function StorefrontPreview({
             ))}
           </div>
           <div className="mx-2.5 rounded-lg bg-[#111111] px-2.5 py-2 text-[10px] font-bold" style={{ color: theme.stickerOnDark }}>
-            TU BOLETA · Bs 34,00
+            TU PEDIDO · Bs 34,00
           </div>
         </>
       ) : (

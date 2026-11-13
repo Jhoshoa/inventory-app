@@ -146,11 +146,12 @@ async def preview_user_invitation(
     request: Request,
     invitation_repo: UserInvitationRepository = Depends(get_user_invitation_repo),
     store_repo: StoreRepository = Depends(get_store_repo),
+    user_repo: UserRepository = Depends(get_user_repo),
 ):
     if not invitation_accept_rate_limiter.is_allowed(_client_ip(request)):
         raise HTTPException(status_code=429, detail="Demasiados intentos. Intenta nuevamente en unos minutos.")
 
-    result = await PreviewUserInvitationUseCase(invitation_repo, store_repo).execute(
+    result = await PreviewUserInvitationUseCase(invitation_repo, store_repo, user_repo).execute(
         PreviewUserInvitationInput(token=token)
     )
     return UserInvitationPreviewDTO(
@@ -159,6 +160,7 @@ async def preview_user_invitation(
         role=result.role,
         status=result.status,
         expires_at=result.expires_at,
+        invited_by_name=result.invited_by_name,
     )
 
 

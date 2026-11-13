@@ -88,12 +88,12 @@ describe("Plantilla Vitrina", () => {
     expect(screen.getByRole("heading", { level: 1, name: "Tienda Local" })).toBeInTheDocument();
     expect(screen.getByText("DESTACADOS")).toBeInTheDocument();
     expect(screen.getByText("LUN – SAB 08:00 – 21:00".toLowerCase(), { exact: false })).toBeInTheDocument();
-    expect(screen.getAllByText("ULTIMAS UNIDADES")).toHaveLength(1);
+    expect(screen.getAllByText("ÚLTIMAS UNIDADES")).toHaveLength(1);
     expect(screen.getByRole("button", { name: "Agotado" })).toBeDisabled();
     expect(screen.getByRole("heading", { name: "Pide, paga con QR y listo." })).toBeInTheDocument();
     expect(screen.getByText("Paga con QR y manda el comprobante")).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Visitanos o escribenos." })).toBeInTheDocument();
-    expect(screen.getByRole("complementary", { name: "Tu boleta de pedido" })).toBeInTheDocument();
+    expect(screen.getByRole("complementary", { name: "Tu pedido" })).toBeInTheDocument();
   });
 
   it("hides the sections the store turned off", () => {
@@ -112,15 +112,15 @@ describe("Plantilla Vitrina", () => {
     const user = userEvent.setup();
     renderInStore(<VitrinaCatalog {...pageData()} />);
 
-    await user.click(screen.getByRole("button", { name: "Agregar Leche Pil 1l a la boleta" }));
+    await user.click(screen.getByRole("button", { name: "Agregar Leche Pil 1l al pedido" }));
     // La tarjeta y la boleta lateral tienen su propio "+".
     await user.click(screen.getAllByRole("button", { name: "Agregar otro Leche Pil 1l" })[0]);
 
-    const aside = screen.getByRole("complementary", { name: "Tu boleta de pedido" });
+    const aside = screen.getByRole("complementary", { name: "Tu pedido" });
     expect(within(aside).getByText("2 × 8,00")).toBeInTheDocument();
     await user.click(screen.getAllByRole("button", { name: "Quitar un Leche Pil 1l" })[0]);
     await user.click(screen.getAllByRole("button", { name: "Quitar un Leche Pil 1l" })[0]);
-    expect(screen.getByRole("button", { name: "Agregar Leche Pil 1l a la boleta" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Agregar Leche Pil 1l al pedido" })).toBeInTheDocument();
   });
 });
 
@@ -128,9 +128,9 @@ describe("Menu de categorias", () => {
   it("closes after picking a category", async () => {
     const user = userEvent.setup();
     renderInStore(<VitrinaCatalog {...pageData()} />);
-    const menu = screen.getByText("Categorias", { selector: "summary" }).closest("details") as HTMLDetailsElement;
+    const menu = screen.getByText("Categorías", { selector: "summary" }).closest("details") as HTMLDetailsElement;
 
-    await user.click(screen.getByText("Categorias", { selector: "summary" }));
+    await user.click(screen.getByText("Categorías", { selector: "summary" }));
     expect(menu.open).toBe(true);
     await user.click(within(menu).getByRole("link", { name: /Limpieza/ }));
 
@@ -147,7 +147,7 @@ describe("Plantilla Lista de precios", () => {
     const headings = screen.getAllByRole("heading", { level: 2 }).map((h) => h.textContent);
     expect(headings).toEqual(["Lacteos", "Limpieza", "Otros"]);
     expect(screen.getByText("AGOT.")).toBeInTheDocument();
-    expect(screen.getByText("ULTIMAS")).toBeInTheDocument();
+    expect(screen.getByText("ÚLTIMAS")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /^Lacteos/ })).toHaveAttribute("href", "#cat-c-lacteos");
     expect(screen.getByText("PEDIDOS", { exact: false })).toBeInTheDocument();
   });
@@ -188,11 +188,11 @@ describe("Boleta en el celular", () => {
       </>,
     );
 
-    await user.click(screen.getByRole("button", { name: "Agregar Leche Pil 1l a la boleta" }));
+    await user.click(screen.getByRole("button", { name: "Agregar Leche Pil 1l al pedido" }));
     // La tarjeta y la boleta lateral tienen su propio "+".
     await user.click(screen.getAllByRole("button", { name: "Agregar otro Leche Pil 1l" })[0]);
-    expect(screen.getByText("TU BOLETA · 2 items")).toBeInTheDocument();
-    await user.click(screen.getByRole("button", { name: "Ver boleta →" }));
+    expect(screen.getByText("TU PEDIDO · 2 items")).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Ver pedido →" }));
 
     const sheet = screen.getByRole("dialog");
     expect(within(sheet).getByText("ASI LLEGA A LA TIENDA:")).toBeInTheDocument();
@@ -205,13 +205,13 @@ describe("Boleta en el celular", () => {
     expect(within(sheet).getByRole("img", { name: "QR de pago de la tienda" })).toBeInTheDocument();
     const whatsapp = within(sheet).getByRole("link", { name: /Enviar pedido por WhatsApp/ });
     expect(decodeURIComponent(whatsapp.getAttribute("href") ?? "")).toContain("2 unidad x Leche Pil 1l");
-    expect(screen.queryByText(/TU BOLETA ·/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/TU PEDIDO ·/)).not.toBeInTheDocument();
   });
 
   it("marks products the store no longer has and blocks sending until they are removed", async () => {
     vi.mocked(createStorefrontOrderAction).mockResolvedValue({
       ok: false,
-      message: "Algunos productos de tu boleta ya no estan disponibles.",
+      message: "Algunos productos de tu pedido ya no están disponibles.",
       fieldErrors: {},
       unavailableProductIds: ["p-cheese"],
     });
@@ -223,8 +223,8 @@ describe("Boleta en el celular", () => {
       </>,
     );
 
-    await user.click(screen.getByRole("button", { name: "Agregar Leche Pil 1l a la boleta" }));
-    await user.click(screen.getByRole("button", { name: "Agregar Queso Criollo a la boleta" }));
+    await user.click(screen.getByRole("button", { name: "Agregar Leche Pil 1l al pedido" }));
+    await user.click(screen.getByRole("button", { name: "Agregar Queso Criollo al pedido" }));
     await user.click(screen.getByRole("button", { name: "Ver pedido →" }));
     const sheet = screen.getByRole("dialog");
     await user.type(within(sheet).getByLabelText("Tu nombre"), "Ana");

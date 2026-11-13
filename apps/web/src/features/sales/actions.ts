@@ -15,7 +15,7 @@ export async function voidSaleAction(
   const reason = stringValue(formData, "reason");
   const fieldErrors = validateVoidSale(reason);
 
-  if (!saleId) return { ok: false, message: "Venta invalida", fieldErrors: {} };
+  if (!saleId) return { ok: false, message: "Venta inválida", fieldErrors: {} };
   if (Object.keys(fieldErrors).length > 0) return { ok: false, fieldErrors };
 
   const token = await getAuthToken();
@@ -25,14 +25,17 @@ export async function voidSaleAction(
     body: { reason },
   });
 
-  if (!result.ok) return { ok: false, message: result.error.message, fieldErrors: {} };
+  // 409: ya estaba anulada (por ejemplo desde otro equipo); la pantalla la vuelve a leer.
+  if (!result.ok) {
+    return { ok: false, message: result.error.message, fieldErrors: {}, conflict: result.error.status === 409 };
+  }
 
   await revalidateStorefrontCatalog();
   revalidatePath("/dashboard/sales");
   revalidatePath(`/dashboard/sales/${saleId}`);
   revalidatePath("/dashboard/products");
   revalidatePath("/dashboard");
-  return { ok: true, message: "Venta anulada", fieldErrors: {} };
+  return { ok: true, message: "Venta anulada", fieldErrors: {}, sale: result.data };
 }
 
 function stringValue(formData: FormData, key: string) {

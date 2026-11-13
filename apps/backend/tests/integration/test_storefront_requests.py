@@ -170,3 +170,38 @@ async def test_requests_are_scoped_to_store(client, db_session):
 
     assert response.status_code == 200
     assert response.json()["total"] == 0
+
+
+async def test_requests_filter_by_status_with_counts_per_tab(client):
+    await _enable_storefront(client)
+    product_id = await _create_product(client)
+    storefront_request_rate_limiter.reset()
+    ids = []
+    for name in ("Ana", "Beto", "Carla"):
+        created = await client.post(
+            f"/api/v1/public/storefront/ferreteria-lopez/products/{product_id}/requests",
+            json={"customer_name": name, "customer_phone": "70011122"},
+        )
+        assert created.status_code == 201
+        ids.append(created.json()["id"])
+    await client.patch(f"/api/v1/storefront-requests/{ids[0]}/status", json={"status": "contacted"})
+    await client.patch(f"/api/v1/storefront-requests/{ids[1]}/status", json={"status": "closed"})
+
+    everything = (await client.get("/api/v1/storefront-requests")).json()
+    assert everything["total"] == 3
+    assert everything["status_counts"] == {"pending": 1, "contacted": 1, "closed": 1}
+    assert everything["pending_count"] == 1
+
+    contacted = (await client.get("/api/v1/storefront-requests", params={"status": "contacted"})).json()
+    assert contacted["total"] == 1
+    assert [item["id"] for item in contacted["items"]] == [ids[0]]
+    # Los conteos de las pestanas no dependen del filtro.
+    assert contacted["status_counts"] == {"pending": 1, "contacted": 1, "closed": 1}
+
+    invalid = await client.get("/api/v1/storefront-requests", params={"status": "archived"})
+    assert invalid.status_code == 422
+
+
+async def test_requests_status_counts_include_empty_tabs(client):
+    listed = (await client.get("/api/v1/storefront-requests")).json()
+    assert listed["status_counts"] == {"pending": 0, "contacted": 0, "closed": 0}

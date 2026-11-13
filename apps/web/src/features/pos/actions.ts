@@ -2,9 +2,9 @@
 
 import { revalidatePath } from "next/cache";
 import { revalidateStorefrontCatalog } from "@/features/storefront/revalidate";
-import { redirect } from "next/navigation";
 import { apiRequest } from "@/lib/api/client";
 import { getAuthToken } from "@/lib/auth/session";
+import { parseMoney } from "@/lib/format/currency";
 import { isPaymentMethod, validateCheckout } from "./schemas";
 import type { CartItem, CheckoutActionState, PosProduct, StockConflict } from "./types";
 import type { Sale } from "@/features/sales/types";
@@ -22,17 +22,19 @@ export async function createSaleAction(
   const fieldErrors: CheckoutActionState["fieldErrors"] = validateCheckout(cartItems, paymentMethod);
 
   if (customerName.length > 100) {
-    fieldErrors.customer_name = "Nombre del cliente debe tener maximo 100 caracteres";
+    fieldErrors.customer_name = "Máximo 100 caracteres";
   }
 
   const discountType = discountTypeRaw === "percentage" || discountTypeRaw === "fixed" ? discountTypeRaw : null;
-  let discountValue = 0;
+  let discountValue = "0";
   if (discountType) {
-    discountValue = Number(discountValueRaw);
-    if (!Number.isFinite(discountValue) || discountValue <= 0) {
-      fieldErrors.discount_value = "Ingresa un valor de descuento valido";
-    } else if (discountType === "percentage" && discountValue > 100) {
+    const parsed = parseMoney(discountValueRaw);
+    if (!parsed.ok || Number(parsed.value) <= 0) {
+      fieldErrors.discount_value = "Escribe un descuento válido";
+    } else if (discountType === "percentage" && Number(parsed.value) > 100) {
       fieldErrors.discount_value = "El porcentaje no puede superar 100";
+    } else {
+      discountValue = parsed.value;
     }
   }
 
@@ -46,7 +48,7 @@ export async function createSaleAction(
 
   if (Object.keys(fieldErrors).length > 0) return { ok: false, fieldErrors };
   if (!isPaymentMethod(paymentMethod)) {
-    return { ok: false, fieldErrors: { payment_method: "Metodo de pago invalido" } };
+    return { ok: false, fieldErrors: { payment_method: "Elige cómo te pagan" } };
   }
 
   const token = await getAuthToken();
@@ -61,7 +63,7 @@ export async function createSaleAction(
       payment_method: paymentMethod,
       device_id: "web-pos",
       customer_name: customerName || null,
-      ...(discountType ? { discount_type: discountType, discount_value: String(discountValue) } : {}),
+      ...(discountType ? { discount_type: discountType, discount_value: discountValue } : {}),
       ...(discountSourceOverride ? { discount_source_override: discountSourceOverride } : {}),
     },
   });
@@ -81,9 +83,10 @@ export async function createSaleAction(
 
   await revalidateStorefrontCatalog();
   revalidatePath("/dashboard");
-  revalidatePath("/dashboard/products");
+  revalidatePath("/dashboard/products", "layout");
   revalidatePath("/dashboard/sales");
-  redirect(`/dashboard/sales/${result.data.id}`);
+  // "Venta registrada" se muestra en Vender (tablero A · Venta lista), sin ir al detalle.
+  return { ok: true, message: "Venta registrada", fieldErrors: {}, sale: result.data };
 }
 
 function parseCartItems(value: FormDataEntryValue | null): CartItem[] {
@@ -183,12 +186,11 @@ function stockConflictsFromDetails(details: unknown): StockConflict[] {
 
 function stockConflictMessage(conflicts: StockConflict[]) {
   const [firstConflict] = conflicts;
-  if (!firstConflict) return "No se pudo confirmar la venta porque el stock cambio.";
+  if (!firstConflict) return "No se pudo confirmar: el stock cambió.";
 
   return (
-    "No se pudo confirmar la venta porque el stock cambio. " +
-    `${firstConflict.product_name}: solicitaste ${firstConflict.requested_quantity}, ` +
-    `disponible ${firstConflict.available_stock}.`
+    `El stock cambió: de ${firstConflict.product_name} quedan ${firstConflict.available_stock} ` +
+    `y llevas ${firstConflict.requested_quantity}. Ajusta la venta y confirma de nuevo.`
   );
 }
 

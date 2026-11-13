@@ -1,6 +1,7 @@
 import type { Sale, SaleSearchParams, SaleStatusFilter } from "./types";
 
 export const DEFAULT_SALE_LIMIT = 50;
+export const VOID_REASON_MAX = 200;
 
 const saleStatuses = new Set<SaleStatusFilter>(["all", "completed", "voided"]);
 
@@ -12,8 +13,8 @@ export function discountLabel(sale: Pick<Sale, "discount_type" | "discount_value
 
 export function validateVoidSale(reason: string) {
   const trimmed = reason.trim();
-  if (!trimmed) return { reason: "La razon es requerida" };
-  if (trimmed.length > 200) return { reason: "La razon debe tener maximo 200 caracteres" };
+  if (!trimmed) return { reason: "La razón es requerida." };
+  if (trimmed.length > VOID_REASON_MAX) return { reason: `Máximo ${VOID_REASON_MAX} caracteres.` };
   return {};
 }
 

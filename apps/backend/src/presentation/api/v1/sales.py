@@ -83,7 +83,8 @@ async def create_sale(
         discount_value=dto.discount_value,
         discount_source_override=dto.discount_source_override.value if dto.discount_source_override else None,
     ))
-    return sale
+    # Releer para devolver tambien el nombre de quien vendio.
+    return await sale_repo.get_by_id(sale.store_id, sale.id) or sale
 
 
 @router.get("/{sale_id}", response_model=SaleResponseDTO)
@@ -110,5 +111,6 @@ async def void_sale(
             store_id=UUID(str(user["store_id"])),
             sale_id=sale_id,
             reason=dto.reason,
+            user_id=UUID(str(user["id"])),
         )
     )

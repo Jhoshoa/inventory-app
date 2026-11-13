@@ -6,11 +6,15 @@ export interface StoreResponse {
   address: string | null;
   phone: string | null;
   is_active: boolean;
+  /** Solo lectura; falta en una API anterior. */
+  timezone?: string;
   allow_percentage_discount: boolean;
   max_percentage_discount: string;
   allow_manual_discount: boolean;
   max_manual_discount_amount: string;
   allow_cashier_discount_override: boolean;
+  /** Aviso de vencimiento por defecto de los lotes nuevos (B4). */
+  default_alert_days: number;
   storefront_enabled: boolean;
   storefront_slug: string | null;
   storefront_tier: string;

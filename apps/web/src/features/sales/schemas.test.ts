@@ -3,13 +3,11 @@ import { buildSalesApiQuery, parseSalesSearchParams, validateVoidSale } from "./
 
 describe("validateVoidSale", () => {
   it("requires a reason", () => {
-    expect(validateVoidSale("   ")).toEqual({ reason: "La razon es requerida" });
+    expect(validateVoidSale("   ")).toEqual({ reason: "La razón es requerida." });
   });
 
   it("limits reason length", () => {
-    expect(validateVoidSale("x".repeat(201))).toEqual({
-      reason: "La razon debe tener maximo 200 caracteres",
-    });
+    expect(validateVoidSale("x".repeat(201))).toEqual({ reason: "Máximo 200 caracteres." });
   });
 
   it("accepts a valid reason", () => {

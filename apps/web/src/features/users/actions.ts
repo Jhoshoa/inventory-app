@@ -41,7 +41,7 @@ export async function inviteCashierAction(
   }
 
   const token = await getAuthToken();
-  if (!token) return { ok: false, message: "Sesion no valida", fieldErrors: {} };
+  if (!token) return { ok: false, message: "Tu sesión terminó. Vuelve a entrar.", fieldErrors: {} };
 
   const result = await apiRequest<UserInvitationCreated>("/user-invitations", {
     method: "POST",
@@ -53,7 +53,7 @@ export async function inviteCashierAction(
     return { ok: false, message: result.error.message, fieldErrors: {} };
   }
 
-  revalidatePath("/dashboard/settings");
+  revalidatePath("/dashboard/settings", "layout");
   return {
     ok: true,
     message: `Invitacion enviada a ${values.email}`,
@@ -64,7 +64,7 @@ export async function inviteCashierAction(
 
 export async function revokeInvitationAction(invitationId: string): Promise<UserActionState> {
   const token = await getAuthToken();
-  if (!token) return { ok: false, message: "Sesion no valida" };
+  if (!token) return { ok: false, message: "Tu sesión terminó. Vuelve a entrar." };
 
   const result = await apiRequest(`/user-invitations/${invitationId}/revoke`, {
     method: "POST",
@@ -75,13 +75,13 @@ export async function revokeInvitationAction(invitationId: string): Promise<User
     return { ok: false, message: result.error.message };
   }
 
-  revalidatePath("/dashboard/settings");
+  revalidatePath("/dashboard/settings", "layout");
   return { ok: true, message: "Invitacion revocada" };
 }
 
 export async function resendInvitationAction(invitationId: string): Promise<UserActionState> {
   const token = await getAuthToken();
-  if (!token) return { ok: false, message: "Sesion no valida" };
+  if (!token) return { ok: false, message: "Tu sesión terminó. Vuelve a entrar." };
 
   const result = await apiRequest<UserInvitationCreated>(`/user-invitations/${invitationId}/resend`, {
     method: "POST",
@@ -92,13 +92,13 @@ export async function resendInvitationAction(invitationId: string): Promise<User
     return { ok: false, message: result.error.message };
   }
 
-  revalidatePath("/dashboard/settings");
+  revalidatePath("/dashboard/settings", "layout");
   return { ok: true, message: "Invitacion reenviada" };
 }
 
 export async function updateUserRoleAction(userId: string, role: UserRoleValue): Promise<UserActionState> {
   const token = await getAuthToken();
-  if (!token) return { ok: false, message: "Sesion no valida" };
+  if (!token) return { ok: false, message: "Tu sesión terminó. Vuelve a entrar." };
 
   const result = await apiRequest<UserResponse>(`/users/${userId}/role`, {
     method: "PATCH",
@@ -110,13 +110,13 @@ export async function updateUserRoleAction(userId: string, role: UserRoleValue):
     return { ok: false, message: result.error.message };
   }
 
-  revalidatePath("/dashboard/settings");
+  revalidatePath("/dashboard/settings", "layout");
   return { ok: true, message: "Rol actualizado" };
 }
 
 export async function updateUserStatusAction(userId: string, isActive: boolean): Promise<UserActionState> {
   const token = await getAuthToken();
-  if (!token) return { ok: false, message: "Sesion no valida" };
+  if (!token) return { ok: false, message: "Tu sesión terminó. Vuelve a entrar." };
 
   const result = await apiRequest<UserResponse>(`/users/${userId}/status`, {
     method: "PATCH",
@@ -128,7 +128,7 @@ export async function updateUserStatusAction(userId: string, isActive: boolean):
     return { ok: false, message: result.error.message };
   }
 
-  revalidatePath("/dashboard/settings");
+  revalidatePath("/dashboard/settings", "layout");
   return { ok: true, message: isActive ? "Usuario activado" : "Usuario desactivado" };
 }
 
@@ -154,7 +154,7 @@ export async function acceptInvitationAction(
   }
 
   if (!token) {
-    return { ok: false, message: "Invitacion invalida", fieldErrors: {} };
+    return { ok: false, message: "Esta invitación ya no es válida.", fieldErrors: {} };
   }
 
   const result = await apiRequest<AuthResponse>("/user-invitations/accept", {

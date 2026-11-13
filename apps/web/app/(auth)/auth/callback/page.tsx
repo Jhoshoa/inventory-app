@@ -2,6 +2,7 @@
 
 import { Suspense, useCallback, useEffect, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { destinationAfterLogin } from "@/features/auth/session";
 
 function CallbackInner() {
   const router = useRouter();
@@ -36,9 +37,14 @@ function CallbackInner() {
       body: JSON.stringify({ code, state }),
       signal: controller.signal,
     })
-      .then((res) => {
+      .then(async (res) => {
         clearTimeout(timeout);
-        redirectTo(res.ok ? "/dashboard" : "/login");
+        if (!res.ok) {
+          redirectTo("/login");
+          return;
+        }
+        const body = (await res.json().catch(() => ({}))) as { user?: { role?: string } };
+        redirectTo(await destinationAfterLogin(body.user?.role));
       })
       .catch(() => {
         clearTimeout(timeout);
@@ -46,12 +52,12 @@ function CallbackInner() {
       });
   }, [redirectTo, searchParams]);
 
-  return <p className="p-8 text-center">Completando autenticacion...</p>;
+  return <p className="p-8 text-center text-sm text-text-muted">Entrando a tu tienda…</p>;
 }
 
 export default function AuthCallbackPage() {
   return (
-    <Suspense fallback={<p className="p-8 text-center">Completando autenticacion...</p>}>
+    <Suspense fallback={<p className="p-8 text-center text-sm text-text-muted">Entrando a tu tienda…</p>}>
       <CallbackInner />
     </Suspense>
   );

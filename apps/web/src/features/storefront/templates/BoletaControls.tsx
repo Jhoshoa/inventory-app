@@ -46,10 +46,10 @@ export function CardBoletaButton({
       <button
         type="button"
         onClick={() => add(product)}
-        aria-label={`Agregar ${product.name} a la boleta`}
+        aria-label={`Agregar ${product.name} al pedido`}
         className={`w-full border-2 border-sf-ink bg-sf-ink font-bold text-white hover:opacity-90 ${height}`}
       >
-        + Agregar<span className={size === "large" ? "" : "hidden sm:inline"}> a la boleta</span>
+        + Agregar<span className={size === "large" ? "" : "hidden sm:inline"}> al pedido</span>
       </button>
     );
   }
@@ -65,7 +65,7 @@ export function CardBoletaButton({
       </button>
       <span className="whitespace-nowrap font-receipt font-bold">
         {quantity}
-        <span className={size === "large" ? "" : "hidden min-[400px]:inline sm:inline"}> en boleta</span>
+        <span className={size === "large" ? "" : "hidden min-[400px]:inline sm:inline"}> en el pedido</span>
       </span>
       <button
         type="button"

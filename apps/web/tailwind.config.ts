@@ -29,13 +29,14 @@ const config: Config = {
           600: "#2563eb",
           700: "#1d4ed8",
         },
+        // Variables: el panel usa el azul del estilo A (.theme-app en globals.css).
         brand: {
-          50: "#eff6ff",
-          100: "#dbeafe",
-          500: "#2563eb",
-          600: "#1d4ed8",
-          700: "#1e40af",
-          800: "#1e3a8a",
+          50: "var(--color-brand-50)",
+          100: "var(--color-brand-100)",
+          500: "var(--color-brand-500)",
+          600: "var(--color-brand-600)",
+          700: "var(--color-brand-700)",
+          800: "var(--color-brand-800)",
         },
         // Catalogo publico: los colores de cada tienda, como variables CSS
         // (ver storefrontTheme en features/storefront/settings.ts).
@@ -79,6 +80,8 @@ const config: Config = {
       },
       // Sitio publico (landing "boleta de mercado"): papel, cobalto, amarillo y tinta.
       fontFamily: {
+        // Panel y acceso (estilo A).
+        app: ["var(--font-inter)", "system-ui", "sans-serif"],
         archivo: ["var(--font-archivo)", "system-ui", "sans-serif"],
         display: ["var(--font-display)", "var(--font-archivo)", "sans-serif"],
         receipt: ["var(--font-receipt)", "ui-monospace", "monospace"],
@@ -91,6 +94,16 @@ const config: Config = {
       },
       animation: {
         ticker: "ticker 40s linear infinite",
+      },
+      borderRadius: {
+        control: "var(--radius-control)",
+        card: "var(--radius-card)",
+      },
+      height: {
+        control: "var(--height-control)",
+      },
+      minHeight: {
+        control: "var(--height-control)",
       },
       boxShadow: {
         panel: "0 1px 2px 0 rgb(15 23 42 / 0.04), 0 1px 3px 0 rgb(15 23 42 / 0.06)",

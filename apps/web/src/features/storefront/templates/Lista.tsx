@@ -115,7 +115,7 @@ export function ListaCatalog(data: CatalogPageData) {
 
           {groups.length === 0 ? (
             <p className="mt-10 border-2 border-dashed border-sf-ink p-10 text-center font-receipt">
-              {q ? "No encontramos productos con esa busqueda." : "Todavia no hay productos en la lista."}
+              {q ? "No encontramos productos con esa búsqueda." : "Todavía no hay productos en la lista."}
             </p>
           ) : (
             groups.map((group) => (
@@ -193,7 +193,7 @@ function ListaRow({ slug, product }: { slug: string; product: PublicStorefrontPr
       </a>
       {percent ? <DiscountTag percent={percent} /> : null}
       {product.available && product.low_stock ? (
-        <span className="shrink-0 bg-sf-ink px-1.5 py-0.5 text-[11px] font-bold text-white">ULTIMAS</span>
+        <span className="shrink-0 bg-sf-ink px-1.5 py-0.5 text-[11px] font-bold text-white">ÚLTIMAS</span>
       ) : null}
       <span aria-hidden="true" className="min-w-4 flex-1 translate-y-1 border-b-2 border-dotted border-[#94A3B8]" />
       <span className={`shrink-0 text-right font-bold ${out ? "text-[#64748B]" : ""}`}>
