@@ -1,5 +1,4 @@
-import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
-import { PageHeader } from "@/components/layout/PageHeader";
+import type { Metadata } from "next";
 import { DataFetchError } from "@/components/ui/DataFetchError";
 import { ForbiddenState } from "@/components/ui/ForbiddenState";
 import { getProduct } from "@/features/products/api";
@@ -8,35 +7,23 @@ import type { FeaturedProductOption } from "@/features/settings/components/Featu
 import { StorefrontSettingsForm } from "@/features/settings/components/StorefrontSettingsForm";
 import { requireSession } from "@/lib/auth/session";
 
+export const metadata: Metadata = { title: "Catálogo público" };
+
 export default async function StorefrontSettingsPage() {
   const session = await requireSession();
   if (session.role !== "owner") {
-    return <ForbiddenState description="El catalogo publico solo lo configura el propietario." />;
+    return <ForbiddenState description="El catálogo público solo lo configura el dueño." />;
   }
 
   const storeData = await getStore().catch(() => null);
   const featuredProducts = storeData ? await loadFeaturedProducts(storeData.storefront_settings?.featured_product_ids ?? []) : [];
 
-  return (
-    <div className="space-y-6">
-      <PageHeader
-        breadcrumbs={
-          <Breadcrumbs
-            items={[
-              { label: "Inicio", href: "/dashboard" },
-              { label: "Configuración", href: "/dashboard/settings" },
-              { label: "Catalogo publico" },
-            ]}
-          />
-        }
-        title="Catalogo publico"
-        description="Un link donde tus clientes ven tus productos y te piden por WhatsApp."
-      />
-      {storeData ? (
-        <StorefrontSettingsForm storeData={storeData} featuredProducts={featuredProducts} />
-      ) : (
-        <DataFetchError resource="tu tienda" error="Intenta recargar la pagina en unos segundos." />
-      )}
+  return storeData ? (
+    <StorefrontSettingsForm storeData={storeData} featuredProducts={featuredProducts} />
+  ) : (
+    <div className="flex flex-col gap-3">
+      <h1 className="text-[22px] font-extrabold tracking-tight text-text-strong sm:text-[26px]">Catálogo público</h1>
+      <DataFetchError resource="tu tienda" error="Intenta recargar la página en unos segundos." />
     </div>
   );
 }

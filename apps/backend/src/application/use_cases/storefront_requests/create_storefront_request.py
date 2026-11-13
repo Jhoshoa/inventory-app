@@ -107,7 +107,7 @@ class CreateStorefrontOrderUseCase:
         unavailable = [pid for pid in quantities if pid not in by_id or by_id[pid].stock <= 0]
         if unavailable:
             raise ConflictError(
-                "Algunos productos de tu boleta ya no estan disponibles. Quitalos y vuelve a enviarla.",
+                "Algunos productos de tu pedido ya no estan disponibles. Quitalos y vuelve a enviarlo.",
                 extra={"unavailable_product_ids": [str(pid) for pid in unavailable]},
             )
 

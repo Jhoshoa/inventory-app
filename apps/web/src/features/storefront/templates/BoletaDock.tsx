@@ -11,7 +11,7 @@ export function BoletaAside({ store }: { store: BoletaStore }) {
   const [sent, setSent] = useState<SentOrder | null>(null);
 
   return (
-    <aside aria-label="Tu boleta de pedido" className="sticky top-4 hidden w-full max-w-[420px] flex-[1_1_320px] lg:block">
+    <aside aria-label="Tu pedido" className="sticky top-4 hidden w-full max-w-[420px] flex-[1_1_320px] lg:block">
       {sent ? (
         <div className="border-2 border-sf-ink bg-sf-paper p-6">
           <BoletaSent store={store} sent={sent} onBack={() => setSent(null)} />
@@ -63,7 +63,7 @@ export function BoletaBar({
             >
               <div className="min-w-0 font-receipt text-[13px] leading-snug">
                 <p>
-                  {variant === "lista" ? "TU PEDIDO" : "TU BOLETA"} · {itemCount} {itemCount === 1 ? "item" : "items"}
+                  TU PEDIDO · {itemCount} {itemCount === 1 ? "item" : "items"}
                 </p>
                 <p className="text-base font-bold text-sf-stickerOnDark">{formatCurrency(total)}</p>
               </div>
@@ -76,7 +76,7 @@ export function BoletaBar({
                     : "shrink-0 rounded-full bg-sf-sticker px-4 py-2.5 text-sm font-bold text-sf-onSticker hover:opacity-90"
                 }
               >
-                {variant === "lista" ? "Ver pedido →" : "Ver boleta →"}
+                {variant === "lista" ? "Ver pedido →" : "Ver pedido →"}
               </button>
             </div>
           </div>
@@ -101,7 +101,7 @@ export function BoletaBar({
           </button>
           <DialogTitle className="!p-0">
             <span className="font-display text-[22px] font-normal uppercase text-sf-onPrimary">
-              {sent ? "Pedido enviado" : "Tu boleta"}
+              {sent ? "Pedido enviado" : "Tu pedido"}
             </span>
           </DialogTitle>
         </div>

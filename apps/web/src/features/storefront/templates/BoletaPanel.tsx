@@ -37,7 +37,7 @@ export function BoletaReceipt({
 }: {
   store: BoletaStore;
   onSent: (sent: SentOrder) => void;
-  /** "TU BOLETA" arriba: en la hoja del celular el titulo ya esta afuera. */
+  /** "TU PEDIDO" arriba: en la hoja del celular el titulo ya esta afuera. */
   showTitle?: boolean;
   /** Burbuja "Asi llega a la tienda" (la hoja del celular tiene lugar). */
   showWhatsappPreview?: boolean;
@@ -104,7 +104,7 @@ export function BoletaReceipt({
   return (
     <form onSubmit={onSubmit} noValidate>
       <div className="border-2 border-b-0 border-sf-ink bg-white px-5 pb-5 pt-6 font-receipt text-[13px] leading-[1.8] text-[#111111]">
-        {showTitle ? <p className="text-center font-display text-xl">TU BOLETA</p> : null}
+        {showTitle ? <p className="text-center font-display text-xl">TU PEDIDO</p> : null}
         <p className={`text-center uppercase ${showTitle ? "" : "font-display text-base"}`}>{store.name}</p>
         <div className="my-3 border-t-2 border-dashed border-[#111111]" />
 
@@ -115,7 +115,7 @@ export function BoletaReceipt({
             Elige productos y envia tu pedido por WhatsApp.
           </p>
         ) : (
-          <ul aria-label="Productos de tu boleta" className="space-y-2">
+          <ul aria-label="Productos de tu pedido" className="space-y-2">
             {lines.map((line) => (
               <li key={line.productId} className={line.unavailable ? "bg-[#FDE4DE] px-1" : ""}>
                 <DottedRow left={line.name} right={priceOnly(Number(line.unitPrice) * line.quantity)} />

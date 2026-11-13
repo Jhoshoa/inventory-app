@@ -21,7 +21,7 @@ export const STOREFRONT_TEMPLATES: Array<{ value: StorefrontTemplate; label: str
   {
     value: "lista",
     label: "Lista de precios",
-    description: "Una boleta larga y compacta. Ideal para ferreterias y catalogos grandes.",
+    description: "Una lista larga y compacta. Ideal para ferreterías y catálogos grandes.",
   },
 ];
 

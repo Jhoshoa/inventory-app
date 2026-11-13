@@ -27,7 +27,7 @@ export async function createStorefrontOrderAction(
   };
 
   const fieldErrors = validateStorefrontRequestForm(values);
-  if (items.length === 0) fieldErrors.items = "Tu boleta esta vacia";
+  if (items.length === 0) fieldErrors.items = "Tu pedido está vacío";
   if (Object.keys(fieldErrors).length > 0) {
     return failure("Corrige los errores del formulario", { fieldErrors });
   }

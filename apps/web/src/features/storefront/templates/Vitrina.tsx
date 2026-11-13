@@ -323,7 +323,7 @@ export function VitrinaCard({ slug, product }: { slug: string; product: PublicSt
 
 function PaySection({ store }: { store: PublicStorefront }) {
   const steps = [
-    "Arma tu boleta con los productos que quieres.",
+    "Arma tu pedido con los productos que quieres.",
     "Enviala por WhatsApp; la tienda confirma tu pedido.",
     "Paga con el QR y manda tu comprobante.",
   ];
