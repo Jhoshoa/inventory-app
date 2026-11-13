@@ -90,7 +90,9 @@ async def create_user_invitation(
         )
     )
     response = UserInvitationCreatedDTO.model_validate(result.invitation)
-    if settings.DEBUG:
+    # Sin correo (EMAIL_ENABLED=false) la persona no recibe nada: el dueño ve el enlace
+    # para compartirlo. En DEBUG también, para probar sin abrir Mailpit.
+    if settings.DEBUG or not email_sender.enabled:
         response.dev_invite_url = f"{settings.FRONTEND_URL}/invite/{result.raw_token}"
     return response
 
@@ -135,7 +137,9 @@ async def resend_user_invitation(
         )
     )
     response = UserInvitationCreatedDTO.model_validate(result.invitation)
-    if settings.DEBUG:
+    # Sin correo (EMAIL_ENABLED=false) la persona no recibe nada: el dueño ve el enlace
+    # para compartirlo. En DEBUG también, para probar sin abrir Mailpit.
+    if settings.DEBUG or not email_sender.enabled:
         response.dev_invite_url = f"{settings.FRONTEND_URL}/invite/{result.raw_token}"
     return response
 

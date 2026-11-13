@@ -260,5 +260,5 @@ El orden detallado, con la Fase 0 (backend y arreglos), las reglas para todas la
 - Si hoy hay enlaces o anclas a Categorías o Ubicaciones dentro de Configuración, redirigirlos a `/dashboard/products/categorias` y `/dashboard/products/lugares`.
 - Mover "Operación diaria" a Caja no cambia permisos: `canOpenCloseStore` y `canViewCashMovements` siguen siendo del dueño.
 - El logo de "Datos de la tienda" es el mismo `storefront_logo_url` del catálogo: decirlo en la pantalla.
-- Los correos (confirmar cuenta, recuperar contraseña, invitar) dependen del SMTP con Brevo, todavía pendiente.
+- Los correos (confirmar cuenta, recuperar contraseña, invitar) salen por SMTP (Brevo): ver `supabase/email-templates/README.md` para configurarlo en Dokploy y en Supabase.
 - Accesibilidad: botones de 44 px o más, etiquetas reales en cada campo, errores unidos a su campo (`aria-describedby`), ventanas con foco atrapado y Escape para cerrar.

@@ -1,3 +1,5 @@
+from typing import Literal
+
 from pydantic import field_validator, model_validator
 from pydantic_settings import BaseSettings
 
@@ -31,13 +33,24 @@ class Settings(BaseSettings):
     # UN worker/proceso para evitar ejecuciones duplicadas del mismo dia.
     ENABLE_SCHEDULER: bool = True
 
-    # Correo transaccional (invitaciones de cajeros) via Brevo. Sin BREVO_API_KEY las
-    # invitaciones solo se registran en el log (NoopEmailSender): sirve en desarrollo,
-    # no en produccion. EMAIL_FROM_ADDRESS debe ser un remitente/dominio ya
-    # autenticado en Brevo (SPF/DKIM), si no los correos caen en spam.
-    BREVO_API_KEY: str | None = None
-    EMAIL_FROM_ADDRESS: str = ""
-    EMAIL_FROM_NAME: str = "Tu Tiendamiga"
+    # Correo transaccional (invitaciones) por SMTP: sirve cualquier proveedor
+    # (Brevo, SES, Mailgun...) y Mailpit en el stack local. Con EMAIL_ENABLED=false
+    # no se envia nada: la invitacion se registra en el log y la API devuelve el
+    # enlace para que el dueno lo comparta. SMTP_FROM_EMAIL debe ser un remitente
+    # de un dominio autenticado en el proveedor (SPF/DKIM), si no cae en spam.
+    EMAIL_ENABLED: bool = False
+    SMTP_HOST: str = ""
+    SMTP_PORT: int = 587
+    SMTP_USERNAME: str = ""
+    SMTP_PASSWORD: str = ""
+    # starttls (puerto 587), ssl (puerto 465) o none (solo Mailpit, sin cifrar).
+    SMTP_SECURITY: Literal["starttls", "ssl", "none"] = "starttls"
+    SMTP_TIMEOUT_SECONDS: float = 10.0
+    SMTP_FROM_EMAIL: str = ""
+    SMTP_FROM_NAME: str = "Tu Tiendamiga"
+    # Logo de los correos: PNG publico (los clientes de correo no muestran SVG).
+    # Vacio: {FRONTEND_URL}/email/logo.png, que sirve la web.
+    EMAIL_LOGO_URL: str = ""
 
     SENTRY_DSN: str | None = None
     FRONTEND_URL: str = "http://localhost:3010"
@@ -73,6 +86,10 @@ class Settings(BaseSettings):
         return [origin.strip().rstrip("/") for origin in self.CORS_ALLOWED_ORIGINS.split(",") if origin.strip()]
 
     @property
+    def email_logo_url(self) -> str:
+        return self.EMAIL_LOGO_URL.strip() or f"{self.FRONTEND_URL}/email/logo.png"
+
+    @property
     def expose_error_details(self) -> bool:
         return self.DEBUG if self.EXPOSE_ERROR_DETAILS is None else self.EXPOSE_ERROR_DETAILS
 
@@ -81,6 +98,8 @@ class Settings(BaseSettings):
         environment = self.ENVIRONMENT.lower()
         if environment not in {"local", "test", "staging", "production"}:
             raise ValueError("ENVIRONMENT debe ser local, test, staging o production")
+        if self.EMAIL_ENABLED and not (self.SMTP_HOST.strip() and self.SMTP_FROM_EMAIL.strip()):
+            raise ValueError("Con EMAIL_ENABLED=true hacen falta SMTP_HOST y SMTP_FROM_EMAIL")
         if environment != "production":
             return self
 
@@ -97,8 +116,8 @@ class Settings(BaseSettings):
                 "Secure y el navegador no las guarda sobre http, asi que el login no se mantendria"
             )
 
-        if self.BREVO_API_KEY and not self.EMAIL_FROM_ADDRESS:
-            raise ValueError("EMAIL_FROM_ADDRESS es requerido cuando BREVO_API_KEY esta configurada")
+        if self.EMAIL_ENABLED and self.SMTP_SECURITY == "none":
+            raise ValueError("SMTP_SECURITY=none solo sirve para Mailpit: en production usa starttls o ssl")
 
         placeholders = {
             self.SUPABASE_URL,

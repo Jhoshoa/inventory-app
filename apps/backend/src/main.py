@@ -32,10 +32,18 @@ async def lifespan(app: FastAPI):
             await session.commit()
             logger.info("Dev seed data ready")
 
-    if not settings.DEBUG and not (settings.BREVO_API_KEY and settings.EMAIL_FROM_ADDRESS):
+    if settings.EMAIL_ENABLED:
+        logger.info(
+            "Correo por SMTP: %s:%s (%s) desde %s",
+            settings.SMTP_HOST,
+            settings.SMTP_PORT,
+            settings.SMTP_SECURITY,
+            settings.SMTP_FROM_EMAIL,
+        )
+    elif not settings.DEBUG:
         logger.warning(
-            "BREVO_API_KEY/EMAIL_FROM_ADDRESS no configurados: las invitaciones de cajeros "
-            "solo se registran en el log y NO se envian por correo"
+            "EMAIL_ENABLED=false: las invitaciones NO se envian por correo; la web muestra "
+            "el enlace para compartirlo"
         )
 
     if settings.ENABLE_SCHEDULER:
