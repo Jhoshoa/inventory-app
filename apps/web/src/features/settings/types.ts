@@ -6,6 +6,8 @@ export interface StoreResponse {
   address: string | null;
   phone: string | null;
   is_active: boolean;
+  /** Solo lectura; falta en una API anterior. */
+  timezone?: string;
   allow_percentage_discount: boolean;
   max_percentage_discount: string;
   allow_manual_discount: boolean;

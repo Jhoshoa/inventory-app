@@ -24,7 +24,7 @@ export default async function SaleDetailPage({
     <SaleDetail
       sale={sale.data}
       role={session.role}
-      store={{ name: store?.name ?? "", address: store?.address, phone: store?.phone }}
+      store={{ name: store?.name ?? "", address: store?.address, phone: store?.phone, logoUrl: store?.storefront_logo_url }}
       today={businessDateKey()}
     />
   );

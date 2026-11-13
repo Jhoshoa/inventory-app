@@ -95,18 +95,19 @@ export function validateStorefrontSettings(settings: StorefrontSettings): Record
 export function validateDiscountPolicyForm(values: DiscountPolicyFormValues): Record<string, string> {
   const errors: Record<string, string> = {};
 
-  const maxPercentage = Number(values.maxPercentageDiscount);
+  // Se escribe como en Bolivia ("12,50"); también se acepta punto.
+  const maxPercentage = Number(values.maxPercentageDiscount.replace(",", "."));
   if (values.maxPercentageDiscount.trim() && (Number.isNaN(maxPercentage) || maxPercentage < 0 || maxPercentage > 100)) {
-    errors.maxPercentageDiscount = "Ingresa un porcentaje entre 0 y 100";
+    errors.maxPercentageDiscount = "Escribe un porcentaje entre 0 y 100";
   } else if (values.allowPercentageDiscount && (!maxPercentage || maxPercentage <= 0)) {
-    errors.maxPercentageDiscount = "Define un porcentaje maximo mayor a 0 para habilitar esta opcion";
+    errors.maxPercentageDiscount = "Define un máximo mayor a 0 para habilitar esta opción.";
   }
 
-  const maxAmount = Number(values.maxManualDiscountAmount);
+  const maxAmount = Number(values.maxManualDiscountAmount.replace(",", "."));
   if (values.maxManualDiscountAmount.trim() && (Number.isNaN(maxAmount) || maxAmount < 0)) {
-    errors.maxManualDiscountAmount = "Ingresa un monto valido";
+    errors.maxManualDiscountAmount = "Escribe el monto como 5,00";
   } else if (values.allowManualDiscount && (!maxAmount || maxAmount <= 0)) {
-    errors.maxManualDiscountAmount = "Define un monto maximo mayor a 0 para habilitar esta opcion";
+    errors.maxManualDiscountAmount = "Define un monto máximo mayor a 0 para habilitar esta opción.";
   }
 
   return errors;

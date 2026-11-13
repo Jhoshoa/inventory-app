@@ -72,6 +72,8 @@ class StoreResponseDTO(BaseModel):
     address: str | None = None
     phone: str | None = None
     is_active: bool
+    # Solo lectura en Configuracion: cambiarla moveria los dias de venta y cierres.
+    timezone: str = "America/La_Paz"
     allow_percentage_discount: bool = False
     max_percentage_discount: Decimal = Decimal(0)
     allow_manual_discount: bool = False

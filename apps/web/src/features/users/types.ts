@@ -10,6 +10,8 @@ export interface UserResponse {
   full_name: string | null;
   role: UserRoleValue;
   is_active: boolean;
+  /** "Último ingreso" (B3); null si nunca entró o con una API anterior. */
+  last_login_at?: string | null;
 }
 
 export interface UserListResponse {

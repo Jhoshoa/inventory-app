@@ -8,6 +8,8 @@ export interface ReceiptStoreInfo {
   address?: string | null;
   phone?: string | null;
   nit?: string | null;
+  /** Logo de la tienda (el del catálogo); arriba del nombre si hay. */
+  logoUrl?: string | null;
 }
 
 const amountFormatter = new Intl.NumberFormat("es-BO", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -29,6 +31,10 @@ export function SaleReceipt({ sale, store }: { sale: Sale; store: ReceiptStoreIn
       className="receipt-print-area mx-auto w-full max-w-[302px] bg-white px-4 py-5 font-mono text-xs leading-relaxed text-[#101828] shadow-panel print:max-w-none print:p-0 print:shadow-none"
       aria-label="Recibo"
     >
+      {store.logoUrl ? (
+        // eslint-disable-next-line @next/next/no-img-element -- imagen de Cloudinary en un ticket para imprimir
+        <img src={store.logoUrl} alt="" className="mx-auto mb-1 h-12 w-auto max-w-[160px] object-contain grayscale" />
+      ) : null}
       <p className="text-center text-sm font-bold uppercase">{store.name}</p>
       {contact ? <p className="text-center">{contact}</p> : null}
       {store.nit ? <p className="text-center">NIT {store.nit}</p> : null}

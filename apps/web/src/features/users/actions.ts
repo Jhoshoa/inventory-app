@@ -53,7 +53,7 @@ export async function inviteCashierAction(
     return { ok: false, message: result.error.message, fieldErrors: {} };
   }
 
-  revalidatePath("/dashboard/settings");
+  revalidatePath("/dashboard/settings", "layout");
   return {
     ok: true,
     message: `Invitacion enviada a ${values.email}`,
@@ -75,7 +75,7 @@ export async function revokeInvitationAction(invitationId: string): Promise<User
     return { ok: false, message: result.error.message };
   }
 
-  revalidatePath("/dashboard/settings");
+  revalidatePath("/dashboard/settings", "layout");
   return { ok: true, message: "Invitacion revocada" };
 }
 
@@ -92,7 +92,7 @@ export async function resendInvitationAction(invitationId: string): Promise<User
     return { ok: false, message: result.error.message };
   }
 
-  revalidatePath("/dashboard/settings");
+  revalidatePath("/dashboard/settings", "layout");
   return { ok: true, message: "Invitacion reenviada" };
 }
 
@@ -110,7 +110,7 @@ export async function updateUserRoleAction(userId: string, role: UserRoleValue):
     return { ok: false, message: result.error.message };
   }
 
-  revalidatePath("/dashboard/settings");
+  revalidatePath("/dashboard/settings", "layout");
   return { ok: true, message: "Rol actualizado" };
 }
 
@@ -128,7 +128,7 @@ export async function updateUserStatusAction(userId: string, isActive: boolean):
     return { ok: false, message: result.error.message };
   }
 
-  revalidatePath("/dashboard/settings");
+  revalidatePath("/dashboard/settings", "layout");
   return { ok: true, message: isActive ? "Usuario activado" : "Usuario desactivado" };
 }
 

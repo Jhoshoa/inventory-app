@@ -291,6 +291,8 @@ async def test_store_get_and_update(client):
     get_response = await client.get("/api/v1/store")
     assert get_response.status_code == 200
     assert get_response.json()["name"] == "Dev Store"
+    # Configuracion muestra la zona horaria (solo lectura).
+    assert get_response.json()["timezone"] == "America/La_Paz"
 
     update_response = await client.patch(
         "/api/v1/store",

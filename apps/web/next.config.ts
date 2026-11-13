@@ -23,6 +23,16 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   compress: true,
   generateEtags: true,
+  // Categorías y lugares pasaron de Configuración a Productos (Fase 3): enlaces viejos.
+  async redirects() {
+    return [
+      { source: "/dashboard/settings/categorias", destination: "/dashboard/products/categorias", permanent: false },
+      { source: "/dashboard/settings/categories", destination: "/dashboard/products/categorias", permanent: false },
+      { source: "/dashboard/settings/lugares", destination: "/dashboard/products/lugares", permanent: false },
+      { source: "/dashboard/settings/ubicaciones", destination: "/dashboard/products/lugares", permanent: false },
+      { source: "/dashboard/settings/locations", destination: "/dashboard/products/lugares", permanent: false },
+    ];
+  },
   async headers() {
     return [
       {

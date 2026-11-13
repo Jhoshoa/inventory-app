@@ -91,6 +91,13 @@ export function MorePage({ session, status }: { session: Session; status: ShellS
           </p>
           {plan ? <p className="mt-0.5 text-xs font-semibold text-status-warning">{plan}</p> : null}
         </div>
+        <Link
+          href="/dashboard/settings/perfil"
+          className="flex min-h-11 items-center justify-between rounded-control border border-app-border px-3 text-sm font-semibold text-text-strong hover:bg-app-surface-muted"
+        >
+          Mi perfil
+          <ChevronRight className="h-4 w-4 text-text-disabled" aria-hidden="true" />
+        </Link>
         <LogoutButton className="w-full">
           <LogOut className="h-4 w-4" aria-hidden="true" />
           Cerrar sesión

@@ -33,6 +33,7 @@ export default async function SalePrintPage({
         name: store.name,
         address: store.address,
         phone: store.phone,
+        logoUrl: store.storefront_logo_url,
       }}
     />
   );

@@ -7,13 +7,13 @@ export function validateInviteCashierForm(values: InviteCashierFormValues): Reco
   const errors: Record<string, string> = {};
 
   if (!values.email.trim()) {
-    errors.email = "El email es requerido";
+    errors.email = "Escribe el correo de la persona";
   } else if (!EMAIL_RE.test(values.email)) {
-    errors.email = "Email invalido";
+    errors.email = "Ese correo no es válido. Ej.: ana@correo.com";
   }
 
   if (values.role !== "owner" && values.role !== "cashier") {
-    errors.role = "Rol invalido";
+    errors.role = "Elige Cajero o Dueño";
   }
 
   return errors;

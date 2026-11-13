@@ -77,10 +77,13 @@ export function StoreImageUploader({
   kind,
   currentUrl,
   onChange,
+  showLabel = true,
 }: {
   kind: StoreImageKind;
   currentUrl: string | null;
   onChange: (url: string | null) => void;
+  /** Sin el título cuando la sección ya lo tiene (Datos de la tienda). */
+  showLabel?: boolean;
 }) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [state, setState] = useState<UploadState>("idle");
@@ -166,7 +169,7 @@ export function StoreImageUploader({
 
   return (
     <div className="space-y-2">
-      <p className="text-sm font-medium text-text-strong">{kind.label}</p>
+      {showLabel ? <p className="text-sm font-medium text-text-strong">{kind.label}</p> : null}
 
       {state === "uploading" ? (
         <div className={`flex ${kind.frameClassName} items-center justify-center rounded-lg border border-app-border bg-app-surface-muted`}>

@@ -49,7 +49,7 @@ export default async function SalesPage({
       initialData={sales.data}
       initialSummary={toSalesSummary(report.ok ? report.data : null, voided.ok ? voided.data.total : null)}
       role={session.role}
-      store={{ name: store?.name ?? "", address: store?.address, phone: store?.phone }}
+      store={{ name: store?.name ?? "", address: store?.address, phone: store?.phone, logoUrl: store?.storefront_logo_url }}
       today={today}
     />
   );
