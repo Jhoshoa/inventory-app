@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Negocios y sucursales · mockups</title><link rel="stylesheet" href="base.css"></head>
+<body><div class="board" style="max-width:980px">
+<header><h1>Negocios, sucursales y personas en varios negocios</h1>
+<p>Mockups del plan <a href="../PLAN.md">docs/negocio-sucursales/PLAN.md</a>. Regla principal: <b>con 1 negocio y 1 sucursal la app se ve y funciona como hoy</b>. Lo nuevo aparece solo si la persona está en varios negocios o sucursales, o si el negocio tiene el plan Multi-sucursal.</p></header>
+
+<div class="card sec" style="padding:18px">
+<div class="h2">Jerarquía</div>
+<pre style="margin:0;font:13px/1.6 ui-monospace,Menlo,monospace;color:var(--body)">Persona (una cuenta)
+  └─ Membresía (Dueño · Encargado · Cajero)  ──>  Negocio (plan, catálogo, precios, personas)
+                                                     └─ Sucursal (stock, caja, ventas, lugares)</pre>
+</div>
+
+<div class="card list">
+  <a class="item" href="M1-Entrar.html"><div class="av">M1</div><div class="grow"><div class="t">Entrar con varios negocios o sucursales</div><div class="xs">Elegir tienda · elegir sucursal · aceptar invitación con una cuenta que ya existe</div></div><span class="badge b-mu">Todos los planes</span><span class="chev-r">›</span></a>
+  <a class="item" href="M2-Donde-estoy.html"><div class="av">M2</div><div class="grow"><div class="t">Saber dónde estoy y cambiar</div><div class="xs">Franja de contexto (solo con varias opciones) · selector · escritorio</div></div><span class="badge b-mu">Todos los planes</span><span class="chev-r">›</span></a>
+  <a class="item" href="M3-Sucursales.html"><div class="av">M3</div><div class="grow"><div class="t">Configuración → Sucursales</div><div class="xs">Sin plan (invitación a mejorar) · lista · nueva sucursal</div></div><span class="badge b-brand">Multi-sucursal</span><span class="chev-r">›</span></a>
+  <a class="item" href="M4-Personas.html"><div class="av">M4</div><div class="grow"><div class="t">Usuarios y permisos con sucursales</div><div class="xs">Rol Encargado · elegir sucursales · invitar a una cuenta existente</div></div><span class="badge b-brand">Multi-sucursal</span><span class="chev-r">›</span></a>
+  <a class="item" href="M5-Stock-por-sucursal.html"><div class="av">M5</div><div class="grow"><div class="t">Stock por sucursal</div><div class="xs">Lista de la sucursal activa · detalle con stock de cada sucursal y en tránsito</div></div><span class="badge b-brand">Multi-sucursal</span><span class="chev-r">›</span></a>
+  <a class="item" href="M6-Transferencias.html"><div class="av">M6</div><div class="grow"><div class="t">Transferencias entre sucursales</div><div class="xs">Lista · nueva · recibir con diferencias · en tránsito y cancelar</div></div><span class="badge b-brand">Multi-sucursal</span><span class="chev-r">›</span></a>
+  <a class="item" href="M7-Reportes.html"><div class="av">M7</div><div class="grow"><div class="t">Reportes por sucursal y consolidado</div><div class="xs">Escritorio con tabla por sucursal · celular</div></div><span class="badge b-brand">Multi-sucursal</span><span class="chev-r">›</span></a>
+  <a class="item" href="M8-Plan.html"><div class="av">M8</div><div class="grow"><div class="t">Plan y pagos</div><div class="xs">Estándar · Multi-sucursal · qué pasa si baja el plan</div></div><span class="badge b-mu">Dueño</span><span class="chev-r">›</span></a>
+</div>
+<p class="xs">Los recuadros naranjas marcan lo nuevo en cada pantalla. Los montos y nombres son de ejemplo.</p>
+</div></body></html>

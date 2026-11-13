@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>M2 · Dónde estoy y cambiar</title><link rel="stylesheet" href="base.css"></head>
+<body><div class="board">
+<header><h1>M2 · Saber dónde estoy y cambiar de tienda o sucursal</h1>
+<p>Plan §5.2. La franja de contexto aparece <b>solo si hay más de una opción</b> (varios negocios o varias sucursales). Con 1 y 1, las pantallas quedan exactamente como hoy (A).</p></header>
+
+<div class="row-frames">
+  <div class="fr"><div class="cap">A · Hoy / 1 negocio y 1 sucursal (sin cambios)</div>
+    <div class="ph">
+      <div class="top"><h1 class="h1">Vender</h1></div>
+      <div class="body">
+        <div class="in ph-t" style="height:52px">Buscar o escanear…</div>
+        <div class="card sec"><div class="h2">Venta actual</div><div class="mu">Todavía no hay productos</div></div>
+      </div>
+      <div class="tabbar"><div class="tab"><span class="ic"></span>Inicio</div><div class="tab"><span class="ic"></span>Productos</div><div class="tab sell on"><span class="ic"></span>Vender</div><div class="tab"><span class="ic"></span>Ventas</div><div class="tab"><span class="ic"></span>Más</div></div>
+    </div></div>
+
+  <div class="fr"><div class="cap">B · Con varias opciones: la franja de contexto</div>
+    <div class="ph">
+      <div class="top"><h1 class="h1">Vender</h1></div>
+      <div class="ctx hl"><span class="dot"></span>Tienda Local · Centro<span class="chev">Cambiar ▾</span></div>
+      <div class="body">
+        <div class="in ph-t" style="height:52px">Buscar o escanear…</div>
+        <div class="card sec"><div class="h2">Venta actual</div><div class="mu">Todavía no hay productos</div></div>
+      </div>
+      <div class="tabbar"><div class="tab"><span class="ic"></span>Inicio</div><div class="tab"><span class="ic"></span>Productos</div><div class="tab sell on"><span class="ic"></span>Vender</div><div class="tab"><span class="ic"></span>Ventas</div><div class="tab"><span class="ic"></span>Más</div></div>
+    </div></div>
+  <div class="note"><b>Franja:</b> 28 px, bajo el título en todas las pantallas del panel. El punto verde = caja abierta en esa sucursal (gris: cerrada). Siempre visible para que un cajero en dos lugares nunca venda en el equivocado. Toque de 44 px (regla 3.7).</div>
+
+  <div class="fr"><div class="cap">C · Cambiar (hoja desde abajo)</div>
+    <div class="ph">
+      <div class="top"><h1 class="h1">Vender</h1></div>
+      <div class="ctx"><span class="dot"></span>Tienda Local · Centro<span class="chev">Cambiar ▾</span></div>
+      <div class="body"></div>
+      <div class="scrim"><div class="sheet">
+        <div class="grab"></div>
+        <div class="h2" style="font-size:17px">Cambiar de tienda o sucursal</div>
+        <div class="xs" style="font-weight:700;text-transform:uppercase;letter-spacing:.04em">Tienda Local</div>
+        <div class="card list">
+          <div class="item"><span class="radio on"></span><div class="grow"><div class="t">Centro</div><div class="xs">Caja abierta desde 08:02</div></div></div>
+          <div class="item"><span class="radio"></span><div class="grow"><div class="t">Miraflores</div><div class="xs">Caja cerrada</div></div></div>
+        </div>
+        <div class="xs" style="font-weight:700;text-transform:uppercase;letter-spacing:.04em">Otras tiendas</div>
+        <div class="card list"><div class="item"><div class="av" style="background:#fef0c7;color:#b54708;width:34px;height:34px">FL</div><div class="grow"><div class="t">Ferretería López</div><div class="xs">Cajera · Centro</div></div><span class="chev-r">›</span></div></div>
+        <div class="alert warn">Tienes 2 ventas sin enviar de Centro. Se envían solas a Centro cuando vuelva internet, aunque cambies.</div>
+      </div></div>
+    </div></div>
+  <div class="note"><b>Cambiar no cierra sesión.</b> Vuelve a cargar los datos de la sucursal elegida (su base sin conexión, Plan §6). El aviso de ventas sin enviar solo aparece si las hay.</div>
+</div>
+
+<div class="row-frames">
+  <div class="fr"><div class="cap">D · Escritorio: el bloque de la tienda abre el mismo selector</div>
+    <div class="desk">
+      <div class="side">
+        <div class="store hl"><div class="av" style="width:34px;height:34px">TL</div><div class="grow" style="flex:1;min-width:0"><div class="t" style="font-weight:800;font-size:14px">Tienda Local</div><div class="xs"><span style="color:var(--ok)">●</span> Centro ▾</div></div></div>
+        <div class="nav on"><span class="ic"></span>Inicio</div><div class="nav"><span class="ic"></span>Vender</div><div class="nav"><span class="ic"></span>Caja</div><div class="nav"><span class="ic"></span>Productos</div><div class="nav"><span class="ic"></span>Ventas</div><div class="nav"><span class="ic"></span>Pedidos</div><div class="nav"><span class="ic"></span>Transferencias <span class="badge b-warn" style="margin-left:auto">1</span></div><div class="nav"><span class="ic"></span>Reportes</div><div class="nav"><span class="ic"></span>Configuración</div>
+      </div>
+      <div class="main">
+        <div><div class="xs">Viernes 13 de noviembre</div><h1 class="h1" style="font-size:26px">Inicio</h1><div class="mu">Centro · Buen día, Rosa.</div></div>
+        <div class="alert info" style="align-items:center"><b>1 transferencia por recibir</b>&nbsp;desde Miraflores (T-0007, 3 productos). <a style="margin-left:auto;font-weight:700">Recibir</a></div>
+        <div class="grid2" style="grid-template-columns:repeat(4,1fr)">
+          <div class="card sec"><div class="xs">Ventas de hoy · Centro</div><div class="kpi">Bs 1.240,00</div></div>
+          <div class="card sec"><div class="xs">Tickets</div><div class="kpi">38</div></div>
+          <div class="card sec"><div class="xs">Stock bajo</div><div class="kpi">4</div></div>
+          <div class="card sec"><div class="xs">Pedidos sin responder</div><div class="kpi">2</div></div>
+        </div>
+      </div>
+    </div></div>
+  <div class="note wide"><b>Escritorio:</b> el bloque de la tienda (ya existe arriba de la barra lateral) muestra la sucursal y abre el mismo selector que C. "Transferencias" aparece en el menú solo con el plan Multi-sucursal. Inicio dice de qué sucursal son los números.</div>
+</div>
+</div></body></html>

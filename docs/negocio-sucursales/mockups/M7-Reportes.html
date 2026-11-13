@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>M7 · Reportes por sucursal</title><link rel="stylesheet" href="base.css"></head>
+<body><div class="board">
+<header><h1>M7 · Reportes por sucursal y consolidado</h1>
+<p>Plan §5.8. Con el plan, Reportes suma un selector de sucursal arriba. "Todas las sucursales" (consolidado) solo para el dueño; el encargado ve sus sucursales.</p></header>
+
+<div class="row-frames">
+  <div class="fr"><div class="cap">A · Escritorio: ventas, todas las sucursales</div>
+    <div class="desk">
+      <div class="side">
+        <div class="store"><div class="av" style="width:34px;height:34px">TL</div><div style="flex:1"><div style="font-weight:800">Tienda Local</div><div class="xs"><span style="color:var(--ok)">●</span> Centro ▾</div></div></div>
+        <div class="nav"><span class="ic"></span>Inicio</div><div class="nav"><span class="ic"></span>Vender</div><div class="nav"><span class="ic"></span>Caja</div><div class="nav"><span class="ic"></span>Productos</div><div class="nav"><span class="ic"></span>Ventas</div><div class="nav"><span class="ic"></span>Pedidos</div><div class="nav"><span class="ic"></span>Transferencias</div><div class="nav on"><span class="ic"></span>Reportes</div><div class="nav"><span class="ic"></span>Configuración</div>
+      </div>
+      <div class="main">
+        <div style="display:flex;align-items:center;gap:12px"><h1 class="h1" style="font-size:26px">Reportes</h1>
+          <div class="in hl" style="margin-left:auto;height:40px;font-weight:700">Todas las sucursales ▾</div>
+          <div class="seg" style="width:300px"><span>Hoy</span><span>7 días</span><span class="on">Mes</span><span>Fechas</span></div></div>
+        <div class="chips"><span class="chip on">Ventas</span><span class="chip">Cierres de caja</span><span class="chip">Movimientos de caja</span><span class="chip">Movimientos de stock</span><span class="chip">Transferencias</span><span class="chip">Descargas</span></div>
+        <div class="grid2" style="grid-template-columns:repeat(4,1fr)">
+          <div class="card sec"><div class="xs">Vendido · noviembre</div><div class="kpi">Bs 48.260</div><span class="badge b-ok" style="align-self:flex-start">↑ 12% vs. octubre</span></div>
+          <div class="card sec"><div class="xs">Tickets</div><div class="kpi">1.384</div></div>
+          <div class="card sec"><div class="xs">Ticket promedio</div><div class="kpi">Bs 34,87</div></div>
+          <div class="card sec"><div class="xs">Anuladas</div><div class="kpi">9</div></div>
+        </div>
+        <div class="card" style="padding:6px 4px">
+          <table class="t"><thead><tr><th>Sucursal</th><th class="n">Vendido</th><th class="n">Tickets</th><th class="n">Ticket prom.</th><th style="width:30%">Parte del total</th><th class="n">Diferencias de caja</th></tr></thead>
+          <tbody>
+            <tr><td><b>Centro</b></td><td class="n">Bs 29.410</td><td class="n">842</td><td class="n">Bs 34,93</td><td><div class="bar" style="width:61%"></div></td><td class="n">− Bs 2,00</td></tr>
+            <tr><td><b>Miraflores</b></td><td class="n">Bs 18.850</td><td class="n">542</td><td class="n">Bs 34,78</td><td><div class="bar" style="width:39%;opacity:.6"></div></td><td class="n">Cuadra</td></tr>
+            <tr class="total"><td>Total</td><td class="n">Bs 48.260</td><td class="n">1.384</td><td class="n">Bs 34,87</td><td></td><td class="n">− Bs 2,00</td></tr>
+          </tbody></table>
+        </div>
+      </div>
+    </div></div>
+  <div class="note wide"><b>Consolidado:</b> la tabla por sucursal aparece solo con "Todas las sucursales". Al elegir una sucursal, Reportes se ve exactamente como hoy pero con sus datos. Las descargas (CSV) suman la columna Sucursal. La pestaña Transferencias lista las de rango con sus diferencias.</div>
+</div>
+
+<div class="row-frames">
+  <div class="fr"><div class="cap">B · Celular: selector de sucursal en Reportes</div>
+    <div class="ph">
+      <div class="top"><h1 class="h1">Reportes</h1></div>
+      <div class="ctx"><span class="dot"></span>Tienda Local · Centro<span class="chev">Cambiar ▾</span></div>
+      <div class="body">
+        <div class="in hl" style="font-weight:700">Todas las sucursales ▾</div>
+        <div class="seg"><span>Hoy</span><span>7 días</span><span class="on">Mes</span><span>Fechas</span></div>
+        <div class="card sec"><div class="xs">Vendido · noviembre</div><div class="kpi">Bs 48.260</div>
+          <div class="item" style="padding:0;min-height:34px"><div class="grow">Centro</div><b>Bs 29.410</b></div>
+          <div class="item" style="padding:0;min-height:34px"><div class="grow">Miraflores</div><b>Bs 18.850</b></div></div>
+        <div class="card list"><div class="item"><div class="grow t">Cierres de caja</div><span class="chev-r">›</span></div><div class="item"><div class="grow t">Transferencias</div><span class="chev-r">›</span></div><div class="item"><div class="grow t">Movimientos de stock</div><span class="chev-r">›</span></div></div>
+      </div>
+      <div class="tabbar"><div class="tab"><span class="ic"></span>Inicio</div><div class="tab"><span class="ic"></span>Productos</div><div class="tab sell"><span class="ic"></span>Vender</div><div class="tab"><span class="ic"></span>Ventas</div><div class="tab on"><span class="ic"></span>Más</div></div>
+    </div></div>
+  <div class="note"><b>La franja de contexto</b> dice dónde trabajas; el selector de Reportes elige <b>qué datos ver</b> (puede ser otra sucursal o todas) sin cambiar dónde vendes. Por defecto, la sucursal activa.</div>
+</div>
+</div></body></html>

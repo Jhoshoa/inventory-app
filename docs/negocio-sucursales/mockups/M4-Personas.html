@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>M4 · Personas y sucursales</title><link rel="stylesheet" href="base.css"></head>
+<body><div class="board">
+<header><h1>M4 · Usuarios y permisos con sucursales</h1>
+<p>Plan §4 y §5.3. Sin el plan, Invitar es igual que hoy (rol Cajero o Dueño). Con el plan se suma el rol Encargado y la elección de sucursales.</p></header>
+
+<div class="row-frames">
+  <div class="fr"><div class="cap">A · Lista con sucursal y rol</div>
+    <div class="ph">
+      <div class="top"><span class="back">‹</span><h1 class="h1">Usuarios y permisos</h1></div>
+      <div class="body">
+        <div class="btn">+ Invitar persona</div>
+        <div class="card list">
+          <div class="item"><div class="av">RQ</div><div class="grow"><div class="t">Rosa Quispe <span class="xs">(tú)</span></div><div class="xs">Todas las sucursales</div></div><span class="badge b-brand">Dueña</span></div>
+          <div class="item"><div class="av">JM</div><div class="grow"><div class="t">Juan Mamani</div><div class="xs">Miraflores</div></div><span class="badge b-warn">Encargado</span></div>
+          <div class="item"><div class="av">AC</div><div class="grow"><div class="t">Ana Choque</div><div class="xs">Centro · Miraflores</div></div><span class="badge b-mu">Cajera</span></div>
+        </div>
+        <div class="card sec"><div class="h2">Invitaciones</div><div class="item" style="padding:0"><div class="grow"><div class="t">beto@correo.com</div><div class="xs">Cajero · Centro · vence en 6 días</div></div><span class="chev-r">⋯</span></div></div>
+      </div>
+    </div></div>
+
+  <div class="fr"><div class="cap">B · Invitar (con el plan)</div>
+    <div class="ph">
+      <div class="top"><h1 class="h1" style="visibility:hidden">.</h1></div>
+      <div class="body"></div>
+      <div class="scrim"><div class="sheet">
+        <div class="grab"></div>
+        <div class="h2" style="font-size:17px">Invitar persona</div>
+        <div><span class="lb">Correo electrónico</span><div class="in">ana@correo.com</div></div>
+        <div class="alert info">Esta persona ya usa Tu Tiendamiga. Va a entrar con su cuenta y verá tu tienda junto a las suyas.</div>
+        <span class="lb" style="margin:0">Rol</span>
+        <div class="grid2" style="grid-template-columns:1fr 1fr 1fr">
+          <div class="card sec" style="padding:10px;border-color:var(--brand);box-shadow:0 0 0 2px var(--brand)"><b>Cajero</b><span class="xs">Vende</span></div>
+          <div class="card sec" style="padding:10px"><b>Encargado</b><span class="xs">Su sucursal: caja, stock, transferencias</span></div>
+          <div class="card sec" style="padding:10px"><b>Dueño</b><span class="xs">Todo</span></div>
+        </div>
+        <span class="lb" style="margin:0">Sucursales</span>
+        <div class="card list">
+          <label class="item"><span class="check on">✓</span><div class="grow t">Centro</div></label>
+          <label class="item"><span class="check">&nbsp;</span><div class="grow t">Miraflores</div></label>
+        </div>
+        <div class="btn">Enviar invitación</div>
+      </div></div>
+    </div></div>
+  <div class="note"><b>Cuenta existente:</b> el aviso azul sale cuando el correo ya tiene cuenta (hoy eso da error). El correo de invitación es el mismo; al aceptar se ve M1-C. <b>Dueño</b> no elige sucursales: tiene todas. Encargado y Cajero, al menos una.</div>
+
+  <div class="fr"><div class="cap">C · Detalle de una persona</div>
+    <div class="ph">
+      <div class="top"><span class="back">‹</span><h1 class="h1">Ana Choque</h1></div>
+      <div class="body">
+        <div class="card sec"><div class="xs">Correo</div><b>ana@correo.com</b><div class="xs">Último ingreso: hoy 08:01 · Centro</div></div>
+        <div class="card sec"><div class="h2">Rol</div><div class="seg"><span class="on">Cajera</span><span>Encargada</span><span>Dueña</span></div></div>
+        <div class="card list"><div class="item"><div class="h2">Sucursales</div></div>
+          <label class="item"><span class="check on">✓</span><div class="grow t">Centro</div></label>
+          <label class="item"><span class="check on">✓</span><div class="grow t">Miraflores</div></label></div>
+        <div class="btn2 btn-danger">Quitar de Tienda Local</div>
+        <div class="xs">Quitarla no borra su cuenta ni sus ventas: deja de ver esta tienda. Si también está en otras tiendas, las sigue viendo.</div>
+      </div>
+    </div></div>
+</div>
+</div></body></html>

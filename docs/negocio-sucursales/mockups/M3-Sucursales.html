@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>M3 · Sucursales</title><link rel="stylesheet" href="base.css"></head>
+<body><div class="board">
+<header><h1>M3 · Configuración → Sucursales</h1>
+<p>Plan §5.4 y §5.10. Sin el plan Multi-sucursal la sección muestra la sucursal única y cómo abrir otra (A). Con el plan, la lista y crear (B, C). En Configuración el ítem aparece en el grupo "Tu negocio".</p></header>
+
+<div class="row-frames">
+  <div class="fr"><div class="cap">A · Sin el plan (1 sucursal)</div>
+    <div class="ph">
+      <div class="top"><span class="back">‹</span><h1 class="h1">Sucursales</h1></div>
+      <div class="body">
+        <div class="card list"><div class="item"><div class="av">C</div><div class="grow"><div class="t">Principal</div><div class="xs">Av. Busch 1240 · 3 personas</div></div><span class="badge b-ok">Caja abierta</span></div></div>
+        <div class="upsell">
+          <b style="font-size:17px">¿Tienes otro local?</b>
+          <span style="opacity:.9">Con el plan <b>Multi-sucursal</b>: un catálogo para todas, stock y caja por sucursal, transferencias y reportes juntos.</span>
+          <div class="btn">Ver plan Multi-sucursal</div>
+        </div>
+        <div class="xs">Tu sucursal se llama "Principal" y usa la dirección de la tienda. Con una sola sucursal no ves nada de esto en el resto de la app.</div>
+      </div>
+    </div></div>
+
+  <div class="fr"><div class="cap">B · Con el plan: lista</div>
+    <div class="ph">
+      <div class="top"><span class="back">‹</span><h1 class="h1">Sucursales</h1><div class="btn sm" style="margin-left:auto">+ Nueva</div></div>
+      <div class="body">
+        <div class="mu">Plan Multi-sucursal · 2 de 3 sucursales</div>
+        <div class="card list">
+          <div class="item"><div class="av">C</div><div class="grow"><div class="t">Centro <span class="badge b-mu">Principal</span></div><div class="xs">Av. Busch 1240 · Hoy Bs 1.240 · 3 personas</div></div><span class="badge b-ok">Abierta</span></div>
+          <div class="item"><div class="av" style="background:#fdf2fa;color:#c11574">M</div><div class="grow"><div class="t">Miraflores</div><div class="xs">Calle 6 #320 · Hoy Bs 860 · 2 personas</div></div><span class="badge b-mu">Cerrada</span></div>
+        </div>
+        <div class="card sec">
+          <div class="h2">Transferencias</div>
+          <label style="display:flex;gap:10px;align-items:flex-start"><span class="check on">✓</span><span><b>Los cajeros pueden recibir</b><br><span class="xs">Si no, solo el dueño y los encargados.</span></span></label>
+        </div>
+      </div>
+    </div></div>
+  <div class="note"><b>Lista:</b> estado de la caja de hoy, ventas del día y personas por sucursal. "Principal" es la primera (no se puede desactivar mientras sea la única). El interruptor responde la decisión D-B3.</div>
+
+  <div class="fr"><div class="cap">C · Nueva sucursal</div>
+    <div class="ph">
+      <div class="top"><span class="back">‹</span><h1 class="h1">Nueva sucursal</h1></div>
+      <div class="body">
+        <div><span class="lb">Nombre</span><div class="in">Sopocachi</div></div>
+        <div><span class="lb">Dirección <span class="xs">(opcional)</span></span><div class="in ph-t">Calle y número</div></div>
+        <div><span class="lb">Teléfono <span class="xs">(opcional)</span></span><div class="in ph-t">+591 7…</div></div>
+        <div class="card sec">
+          <div class="h2">Al crearla</div>
+          <div class="xs">• Todos los productos aparecen con stock 0. Pásale stock con una transferencia o ajustando.<br>• Tiene su propia caja, sus lugares y sus ventas.<br>• Agrega personas desde Usuarios y permisos.</div>
+        </div>
+        <div class="alert info">Tu plan permite 3 sucursales. Esta sería la 3.ª.</div>
+        <div class="btn" style="margin-top:auto">Crear sucursal</div>
+      </div>
+    </div></div>
+  <div class="note"><b>Validaciones:</b> nombre obligatorio y único en el negocio (409 en el campo, como en Productos). Si el plan ya no permite más, el botón lleva a Plan y pagos. Desactivar (en el detalle) exige caja cerrada y stock en 0 o transferido.</div>
+</div>
+</div></body></html>
