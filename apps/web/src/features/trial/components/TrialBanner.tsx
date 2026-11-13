@@ -15,9 +15,9 @@ export function TrialBanner({
     const message =
       graceDaysRemaining !== null && graceDaysRemaining <= 1
         ? graceDaysRemaining === 1
-          ? "Tu suscripcion vence mañana. Actualiza tu metodo de pago para no perder acceso."
+          ? "Tu suscripción vence mañana. Renueva tu plan para no perder acceso."
           : "Tu periodo de gracia ha terminado. Renueva tu plan para recuperar el acceso."
-        : `Tu suscripcion esta vencida. Quedan ${graceDaysRemaining} dias de gracia.`;
+        : `Tu suscripción está vencida. Quedan ${graceDaysRemaining} días de gracia.`;
 
     return (
       <div className="rounded-md border border-status-warningBorder bg-status-warningBg px-4 py-3 text-sm font-medium text-status-warning">
@@ -49,7 +49,7 @@ export function TrialBanner({
     const message =
       daysUntilTrialEnds === 1
         ? "Tu periodo de prueba termina mañana. Adquiere un plan para no perder acceso."
-        : `Tu periodo de prueba termina en ${daysUntilTrialEnds} dias. Adquiere un plan para no perder acceso.`;
+        : `Tu periodo de prueba termina en ${daysUntilTrialEnds} días. Adquiere un plan para no perder acceso.`;
 
     return (
       <div className="rounded-md border border-status-warningBorder bg-status-warningBg px-4 py-3 text-sm font-medium text-status-warning">

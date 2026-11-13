@@ -244,7 +244,7 @@ function VitrinaProducts({ data }: { data: CatalogPageData }) {
           </p>
           {productList.items.length === 0 ? (
             <div className="border-2 border-dashed border-sf-ink bg-white p-12 text-center text-[17px] text-sf-ink">
-              {q ? `No encontramos productos para "${q}".` : "Todavia no hay productos en esta seccion."}
+              {q ? `No encontramos productos para "${q}".` : "Todavía no hay productos en esta sección."}
             </div>
           ) : (
             <ul className="grid grid-cols-2 gap-x-3 gap-y-[18px] sm:grid-cols-[repeat(auto-fill,minmax(200px,1fr))] sm:gap-x-5 sm:gap-y-7">
@@ -294,7 +294,7 @@ export function VitrinaCard({ slug, product }: { slug: string; product: PublicSt
         ) : null}
         {product.available && product.low_stock ? (
           <span className="absolute right-2.5 top-2.5 bg-[#111111] px-1.5 py-0.5 font-receipt text-[10px] font-bold text-white sm:text-[11px]">
-            ULTIMAS UNIDADES
+            ÚLTIMAS UNIDADES
           </span>
         ) : null}
         <PriceSticker
@@ -401,8 +401,8 @@ function ContactSection({ store }: { store: PublicStorefront }) {
           ) : null}
           {settings.address || settings.maps_url ? (
             <div className={card}>
-              <span className="font-receipt text-xs font-bold">DIRECCION</span>
-              <span className="font-display text-[22px]">{settings.address ?? "Ver ubicacion"}</span>
+              <span className="font-receipt text-xs font-bold">DIRECCIÓN</span>
+              <span className="font-display text-[22px]">{settings.address ?? "Ver ubicación"}</span>
               {settings.maps_url ? (
                 <a href={settings.maps_url} target="_blank" rel="noopener noreferrer nofollow" className="text-sm font-bold text-[#111111] hover:underline">
                   Abrir en el mapa →

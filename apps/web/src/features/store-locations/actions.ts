@@ -52,7 +52,7 @@ export async function setProductLocationsAction(
   productId: string,
   items: { location_id: string; kind: ProductLocationKind }[],
 ): Promise<{ ok: boolean; message: string; locations?: ProductLocation[] }> {
-  if (!productId) return { ok: false, message: "Producto invalido" };
+  if (!productId) return { ok: false, message: "Ese producto ya no existe" };
   const token = await getAuthToken();
   const result = await apiRequest<ProductLocation[]>(`/products/${productId}/locations`, {
     method: "PUT",

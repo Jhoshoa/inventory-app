@@ -17,7 +17,7 @@ export async function generateMetadata({
   const store = await getPublicStorefront(slug);
   if (!store) return {};
 
-  const description = store.description ?? `Catalogo de productos de ${store.name}`;
+  const description = store.description ?? `Catálogo de productos de ${store.name}`;
   const image = store.banner_url ?? store.logo_url ?? undefined;
 
   return {

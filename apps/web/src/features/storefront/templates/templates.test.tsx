@@ -88,7 +88,7 @@ describe("Plantilla Vitrina", () => {
     expect(screen.getByRole("heading", { level: 1, name: "Tienda Local" })).toBeInTheDocument();
     expect(screen.getByText("DESTACADOS")).toBeInTheDocument();
     expect(screen.getByText("LUN – SAB 08:00 – 21:00".toLowerCase(), { exact: false })).toBeInTheDocument();
-    expect(screen.getAllByText("ULTIMAS UNIDADES")).toHaveLength(1);
+    expect(screen.getAllByText("ÚLTIMAS UNIDADES")).toHaveLength(1);
     expect(screen.getByRole("button", { name: "Agotado" })).toBeDisabled();
     expect(screen.getByRole("heading", { name: "Pide, paga con QR y listo." })).toBeInTheDocument();
     expect(screen.getByText("Paga con QR y manda el comprobante")).toBeInTheDocument();
@@ -128,9 +128,9 @@ describe("Menu de categorias", () => {
   it("closes after picking a category", async () => {
     const user = userEvent.setup();
     renderInStore(<VitrinaCatalog {...pageData()} />);
-    const menu = screen.getByText("Categorias", { selector: "summary" }).closest("details") as HTMLDetailsElement;
+    const menu = screen.getByText("Categorías", { selector: "summary" }).closest("details") as HTMLDetailsElement;
 
-    await user.click(screen.getByText("Categorias", { selector: "summary" }));
+    await user.click(screen.getByText("Categorías", { selector: "summary" }));
     expect(menu.open).toBe(true);
     await user.click(within(menu).getByRole("link", { name: /Limpieza/ }));
 
@@ -147,7 +147,7 @@ describe("Plantilla Lista de precios", () => {
     const headings = screen.getAllByRole("heading", { level: 2 }).map((h) => h.textContent);
     expect(headings).toEqual(["Lacteos", "Limpieza", "Otros"]);
     expect(screen.getByText("AGOT.")).toBeInTheDocument();
-    expect(screen.getByText("ULTIMAS")).toBeInTheDocument();
+    expect(screen.getByText("ÚLTIMAS")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /^Lacteos/ })).toHaveAttribute("href", "#cat-c-lacteos");
     expect(screen.getByText("PEDIDOS", { exact: false })).toBeInTheDocument();
   });

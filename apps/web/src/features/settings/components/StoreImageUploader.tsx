@@ -37,8 +37,8 @@ export const STORE_IMAGE_KINDS = {
     prompt: "Arrastra o haz clic para subir tu QR",
     frameClassName: "h-40 w-40",
     imageFit: "object-contain",
-    uploadError: "Error al subir el QR",
-    removeError: "Error al quitar el QR",
+    uploadError: "No se pudo subir el QR",
+    removeError: "No se pudo quitar el QR",
   },
   logo: {
     endpoint: "/api/store/storefront-logo",
@@ -49,8 +49,8 @@ export const STORE_IMAGE_KINDS = {
     prompt: "Arrastra o haz clic para subir tu logo",
     frameClassName: "h-28 w-28",
     imageFit: "object-contain",
-    uploadError: "Error al subir el logo",
-    removeError: "Error al quitar el logo",
+    uploadError: "No se pudo subir el logo",
+    removeError: "No se pudo quitar el logo",
   },
   banner: {
     endpoint: "/api/store/storefront-banner",
@@ -61,8 +61,8 @@ export const STORE_IMAGE_KINDS = {
     prompt: "Arrastra o haz clic para subir una imagen horizontal",
     frameClassName: "h-28 w-full max-w-sm",
     imageFit: "object-cover",
-    uploadError: "Error al subir el banner",
-    removeError: "Error al quitar el banner",
+    uploadError: "No se pudo subir la portada",
+    removeError: "No se pudo quitar la portada",
   },
 } satisfies Record<string, StoreImageKind>;
 

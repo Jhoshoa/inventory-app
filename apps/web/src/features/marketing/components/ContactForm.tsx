@@ -58,7 +58,7 @@ export function ContactForm() {
         <Field name="name" label="Tu nombre" error={fieldErrors.name}>
           <Input id="name" name="name" required maxLength={150} placeholder="Ej. Maria Perez" disabled={isSubmitting} />
         </Field>
-        <Field name="phone" label="Telefono / WhatsApp" error={fieldErrors.phone}>
+        <Field name="phone" label="Teléfono / WhatsApp" error={fieldErrors.phone}>
           <PhoneCountryInput
             id="phone"
             name="phone"
@@ -103,9 +103,9 @@ export function ContactForm() {
         {isSubmitting ? "Enviando..." : "Enviar y solicitar demo"}
       </Button>
       <p className="text-xs text-text-muted">
-        Al enviar este formulario aceptas que te contactemos por WhatsApp, telefono o correo. Ver{" "}
+        Al enviar este formulario aceptas que te contactemos por WhatsApp, teléfono o correo. Ver{" "}
         <a href="/legal/privacidad" className="underline hover:text-text-body">
-          politica de privacidad
+          política de privacidad
         </a>
         .
       </p>

@@ -19,6 +19,14 @@ const routes = [
   { path: "/dashboard/sales", name: "sales" },
   { path: "/dashboard/reports", name: "reports" },
   { path: "/dashboard/settings", name: "settings" },
+  // Rediseño (fases 2–7): caja, Más, pestañas de Reportes y secciones de Configuración.
+  { path: "/dashboard/caja", name: "cash" },
+  { path: "/dashboard/mas", name: "more" },
+  { path: "/dashboard/reports/store-days", name: "reports-store-days" },
+  { path: "/dashboard/reports/cash-movements", name: "reports-cash-movements" },
+  { path: "/dashboard/reports/stock-movements", name: "reports-stock-movements" },
+  { path: "/dashboard/settings/tienda", name: "settings-store" },
+  { path: "/dashboard/settings/precios", name: "settings-discounts" },
 ] as const;
 
 const viewports = [
@@ -29,7 +37,7 @@ const viewports = [
   { width: 1440, height: 900, name: "desktop-1440" },
 ] as const;
 
-test.describe("Sprint 1 visual baseline", () => {
+test.describe("visual baseline", () => {
   let mockBackend: Awaited<ReturnType<typeof startVisualMockBackend>>;
 
   test.beforeAll(async () => {

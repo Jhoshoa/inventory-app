@@ -105,8 +105,8 @@ export function sanitizeLocalPhone(countryIso: string, typed: string): string {
 /** Valida el numero internacional que arma PhoneCountryInput; undefined si esta bien. */
 export function validateInternationalPhone(value: string, { required = false } = {}): string | undefined {
   const trimmed = value.trim();
-  if (!trimmed) return required ? "El telefono es requerido" : undefined;
-  if (!/^\+?[\d\s()-]+$/.test(trimmed)) return "El telefono solo puede tener numeros";
+  if (!trimmed) return required ? "Escribe el teléfono" : undefined;
+  if (!/^\+?[\d\s()-]+$/.test(trimmed)) return "El teléfono solo puede tener números";
   let digits = digitsOf(trimmed);
   if (!trimmed.startsWith("+")) {
     // Sin codigo de pais se asume Bolivia, como en el backend.
@@ -116,11 +116,11 @@ export function validateInternationalPhone(value: string, { required = false } =
   if (digits.startsWith(BOLIVIA_DIAL_CODE)) {
     return BOLIVIA_LOCAL_RE.test(digits.slice(BOLIVIA_DIAL_CODE.length))
       ? undefined
-      : "Un numero de Bolivia tiene 8 digitos, ej. 70012345";
+      : "Un número de Bolivia tiene 8 dígitos, ej. 70012345";
   }
   return INTERNATIONAL_RE.test(digits)
     ? undefined
-    : "Revisa el numero: con el codigo de pais debe tener entre 10 y 15 digitos";
+    : "Revisa el número: con el código de país debe tener entre 10 y 15 dígitos";
 }
 
 /** Para mostrar: "+591 70012345". Numeros viejos sin codigo se toman como de Bolivia. */

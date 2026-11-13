@@ -30,7 +30,7 @@ export function AuthShell({ title, description, children, footerText, footerHref
           <p className="text-[34px] font-extrabold leading-tight tracking-tight">Vende, controla tu stock y cierra caja desde el celular.</p>
           <p className="mt-4 text-lg text-white/80">Funciona sin internet y se sincroniza solo.</p>
         </div>
-        <p className="text-sm text-white/70">{BRAND.tagline}</p>
+        <p className="text-sm text-white/80">{BRAND.tagline}</p>
       </aside>
 
       <div className="flex min-h-screen flex-col items-center justify-center px-4 py-10 sm:px-6">
@@ -41,7 +41,7 @@ export function AuthShell({ title, description, children, footerText, footerHref
           {back ? (
             <Link
               href={back.href}
-              className="-ml-1 mb-2 inline-flex min-h-9 items-center gap-0.5 rounded-[10px] pr-2 text-sm font-semibold text-text-muted hover:text-text-strong"
+              className="tap-area -ml-1 mb-2 inline-flex min-h-9 items-center gap-0.5 rounded-[10px] pr-2 text-sm font-semibold text-text-muted hover:text-text-strong"
             >
               <ChevronLeft className="h-4 w-4" aria-hidden="true" />
               {back.label}

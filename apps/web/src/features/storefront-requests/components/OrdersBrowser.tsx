@@ -202,7 +202,7 @@ export function OrdersBrowser({
               role="tab"
               aria-selected={tab === item.value}
               onClick={() => changeTab(item.value)}
-              className={`inline-flex h-[34px] shrink-0 items-center whitespace-nowrap rounded-full border px-3 text-[13px] font-semibold focus:outline-none focus:ring-2 focus:ring-focus max-[359px]:px-2 max-[359px]:text-xs ${
+              className={`tap-area inline-flex h-[34px] shrink-0 items-center whitespace-nowrap rounded-full border px-3 text-[13px] font-semibold focus:outline-none focus:ring-2 focus:ring-focus max-[359px]:px-2 max-[359px]:text-xs ${
                 tab === item.value ? "border-text-strong bg-text-strong text-text-inverse" : "border-app-borderStrong bg-app-surface text-text-body hover:bg-app-surface-muted"
               } ${item.value === "all" && tab !== "all" ? "max-md:hidden" : ""}`}
             >

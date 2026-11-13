@@ -99,7 +99,7 @@ export async function importProductsCsv(file: File): Promise<ImportJob> {
     throw new ApiError({
       status: response.status,
       code: "import_error",
-      message: body.detail || body.message || "Error al importar productos",
+      message: body.detail || body.message || "No se pudieron importar los productos",
     });
   }
 

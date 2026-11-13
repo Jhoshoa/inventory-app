@@ -36,7 +36,7 @@ export function ReportsHeader({
         ) : (
           <Link
             href={sectionHref("ventas", params)}
-            className="-ml-1 mb-1 inline-flex min-h-9 items-center gap-0.5 rounded-[10px] pr-2 text-[13px] font-semibold text-text-muted hover:text-text-strong md:hidden"
+            className="tap-area -ml-1 mb-1 inline-flex min-h-9 items-center gap-0.5 rounded-[10px] pr-2 text-[13px] font-semibold text-text-muted hover:text-text-strong md:hidden"
           >
             <ChevronLeft className="h-4 w-4" aria-hidden="true" />
             Reportes

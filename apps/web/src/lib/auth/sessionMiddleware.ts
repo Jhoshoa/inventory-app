@@ -52,7 +52,7 @@ export async function refreshSessionIfNeeded(request: NextRequest) {
 function sessionExpired(request: NextRequest) {
   const isApi = request.nextUrl.pathname.startsWith("/api/");
   const response = isApi
-    ? NextResponse.json({ message: "Sesion expirada" }, { status: 401 })
+    ? NextResponse.json({ message: "Sesión expirada" }, { status: 401 })
     : NextResponse.redirect(publicUrl(request, "/login?session=expired"));
 
   response.cookies.delete(ACCESS_TOKEN_COOKIE);

@@ -19,7 +19,7 @@ export default function GlobalError({
         <main className="mx-auto flex min-h-screen max-w-3xl items-center px-4 py-10">
           <ErrorState
             title="La app encontro un error"
-            description="Recarga la pagina o vuelve a iniciar sesion si el problema continua."
+            description="Recarga la página o vuelve a entrar si el problema sigue."
             retryLabel="Reintentar"
             onRetry={reset}
             actionHref="/login"

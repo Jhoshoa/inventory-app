@@ -507,3 +507,21 @@ describe("product discounts offline", () => {
     expect(product?.effective_price).toBe("9.00");
   });
 });
+
+describe("pullCatalog en paralelo", () => {
+  it("una sola descarga aunque la pidan el marco y Vender a la vez", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ changes: [], server_time: "2026-11-13T12:00:00Z" }), {
+        status: 200,
+        headers: { "content-type": "application/json" },
+      }),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+    try {
+      await Promise.all([pullCatalog(), pullCatalog(), pullCatalog()]);
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+});

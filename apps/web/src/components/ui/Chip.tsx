@@ -20,7 +20,7 @@ export function Chip({
       aria-pressed={pressed}
       onClick={onClick}
       disabled={disabled}
-      className={`inline-flex h-[34px] shrink-0 items-center whitespace-nowrap rounded-full border px-3 text-[13px] font-semibold max-[359px]:px-2.5 max-[359px]:text-xs focus:outline-none focus:ring-2 focus:ring-focus disabled:cursor-not-allowed disabled:opacity-50 ${
+      className={`tap-area inline-flex h-[34px] shrink-0 items-center whitespace-nowrap rounded-full border px-3 text-[13px] font-semibold max-[359px]:px-2.5 max-[359px]:text-xs focus:outline-none focus:ring-2 focus:ring-focus disabled:cursor-not-allowed disabled:opacity-50 ${
         pressed ? "border-text-strong bg-text-strong text-text-inverse" : "border-app-borderStrong bg-app-surface text-text-body hover:bg-app-surface-muted"
       } ${className}`}
     >

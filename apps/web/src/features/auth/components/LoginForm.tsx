@@ -112,7 +112,7 @@ export function LoginForm({
         />
         <FieldError id="password-error" message={errors.password} />
         <div className="text-right">
-          <Link href="/forgot-password" className="text-sm font-semibold text-brand-700 underline-offset-4 hover:underline">
+          <Link href="/forgot-password" className="tap-area text-sm font-semibold text-brand-700 underline-offset-4 hover:underline">
             ¿Olvidaste tu contraseña?
           </Link>
         </div>

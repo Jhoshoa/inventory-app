@@ -110,7 +110,7 @@ export function BoletaReceipt({
 
         {lines.length === 0 ? (
           <p className="py-4 text-center text-sf-muted">
-            Todavia no agregaste nada.
+            Todavía no agregaste nada.
             <br />
             Elige productos y envia tu pedido por WhatsApp.
           </p>
@@ -191,7 +191,7 @@ export function BoletaReceipt({
           ) : chosenDelivery ? (
             <p>
               <span className="font-bold">Entrega:</span>{" "}
-              {chosenDelivery === "pickup" ? "recoges en la tienda." : "envio a domicilio (pon tu direccion en la nota)."}
+              {chosenDelivery === "pickup" ? "recoges en la tienda." : "envío a domicilio (pon tu dirección en la nota)."}
             </p>
           ) : null}
 
@@ -236,7 +236,7 @@ export function BoletaReceipt({
               name="note"
               maxLength={500}
               rows={2}
-              placeholder={chosenDelivery === "delivery" ? "Tu direccion y alguna referencia" : "A que hora pasas, alguna aclaracion..."}
+              placeholder={chosenDelivery === "delivery" ? "Tu dirección y alguna referencia" : "A qué hora pasas, alguna aclaración…"}
               disabled={isSubmitting}
               className={`mt-1.5 resize-none ${inputClass}`}
             />
@@ -296,7 +296,7 @@ export function BoletaSent({
         ENVIADO!
       </div>
       <p className="mx-auto mt-5 max-w-xs text-[15px] leading-normal text-[#3A3A38]">
-        {store.name} recibio tu pedido. Envialo tambien por WhatsApp para que lo confirmen rapido.
+        {store.name} recibió tu pedido. Envíalo también por WhatsApp para que lo confirmen rápido.
       </p>
       <div className="mt-5 border-2 border-[#111111] bg-white p-4">
         <p className="font-receipt text-xs font-bold">MONTO A PAGAR</p>
@@ -339,7 +339,7 @@ export function BoletaSent({
           onClick={onBack}
           className="rounded-[14px] border-2 border-[#111111] bg-white p-3.5 text-[15px] font-bold hover:opacity-90"
         >
-          Volver al catalogo
+          Volver al catálogo
         </button>
       </div>
     </div>

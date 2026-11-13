@@ -1,6 +1,6 @@
 export function MarketingSkeleton() {
   return (
-    <div className="mx-auto max-w-7xl space-y-10 px-4 py-16 sm:px-6 lg:px-8" aria-label="Cargando pagina" role="status">
+    <div className="mx-auto max-w-7xl space-y-10 px-4 py-16 sm:px-6 lg:px-8" aria-label="Cargando página" role="status">
       <div className="mx-auto max-w-2xl space-y-4 text-center">
         <div className="mx-auto h-4 w-32 animate-pulse rounded bg-app-surface-muted" />
         <div className="mx-auto h-10 w-full animate-pulse rounded bg-app-surface-muted" />

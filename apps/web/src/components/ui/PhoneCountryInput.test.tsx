@@ -12,7 +12,7 @@ describe("PhoneCountryInput", () => {
     const user = userEvent.setup();
     const { container } = render(<PhoneCountryInput id="phone" name="phone" />);
 
-    expect(screen.getByLabelText("Codigo de pais")).toHaveValue("BO");
+    expect(screen.getByLabelText("Código de país")).toHaveValue("BO");
     const input = screen.getByRole("textbox");
     expect(input).toHaveAttribute("inputmode", "numeric");
 
@@ -40,7 +40,7 @@ describe("PhoneCountryInput", () => {
     const user = userEvent.setup();
     const { container } = render(<PhoneCountryInput id="phone" name="phone" />);
 
-    await user.selectOptions(screen.getByLabelText("Codigo de pais"), "AR");
+    await user.selectOptions(screen.getByLabelText("Código de país"), "AR");
     await user.type(screen.getByRole("textbox"), "91123456789");
 
     expect(hiddenValue(container)).toBe("5491123456789");

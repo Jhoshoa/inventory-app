@@ -4,7 +4,7 @@ export function validateStoreDayNote(value: FormDataEntryValue | null) {
   if (value === null) return "";
   if (typeof value !== "string") return "";
   const note = value.trim();
-  if (note.length > 255) return "La nota debe tener maximo 255 caracteres";
+  if (note.length > 255) return "La nota debe tener máximo 255 caracteres";
   return "";
 }
 
@@ -51,7 +51,7 @@ const cashMovementTypes = new Set(["cash_in", "cash_out", "expense", "deposit", 
 
 export function validateCashMovementType(value: FormDataEntryValue | null) {
   if (typeof value !== "string" || !cashMovementTypes.has(value)) {
-    return "Tipo de movimiento no es valido";
+    return "Elige si es entrada o salida";
   }
   return "";
 }

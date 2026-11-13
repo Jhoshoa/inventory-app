@@ -132,7 +132,7 @@ export function FeaturedProductsPicker({
       )}
 
       {isFull ? (
-        <p className="text-xs text-text-muted">Llegaste al maximo de {MAX_FEATURED_PRODUCTS} productos destacados.</p>
+        <p className="text-xs text-text-muted">Llegaste al máximo de {MAX_FEATURED_PRODUCTS} productos destacados.</p>
       ) : (
         <div className="space-y-2">
           <div className="relative">

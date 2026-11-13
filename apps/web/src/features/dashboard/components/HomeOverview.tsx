@@ -160,7 +160,7 @@ function PhoneStatusChips({ cash, pendingOrders }: { cash: ShellStatus["cash"]; 
       {cash ? (
         <Link
           href="/dashboard/caja"
-          className={`inline-flex min-h-8 items-center gap-1.5 rounded-full border px-3 text-xs font-bold ${
+          className={`tap-area inline-flex min-h-8 items-center gap-1.5 rounded-full border px-3 text-xs font-bold ${
             cash.isOpen
               ? "border-status-successBorder bg-status-successBg text-status-success"
               : "border-app-borderStrong bg-app-surface text-text-body"
@@ -173,7 +173,7 @@ function PhoneStatusChips({ cash, pendingOrders }: { cash: ShellStatus["cash"]; 
       {pendingOrders ? (
         <Link
           href="/dashboard/solicitudes"
-          className="inline-flex min-h-8 items-center rounded-full border border-status-warningBorder bg-status-warningBg px-3 text-xs font-bold text-status-warning"
+          className="tap-area inline-flex min-h-8 items-center rounded-full border border-status-warningBorder bg-status-warningBg px-3 text-xs font-bold text-status-warning"
         >
           {pendingOrders} {pendingOrders === 1 ? "pedido" : "pedidos"}
         </Link>
@@ -192,7 +192,7 @@ function PeriodTabs({ period }: { period: HomePeriod }) {
             key={option.value}
             href={option.value === "today" ? "/dashboard" : `/dashboard?scope=${option.value}`}
             aria-current={active ? "page" : undefined}
-            className={`rounded-lg px-3.5 py-2 text-[13px] font-semibold ${
+            className={`tap-area rounded-lg px-3.5 py-2 text-[13px] font-semibold ${
               active ? "bg-app-surface text-text-strong shadow-sm" : "text-text-muted hover:text-text-strong"
             }`}
           >
@@ -380,7 +380,7 @@ function LatestSales({ sales }: { sales: DashboardSale[] }) {
         <h2 id="ultimas-ventas" className="text-base font-bold text-text-strong">
           Últimas ventas
         </h2>
-        <Link href="/dashboard/sales" className="inline-flex items-center gap-1 text-[13px] font-semibold text-brand-700">
+        <Link href="/dashboard/sales" className="tap-area inline-flex items-center gap-1 text-[13px] font-semibold text-brand-700">
           Ver todas <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
         </Link>
       </div>

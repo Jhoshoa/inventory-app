@@ -48,16 +48,16 @@ describe("phone validation (same rules as the backend)", () => {
     ["59122123456", undefined],
     ["5491123456789", undefined],
     ["", undefined],
-    ["5917001234", "Un numero de Bolivia tiene 8 digitos, ej. 70012345"],
-    ["59190012345", "Un numero de Bolivia tiene 8 digitos, ej. 70012345"],
-    ["59170o12345", "El telefono solo puede tener numeros"],
-    ["123456", "Revisa el numero: con el codigo de pais debe tener entre 10 y 15 digitos"],
+    ["5917001234", "Un número de Bolivia tiene 8 dígitos, ej. 70012345"],
+    ["59190012345", "Un número de Bolivia tiene 8 dígitos, ej. 70012345"],
+    ["59170o12345", "El teléfono solo puede tener números"],
+    ["123456", "Revisa el número: con el código de país debe tener entre 10 y 15 dígitos"],
   ])("%s -> %s", (value, error) => {
     expect(validateInternationalPhone(value)).toBe(error);
   });
 
   it("can require a number", () => {
-    expect(validateInternationalPhone(" ", { required: true })).toBe("El telefono es requerido");
+    expect(validateInternationalPhone(" ", { required: true })).toBe("Escribe el teléfono");
   });
 });
 

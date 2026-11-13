@@ -37,7 +37,7 @@ export default async function StoreDayCloseReportPage({ params }: { params: Prom
       <header>
         <Link
           href="/dashboard/reports/store-days"
-          className="-ml-1 mb-1 inline-flex min-h-9 items-center gap-0.5 rounded-[10px] pr-2 text-[13px] font-semibold text-text-muted hover:text-text-strong"
+          className="tap-area -ml-1 mb-1 inline-flex min-h-9 items-center gap-0.5 rounded-[10px] pr-2 text-[13px] font-semibold text-text-muted hover:text-text-strong"
         >
           <ChevronLeft className="h-4 w-4" aria-hidden="true" />
           Cierres de caja

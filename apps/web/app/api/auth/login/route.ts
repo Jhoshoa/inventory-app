@@ -21,7 +21,7 @@ export async function POST(request: Request) {
     }
 
     return NextResponse.json(
-      { message: "No se pudo iniciar sesion" },
+      { message: "No se pudo iniciar sesión" },
       { status: 500 },
     );
   }

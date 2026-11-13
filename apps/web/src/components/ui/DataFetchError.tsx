@@ -21,7 +21,7 @@ export function DataFetchError({
           No se pudo cargar {resource}
         </p>
         <p className="mt-0.5 text-xs text-status-warning/80">
-          {error}. Intenta recargar la pagina o verifica tu conexion.
+          {error}. Intenta recargar la página o verifica tu conexión.
         </p>
         {onRetry ? (
           <Button variant="secondary" className="mt-2 h-8 text-xs" onClick={onRetry}>

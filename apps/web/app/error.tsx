@@ -16,7 +16,7 @@ export default function RootError({
     <main className="mx-auto flex min-h-screen max-w-3xl items-center px-4 py-10">
       <ErrorState
         title="No se pudo cargar la app"
-        description="Ocurrio un error inesperado en la interfaz."
+        description="Algo falló al mostrar esta pantalla. Recarga la página."
         retryLabel="Reintentar"
         onRetry={reset}
         actionHref="/login"

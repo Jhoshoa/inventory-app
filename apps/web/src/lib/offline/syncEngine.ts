@@ -1,6 +1,7 @@
 import type { ProductLocationSummary } from "@/features/store-locations/types";
 import { getDeviceId } from "./deviceId";
 import { getOfflineDb, LAST_PULLED_AT_KEY, type OfflineProduct, type PendingSale } from "./db";
+import { randomUuid } from "./uuid";
 
 interface SyncChangePayload {
   client_change_id: string;
@@ -43,7 +44,20 @@ interface SyncPullResponse {
 
 const EPOCH = "1970-01-01T00:00:00.000Z";
 
-export async function pullCatalog(): Promise<{ ok: boolean; updated: number }> {
+// Igual que el envío: una sola descarga a la vez en esta pestaña. El marco y Vender la
+// pedían juntos al abrir la página (y la descarga repetía lo mismo).
+let pullInFlight: Promise<{ ok: boolean; updated: number }> | null = null;
+
+export function pullCatalog(): Promise<{ ok: boolean; updated: number }> {
+  if (!pullInFlight) {
+    pullInFlight = pullCatalogOnce().finally(() => {
+      pullInFlight = null;
+    });
+  }
+  return pullInFlight;
+}
+
+async function pullCatalogOnce(): Promise<{ ok: boolean; updated: number }> {
   const db = getOfflineDb();
   const lastPulledRow = await db.meta.get(LAST_PULLED_AT_KEY);
   const since = lastPulledRow?.value ?? EPOCH;
@@ -158,7 +172,7 @@ export interface QueueSaleInput {
 export async function queueSale(input: QueueSaleInput): Promise<PendingSale> {
   const db = getOfflineDb();
   const sale: PendingSale = {
-    id: crypto.randomUUID(),
+    id: randomUuid(),
     items: input.items,
     payment_method: input.paymentMethod,
     customer_name: input.customerName,

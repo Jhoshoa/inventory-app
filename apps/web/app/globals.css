@@ -176,3 +176,19 @@ body {
 .marketing-details > summary::-webkit-details-marker {
   display: none;
 }
+
+/* Toque de 44 px (regla 3.7) sin cambiar el tamaño que se ve: chips de 34 px, enlaces de texto. */
+@layer utilities {
+  .tap-area {
+    position: relative;
+  }
+  .tap-area::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    height: max(100%, 44px);
+    transform: translateY(-50%);
+  }
+}

@@ -123,7 +123,7 @@ export function ProductDetail({
     <div className="flex flex-col gap-4 pb-4">
       <div className="flex items-center justify-between gap-2">
         <nav aria-label="Ruta" className="flex min-w-0 items-center gap-1 text-[13px] font-semibold text-text-muted">
-          <Link href="/dashboard/products" className="inline-flex items-center hover:text-text-strong">
+          <Link href="/dashboard/products" className="tap-area inline-flex items-center hover:text-text-strong">
             <ChevronLeft className="h-4 w-4 sm:hidden" aria-hidden="true" />
             Productos
           </Link>
@@ -342,7 +342,7 @@ export function ProductDetail({
             action={
               <Link
                 href={`/dashboard/reports/stock-movements?product_id=${encodeURIComponent(product.id)}`}
-                className="text-sm font-bold text-brand-700 hover:underline"
+                className="tap-area text-sm font-bold text-brand-700 hover:underline"
               >
                 Ver todos
               </Link>

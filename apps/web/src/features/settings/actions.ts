@@ -43,7 +43,7 @@ export async function updateStoreAction(
   }
 
   const token = await getAuthToken();
-  if (!token) return { ok: false, message: "Sesion no valida", fieldErrors: {} };
+  if (!token) return { ok: false, message: "Tu sesión terminó. Vuelve a entrar.", fieldErrors: {} };
 
   // address/phone se envian siempre (incluso vacios) para permitir borrarlos;
   // omitir la clave cuando estan vacios impediria limpiar un valor ya guardado,
@@ -104,7 +104,7 @@ export async function updateDiscountPolicyAction(
   }
 
   const token = await getAuthToken();
-  if (!token) return { ok: false, message: "Sesion no valida", fieldErrors: {} };
+  if (!token) return { ok: false, message: "Tu sesión terminó. Vuelve a entrar.", fieldErrors: {} };
 
   const result = await apiRequest<StoreResponse>("/store", {
     method: "PATCH",
@@ -148,7 +148,7 @@ export async function updateStorefrontAction(
   }
 
   const token = await getAuthToken();
-  if (!token) return { ok: false, message: "Sesion no valida", fieldErrors: {} };
+  if (!token) return { ok: false, message: "Tu sesión terminó. Vuelve a entrar.", fieldErrors: {} };
 
   const result = await apiRequest<StoreResponse>("/store", {
     method: "PATCH",
@@ -181,7 +181,7 @@ export async function updateStorefrontAction(
   if (result.data.storefront_slug) {
     revalidateTag(storefrontCacheTag(result.data.storefront_slug));
   }
-  return { ok: true, message: "Catalogo publico actualizado", fieldErrors: {} };
+  return { ok: true, message: "Catálogo público actualizado", fieldErrors: {} };
 }
 
 function text(formData: FormData, name: string): string | null {
@@ -265,7 +265,7 @@ interface CheckoutResponse {
 
 export async function requestCheckoutAction(): Promise<CheckoutState> {
   const token = await getAuthToken();
-  if (!token) return { ok: false, message: "Sesion no valida" };
+  if (!token) return { ok: false, message: "Tu sesión terminó. Vuelve a entrar." };
 
   const result = await apiRequest<CheckoutResponse>("/billing/checkout", {
     method: "POST",

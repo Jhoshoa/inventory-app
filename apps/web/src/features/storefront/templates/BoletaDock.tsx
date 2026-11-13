@@ -94,7 +94,7 @@ export function BoletaBar({
           <button
             type="button"
             onClick={close}
-            aria-label="Volver al catalogo"
+            aria-label="Volver al catálogo"
             className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-lg font-bold text-[#111111]"
           >
             ←

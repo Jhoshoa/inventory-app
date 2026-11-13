@@ -13,14 +13,14 @@ export default function OfflinePage() {
         <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-app-surface-muted text-text-muted">
           <WifiOff className="h-6 w-6" aria-hidden="true" />
         </div>
-        <h1 className="mt-4 text-xl font-semibold text-text-strong">Sin conexion</h1>
+        <h1 className="mt-4 text-xl font-semibold text-text-strong">Sin conexión</h1>
         <p className="mt-2 text-sm text-text-muted">
-          No se pudo cargar esta pagina porque no hay conexion a internet y todavia no
+          No se pudo cargar esta página porque no hay conexión a internet y todavía no
           esta disponible en cache en este dispositivo.
         </p>
         <p className="mt-2 text-sm text-text-muted">
           Si estabas vendiendo en el punto de venta, las ventas ya realizadas quedaron
-          guardadas en este dispositivo y se enviaran automaticamente cuando vuelva la conexion.
+          guardadas en este dispositivo y se enviarán automáticamente cuando vuelva la conexión.
         </p>
         <p className="mt-6 text-xs text-text-muted">{BRAND.name}</p>
       </section>

@@ -68,8 +68,8 @@ export function CategoryPicker(props: CategoryPickerProps) {
           }`}
         >
           <span className="min-w-0 truncate">
-            <span className="sr-only">Categoria: </span>
-            {activeItem?.name ?? "Categorias"}
+            <span className="sr-only">Categoría: </span>
+            {activeItem?.name ?? "Categorías"}
           </span>
           <span className="flex shrink-0 items-center font-receipt text-xs text-sf-muted">
             <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
@@ -80,7 +80,7 @@ export function CategoryPicker(props: CategoryPickerProps) {
       ) : null}
 
       <nav
-        aria-label="Categorias"
+        aria-label="Categorías"
         className={`flex-wrap gap-1.5 sm:gap-2 ${compactOnMobile ? "hidden sm:flex" : "flex"}`}
       >
         {allItem ? (
@@ -200,7 +200,7 @@ function CategorySheet({
         <div className="flex items-center justify-between gap-3 px-4 pb-2 pt-4">
           {/* El cn del Dialog solo concatena: "!" para ganarle a su padding. */}
           <DialogTitle className="!p-0">
-            <span className="font-display text-xl font-normal uppercase text-sf-ink">Categorias</span>
+            <span className="font-display text-xl font-normal uppercase text-sf-ink">Categorías</span>
           </DialogTitle>
           <button
             type="button"
@@ -214,14 +214,14 @@ function CategorySheet({
         {items.length > FILTER_FROM ? (
           <div className="px-4 pb-2">
             <label htmlFor="category-filter" className="sr-only">
-              Buscar categoria
+              Buscar categoría
             </label>
             <input
               id="category-filter"
               type="search"
               value={filter}
               onChange={(event) => setFilter(event.target.value)}
-              placeholder="Buscar categoria…"
+              placeholder="Buscar categoría…"
               enterKeyHint="search"
               className="w-full rounded-full border-2 border-sf-ink px-4 py-2.5 text-base outline-none transition-shadow focus:shadow-[3px_3px_0_var(--sf-ink)]"
             />
@@ -249,7 +249,7 @@ function CategorySheet({
               </ChipLink>
             </li>
           ))}
-          {shown.length === 0 ? <li className="px-4 py-6 text-center text-sm text-sf-muted">Ninguna categoria con ese nombre.</li> : null}
+          {shown.length === 0 ? <li className="px-4 py-6 text-center text-sm text-sf-muted">Ninguna categoría con ese nombre.</li> : null}
         </ul>
       </div>
     </Dialog>

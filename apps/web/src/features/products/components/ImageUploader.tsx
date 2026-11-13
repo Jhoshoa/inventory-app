@@ -202,7 +202,7 @@ export function ImageUploader({
       } catch (error) {
         if (controller.signal.aborted) return;
         setErrorMessage(
-          error instanceof Error ? error.message : "Error al subir imagen",
+          error instanceof Error ? error.message : "No se pudo subir la foto",
         );
         setState("error");
       }
@@ -352,7 +352,7 @@ export function ImageUploader({
     } catch (error) {
       if (controller.signal.aborted) return;
       setErrorMessage(
-        error instanceof Error ? error.message : "Error al eliminar imagen",
+        error instanceof Error ? error.message : "No se pudo quitar la foto",
       );
       setState("error");
     }

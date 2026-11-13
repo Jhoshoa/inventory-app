@@ -51,7 +51,7 @@ describe("SyncConflictsDialog", () => {
   it("shows an empty state when there are no conflicted sales", async () => {
     render(<SyncConflictsDialog open onOpenChange={vi.fn()} />);
 
-    expect(await screen.findByText("No hay ventas pendientes de revision")).toBeInTheDocument();
+    expect(await screen.findByText("No hay ventas por revisar")).toBeInTheDocument();
   });
 
   it("lists a conflicted sale with its error and lets the user discard it, restoring stock", async () => {
@@ -60,14 +60,14 @@ describe("SyncConflictsDialog", () => {
     const onResolved = vi.fn();
     render(<SyncConflictsDialog open onOpenChange={vi.fn()} onResolved={onResolved} />);
 
-    expect(await screen.findByText(/Arroz x3/)).toBeInTheDocument();
+    expect(await screen.findByText(/3 × Arroz/)).toBeInTheDocument();
     expect(screen.getByText(/Stock insuficiente/)).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "Descartar" }));
-    const confirmDialog = screen.getByRole("dialog", { name: "Descartar venta" });
-    await user.click(within(confirmDialog).getByRole("button", { name: "Descartar" }));
+    const confirmDialog = screen.getByRole("dialog", { name: "¿Descartar esta venta?" });
+    await user.click(within(confirmDialog).getByRole("button", { name: "Descartar venta" }));
 
-    await waitFor(() => expect(screen.getByText("No hay ventas pendientes de revision")).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText("No hay ventas por revisar")).toBeInTheDocument());
     expect(onResolved).toHaveBeenCalled();
 
     const db = getOfflineDb();
@@ -101,9 +101,9 @@ describe("SyncConflictsDialog", () => {
     const user = userEvent.setup();
     render(<SyncConflictsDialog open onOpenChange={vi.fn()} />);
 
-    await screen.findByText(/Arroz x3/);
+    await screen.findByText(/3 × Arroz/);
     await user.click(screen.getByRole("button", { name: "Reintentar" }));
 
-    await waitFor(() => expect(screen.getByText("No hay ventas pendientes de revision")).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText("No hay ventas por revisar")).toBeInTheDocument());
   });
 });

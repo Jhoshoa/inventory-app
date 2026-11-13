@@ -237,8 +237,8 @@ describe("updateStorefrontAction", () => {
   });
 
   it.each([
-    ["7000abc0", "El telefono solo puede tener numeros"],
-    ["5917000000", "Un numero de Bolivia tiene 8 digitos, ej. 70012345"],
+    ["7000abc0", "El teléfono solo puede tener números"],
+    ["5917000000", "Un número de Bolivia tiene 8 dígitos, ej. 70012345"],
   ])("rejects the WhatsApp number %s", async (whatsapp, message) => {
     const formData = buildFormData({ storefront_whatsapp: whatsapp });
 
