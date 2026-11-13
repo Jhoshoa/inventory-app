@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>M5 · Stock por sucursal</title><link rel="stylesheet" href="base.css"></head>
+<body><div class="board">
+<header><h1>M5 · Stock por sucursal</h1>
+<p>Plan §5.5. La lista de Productos y Vender muestran el stock de la <b>sucursal activa</b> (sin cambios visibles). El detalle del producto suma "Stock por sucursal" para dueño y encargado, solo con el plan.</p></header>
+
+<div class="row-frames">
+  <div class="fr"><div class="cap">A · Lista de productos (sucursal activa)</div>
+    <div class="ph">
+      <div class="top"><h1 class="h1">Productos</h1></div>
+      <div class="ctx"><span class="dot"></span>Tienda Local · Centro<span class="chev">Cambiar ▾</span></div>
+      <div class="body">
+        <div class="in ph-t">Buscar o escanear</div>
+        <div class="chips"><span class="chip on">Todos</span><span class="chip">Stock bajo · 3</span><span class="chip">Por vencer · 1</span></div>
+        <div class="card list">
+          <div class="item"><div class="av">AF</div><div class="grow"><div class="t">Aceite Fino 1l</div><div class="xs">Abarrotes · Pasillo 1 · B</div></div><div style="text-align:right"><span class="badge b-ok">42 u.</span><div style="font-weight:800">Bs 18,00</div></div></div>
+          <div class="item"><div class="av">AG</div><div class="grow"><div class="t">Arroz Grano De Oro 1kg</div><div class="xs">Abarrotes</div></div><div style="text-align:right"><span class="badge b-warn">Quedan 3</span><div style="font-weight:800">Bs 12,50</div></div></div>
+          <div class="item"><div class="av">CC</div><div class="grow"><div class="t">Coca Cola 2l</div><div class="xs">Bebidas</div></div><div style="text-align:right"><span class="badge b-bad">Sin stock</span><div style="font-weight:800">Bs 14,00</div></div></div>
+        </div>
+      </div>
+      <div class="tabbar"><div class="tab"><span class="ic"></span>Inicio</div><div class="tab on"><span class="ic"></span>Productos</div><div class="tab sell"><span class="ic"></span>Vender</div><div class="tab"><span class="ic"></span>Ventas</div><div class="tab"><span class="ic"></span>Más</div></div>
+    </div></div>
+  <div class="note"><b>Igual que hoy</b>, pero el stock, los filtros (Stock bajo, Por vencer) y los lugares son de la sucursal activa. El precio es el mismo en todas (Plan §3, punto 2).</div>
+
+  <div class="fr"><div class="cap">B · Detalle: stock por sucursal</div>
+    <div class="ph">
+      <div class="top"><span class="back">‹</span><h1 class="h1">Arroz Grano De Oro 1kg</h1></div>
+      <div class="body">
+        <div class="grid2"><div class="card sec"><div class="xs">Precio</div><div class="kpi">Bs 12,50</div></div><div class="card sec"><div class="xs">Stock en Centro</div><div class="kpi">3 u.</div><span class="badge b-warn" style="align-self:flex-start">Bajo (mín. 5)</span></div></div>
+        <div class="card sec hl">
+          <div style="display:flex;align-items:center"><div class="h2">Stock por sucursal</div><span class="xs" style="margin-left:auto">Total 61 u.</span></div>
+          <div class="item" style="padding:0;min-height:40px"><div class="grow"><b>Centro</b> <span class="xs">(aquí)</span></div><span class="badge b-warn">3 u.</span></div>
+          <div class="item" style="padding:0;min-height:40px"><div class="grow"><b>Miraflores</b></div><span class="badge b-ok">58 u.</span></div>
+          <div class="item" style="padding:0;min-height:40px"><div class="grow"><b>En tránsito</b> <span class="xs">T-0007 → Centro</span></div><span class="badge b-brand">10 u.</span></div>
+          <div class="btn2">Pedir a Miraflores (transferir)</div>
+        </div>
+        <div class="card sec"><div class="h2">Lotes y vencimientos · Centro</div><div class="xs">Lote del 02/12: 3 u. · vence en 19 días</div></div>
+      </div>
+    </div></div>
+  <div class="note"><b>Solo con el plan</b> y solo para dueño y encargado (el cajero ve únicamente su sucursal, como hoy). "En tránsito" no se puede vender en ninguna sucursal. "Pedir a Miraflores" abre Nueva transferencia (M6-B) con el producto ya puesto.</div>
+</div>
+</div></body></html>

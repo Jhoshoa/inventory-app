@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>M6 · Transferencias</title><link rel="stylesheet" href="base.css"></head>
+<body><div class="board">
+<header><h1>M6 · Transferencias entre sucursales</h1>
+<p>Plan §5.6. Estados: <b>Borrador → Enviada (en tránsito) → Recibida</b>, o <b>Cancelada</b> antes de recibir. Solo con el plan Multi-sucursal. Necesita conexión.</p></header>
+
+<div class="row-frames">
+  <div class="fr"><div class="cap">A · Lista</div>
+    <div class="ph">
+      <div class="top"><span class="back">‹</span><h1 class="h1">Transferencias</h1><div class="btn sm" style="margin-left:auto">+ Nueva</div></div>
+      <div class="body">
+        <div class="chips"><span class="chip on">Por recibir · 1</span><span class="chip">Enviadas · 2</span><span class="chip">Todas</span></div>
+        <div class="card list">
+          <div class="item"><div class="grow"><div class="t">T-0007 · Miraflores → Centro</div><div class="xs">3 productos · 25 u. · enviada hoy 10:12 por Juan</div></div><span class="badge b-warn">Por recibir</span></div>
+          <div class="item"><div class="grow"><div class="t">T-0006 · Centro → Miraflores</div><div class="xs">1 producto · 12 u. · recibida ayer con 1 faltante</div></div><span class="badge b-bad">Con diferencia</span></div>
+          <div class="item"><div class="grow"><div class="t">T-0005 · Centro → Miraflores</div><div class="xs">4 productos · 40 u. · recibida 10/11</div></div><span class="badge b-ok">Recibida</span></div>
+        </div>
+      </div>
+      <div class="tabbar"><div class="tab"><span class="ic"></span>Inicio</div><div class="tab"><span class="ic"></span>Productos</div><div class="tab sell"><span class="ic"></span>Vender</div><div class="tab"><span class="ic"></span>Ventas</div><div class="tab on"><span class="ic"></span>Más</div></div>
+    </div></div>
+  <div class="note"><b>Dónde está:</b> Más → Transferencias en el celular; en el menú lateral en escritorio (M2-D). La pestaña por defecto es "Por recibir" de la sucursal activa. "Con diferencia" = se recibió menos de lo enviado.</div>
+
+  <div class="fr"><div class="cap">B · Nueva transferencia</div>
+    <div class="ph">
+      <div class="top"><span class="back">‹</span><h1 class="h1">Nueva transferencia</h1></div>
+      <div class="body">
+        <div class="grid2"><div><span class="lb">Desde</span><div class="in">Miraflores ▾</div></div><div><span class="lb">Hacia</span><div class="in">Centro ▾</div></div></div>
+        <div class="in ph-t">Buscar o escanear producto…</div>
+        <div class="card list">
+          <div class="item"><div class="grow"><div class="t">Arroz Grano De Oro 1kg</div><div class="xs">Hay 58 en Miraflores · 3 en Centro</div></div><div class="qty"><span>−</span><span>10</span><span>+</span></div></div>
+          <div class="item"><div class="grow"><div class="t">Leche Pil 1l</div><div class="xs">Hay 24 en Miraflores · lote vence 20/12</div></div><div class="qty"><span>−</span><span>12</span><span>+</span></div></div>
+          <div class="item"><div class="grow"><div class="t">Coca Cola 2l</div><div class="xs" style="color:var(--bad);font-weight:600">Hay 2 en Miraflores: pides 3</div></div><div class="qty" style="border-color:var(--bad)"><span>−</span><span>3</span><span>+</span></div></div>
+        </div>
+        <div><span class="lb">Nota <span class="xs">(opcional)</span></span><div class="in ph-t">Ej. va en la camioneta de la tarde</div></div>
+        <div style="margin-top:auto;display:flex;gap:8px"><div class="btn2" style="flex:1">Borrador</div><div class="btn" style="flex:1.6;background:#98a2b3">Corrige 1 producto</div></div>
+      </div>
+    </div></div>
+  <div class="note"><b>Validaciones:</b> origen ≠ destino; cantidad &gt; 0 y ≤ stock del origen (rojo en la fila, el botón no envía); las sucursales que la persona puede elegir. <b>Al enviar</b> el stock sale del origen y los lotes salen por FEFO con su fecha de vencimiento.</div>
+
+  <div class="fr"><div class="cap">C · Recibir (con una diferencia)</div>
+    <div class="ph">
+      <div class="top"><span class="back">‹</span><h1 class="h1">Recibir T-0007</h1></div>
+      <div class="body">
+        <div class="steps"><span class="on">Enviada 10:12</span><i></i><span class="on">En tránsito</span><i></i><span>Recibida</span></div>
+        <div class="mu">De <b>Miraflores</b> a <b>Centro</b> · envió Juan Mamani</div>
+        <div class="card list">
+          <div class="item"><div class="grow"><div class="t">Arroz Grano De Oro 1kg</div><div class="xs">Enviaron 10</div></div><div class="qty"><span>−</span><span>10</span><span>+</span></div></div>
+          <div class="item"><div class="grow"><div class="t">Leche Pil 1l</div><div class="xs">Enviaron 12</div></div><div class="qty" style="border-color:var(--warn)"><span>−</span><span>11</span><span>+</span></div></div>
+          <div class="item" style="background:var(--warn-bg)"><div class="grow"><div class="t" style="color:var(--warn)">Falta 1 Leche Pil 1l</div><div class="chips" style="margin-top:6px"><span class="chip on">Faltó</span><span class="chip">Llegó dañado</span><span class="chip">Otro</span></div></div></div>
+        </div>
+        <div class="alert info">Entran 21 u. a Centro. La diferencia queda registrada y se ve en Reportes → Movimientos de stock.</div>
+        <div class="btn" style="margin-top:auto">Confirmar recepción</div>
+      </div>
+    </div></div>
+  <div class="note"><b>Recibir</b> lo hace quien tenga permiso en la sucursal destino (dueño, encargado, y el cajero si está activado en M3-B). Nunca entra más de lo enviado. Una transferencia recibida no se edita: una corrección es otra transferencia o un ajuste.</div>
+
+  <div class="fr"><div class="cap">D · Enviada (vista del origen)</div>
+    <div class="ph">
+      <div class="top"><span class="back">‹</span><h1 class="h1">T-0007</h1><span class="badge b-warn" style="margin-left:auto">En tránsito</span></div>
+      <div class="body">
+        <div class="steps"><span class="on">Enviada 10:12</span><i></i><span class="on">En tránsito</span><i></i><span>Recibida</span></div>
+        <div class="card sec"><div class="xs">Miraflores → Centro · nota: va en la camioneta de la tarde</div>
+          <div class="item" style="padding:0;min-height:36px"><div class="grow">Arroz Grano De Oro 1kg</div><b>10</b></div>
+          <div class="item" style="padding:0;min-height:36px"><div class="grow">Leche Pil 1l <span class="xs">lote vence 20/12</span></div><b>12</b></div>
+          <div class="item" style="padding:0;min-height:36px"><div class="grow">Coca Cola 2l</div><b>3</b></div></div>
+        <div class="card sec"><div class="h2">Historial</div><div class="xs">Hoy 10:05 · Juan creó el borrador<br>Hoy 10:12 · Juan la envió</div></div>
+        <div class="btn2 btn-danger" style="margin-top:auto">Cancelar transferencia</div>
+        <div class="xs">Cancelar devuelve las 25 u. a Miraflores. Solo mientras no se haya recibido.</div>
+      </div>
+    </div></div>
+</div>
+</div></body></html>

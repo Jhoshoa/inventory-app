@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>M1 · Entrar con varios negocios</title><link rel="stylesheet" href="base.css"></head>
+<body><div class="board">
+<header><h1>M1 · Entrar con varios negocios o sucursales</h1>
+<p>Plan §5.1. Con 1 negocio y 1 sucursal no cambia nada: se entra directo a Inicio, como hoy. Estas pantallas aparecen solo si la persona tiene más de una opción.</p></header>
+
+<div class="row-frames">
+  <div class="fr"><div class="cap">A · Dueña de dos negocios (después de entrar)</div>
+    <div class="ph">
+      <div class="body" style="padding:24px 18px;gap:18px">
+        <div style="display:flex;align-items:center;gap:10px"><div class="av y" style="width:36px;height:36px">☺</div><b style="font-size:17px">Tu Tiendamiga</b></div>
+        <div><h1 class="h1" style="font-size:26px">¿A qué tienda entras?</h1><p class="mu" style="margin:4px 0 0">Hola, Rosa. Puedes cambiar después desde el menú.</p></div>
+        <div class="card list">
+          <div class="item"><div class="av">TL</div><div class="grow"><div class="t">Tienda Local</div><div class="xs">Dueña · 2 sucursales</div></div><span class="badge b-ok">Última</span><span class="chev-r">›</span></div>
+          <div class="item"><div class="av" style="background:#fef0c7;color:#b54708">FL</div><div class="grow"><div class="t">Ferretería López</div><div class="xs">Dueña · 1 sucursal</div></div><span class="chev-r">›</span></div>
+        </div>
+        <label style="display:flex;align-items:center;gap:10px;font-size:14px"><span class="check on">✓</span> Entrar siempre a la última</label>
+        <div style="margin-top:auto" class="xs">¿Falta una tienda? Pídele al dueño que te invite con <b>rosa@correo.com</b>.</div>
+      </div>
+    </div></div>
+  <div class="note"><b>Qué hace:</b> lista las membresías activas de la persona (rol y sucursales). Al elegir, se guarda el negocio activo en la sesión y va a Inicio (o a Vender si es cajero con caja abierta, como hoy). Con "Entrar siempre a la última" esta pantalla no vuelve a salir: se cambia desde el menú (M2).</div>
+
+  <div class="fr"><div class="cap">B · Cajero en 2 sucursales del mismo negocio</div>
+    <div class="ph">
+      <div class="body" style="padding:24px 18px;gap:18px">
+        <div style="display:flex;align-items:center;gap:10px"><div class="av y" style="width:36px;height:36px">☺</div><b style="font-size:17px">Tu Tiendamiga</b></div>
+        <div><h1 class="h1" style="font-size:26px">¿Dónde trabajas hoy?</h1><p class="mu" style="margin:4px 0 0">Tienda Local · las ventas y la caja van a esta sucursal.</p></div>
+        <div class="card list">
+          <div class="item"><span class="radio on"></span><div class="grow"><div class="t">Centro</div><div class="xs">Av. Busch 1240 · <span style="color:var(--ok);font-weight:700">Caja abierta</span></div></div></div>
+          <div class="item"><span class="radio"></span><div class="grow"><div class="t">Miraflores</div><div class="xs">Calle 6 #320 · Caja cerrada</div></div></div>
+        </div>
+        <div class="btn" style="margin-top:auto">Entrar a Centro</div>
+      </div>
+    </div></div>
+  <div class="note"><b>Qué hace:</b> solo para quien tiene 2+ sucursales asignadas (Multi-sucursal). Muestra el estado de la caja de hoy de cada una para elegir bien. Si la persona tiene ventas sin enviar de la otra sucursal, se siguen enviando a <b>su</b> sucursal (Plan §6).</div>
+
+  <div class="fr"><div class="cap">C · Aceptar invitación con una cuenta que ya existe</div>
+    <div class="ph">
+      <div class="body" style="padding:24px 18px;gap:16px">
+        <div style="display:flex;align-items:center;gap:10px"><div class="av y" style="width:36px;height:36px">☺</div><b style="font-size:17px">Tu Tiendamiga</b></div>
+        <div><h1 class="h1" style="font-size:24px">Únete a Ferretería López</h1><p class="mu" style="margin:4px 0 0">Mario López te invitó como <b>Cajero</b> en la sucursal Centro.</p></div>
+        <div class="alert info">Ya tienes una cuenta con <b>&nbsp;ana@correo.com</b>. Entra con tu contraseña de siempre: no hace falta crear otra.</div>
+        <div><span class="lb">Correo electrónico</span><div class="in" style="background:#f9fafb;color:var(--mu)">ana@correo.com</div></div>
+        <div><span class="lb">Contraseña</span><div class="in ph-t">••••••••</div></div>
+        <div class="btn">Entrar y unirme</div>
+        <div class="btn2">Continuar con Google</div>
+        <div class="xs" style="text-align:center">Después vas a ver las dos tiendas al entrar y podrás cambiar desde el menú.</div>
+      </div>
+    </div></div>
+  <div class="note"><b>Qué cambia:</b> hoy esto falla con "Este email ya pertenece a un usuario existente". Con membresías, la invitación agrega el negocio a la cuenta de la persona. Si el correo no tiene cuenta, se ve la pantalla de hoy (Tu nombre + Crea una contraseña).</div>
+</div>
+</div></body></html>
