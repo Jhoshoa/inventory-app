@@ -10,6 +10,7 @@ import {
   DialogFooter,
   DialogTitle,
 } from "@/components/ui/Dialog";
+import { usePageVisible } from "@/lib/hooks/usePageVisible";
 
 type ScannerStatus = "starting" | "scanning" | "error";
 
@@ -29,13 +30,19 @@ export function PosCameraScanner({
   const onDetectedRef = useRef(onDetected);
   const [status, setStatus] = useState<ScannerStatus>("starting");
   const [error, setError] = useState<string | null>(null);
+  // Con la app en segundo plano la cámara se apaga (se libera, no solo se pausa) y
+  // vuelve a encenderse al regresar, si la ventana sigue abierta.
+  const pageVisible = usePageVisible();
+  const active = open && pageVisible;
 
   useEffect(() => {
     onDetectedRef.current = onDetected;
   }, [onDetected]);
 
+  // Como un `using` de C#: la limpieza de abajo libera la cámara siempre que el efecto
+  // termina (al cerrar la ventana, al salir de la pantalla o al ocultarse la página).
   useEffect(() => {
-    if (!open) return;
+    if (!active) return;
 
     let cancelled = false;
     let detected = false;
@@ -96,10 +103,11 @@ export function PosCameraScanner({
     void start();
 
     return () => {
+      // Si la cámara todavía está abriendo, `cancelled` hace que start() la cierre apenas abra.
       cancelled = true;
       controls?.stop();
     };
-  }, [open]);
+  }, [active]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange} size="md" position="sheet">
