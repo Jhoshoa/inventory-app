@@ -16,6 +16,11 @@ class Settings(BaseSettings):
     SUPABASE_URL: str = "https://example.supabase.co"
     SUPABASE_ANON_KEY: str = "local-anon-key"
     SUPABASE_SERVICE_ROLE_KEY: str = "local-service-role-key"
+    # Auth corre en el mismo servidor: la API lo usa por la red interna (SUPABASE_URL)
+    # y el navegador por la URL publica (APP_URL/auth/v1/...). Vacio = SUPABASE_URL.
+    SUPABASE_PUBLIC_URL: str = ""
+    # "Continuar con Google": requiere el proveedor activo en Auth (GOOGLE_CLIENT_ID...).
+    AUTH_GOOGLE_ENABLED: bool = False
 
     CLOUDINARY_CLOUD_NAME: str = "local"
     CLOUDINARY_API_KEY: str = "local"
@@ -86,6 +91,10 @@ class Settings(BaseSettings):
         return [origin.strip().rstrip("/") for origin in self.CORS_ALLOWED_ORIGINS.split(",") if origin.strip()]
 
     @property
+    def supabase_public_url(self) -> str:
+        return (self.SUPABASE_PUBLIC_URL.strip() or self.SUPABASE_URL).rstrip("/")
+
+    @property
     def email_logo_url(self) -> str:
         return self.EMAIL_LOGO_URL.strip() or f"{self.FRONTEND_URL}/email/logo.png"
 
@@ -116,6 +125,11 @@ class Settings(BaseSettings):
                 "Secure y el navegador no las guarda sobre http, asi que el login no se mantendria"
             )
 
+        if self.AUTH_GOOGLE_ENABLED and not self.supabase_public_url.startswith("https://"):
+            raise ValueError(
+                "SUPABASE_PUBLIC_URL (APP_URL) debe usar https:// en production: el navegador "
+                "abre esa URL para entrar con Google"
+            )
         if self.EMAIL_ENABLED and self.SMTP_SECURITY == "none":
             raise ValueError("SMTP_SECURITY=none solo sirve para Mailpit: en production usa starttls o ssl")
 
@@ -125,7 +139,9 @@ class Settings(BaseSettings):
             self.SUPABASE_SERVICE_ROLE_KEY,
             self.JWT_SECRET,
         }
-        if any(value.startswith("local") or value.startswith("your-") or "example" in value for value in placeholders):
+        if any(
+            value.startswith(("local", "your-", "replace-with")) or "example" in value for value in placeholders
+        ):
             raise ValueError("Production no puede usar secretos placeholder")
         return self
 

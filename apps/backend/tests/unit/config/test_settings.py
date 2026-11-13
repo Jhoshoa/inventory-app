@@ -123,3 +123,16 @@ def test_cors_origins_drop_trailing_slashes_because_browsers_never_send_them():
     settings = Settings(**{**_PRODUCTION, "CORS_ALLOWED_ORIGINS": "https://app.example.com/, https://b.example.com"})
 
     assert settings.cors_allowed_origins == ["https://app.example.com", "https://b.example.com"]
+
+
+def test_production_google_needs_an_https_public_auth_url():
+    internal = {**_PRODUCTION, "SUPABASE_URL": "http://inventory-auth-gateway:8000"}
+    with pytest.raises(ValueError, match="SUPABASE_PUBLIC_URL"):
+        Settings(**internal, AUTH_GOOGLE_ENABLED=True)
+    Settings(**internal, AUTH_GOOGLE_ENABLED=True, SUPABASE_PUBLIC_URL="https://app.example.com")
+    Settings(**internal)
+
+
+def test_production_refuses_the_secrets_left_as_in_env_example():
+    with pytest.raises(ValueError, match="placeholder"):
+        Settings(**{**_PRODUCTION, "JWT_SECRET": "replace-with-generated-value"})

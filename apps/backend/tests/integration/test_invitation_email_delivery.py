@@ -109,3 +109,39 @@ async def test_when_the_email_was_sent_the_link_is_not_returned(client, monkeypa
 
     assert response.status_code == 201
     assert response.json()["dev_invite_url"] is None
+
+
+async def test_accepted_person_gets_the_same_id_in_auth_so_they_can_log_in_again(client, monkeypatch):
+    # Con otro id en Auth, el siguiente login buscaba a la persona por ese id, no la
+    # encontraba e intentaba crearla de nuevo con el mismo correo (500).
+    from types import SimpleNamespace
+
+    from src.presentation.api.v1 import user_invitations as invitations_api
+
+    sender = _RecordingSender()
+    app.dependency_overrides[dependencies.get_email_sender] = lambda: sender
+    try:
+        await client.post("/api/v1/user-invitations", json={"email": "ana@tienda.com"})
+    finally:
+        app.dependency_overrides.pop(dependencies.get_email_sender, None)
+    token = sender.sent[0]["url"].rsplit("/invite/", 1)[1]
+
+    created: list[dict] = []
+    session = SimpleNamespace(access_token="token-ana", refresh_token="refresh-ana")
+    fake = SimpleNamespace(
+        auth=SimpleNamespace(
+            admin=SimpleNamespace(create_user=lambda attributes: created.append(attributes)),
+            sign_in_with_password=lambda _credentials: SimpleNamespace(session=session),
+        )
+    )
+    monkeypatch.setattr(invitations_api, "get_supabase_admin_client", lambda: fake)
+    monkeypatch.setattr(invitations_api, "get_supabase_client", lambda: fake)
+    monkeypatch.setattr(settings, "DEBUG", False)
+
+    response = await client.post(
+        "/api/v1/user-invitations/accept", json={"token": token, "full_name": "Ana Cajera", "password": "Cajera789!"}
+    )
+
+    assert response.status_code == 200, response.text
+    assert created[0]["id"] == response.json()["user"]["id"]
+    assert created[0]["email"] == "ana@tienda.com"

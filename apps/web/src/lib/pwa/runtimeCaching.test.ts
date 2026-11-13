@@ -24,6 +24,13 @@ describe("service worker caching", () => {
     expect(ruleFor("/t/tienda-pau?q=leche&_rsc=abc")).toBeUndefined();
   });
 
+  it("never caches Auth links (email confirmation, Google), they are one-use redirects", () => {
+    expect(ruleFor("/auth/v1/verify?token=abc&type=signup", { mode: "navigate" })).toBeUndefined();
+    expect(ruleFor("/auth/v1/callback?code=abc", { mode: "navigate" })).toBeUndefined();
+    // La pagina de la app que recibe a Google sí es una pagina normal.
+    expect(ruleFor("/auth/callback", { mode: "navigate" })?.handler).toBe("NetworkFirst");
+  });
+
   it("keeps the API on the network", () => {
     expect(ruleFor("/api/products/pos?q=le")?.handler).toBe("NetworkOnly");
   });

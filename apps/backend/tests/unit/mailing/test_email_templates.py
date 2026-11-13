@@ -50,12 +50,14 @@ def test_invitation_text_version_has_everything_the_html_has():
     assert "<" not in content.text
 
 
-def test_the_local_stack_uses_the_same_subjects_as_the_supabase_panel():
-    compose = OUTPUT_DIR.parents[1] / "docker-compose.local.yml"
+def test_auth_uses_these_templates_and_subjects_in_every_environment():
+    # docker-compose.yml (producción y stack local) configura Auth con estos archivos.
+    compose = OUTPUT_DIR.parents[1] / "docker-compose.yml"
     if not compose.exists():
-        pytest.skip("docker-compose.local.yml no está en esta copia")
+        pytest.skip("docker-compose.yml no está en esta copia")
     text = compose.read_text(encoding="utf-8")
     for template in auth_templates():
         key = f"GOTRUE_MAILER_SUBJECTS_{template.name.upper()}"
         assert f'{key}: "{template.subject}"' in text, key
-        assert f"GOTRUE_MAILER_TEMPLATES_{template.name.upper()}: http://supabase:8000/email-templates/{template.name}.html" in text
+        url = f"http://inventory-auth-gateway:8000/email-templates/{template.name}.html"
+        assert f"GOTRUE_MAILER_TEMPLATES_{template.name.upper()}: {url}" in text

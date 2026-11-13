@@ -58,8 +58,13 @@ export const pwaRuntimeCaching: CachingRule[] = [
   {
     // Paginas del panel: red primero, y la ultima version guardada si no hay
     // conexion. El catalogo publico (/t/...) no: siempre fresco desde la red.
+    // Tampoco los enlaces de Auth (/auth/v1/...: confirmar correo, Google): son de
+    // un solo uso y redirigen; guardarlos no sirve y podria repetir una redireccion.
     urlPattern: ({ request, url, sameOrigin }) =>
-      sameOrigin && request.mode === "navigate" && !url.pathname.startsWith("/t/"),
+      sameOrigin &&
+      request.mode === "navigate" &&
+      !url.pathname.startsWith("/t/") &&
+      !url.pathname.startsWith("/auth/v1/"),
     handler: "NetworkFirst",
     options: {
       cacheName: "pages",

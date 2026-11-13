@@ -1,0 +1,6 @@
+# Solo para las imagenes que se construyen desde la raiz del repo
+# (docker/auth-gateway, docker/db-backup). La API y la web tienen su propio
+# .dockerignore en apps/backend y apps/web.
+*
+!docker/
+!supabase/email-templates/

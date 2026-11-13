@@ -113,6 +113,17 @@ describe("LoginForm", () => {
     expect(field).toHaveAttribute("type", "text");
   });
 
+  it("borra el token que deja el enlace de confirmación en la barra de direcciones", () => {
+    window.history.replaceState(null, "", "/login?verified=true#access_token=abc.def.ghi&type=signup");
+
+    render(<LoginForm verified />);
+
+    expect(window.location.hash).toBe("");
+    expect(window.location.search).toBe("?verified=true");
+    expect(screen.getByText("Correo confirmado. Ya puedes entrar.")).toBeInTheDocument();
+    window.history.replaceState(null, "", "/");
+  });
+
   it.each([
     [{ sessionExpired: true }, "Tu sesión terminó. Vuelve a entrar."],
     [{ passwordReset: true }, "Contraseña actualizada. Entra con la nueva."],
