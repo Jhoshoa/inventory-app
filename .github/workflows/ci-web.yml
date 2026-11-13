@@ -12,7 +12,7 @@ on:
       - ".github/workflows/ci-web.yml"
 
 jobs:
-  web:
+  checks:
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -32,9 +32,6 @@ jobs:
       - name: Install dependencies
         run: corepack pnpm install --frozen-lockfile
 
-      - name: Install Playwright browsers
-        run: corepack pnpm exec playwright install --with-deps chromium
-
       - name: Clean generated artifacts
         run: corepack pnpm clean
 
@@ -47,6 +44,34 @@ jobs:
       - name: Unit tests
         run: corepack pnpm test
 
+  e2e:
+    runs-on: ubuntu-latest
+    # Imagen oficial de Playwright: trae Chromium y sus librerías, sin depender de la
+    # versión de Ubuntu del runner. Debe coincidir con @playwright/test en pnpm-lock.yaml.
+    container:
+      image: mcr.microsoft.com/playwright:v1.60.0-noble
+    defaults:
+      run:
+        working-directory: apps/web
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Install dependencies
+        run: corepack pnpm install --frozen-lockfile
+
+      - name: Clean generated artifacts
+        run: corepack pnpm clean
+
+      # Los e2e corren contra este build (`next start`, ver playwright.config.ts).
       - name: Build
         run: corepack pnpm build
 
