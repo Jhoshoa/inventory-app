@@ -1,5 +1,6 @@
 import type { NextConfig } from "next";
 import withPWAInit from "@ducanh2912/next-pwa";
+import { authRewrites } from "./src/lib/auth/publicAuthRoutes";
 import { pwaRuntimeCaching } from "./src/lib/pwa/runtimeCaching";
 
 const withPWA = withPWAInit({
@@ -32,6 +33,11 @@ const nextConfig: NextConfig = {
       { source: "/dashboard/settings/ubicaciones", destination: "/dashboard/products/lugares", permanent: false },
       { source: "/dashboard/settings/locations", destination: "/dashboard/products/lugares", permanent: false },
     ];
+  },
+  // Enlaces de los correos y Google llegan a APP_URL/auth/v1/...: se reenvian a
+  // Supabase Auth en la red interna (ver src/lib/auth/publicAuthRoutes.ts).
+  async rewrites() {
+    return authRewrites(process.env.AUTH_GATEWAY_URL);
   },
   async headers() {
     return [

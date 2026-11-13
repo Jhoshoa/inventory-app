@@ -313,7 +313,9 @@ async def register(
                         "store_id": store_id,
                         "role": "owner",
                     },
-                    "redirect_to": f"{settings.FRONTEND_URL}/login?verified=true",
+                    # El SDK lee email_redirect_to (no redirect_to): sin esto el enlace del
+                    # correo volvia a la pagina de inicio en vez de "Correo confirmado".
+                    "email_redirect_to": f"{settings.FRONTEND_URL}/login?verified=true",
                 },
             },
         )
@@ -456,6 +458,8 @@ async def oauth_google(
 ):
     if settings.DEBUG or settings.ENVIRONMENT == "local":
         return {"url": f"{settings.FRONTEND_URL}/login?oauth=dev"}
+    if not settings.AUTH_GOOGLE_ENABLED:
+        raise HTTPException(status_code=400, detail="El ingreso con Google no está activado. Entra con tu correo.")
     state = str(uuid4())
     redirect_to = f"{settings.FRONTEND_URL}/auth/callback?state={state}"
     supabase = get_supabase_client()
@@ -478,7 +482,17 @@ async def oauth_google(
             session.add(PkceVerifierModel(state=state, code_verifier=code_verifier))
         except Exception:
             logger.exception("OAuth/google: error al guardar PKCE verifier en DB")
-    return {"url": response.url}
+    return {"url": public_auth_url(response.url)}
+
+
+def public_auth_url(url: str) -> str:
+    """El SDK arma la URL de Google con SUPABASE_URL (la red interna, que el navegador
+    no ve): se cambia por la base pública, que la web reenvía a Auth."""
+    internal = settings.SUPABASE_URL.rstrip("/")
+    public = settings.supabase_public_url
+    if internal != public and url.startswith(internal + "/"):
+        return public + url[len(internal) :]
+    return url
 
 
 @router.post("/oauth/callback", response_model=AuthResponseDTO)

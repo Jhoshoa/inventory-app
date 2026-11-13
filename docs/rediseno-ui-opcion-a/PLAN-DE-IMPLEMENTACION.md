@@ -528,6 +528,7 @@ Manual en cada fase: celular (375), tablet (768) y escritorio (1280); dueño y c
 | Fecha | Cambio |
 |---|---|
 | 2026-11-11 | Primera versión. E3 encontrado al revisar el código (apertura y contado en 0). Nota de P08 corregida (razón obligatoria al anular un movimiento de caja). |
+| 2026-11-13 | Producción en servidor propio: Postgres, Supabase Auth, gateway y backup diario en el mismo compose (sin Supabase en la nube); solo 3 rutas de Auth públicas a través de la web; Google vuelve a `APP_URL/auth/v1/callback`. Arreglados: el enlace de confirmar cuenta volvía al inicio (`email_redirect_to`) y una persona invitada no podía volver a entrar (otro id en Auth). Ver `docs/despliegue/servidor-propio.md`. |
 | 2026-11-13 | D6: correo por SMTP en la API, plantillas con logo para la invitación y para Supabase Auth (confirmar, recuperar, enlace, cambio de correo), Mailpit en el stack local con el mismo código. Sin correo, Usuarios muestra el enlace también en producción. |
 | 2026-11-13 | Fase 9 hecha: recorrido de todas las páginas en 3 anchos, cajero por URL, sin conexión con conflicto, axe en producción, toques de 44 px y textos. E17 (sin https por la IP de la red) y E18 (descargas del catálogo en paralelo) arreglados. |
 | 2026-11-13 | Fase 8 hecha: Acceso (entrar, crear tienda, recuperar y nueva contraseña, invitación), requisitos de contraseña al escribir, 429, y adónde va cada rol al entrar. |

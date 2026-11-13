@@ -47,6 +47,15 @@ export function LoginForm({
     if (errors.form) document.getElementById("email")?.focus();
   }, [errors.form]);
 
+  // El enlace de "Confirma tu correo" vuelve aquí con la sesión de Auth en el fragmento
+  // (#access_token=...). No se usa: se entra con correo y contraseña. Se borra para que
+  // el token no quede en la barra de direcciones ni en el historial.
+  useEffect(() => {
+    if (window.location.hash.includes("access_token")) {
+      window.history.replaceState(null, "", `${window.location.pathname}${window.location.search}`);
+    }
+  }, []);
+
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (isSubmitting) return;

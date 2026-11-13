@@ -32,7 +32,9 @@ class AcceptUserInvitationUseCase:
             raise ConflictError("Esta invitacion ya fue utilizada")
         if invitation.status == "revoked":
             raise ConflictError("Esta invitacion fue revocada")
-        if invitation.status != "pending" or invitation.expires_at <= now:
+        # Sin zona (SQLite en pruebas) se toma como UTC, igual que se guarda.
+        expires_at = invitation.expires_at if invitation.expires_at.tzinfo else invitation.expires_at.replace(tzinfo=UTC)
+        if invitation.status != "pending" or expires_at <= now:
             invitation.status = "expired"
             await self._invitation_repo.save(invitation)
             raise ConflictError("Esta invitacion ha expirado")

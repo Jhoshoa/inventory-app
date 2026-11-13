@@ -203,6 +203,9 @@ async def accept_user_invitation(
         admin_client = get_supabase_admin_client()
         admin_client.auth.admin.create_user(
             {
+                # El mismo id que la persona en la app: al entrar despues, la API la
+                # busca por el id de Auth. Con otro id el login fallaba (correo repetido).
+                "id": str(user.id),
                 "email": user.email,
                 "password": dto.password,
                 "email_confirm": True,

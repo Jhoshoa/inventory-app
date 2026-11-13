@@ -9,14 +9,19 @@ services:
       ENVIRONMENT: production
       DEBUG: "false"
       LOG_LEVEL: ${LOG_LEVEL:-info}
-      DATABASE_URL: ${DATABASE_URL:?DATABASE_URL is required — use your Supabase PostgreSQL (postgresql+asyncpg://) connection string}
-      SUPABASE_URL: ${SUPABASE_URL:?SUPABASE_URL is required}
-      SUPABASE_ANON_KEY: ${SUPABASE_ANON_KEY:?SUPABASE_ANON_KEY is required}
-      SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY:?SUPABASE_SERVICE_ROLE_KEY is required}
+      # Postgres y Supabase Auth corren en este mismo compose (ver los servicios
+      # inventory-*): la API los ve por la red interna, nada de esto sale a internet.
+      DATABASE_URL: postgresql+asyncpg://postgres:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required (see .env.example)}@inventory-db:5432/postgres
+      SUPABASE_URL: http://inventory-auth-gateway:8000
+      # Base publica de Auth: la URL de "Continuar con Google" la abre el navegador.
+      SUPABASE_PUBLIC_URL: ${APP_URL:?APP_URL is required}
+      SUPABASE_ANON_KEY: ${SUPABASE_ANON_KEY:?SUPABASE_ANON_KEY is required (generate it, see .env.example)}
+      SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY:?SUPABASE_SERVICE_ROLE_KEY is required (generate it, see .env.example)}
+      AUTH_GOOGLE_ENABLED: ${AUTH_GOOGLE_ENABLED:-false}
       CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME:?CLOUDINARY_CLOUD_NAME is required}
       CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY:?CLOUDINARY_API_KEY is required}
       CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET:?CLOUDINARY_API_SECRET is required}
-      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET is required — any long random value (see .env.example)}
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET is required (generate it, see .env.example)}
       # Por defecto las dos valen APP_URL (el dominio publico): solo se definen
       # aparte si alguna vez tienen que ser distintas.
       FRONTEND_URL: ${FRONTEND_URL:-${APP_URL:?APP_URL is required — public web URL, e.g. https://app.midominio.com}}
@@ -25,8 +30,8 @@ services:
       # Jobs diarios (trial, mora, archivado). Con WORKERS>1 corren duplicados
       # (son idempotentes). Dejalo true en UN solo proceso si quieres control.
       ENABLE_SCHEDULER: ${ENABLE_SCHEDULER:-true}
-      # Correo por SMTP (ver .env.example). Sin EMAIL_ENABLED=true no se envia nada.
-      EMAIL_ENABLED: ${EMAIL_ENABLED:-false}
+      # Correo por SMTP (ver .env.example): la misma cuenta que usa Auth.
+      EMAIL_ENABLED: ${EMAIL_ENABLED:-true}
       SMTP_HOST: ${SMTP_HOST:-}
       SMTP_PORT: ${SMTP_PORT:-587}
       SMTP_SECURITY: ${SMTP_SECURITY:-starttls}
@@ -36,6 +41,11 @@ services:
       SMTP_FROM_NAME: ${SMTP_FROM_NAME:-Tu Tiendamiga}
       EMAIL_LOGO_URL: ${EMAIL_LOGO_URL:-}
       SENTRY_DSN: ${SENTRY_DSN:-}
+    depends_on:
+      inventory-db:
+        condition: service_healthy
+      inventory-auth:
+        condition: service_healthy
     # Sin `ports`: la API es interna (solo la ve el servicio web). Para probar en
     # local publicando puertos usa docker-compose.local.yml.
     expose:
@@ -66,6 +76,8 @@ services:
         NEXT_PUBLIC_SUPPORT_EMAIL: ${SUPPORT_EMAIL:-}
         NEXT_PUBLIC_WHATSAPP_NUMBER: ${WHATSAPP_NUMBER:-}
         BACKEND_API_URL: ${BACKEND_API_URL:-http://api:8001}
+        # Destino de /auth/v1/{verify,authorize,callback}: enlaces de los correos y Google.
+        AUTH_GATEWAY_URL: http://inventory-auth-gateway:8000
         SENTRY_DSN: ${SENTRY_DSN:-}
     restart: unless-stopped
     init: true
@@ -93,3 +105,174 @@ services:
       options:
         max-size: "10m"
         max-file: "3"
+
+  # --- Base de datos y Supabase Auth, en este mismo servidor -------------------
+  # Ninguno publica puertos: solo los ven la API, Auth y el backup por la red
+  # interna. Los nombres llevan el prefijo inventory- para no chocar con servicios
+  # de otras apps (p. ej. un "db") si Dokploy une las redes.
+
+  inventory-db:
+    build:
+      context: docker/postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_HOST: /var/run/postgresql
+      PGPORT: 5432
+      POSTGRES_PORT: 5432
+      PGPASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      PGDATABASE: postgres
+      POSTGRES_DB: postgres
+      JWT_EXP: 3600
+    command: ["postgres", "-c", "config_file=/etc/postgresql/postgresql.conf"]
+    volumes:
+      - inventory-db-data:/var/lib/postgresql/data
+      - inventory-db-config:/etc/postgresql-custom
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres", "-h", "localhost"]
+      interval: 5s
+      timeout: 5s
+      start_period: 30s
+      retries: 10
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  inventory-auth:
+    image: supabase/gotrue:v2.197.0
+    restart: unless-stopped
+    depends_on:
+      inventory-db:
+        condition: service_healthy
+    environment:
+      GOTRUE_API_HOST: 0.0.0.0
+      GOTRUE_API_PORT: 9999
+      # Base de los enlaces de los correos y de Google: la web los recibe en
+      # APP_URL/auth/v1/... y los reenvia al gateway.
+      API_EXTERNAL_URL: ${APP_URL}
+      GOTRUE_DB_DRIVER: postgres
+      GOTRUE_DB_DATABASE_URL: postgres://supabase_auth_admin:${POSTGRES_PASSWORD}@inventory-db:5432/postgres
+      GOTRUE_SITE_URL: ${APP_URL}
+      GOTRUE_URI_ALLOW_LIST: ${APP_URL}/**
+      GOTRUE_DISABLE_SIGNUP: "false"
+      GOTRUE_JWT_SECRET: ${JWT_SECRET}
+      GOTRUE_JWT_ISSUER: ${APP_URL}/auth/v1
+      GOTRUE_JWT_EXP: 3600
+      GOTRUE_JWT_AUD: authenticated
+      GOTRUE_JWT_ADMIN_ROLES: service_role
+      GOTRUE_JWT_DEFAULT_GROUP_NAME: authenticated
+      GOTRUE_SECURITY_REFRESH_TOKEN_ROTATION_ENABLED: "true"
+      GOTRUE_SECURITY_REFRESH_TOKEN_REUSE_INTERVAL: 10
+      GOTRUE_PASSWORD_MIN_LENGTH: 8
+      GOTRUE_LOG_LEVEL: info
+      # Correo y contrasena; sin telefono ni usuarios anonimos.
+      GOTRUE_EXTERNAL_EMAIL_ENABLED: "true"
+      GOTRUE_EXTERNAL_PHONE_ENABLED: "false"
+      GOTRUE_EXTERNAL_ANONYMOUS_USERS_ENABLED: "false"
+      GOTRUE_MAILER_AUTOCONFIRM: "false"
+      # Los enlaces de confirmar y recuperar vencen en 1 hora, como en Supabase.
+      GOTRUE_MAILER_OTP_EXP: 3600
+      GOTRUE_RATE_LIMIT_EMAIL_SENT: ${AUTH_RATE_LIMIT_EMAIL_SENT:-100}
+      # Los correos de Auth salen por la misma cuenta SMTP que los de la API.
+      # Sin SMTP nadie podria confirmar su cuenta ni recuperar la contrasena.
+      GOTRUE_SMTP_HOST: ${SMTP_HOST:?SMTP_HOST is required, Auth sends the confirmation and recovery emails}
+      GOTRUE_SMTP_PORT: ${SMTP_PORT:-587}
+      GOTRUE_SMTP_USER: ${SMTP_USERNAME:-}
+      GOTRUE_SMTP_PASS: ${SMTP_PASSWORD:-}
+      GOTRUE_SMTP_ADMIN_EMAIL: ${SMTP_FROM_EMAIL:?SMTP_FROM_EMAIL is required}
+      GOTRUE_SMTP_SENDER_NAME: ${SMTP_FROM_NAME:-Tu Tiendamiga}
+      # Un correo por persona cada 60 s (Recuperar contrasena espera lo mismo).
+      GOTRUE_SMTP_MAX_FREQUENCY: 60s
+      GOTRUE_MAILER_URLPATHS_INVITE: /auth/v1/verify
+      GOTRUE_MAILER_URLPATHS_CONFIRMATION: /auth/v1/verify
+      GOTRUE_MAILER_URLPATHS_RECOVERY: /auth/v1/verify
+      GOTRUE_MAILER_URLPATHS_EMAIL_CHANGE: /auth/v1/verify
+      # Plantillas de supabase/email-templates, servidas por el gateway. Asuntos: subjects.json.
+      GOTRUE_MAILER_TEMPLATES_CONFIRMATION: http://inventory-auth-gateway:8000/email-templates/confirmation.html
+      GOTRUE_MAILER_TEMPLATES_RECOVERY: http://inventory-auth-gateway:8000/email-templates/recovery.html
+      GOTRUE_MAILER_TEMPLATES_MAGIC_LINK: http://inventory-auth-gateway:8000/email-templates/magic_link.html
+      GOTRUE_MAILER_TEMPLATES_EMAIL_CHANGE: http://inventory-auth-gateway:8000/email-templates/email_change.html
+      GOTRUE_MAILER_SUBJECTS_CONFIRMATION: "Confirma tu correo en Tu Tiendamiga"
+      GOTRUE_MAILER_SUBJECTS_RECOVERY: "Crea tu nueva contraseña"
+      GOTRUE_MAILER_SUBJECTS_MAGIC_LINK: "Tu enlace para entrar a Tu Tiendamiga"
+      GOTRUE_MAILER_SUBJECTS_EMAIL_CHANGE: "Confirma tu nuevo correo"
+      # Google: en Google Cloud, la URL de retorno autorizada es APP_URL/auth/v1/callback.
+      GOTRUE_EXTERNAL_GOOGLE_ENABLED: ${AUTH_GOOGLE_ENABLED:-false}
+      GOTRUE_EXTERNAL_GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOTRUE_EXTERNAL_GOOGLE_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+      GOTRUE_EXTERNAL_GOOGLE_REDIRECT_URI: ${APP_URL}/auth/v1/callback
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:9999/health"]
+      interval: 5s
+      timeout: 5s
+      start_period: 20s
+      retries: 10
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  inventory-auth-gateway:
+    build:
+      context: .
+      dockerfile: docker/auth-gateway/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      - inventory-auth
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:8000/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  inventory-db-backup:
+    build:
+      context: docker/db-backup
+    restart: unless-stopped
+    depends_on:
+      inventory-db:
+        condition: service_healthy
+    environment:
+      TZ: ${BACKUP_TIMEZONE:-America/La_Paz}
+      PGHOST: inventory-db
+      # supabase_admin es el superusuario de la imagen de Supabase: postgres no puede
+      # recrear las tablas de Auth (son de supabase_auth_admin) al restaurar.
+      PGUSER: supabase_admin
+      PGPASSWORD: ${POSTGRES_PASSWORD}
+      PGDATABASE: postgres
+      BACKUP_HOUR: ${BACKUP_HOUR:-3}
+      BACKUP_KEEP_DAYS: ${BACKUP_KEEP_DAYS:-14}
+      # Copia fuera del servidor (Cloudflare R2, Backblaze B2, S3...): muy recomendada.
+      BACKUP_S3_BUCKET: ${BACKUP_S3_BUCKET:-}
+      BACKUP_S3_PREFIX: ${BACKUP_S3_PREFIX:-inventory}
+      BACKUP_S3_ENDPOINT: ${BACKUP_S3_ENDPOINT:-}
+      AWS_ACCESS_KEY_ID: ${BACKUP_S3_ACCESS_KEY_ID:-}
+      AWS_SECRET_ACCESS_KEY: ${BACKUP_S3_SECRET_ACCESS_KEY:-}
+      AWS_DEFAULT_REGION: ${BACKUP_S3_REGION:-auto}
+      BACKUP_PASSPHRASE: ${BACKUP_PASSPHRASE:-}
+    volumes:
+      - inventory-db-backups:/backups
+    healthcheck:
+      # Sano si hubo un backup en las ultimas 26 h (o recien arranco).
+      test: ["CMD-SHELL", "find /backups/.last-success /tmp/started -mmin -1560 2>/dev/null | grep -q ."]
+      interval: 10m
+      timeout: 10s
+      retries: 1
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  inventory-db-data:
+  inventory-db-config:
+  inventory-db-backups:
