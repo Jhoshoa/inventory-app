@@ -70,8 +70,8 @@ from src.infrastructure.database.session import get_session
 from src.infrastructure.services.cloudinary.photo_storage import (
     CloudinaryPhotoStorage,
 )
-from src.infrastructure.services.email.brevo_email_sender import BrevoEmailSender
 from src.infrastructure.services.email.noop_email_sender import NoopEmailSender
+from src.infrastructure.services.email.smtp_email_sender import SmtpConfig, SmtpEmailSender
 
 security_scheme = HTTPBearer(auto_error=False)
 DEV_ACCESS_TOKEN = "dev-token-123"
@@ -304,10 +304,19 @@ def get_user_invitation_repo(session: AsyncSession = Depends(get_db_session, sco
 
 
 def get_email_sender() -> IEmailSender:
-    if settings.BREVO_API_KEY and settings.EMAIL_FROM_ADDRESS:
-        return BrevoEmailSender(
-            api_key=settings.BREVO_API_KEY,
-            from_address=settings.EMAIL_FROM_ADDRESS,
-            from_name=settings.EMAIL_FROM_NAME,
+    if not settings.EMAIL_ENABLED:
+        return NoopEmailSender()
+    return SmtpEmailSender(
+        SmtpConfig(
+            host=settings.SMTP_HOST.strip(),
+            port=settings.SMTP_PORT,
+            username=settings.SMTP_USERNAME.strip(),
+            password=settings.SMTP_PASSWORD,
+            security=settings.SMTP_SECURITY,
+            from_email=settings.SMTP_FROM_EMAIL.strip(),
+            from_name=settings.SMTP_FROM_NAME.strip(),
+            timeout_seconds=settings.SMTP_TIMEOUT_SECONDS,
+            logo_url=settings.email_logo_url,
+            site_url=settings.FRONTEND_URL,
         )
-    return NoopEmailSender()
+    )

@@ -166,7 +166,7 @@ Resolverlas antes de la fase indicada. Mientras no se decidan, se hace lo recome
 | D3 | Hacer **B5** (no enviar costo al cajero). | Sí, es 1 h y cierra una fuga de datos. | Fase 0 |
 | D4 | Hacer **B6** (nombre de quién vendió / anuló). | Sí, útil para control con cajeros. | Fase 0 |
 | D5 | Mostrar el precio del plan en Plan y pagos (la API no lo da). | No por ahora; agregarlo después a `/billing/status`. | Fase 7 |
-| D6 | SMTP con Brevo para confirmar cuenta, recuperar contraseña e invitar. | Configurarlo antes de publicar la Fase 8; mientras, en desarrollo se muestra el link. | Fase 8 |
+| D6 | SMTP con Brevo para confirmar cuenta, recuperar contraseña e invitar. | **Hecho (2026-11-13)**: la API envía por SMTP (`EMAIL_ENABLED`, `SMTP_*`; Brevo hoy, cualquier proveedor después) y las plantillas de Supabase Auth salen del mismo diseño (`supabase/email-templates/`, con los pasos para el panel de Supabase). Falta cargar los valores en Dokploy y en el panel. | Fase 8 |
 | D8 | "Artículos vendidos" en Inicio: `items_count` de la API cuenta productos distintos por venta, no unidades (2 Coca Cola en una venta = 1). | Agregar `units_count` (suma de cantidades) a `/reports/sales` y al resumen como campo nuevo, sin cambiar `items_count` (lo usan cierres y CSV). Mientras, Inicio dice "Productos vendidos · Distintos, en N ventas". | Fase 6 |
 | D7 | Textos "pedir otro en 60 s" y "vence en 1 hora" de recuperar contraseña. | Revisar la configuración real de Supabase Auth y mostrar esos valores. | Fase 8 |
 
@@ -528,6 +528,7 @@ Manual en cada fase: celular (375), tablet (768) y escritorio (1280); dueño y c
 | Fecha | Cambio |
 |---|---|
 | 2026-11-11 | Primera versión. E3 encontrado al revisar el código (apertura y contado en 0). Nota de P08 corregida (razón obligatoria al anular un movimiento de caja). |
+| 2026-11-13 | D6: correo por SMTP en la API, plantillas con logo para la invitación y para Supabase Auth (confirmar, recuperar, enlace, cambio de correo), Mailpit en el stack local con el mismo código. Sin correo, Usuarios muestra el enlace también en producción. |
 | 2026-11-13 | Fase 9 hecha: recorrido de todas las páginas en 3 anchos, cajero por URL, sin conexión con conflicto, axe en producción, toques de 44 px y textos. E17 (sin https por la IP de la red) y E18 (descargas del catálogo en paralelo) arreglados. |
 | 2026-11-13 | Fase 8 hecha: Acceso (entrar, crear tienda, recuperar y nueva contraseña, invitación), requisitos de contraseña al escribir, 429, y adónde va cada rol al entrar. |
 | 2026-11-12 | Fase 7 hecha: Configuración con índice y menú, datos de la tienda, descuentos, usuarios, catálogo por partes, plan y perfil. "Tu boleta" → "Tu pedido". |

@@ -1,20 +1,28 @@
 from src.application.exceptions import EmailDeliveryError
 from src.application.ports.email_sender import IEmailSender
+from src.config.settings import settings
 from src.main import app
 from src.presentation import dependencies
 
 
 class _FailingSender(IEmailSender):
-    async def send_invitation(self, *, to_email, store_name, invite_url, invited_by) -> None:
+    enabled = True
+
+    async def send_invitation(self, **_kwargs) -> None:
         raise EmailDeliveryError("No se pudo enviar el correo. Intenta nuevamente en unos minutos.")
 
 
 class _RecordingSender(IEmailSender):
-    def __init__(self):
+    def __init__(self, *, enabled: bool = True):
+        self._enabled = enabled
         self.sent: list[dict] = []
 
-    async def send_invitation(self, *, to_email, store_name, invite_url, invited_by) -> None:
-        self.sent.append({"to": to_email, "url": invite_url})
+    @property
+    def enabled(self) -> bool:
+        return self._enabled
+
+    async def send_invitation(self, *, to_email, store_name, invite_url, invited_by, role, expires_in_days) -> None:
+        self.sent.append({"to": to_email, "url": invite_url, "role": role, "days": expires_in_days})
 
 
 async def test_invitation_is_emailed_with_the_link_to_accept_it(client):
@@ -64,3 +72,40 @@ async def test_invitation_preview_says_who_invited(client, db_session):
     assert preview.status_code == 200, preview.text
     assert preview.json()["invited_by_name"] == "Rosa Quispe"
     assert preview.json()["role"] == "cashier"
+
+
+async def test_the_email_says_the_role_and_when_the_invitation_expires(client):
+    sender = _RecordingSender()
+    app.dependency_overrides[dependencies.get_email_sender] = lambda: sender
+    try:
+        await client.post("/api/v1/user-invitations", json={"email": "socia@tienda.com", "role": "owner"})
+    finally:
+        app.dependency_overrides.pop(dependencies.get_email_sender, None)
+
+    assert sender.sent[0]["role"] == "owner"
+    assert sender.sent[0]["days"] == settings.INVITATION_EXPIRE_DAYS
+
+
+async def test_without_email_the_owner_gets_the_link_to_share_it(client, monkeypatch):
+    # Producción sin correo configurado: nadie recibiría la invitación si no se ve el enlace.
+    monkeypatch.setattr(settings, "DEBUG", False)
+    app.dependency_overrides[dependencies.get_email_sender] = lambda: _RecordingSender(enabled=False)
+    try:
+        response = await client.post("/api/v1/user-invitations", json={"email": "cajero@tienda.com"})
+    finally:
+        app.dependency_overrides.pop(dependencies.get_email_sender, None)
+
+    assert response.status_code == 201
+    assert "/invite/" in (response.json()["dev_invite_url"] or "")
+
+
+async def test_when_the_email_was_sent_the_link_is_not_returned(client, monkeypatch):
+    monkeypatch.setattr(settings, "DEBUG", False)
+    app.dependency_overrides[dependencies.get_email_sender] = lambda: _RecordingSender()
+    try:
+        response = await client.post("/api/v1/user-invitations", json={"email": "cajero@tienda.com"})
+    finally:
+        app.dependency_overrides.pop(dependencies.get_email_sender, None)
+
+    assert response.status_code == 201
+    assert response.json()["dev_invite_url"] is None

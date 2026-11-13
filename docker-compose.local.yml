@@ -1,8 +1,9 @@
 # Stack local: el mismo docker-compose.yml de produccion (mismas imagenes, mismo
 # codigo, DEBUG=false) mas una copia local de lo que en produccion es Supabase:
 # Postgres de Supabase + Supabase Auth (GoTrue) detras de un gateway que expone
-# las mismas rutas (/auth/v1) que https://<proyecto>.supabase.co. Los correos de
-# Auth (confirmacion, recuperacion de contrasena) llegan a Mailpit.
+# las mismas rutas (/auth/v1) que https://<proyecto>.supabase.co. Los correos
+# (invitaciones de la API y los de Auth: confirmacion, recuperacion de contrasena)
+# llegan a Mailpit.
 #
 #   cp .env.local.example .env.local
 #   docker compose -f docker-compose.yml -f docker-compose.local.yml --env-file .env.local up --build -d
@@ -19,6 +20,13 @@ services:
   api:
     environment:
       ENVIRONMENT: local
+      # El mismo envio por SMTP que en produccion, a Mailpit (http://localhost:8025).
+      # Con los SMTP_* de produccion en .env.local se envian correos de verdad.
+      EMAIL_ENABLED: ${EMAIL_ENABLED:-true}
+      SMTP_HOST: ${SMTP_HOST:-mailpit}
+      SMTP_PORT: ${SMTP_PORT:-1025}
+      SMTP_SECURITY: ${SMTP_SECURITY:-none}
+      SMTP_FROM_EMAIL: ${SMTP_FROM_EMAIL:-noreply@tutiendamiga.digital}
     depends_on:
       db:
         condition: service_healthy
@@ -82,12 +90,24 @@ services:
       GOTRUE_EXTERNAL_EMAIL_ENABLED: "true"
       # Como en un proyecto nuevo de Supabase: hay que confirmar el correo (en Mailpit).
       GOTRUE_MAILER_AUTOCONFIRM: ${AUTH_EMAIL_AUTOCONFIRM:-false}
-      GOTRUE_SMTP_ADMIN_EMAIL: auth@local.test
+      # Los correos de Auth siempre van a Mailpit en local (en produccion los envia
+      # Supabase con el SMTP configurado en su panel).
+      GOTRUE_SMTP_ADMIN_EMAIL: ${SMTP_FROM_EMAIL:-noreply@tutiendamiga.digital}
       GOTRUE_SMTP_HOST: mailpit
       GOTRUE_SMTP_PORT: 1025
       # Sin usuario/clave: Mailpit no pide autenticacion y Auth no autentica sin TLS.
-      GOTRUE_SMTP_SENDER_NAME: Inventory local
+      GOTRUE_SMTP_SENDER_NAME: ${SMTP_FROM_NAME:-Tu Tiendamiga}
       GOTRUE_SMTP_MAX_FREQUENCY: 1s
+      # Las mismas plantillas que van al panel de Supabase (supabase/email-templates),
+      # servidas por el gateway. Asuntos: subjects.json.
+      GOTRUE_MAILER_TEMPLATES_CONFIRMATION: http://supabase:8000/email-templates/confirmation.html
+      GOTRUE_MAILER_TEMPLATES_RECOVERY: http://supabase:8000/email-templates/recovery.html
+      GOTRUE_MAILER_TEMPLATES_MAGIC_LINK: http://supabase:8000/email-templates/magic_link.html
+      GOTRUE_MAILER_TEMPLATES_EMAIL_CHANGE: http://supabase:8000/email-templates/email_change.html
+      GOTRUE_MAILER_SUBJECTS_CONFIRMATION: "Confirma tu correo en Tu Tiendamiga"
+      GOTRUE_MAILER_SUBJECTS_RECOVERY: "Crea tu nueva contraseña"
+      GOTRUE_MAILER_SUBJECTS_MAGIC_LINK: "Tu enlace para entrar a Tu Tiendamiga"
+      GOTRUE_MAILER_SUBJECTS_EMAIL_CHANGE: "Confirma tu nuevo correo"
       GOTRUE_MAILER_URLPATHS_INVITE: /auth/v1/verify
       GOTRUE_MAILER_URLPATHS_CONFIRMATION: /auth/v1/verify
       GOTRUE_MAILER_URLPATHS_RECOVERY: /auth/v1/verify
@@ -106,6 +126,7 @@ services:
       - auth
     volumes:
       - ./docker/local/supabase-gateway.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./supabase/email-templates:/usr/share/nginx/email-templates:ro
     ports:
       - "127.0.0.1:54321:8000"
 
@@ -114,6 +135,8 @@ services:
     restart: unless-stopped
     ports:
       - "127.0.0.1:8025:8025"
+      # SMTP, para la API corriendo fuera de Docker (apps/backend/.env.example).
+      - "127.0.0.1:1025:1025"
 
 volumes:
   local-db-data:

@@ -6,17 +6,28 @@ logger = logging.getLogger(__name__)
 
 
 class NoopEmailSender(IEmailSender):
-    """Implementacion no-op: registra la invitacion en logs en vez de enviarla.
+    """Con EMAIL_ENABLED=false: no envía nada y deja la invitación en el log. La API
+    devuelve el enlace para que el dueño lo comparta (ver `enabled`)."""
 
-    Reemplazar por un proveedor real (p. ej. Resend) antes de habilitar
-    invitaciones en produccion.
-    """
+    @property
+    def enabled(self) -> bool:
+        return False
 
-    async def send_invitation(self, *, to_email: str, store_name: str, invite_url: str, invited_by: str) -> None:
+    async def send_invitation(
+        self,
+        *,
+        to_email: str,
+        store_name: str,
+        invite_url: str,
+        invited_by: str,
+        role: str,
+        expires_in_days: int,
+    ) -> None:
         logger.info(
-            "NoopEmailSender: invitacion para %s a la tienda '%s' (invitado por %s): %s",
+            "Correo desactivado (EMAIL_ENABLED=false): invitacion para %s a '%s' como %s (invito %s): %s",
             to_email,
             store_name,
+            role,
             invited_by,
             invite_url,
         )

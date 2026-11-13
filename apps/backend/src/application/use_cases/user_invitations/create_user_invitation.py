@@ -79,5 +79,7 @@ class CreateUserInvitationUseCase:
             store_name=store.name if store else "tu tienda",
             invite_url=invite_url,
             invited_by=input.invited_by_name,
+            role=input.role,
+            expires_in_days=settings.INVITATION_EXPIRE_DAYS,
         )
         return CreateUserInvitationResult(invitation=saved, raw_token=raw_token)
