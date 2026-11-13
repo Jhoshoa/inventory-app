@@ -17,7 +17,7 @@ describe("AuthShell", () => {
       </AuthShell>,
     );
 
-    expect(screen.getByText(BRAND.name)).toBeInTheDocument();
+    expect(screen.getAllByText(BRAND.name).length).toBeGreaterThan(0);
     expect(screen.getByRole("heading", { name: "Iniciar sesion" })).toBeInTheDocument();
     expect(screen.getByText("Ingresa para administrar tu tienda.")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Continuar" })).toBeInTheDocument();
@@ -25,5 +25,15 @@ describe("AuthShell", () => {
       "href",
       "/register",
     );
+  });
+
+  it("muestra el enlace para volver cuando se pide", () => {
+    render(
+      <AuthShell title="Recupera tu contraseña" back={{ href: "/login", label: "Volver a entrar" }}>
+        <p>Formulario</p>
+      </AuthShell>,
+    );
+
+    expect(screen.getByRole("link", { name: "Volver a entrar" })).toHaveAttribute("href", "/login");
   });
 });

@@ -65,6 +65,7 @@ class UserInvitationPreviewDTO(BaseModel):
     role: str
     status: str
     expires_at: datetime
+    invited_by_name: str | None = None
 
 
 class AcceptUserInvitationDTO(BaseModel):

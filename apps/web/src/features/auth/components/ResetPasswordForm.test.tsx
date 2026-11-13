@@ -5,13 +5,16 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ResetPasswordForm, readRecoveryToken } from "./ResetPasswordForm";
 
 const replace = vi.fn();
-vi.mock("next/navigation", () => ({ useRouter: () => ({ replace }) }));
+const refresh = vi.fn();
+vi.mock("next/navigation", () => ({ useRouter: () => ({ replace, refresh }) }));
 
 const fetchMock = vi.fn();
 const reply = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json" } });
 
 const GOOD_PASSWORD = "NuevaClave1!";
+/** Un JWT de prueba cuyo contenido trae el correo (la firma no se revisa en el navegador). */
+const TOKEN_WITH_EMAIL = `h.${btoa(JSON.stringify({ email: "rosa@correo.com" })).replace(/=+$/, "")}.s`;
 
 function openLink(hash: string) {
   window.history.replaceState(null, "", `/reset-password${hash}`);
@@ -19,8 +22,8 @@ function openLink(hash: string) {
 
 async function fillAndSubmit(password: string, confirmation = password) {
   await userEvent.type(screen.getByLabelText("Nueva contraseña"), password);
-  await userEvent.type(screen.getByLabelText("Confirmar contraseña"), confirmation);
-  await userEvent.click(screen.getByRole("button", { name: /guardar contraseña/i }));
+  await userEvent.type(screen.getByLabelText("Repite la contraseña"), confirmation);
+  await userEvent.click(screen.getByRole("button", { name: /guardar y entrar/i }));
 }
 
 describe("readRecoveryToken", () => {
@@ -44,6 +47,7 @@ describe("ResetPasswordForm", () => {
   afterEach(() => {
     fetchMock.mockReset();
     replace.mockReset();
+    refresh.mockReset();
     vi.unstubAllGlobals();
     window.history.replaceState(null, "", "/");
   });
@@ -74,8 +78,8 @@ describe("ResetPasswordForm", () => {
 
     render(<ResetPasswordForm />);
 
-    expect(await screen.findByText(/El enlace expiró o no es válido/)).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /solicitar un enlace nuevo/i })).toHaveAttribute(
+    expect(await screen.findByText("Este enlace ya no sirve.")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /pedir un enlace nuevo/i })).toHaveAttribute(
       "href",
       "/forgot-password",
     );
@@ -86,13 +90,14 @@ describe("ResetPasswordForm", () => {
     render(<ResetPasswordForm />);
     await screen.findByLabelText("Nueva contraseña");
 
-    await fillAndSubmit("debil");
-    expect(screen.getByText("La contraseña debe tener al menos 8 caracteres")).toBeInTheDocument();
+    await userEvent.type(screen.getByLabelText("Nueva contraseña"), "debil");
+    expect(screen.getByRole("button", { name: /guardar y entrar/i })).toBeDisabled();
+    expect(screen.getByRole("list", { name: "Requisitos de la contraseña" })).toBeInTheDocument();
 
     await userEvent.clear(screen.getByLabelText("Nueva contraseña"));
-    await userEvent.clear(screen.getByLabelText("Confirmar contraseña"));
     await fillAndSubmit(GOOD_PASSWORD, "OtraDistinta1!");
-    expect(screen.getByText("Las contraseñas no coinciden")).toBeInTheDocument();
+    expect(screen.getByText("Las contraseñas no coinciden.")).toBeInTheDocument();
+    expect(screen.getByLabelText("Repite la contraseña")).toHaveFocus();
 
     expect(fetchMock).not.toHaveBeenCalled();
   });
@@ -113,6 +118,41 @@ describe("ResetPasswordForm", () => {
     });
   });
 
+  it("muestra para qué correo es y entra directo con la contraseña nueva", async () => {
+    fetchMock.mockResolvedValueOnce(reply({ message: "ok" })).mockResolvedValueOnce(reply({ user: { role: "owner" } }));
+    openLink(`#access_token=${TOKEN_WITH_EMAIL}&type=recovery`);
+    render(<ResetPasswordForm />);
+
+    expect(await screen.findByText("rosa@correo.com")).toBeInTheDocument();
+    await fillAndSubmit(GOOD_PASSWORD);
+
+    await vi.waitFor(() => expect(replace).toHaveBeenCalledWith("/dashboard"));
+    expect(fetchMock.mock.calls[1][0]).toBe("/api/auth/login");
+    expect(JSON.parse(fetchMock.mock.calls[1][1].body)).toEqual({ email: "rosa@correo.com", password: GOOD_PASSWORD });
+  });
+
+  it("si no puede entrar después de guardar, vuelve al login con aviso", async () => {
+    fetchMock.mockResolvedValueOnce(reply({ message: "ok" })).mockResolvedValueOnce(reply({ message: "Email not confirmed" }, 400));
+    openLink(`#access_token=${TOKEN_WITH_EMAIL}&type=recovery`);
+    render(<ResetPasswordForm />);
+    await screen.findByText("rosa@correo.com");
+
+    await fillAndSubmit(GOOD_PASSWORD);
+
+    await vi.waitFor(() => expect(replace).toHaveBeenCalledWith("/login?reset=success"));
+  });
+
+  it("muestra el mensaje de demasiados intentos (429)", async () => {
+    fetchMock.mockResolvedValueOnce(reply({ message: "rate limited" }, 429));
+    openLink("#access_token=tok.en.123&type=recovery");
+    render(<ResetPasswordForm />);
+    await screen.findByLabelText("Nueva contraseña");
+
+    await fillAndSubmit(GOOD_PASSWORD);
+
+    expect(await screen.findByText("Demasiados intentos. Espera unos minutos y vuelve a intentar.")).toBeInTheDocument();
+  });
+
   it("si el servidor dice que el enlace venció, pasa a la pantalla de enlace inválido", async () => {
     fetchMock.mockResolvedValueOnce(reply({ message: "El enlace expiro" }, 401));
     openLink("#access_token=tok.en.123&type=recovery");
@@ -121,7 +161,7 @@ describe("ResetPasswordForm", () => {
 
     await fillAndSubmit(GOOD_PASSWORD);
 
-    expect(await screen.findByText(/El enlace expiró o no es válido/)).toBeInTheDocument();
+    expect(await screen.findByText("Este enlace ya no sirve.")).toBeInTheDocument();
   });
 
   it("muestra el motivo cuando el servidor rechaza la contraseña (p. ej. igual a la anterior)", async () => {

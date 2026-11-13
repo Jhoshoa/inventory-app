@@ -428,6 +428,16 @@ Es la fase más delicada: es lo que más se usa y funciona sin conexión.
 3. Después de entrar: dueño → Inicio; cajero → Vender si la caja está abierta, si no Inicio.
 4. Depende de D6 (SMTP) y D7.
 
+**Fase 8 hecha (2026-11-13).** Notas:
+
+- Entrar: correo y contraseña con "Mostrar", Google ("Continuar con Google"; la API ya pide elegir la cuenta con `prompt=select_account`). 401 → "Correo o contraseña incorrectos."; 429 → "Demasiados intentos. Espera unos minutos y vuelve a intentar." en todas las pantallas de acceso.
+- Después de entrar (correo, Google, nueva contraseña o invitación): dueño → Inicio; cajero → Vender si `/store-day/current` dice abierta, si no Inicio (sin conexión o sin caja también Inicio).
+- Crear tienda: tienda, tu nombre, correo, contraseña. Los requisitos se marcan mientras se escribe y el botón se activa al cumplirlos. Si la API pide confirmar el correo se avisa; si no, entra directo. Una cuenta nueva con Google se crea como "Tienda de {nombre}".
+- Recuperar contraseña: el mismo aviso exista o no la cuenta (la API ya respondía igual). "Enviar otro" espera 60 s en el navegador. No se promete "vence en 1 hora" (ver D7).
+- Nueva contraseña: "Para {correo}" (se lee del token, solo para mostrarlo), "Repite la contraseña", "Guardar y entrar" entra con la contraseña nueva; si no puede, va a Entrar con aviso. Enlace usado o vencido → "Este enlace ya no sirve." + "Pedir un enlace nuevo".
+- Aceptar invitación: "{quien invita} te invitó a {tienda} como Cajero / Dueño" (la vista previa de la API ahora trae `invited_by_name`), correo fijo, tu nombre, contraseña con requisitos, "Unirme a la tienda". Invitación usada, revocada o vencida → "Esta invitación ya no es válida. Pídele a la tienda que te envíe otra." (la usada dice que entres con tu correo). Al guardarse la sesión la página no parpadea con "no disponible": a quien acaba de aceptarla le dice "Ya eres parte de…".
+- D6 sigue pendiente: sin SMTP en producción no llegan los correos de confirmar, recuperar ni invitar (en desarrollo se muestra el enlace). D7: el tiempo de vencimiento del enlace de Supabase sigue sin verificarse; por eso no se muestra.
+
 ### Fase 9 · Revisión final (1,5 días)
 
 1. 375, 768 y 1280 px en todas las páginas; celular real con lector de códigos y cámara.

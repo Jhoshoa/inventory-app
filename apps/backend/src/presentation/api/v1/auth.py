@@ -552,7 +552,8 @@ async def oauth_callback(
             if existing and existing.store_id:
                 user_data["store_id"] = str(existing.store_id)
             else:
-                store_name = f"{user_data.get('full_name') or user_data['email'].split('@')[0]}'s Store"
+                # Se puede cambiar en Configuracion > Datos de la tienda.
+                store_name = f"Tienda de {user_data.get('full_name') or user_data['email'].split('@')[0]}"
                 new_store = Store.create(store_name)
                 new_store.trial_expires_at = Store.calculate_trial_expiry()
                 new_store = await store_repo.save(new_store)
